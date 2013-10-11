@@ -1,0 +1,6 @@
+# emacs autosave
+*~
+# Mac files
+.DS_Store
+# python bytecode compiled files
+*.pyc
