@@ -164,7 +164,10 @@ class RenderPolyData:
                 tube_filter.SetInputData(input_polydata)
             else:
                 tube_filter.SetInput(input_polydata)
-            mapper.SetInputConnection(tube_filter.GetOutputPort())
+            if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                mapper.SetInputConnection(tube_filter.GetOutputPort())
+            else:
+                mapper.SetInput(tube_filter.GetOutputPort())
         else:
             if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
                 mapper.SetInputData(input_polydata)
@@ -219,7 +222,10 @@ class RenderPolyData:
         self.axes.SetScaleFactor(100)
         self.axes.SymmetricOn()
         self.axes_mapper = vtk.vtkPolyDataMapper()
-        self.axes_mapper.SetInputConnection(self.axes.GetOutputPort())
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            self.axes_mapper.SetInputConnection(self.axes.GetOutputPort())
+        else:
+            self.axes_mapper.SetInput(self.axes.GetOutputPort())
         self.axes_actor = vtk.vtkActor()
         self.axes_actor.SetMapper(self.axes_mapper)
         self.axes_mapper.SetLookupTable(lut)
@@ -290,7 +296,11 @@ class RenderPolyData:
         img.SetMagnification(self.magnification)
         img.Update()
         writer = vtk.vtkPNGWriter()
-        writer.SetInputConnection(img.GetOutputPort())
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            writer.SetInputConnection(img.GetOutputPort())
+        else:
+            writer.SetInput(img.GetOutputPort())
+        
         writer.SetFileName(filename)
         writer.Write()
         del writer

@@ -129,7 +129,11 @@ class LateralityResults:
         print "b"
         # output polydata
         writer = vtk.vtkPolyDataWriter()
-        writer.SetInputData(self.polydata)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            writer.SetInputData(self.polydata)
+        else:
+            writer.SetInput(self.polydata)
+        
         writer.SetFileName(os.path.join(dirname, 'tractography_with_LI.vtk'))
         writer.Write()
         print "c"

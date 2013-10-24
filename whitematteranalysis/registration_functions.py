@@ -69,7 +69,10 @@ def transform_polydatas(input_pds, register):
     output_pds = list()
     for transform in transforms:
         transformer = vtk.vtkTransformPolyDataFilter()
-        transformer.SetInputData(input_pds[idx])
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            transformer.SetInputData(input_pds[idx])
+        else:
+            transformer.SetInput(input_pds[idx])
         transformer.SetTransform(transform)
         transformer.Update()
         pd = transformer.GetOutput()
@@ -85,12 +88,20 @@ def transform_polydatas_from_disk(input_pd_fnames, register, outdir):
         fname = input_pd_fnames[idx]
         print fname
         pd = wma.io.read_polydata(fname)
-        transformer.SetInputData(pd)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            transformer.SetInputData(pd)
+        else:
+            transformer.SetInput(pd)
+        
         transformer.SetTransform(transforms[idx])
         transformer.Update()
         pd2 = transformer.GetOutput()
         writer = vtk.vtkPolyDataWriter()
-        writer.SetInputData(pd2)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            writer.SetInputData(pd2)
+        else:
+            writer.SetInput(pd2)
+        
         # this seemed to not work correctly for re-reading by wma or slicer
         #fname = 'white_matter_{:04}.vtp'.format(idx)
         fname = 'white_matter_{:04}.vtk'.format(idx)
