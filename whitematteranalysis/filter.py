@@ -271,23 +271,12 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
                 else:
                     outcolors.InsertNextTuple1(color[lidx])
             else:
-                if (vtk.vtkVersion().GetVTKMajorVersion() > 5.0):
-                    if outpd.GetCellData().GetArray('EmbeddingColor'):
-                        outpd.GetCellData().GetArray('EmbeddingColor').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingColor').GetTuple(lidx))
-                    if outpd.GetCellData().GetArray('ClusterNumber'):
-                        outpd.GetCellData().GetArray('ClusterNumber').InsertNextTuple(inpd.GetCellData().GetArray('ClusterNumber').GetTuple(lidx))
-                    if outpd.GetCellData().GetArray('EmbeddingCoordinate'):
-                        outpd.GetCellData().GetArray('EmbeddingCoordinate').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingCoordinate').GetTuple(lidx))
-
-                else:
-                    # this worked before, not sure why TupleValue was used.
-                    if outpd.GetCellData().GetArray('EmbeddingColor'):
-                        outpd.GetCellData().GetArray('EmbeddingColor').InsertNextTupleValue(inpd.GetCellData().GetArray('EmbeddingColor').GetTuple(lidx))
-                    if outpd.GetCellData().GetArray('ClusterNumber'):
-                        outpd.GetCellData().GetArray('ClusterNumber').InsertNextTupleValue(inpd.GetCellData().GetArray('ClusterNumber').GetTuple(lidx))
-                    if outpd.GetCellData().GetArray('EmbeddingCoordinate'):
-                        outpd.GetCellData().GetArray('EmbeddingCoordinate').InsertNextTupleValue(inpd.GetCellData().GetArray('EmbeddingCoordinate').GetTuple(lidx))
-
+                if outpd.GetCellData().GetArray('EmbeddingColor'):
+                    outpd.GetCellData().GetArray('EmbeddingColor').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingColor').GetTuple(lidx))
+                if outpd.GetCellData().GetArray('ClusterNumber'):
+                    outpd.GetCellData().GetArray('ClusterNumber').InsertNextTuple(inpd.GetCellData().GetArray('ClusterNumber').GetTuple(lidx))
+                if outpd.GetCellData().GetArray('EmbeddingCoordinate'):
+                    outpd.GetCellData().GetArray('EmbeddingCoordinate').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingCoordinate').GetTuple(lidx))
 
     # put data into output polydata
     outpd.SetLines(outlines)
