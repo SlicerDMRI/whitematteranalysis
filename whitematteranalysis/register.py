@@ -80,7 +80,10 @@ class RegistrationInformation:
         out_array = whitematteranalysis.fibers.FiberArray()
         pd_in = in_array.convert_to_polydata()
         transformer = vtk.vtkTransformPolyDataFilter()
-        transformer.SetInputData(pd_in)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                transformer.SetInputData(pd_in)
+            else:
+                transformer.SetInput(pd_in) 
         vtktrans = self.convert_transform_to_vtk(transform)
         transformer.SetTransform(vtktrans)
         transformer.Update()
