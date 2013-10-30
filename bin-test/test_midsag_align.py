@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy
 import time
 import argparse
+import multiprocessing
+
 import vtk
 
 try:
@@ -78,13 +80,12 @@ else:
     print "Verbose display and intermediate image saving OFF."
 verbose = args.flag_verbose
 
-import multiprocessing
 print 'CPUs detected:', multiprocessing.cpu_count()
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
 else:
     parallel_jobs = multiprocessing.cpu_count()
-    print 'Using N jobs:', parallel_jobs
+print 'Using N jobs:', parallel_jobs
 
 input_poly_data = args.inputFileName
 
