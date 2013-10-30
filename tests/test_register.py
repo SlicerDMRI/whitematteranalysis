@@ -19,7 +19,7 @@ parallel_jobs = 4
 print 'Using N jobs:', parallel_jobs
 
 indir1 = 'test_data'
-outdir = 'test_reg_results'
+outdir = 'test_register_results'
 
 input_mask1 = "{0}/*.vtk".format(indir1)
 input_poly_datas = glob.glob(input_mask1)
