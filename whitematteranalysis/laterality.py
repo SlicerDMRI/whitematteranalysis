@@ -60,7 +60,9 @@ class WhiteMatterLaterality:
         self.sigma = 10
         self.points_per_fiber = 5
         self.threshold = 5
-
+        # same number of fibers measured from each hemisphere
+        self.equal_fiber_num = True
+        
         # performance options
         self.verbose = True
         # set parallel_jobs to 0 to turn off multiprocessing
@@ -121,9 +123,21 @@ class WhiteMatterLaterality:
         #right_hem_distance = numpy.zeros([nf, nf])
         #left_hem_distance = numpy.zeros([nf, nf])
 
-        # grab fibers from each hemisphere
-        fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem)
-        fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem)
+
+        # get the same number from each hemisphere if requested
+        # -------------------------
+        if self.equal_fiber_num:
+            num_fibers = min(self.fibers.number_left_hem, self.fibers.number_right_hem)        
+            # grab num_fibers fibers from each hemisphere.
+            # use the first n since they were randomly sampled from the whole dataset
+            fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem[0:num_fibers])
+            fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem[0:num_fibers])
+            if self.verbose:
+                print "<laterality.py> Using ", num_fibers , " fibers per hemisphere."
+        else:
+            # grab all fibers from each hemisphere
+            fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem)
+            fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem)
 
         # tell user we are doing something
         if self.verbose:

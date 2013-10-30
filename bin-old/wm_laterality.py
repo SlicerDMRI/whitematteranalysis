@@ -38,8 +38,6 @@ parser.add_argument(
     '-t', action="store", dest="threshold", type=int,
     help='Threshold lower fiber distances to 0. Useful range 0-5mm.')
 parser.add_argument(
-    '-no_align', action='store_false', dest="flag_midsagittalAlignment")
-parser.add_argument(
     '-rm_outlier', action='store_true', dest="flag_removeOutliers")
 
 args = parser.parse_args()
@@ -71,12 +69,6 @@ if args.sigma is not None:
 
 if args.threshold is not None:
     print "intra-fiber distance threshold (in mm): ", args.threshold
-
-if args.flag_midsagittalAlignment:
-    print "Automatic midsagittal alignment is ON."
-else:
-    print "Automatic midsagittal alignment is OFF."
-
 
 if args.flag_removeOutliers:
     print "Automatic outlier removal is ON."
@@ -147,16 +139,8 @@ for sidx in range(0, len(inputPolyDatas)):
 
         wm = wma.filter.downsample(wm, args.numberOfFibers)
 
-    # do midsagittal alignment on each dataset
-    # -------------------
-    if args.flag_midsagittalAlignment:
-        msg = "**Aligning midsag.:", subjectID
-        print id_msg, msg
-
-        align = wma.midsagalign.MidsagittalAlignment()
-        wm_align, transform = align.compute(wm)
-    else:
-        wm_align = wm
+    # midsagittal alignment is already done
+    wm_align = wm
 
     # compute laterality on each dataset
     # -------------------
