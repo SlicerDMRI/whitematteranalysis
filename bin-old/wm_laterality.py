@@ -120,7 +120,7 @@ for sidx in range(0, len(inputPolyDatas)):
         msg = "**Preprocessing:", subjectID
         print id_msg, msg
 
-        wm = wma.filter.preprocess(wm, args.fiberLength)
+        wm = wma.filter.preprocess(wm, args.fiberLength, remove_u=True, remove_u_endpoint_dist=50, remove_brainstem=True)
         print "Number of fibers retained: ", wm.GetNumberOfLines()
 
     # remove outlier fibers
