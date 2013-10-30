@@ -1,5 +1,7 @@
 #!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
+# Run registration on the test dataset.
+
 import os
 import glob
 import matplotlib.pyplot as plt
@@ -13,41 +15,16 @@ import whitematteranalysis as wma
 import multiprocessing
 parallel_jobs = multiprocessing.cpu_count()
 print 'CPUs detected:', parallel_jobs
-#parallel_jobs *= 3
-#parallel_jobs = 101
-#parallel_jobs = 15
-parallel_jobs = 12
+parallel_jobs = 4
 print 'Using N jobs:', parallel_jobs
 
-#indir1 = '/Users/odonnell/Data/CONTROLS_50_PNL/Tracts/tract_data/good'
-#outdir = '/Users/odonnell/Dropbox/Coding/OUTPUTS/MICCAI2012/test_nL_reg_N26'
-#indir1 = '/PHShome/ljo7/software/whitematteranalysis/tests/test_data_reg'
-#outdir = '/PHShome/ljo7/software/whitematteranalysis/tests/test_data_reg_results'
-indir1 = '/PHShome/btn6/data/ALS_VTK_format'
-outdir = '/PHShome/btn6/data/ALS_VTK_format_reg_results_400sample'
+indir1 = 'test_data'
+outdir = 'test_reg_results'
 
-
-#input_mask1 = "{0}/*.vtp".format(indir1)
 input_mask1 = "{0}/*.vtk".format(indir1)
 input_poly_datas = glob.glob(input_mask1)
 
-#input_poly_datas = input_poly_datas[0:5]
-
 print input_poly_datas
-
-if 0:
-    indir_images = '/Users/odonnell/Data/CONTROLS_50_PNL/FA/good'
-    #input_mask = "{0}/*FA.raw.gz".format(indir_images)
-    input_mask = "{0}/*FA*.nhdr".format(indir_images)
-    #indir_images = '/Users/odonnell/Data/CONTROLS_50_PNL/B0'
-    #input_mask = "{0}/*B0.raw".format(indir_images)
-    image_fnames = glob.glob(input_mask)
-    print image_fnames
-    #execfile('/Users/odonnell/Dropbox/Coding/Python/WhiteMatterAnalysis/bin/test_read_vol.py')
-    #in_images = read_all_images(image_fnames)
-    #average_all_images(in_images, fname='average_image_0.raw')
-    txform_fnames = write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
-    write_command_line_to_convert_images('transform_all_images.sh', image_fnames, txform_fnames)
     
 def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     number_of_fibers_per_step=[75, 75, 75, 100],
@@ -253,17 +230,14 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     return register, elapsed
 
 ## run the registration ONCE and output result to disk
-number_of_fibers = 400#200
-#number_of_fibers = 150
+number_of_fibers = 400
 points_per_fiber = 5
 number_of_fibers_per_step = [25, 50, 75, 100]
 sigma_per_step = [30, 10, 10, 5]
-maxfun = 600
-#maxfun = 300
+maxfun = 300
 # output location
 if not os.path.exists(outdir):
     os.makedirs(outdir)
-#  smoothing
 
 # registration
 register, elapsed = run_registration(input_poly_datas, outdir,
