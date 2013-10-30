@@ -46,10 +46,13 @@ def write_transforms_to_itk_format(transform_list, outdir):
     return(tx_fnames)
 
     
-def view_polydatas(polydata_list):
+def view_polydatas(polydata_list, number_of_fibers=None):
     appender = vtk.vtkAppendPolyData()
     idx = 0
     for pd in polydata_list:
+        if number_of_fibers is not None:
+            # downsample if requested
+            pd = wma.filter.downsample(pd, number_of_fibers)
         nf = pd.GetNumberOfLines()
         print idx
         print nf
