@@ -107,10 +107,9 @@ def run_registration(input_poly_data, outdir, number_of_fibers=150,
     number_of_fibers_step_three = number_of_fibers_per_step[2]
     number_of_fibers_step_four = number_of_fibers_per_step[3]
 
-    number_of_datasets = len(input_poly_data)
-    minfun = number_of_datasets * 3
+    minfun = maxfun/5.0
     #maxfun_per_step = [50, 75, 200]
-    maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
+    maxfun_per_step = [minfun*1.5, minfun*2, minfun*3, minfun*5]
 
     sigma_step_one = sigma_per_step[0]
     sigma_step_two = sigma_per_step[1]
@@ -141,7 +140,7 @@ def run_registration(input_poly_data, outdir, number_of_fibers=150,
     register.threshold = 0
     register.points_per_fiber = points_per_fiber
     register.distance_method = distance_method
-    register.maxfun = maxfun
+    #register.maxfun = maxfun
     # make sure we take very small steps, the brains are already overlapping
     inc_rot = (0.5 / 180.0) * numpy.pi
     inc_trans = 0.5
@@ -269,7 +268,7 @@ number_of_fibers_per_step = [100, 200, 200, 250]
 #number_of_fibers_per_step = [300, 300, 500, 1000]
 # small sigmas only, this is a minor adjustment 
 sigma_per_step = [10, 10, 5, 5]
-maxfun = 600
+maxfun = 30
 # output location
 
 # registration
@@ -307,13 +306,11 @@ for i in range(0,4):
 
 txs.SetMatrix(m)
 
-reader = vtk.vtkPolyDataReader()
-reader.SetFileName(input_poly_data)
-reader.Update()
+pd = wma.io.read_polydata(input_poly_data)
 
 trans = vtk.vtkTransformPolyDataFilter()
 trans.SetTransform(txs)
-trans.SetInputData(reader.GetOutput())
+trans.SetInputData(pd)
 trans.Update()
 
 outdir_current =  os.path.join(outdir, 'output')
@@ -322,7 +319,7 @@ if not os.path.exists(outdir_current):
 
 fname1 = os.path.split(input_poly_data)[1]
 fname1 = os.path.splitext(fname1)[0]
-fname1 = os.path.join(outdir_current, 'symmetric_'+fname1+'.vtp')
+fname1 = os.path.join(outdir_current, fname1+'_sym.vtp')
 #wma.io.write_polydata(trans.GetOutput(), os.path.join(outdir_current,'symmetric.vtk'))
 print "Writing output polydata..."
 wma.io.write_polydata(trans.GetOutput(), fname1)
