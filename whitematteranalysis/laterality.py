@@ -105,6 +105,9 @@ class WhiteMatterLaterality:
         # internal representation for fast similarity computation
         # this also detects which hemisphere fibers are in
         self.fibers.points_per_fiber = self.points_per_fiber
+        # must request hemisphere computation from object
+        self.fibers.hemispheres = True
+        # Now convert to array with points and hemispheres as above
         self.fibers.convert_from_polydata(input_vtk_polydata)
 
         # square sigma for later Gaussian
