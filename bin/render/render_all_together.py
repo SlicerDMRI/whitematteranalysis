@@ -26,7 +26,7 @@ def view_polydatas(polydata_list):
         mask = numpy.ones(nf)
         colors = numpy.multiply(mask, idx-1)
         pd2 = wma.filter.mask(pd, mask, colors)
-        appender.AddInput(pd2)
+        appender.AddInputData(pd2)
         idx = idx + 1
     appender.Update()
     pd3 = appender.GetOutput()
@@ -43,6 +43,8 @@ for fname in inputPolyDatas:
 
 # view input data
 ren = view_polydatas(input_pds)
+
+ren.save_views()
 
 
 
