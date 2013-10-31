@@ -39,6 +39,9 @@ parser.add_argument(
     help='Threshold lower fiber distances to 0. Useful range 0-5mm.')
 parser.add_argument(
     '-rm_outlier', action='store_true', dest="flag_removeOutliers")
+parser.add_argument(
+    '-equal_fiber_num', action='store_true', dest="flag_equalFibers",
+    help='To analyze an equal number of fibers per hemisphere')
 
 args = parser.parse_args()
 
@@ -74,6 +77,11 @@ if args.flag_removeOutliers:
     print "Automatic outlier removal is ON."
 else:
     print "Automatic outlier removal is OFF."
+
+if args.flag_equalFibers:
+    print "Use equal fiber number from each hemisphere is ON."
+else:
+    print "Use equal fiber number from each hemisphere is OFF. Using input fiber number."
 
 print "=========================="
 
@@ -152,6 +160,11 @@ for sidx in range(0, len(inputPolyDatas)):
         laterality.sigma = args.sigma
     if args.threshold is not None:
         laterality.threshold = args.threshold
+    if args.flag_equalFibers:
+        laterality.equal_fiber_num = True
+    else:
+        laterality.equal_fiber_num = False
+
 
     laterality_results = laterality.compute(wm_align)
 
