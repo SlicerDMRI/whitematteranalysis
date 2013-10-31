@@ -7,23 +7,110 @@ import glob
 import matplotlib.pyplot as plt
 import numpy
 import time
+import multiprocessing
+import argparse
 
 import vtk
 
-import whitematteranalysis as wma
+try:
+    import whitematteranalysis as wma
+except:
+    print "<wm_register.py> Error importing white matter analysis package\n"
+    raise
 
-import multiprocessing
-parallel_jobs = multiprocessing.cpu_count()
-print 'CPUs detected:', parallel_jobs
-parallel_jobs = 4
+#indir1 = 'test_data'
+#outdir = 'test_register_results'
+
+# defaults that may be added as parameters later
+number_of_fibers_per_step = [25, 50, 75, 100]
+sigma_per_step = [30, 10, 10, 5]
+maxfun = 300
+
+#-----------------
+# Parse arguments
+#-----------------
+parser = argparse.ArgumentParser(
+    description="Runs multisubject unbiased group registration of tractography.",
+    epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"Unbiased Groupwise Registration of White Matter Tractography. LJ O'Donnell,  WM Wells III, Golby AJ, CF Westin. Med Image Comput Comput Assist Interv. 2012;15(Pt 3):123-30.\"",
+    version='1.0')
+
+parser.add_argument(
+    'inputDirectory',
+    help='A directory of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
+parser.add_argument(
+    'outputDirectory',
+    help='The output directory will be created if it does not exist.')
+parser.add_argument(
+    '-f', action="store", dest="numberOfFibers", type=int,
+    help='Number of fibers to analyze from each dataset. 300-600 or more is reasonable. Depends on total number of datasets and desired run time/memory use.')
+parser.add_argument(
+    '-l', action="store", dest="fiberLength", type=int,
+    help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
+parser.add_argument(
+    '-j', action="store", dest="numberOfJobs", type=int,
+    help='Number of processors to use.')
+parser.add_argument(
+    '-verbose', action='store_true', dest="flag_verbose",
+    help='Verbose. Run with -verbose to store images of intermediate and final polydatas.')
+parser.add_argument(
+    '-pf', action="store", dest="pointsPerFiber", type=int,
+    help='Number of points for fiber representation during registration. 5 is reasonable, or more.')
+
+ 
+args = parser.parse_args()
+
+if not os.path.isdir(args.inputDirectory):
+    print "Error: Input directory", args.inputDirectory, "does not exist."
+    exit()
+
+outdir = args.outputDirectory
+if not os.path.exists(outdir):
+    print "Output directory", outdir, "does not exist, creating it."
+    os.makedirs(outdir)
+
+if args.numberOfFibers is not None:
+    print "fibers to analyze per subject: ", args.numberOfFibers
+else:
+    print "fibers to analyze per subject: ALL"
+number_of_fibers = args.numberOfFibers
+
+if args.fiberLength is not None:
+    print "minimum length of fibers to analyze (in mm): ", args.fiberLength
+    fiber_length = args.fiberLength
+else:
+    fiber_length = 75
+
+print 'CPUs detected:', multiprocessing.cpu_count()
+if args.numberOfJobs is not None:
+    parallel_jobs = args.numberOfJobs
+else:
+    parallel_jobs = multiprocessing.cpu_count()
 print 'Using N jobs:', parallel_jobs
 
-indir1 = 'test_data'
-outdir = 'test_register_results'
+if args.flag_verbose:
+    print "Verbose display and intermediate image saving ON."
+else:
+    print "Verbose display and intermediate image saving OFF."
+verbose = args.flag_verbose
 
-input_mask1 = "{0}/*.vtk".format(indir1)
-input_poly_datas = glob.glob(input_mask1)
+if args.pointsPerFiber is not None:
+    print "Number of points for fiber representation: ", args.pointsPerFiber
+    points_per_fiber = args.pointsPerFiber
+else:
+    points_per_fiber = 5
 
+
+print "<wm_register.py> Starting registration computation."
+print ""
+print "=====input directory ======\n", args.inputDirectory
+print "=====output directory =====\n", args.outputDirectory
+print "=========================="
+
+# Find input files
+inputMask1 = "{0}/*.vtk".format(args.inputDirectory)
+inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
+input_poly_datas = glob.glob(inputMask1) + glob.glob(inputMask2)
+print "<wm_register.py> Input number of files: ", len(input_poly_datas)
 print input_poly_datas
     
 def run_registration(input_poly_datas, outdir, number_of_fibers=150,
@@ -32,10 +119,9 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     points_per_fiber=5,
     sigma_per_step=[30, 10, 10, 5],
     maxfun=150,
-    distance_method='Hausdorff'):
+    distance_method='Hausdorff', verbose=True, fiber_length=75):
 
     elapsed = list()
-    minimum_length = 60
     number_of_fibers_step_one = number_of_fibers_per_step[0]
     number_of_fibers_step_two = number_of_fibers_per_step[1]
     number_of_fibers_step_three = number_of_fibers_per_step[2]
@@ -56,12 +142,9 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     for fname in input_poly_datas:
         print fname
         pd = wma.io.read_polydata(fname)
-        pd2 = wma.filter.preprocess(pd, 60)
+        pd2 = wma.filter.preprocess(pd, fiber_length)
         pd3 = wma.filter.downsample(pd2, number_of_fibers)
         input_pds.append(pd3)
-
-    # view input data
-    #ren = wma.registration_functions.view_polydatas(input_pds)
 
     # create registration object and apply settings
     register = wma.congeal.CongealTractography()
@@ -82,8 +165,7 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
     ren = wma.registration_functions.view_polydatas(output_pds)
     ren.save_views(outdir_current)
-    #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
+    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
     # STEP ONE
     start = time.time()
@@ -117,19 +199,19 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     elapsed.append(time.time() - start)
 
     # view output data from this big iteration
-    outdir_current =  os.path.join(outdir, 'iteration_1')
-    if not os.path.exists(outdir_current):
-        os.makedirs(outdir_current)
-    output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-    ren = wma.registration_functions.view_polydatas(output_pds)
-    ren.save_views(outdir_current)
-    #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
+    if verbose:
+        outdir_current =  os.path.join(outdir, 'iteration_1')
+        if not os.path.exists(outdir_current):
+            os.makedirs(outdir_current)
+        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
+        ren = wma.registration_functions.view_polydatas(output_pds)
+        ren.save_views(outdir_current)
+        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
+        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
-    plt.figure() # to avoid all results on same plot
-    #plt.plot(range(len(register.objective_function_values)), numpy.log(register.objective_function_values))
-    plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-    plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+        plt.figure() # to avoid all results on same plot
+        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
 
     # STEP TWO
     start = time.time()
@@ -148,19 +230,19 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     elapsed.append(time.time() - start)
 
     # view output data from this big iteration
-    outdir_current =  os.path.join(outdir, 'iteration_2')
-    if not os.path.exists(outdir_current):
-        os.makedirs(outdir_current)
-    output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-    ren = wma.registration_functions.view_polydatas(output_pds)
-    ren.save_views(outdir_current)
-    #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
+    if verbose:
+        outdir_current =  os.path.join(outdir, 'iteration_2')
+        if not os.path.exists(outdir_current):
+            os.makedirs(outdir_current)
+        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
+        ren = wma.registration_functions.view_polydatas(output_pds)
+        ren.save_views(outdir_current)
+        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
+        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
-    plt.figure() # to avoid all results on same plot
-    #plt.plot(range(len(register.objective_function_values)), numpy.log(register.objective_function_values))
-    plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-    plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+        plt.figure() # to avoid all results on same plot
+        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
 
     #if 0:
     # STEP THREE
@@ -180,19 +262,19 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     elapsed.append(time.time() - start)
 
     # view output data from this big iteration
-    outdir_current =  os.path.join(outdir, 'iteration_3')
-    if not os.path.exists(outdir_current):
-        os.makedirs(outdir_current)
-    output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-    ren = wma.registration_functions.view_polydatas(output_pds)
-    ren.save_views(outdir_current)
-    #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
+    if verbose:
+        outdir_current =  os.path.join(outdir, 'iteration_3')
+        if not os.path.exists(outdir_current):
+            os.makedirs(outdir_current)
+        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
+        ren = wma.registration_functions.view_polydatas(output_pds)
+        ren.save_views(outdir_current)
+        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
+        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
-    plt.figure() # to avoid all results on same plot
-    #plt.plot(range(len(register.objective_function_values)), numpy.log(register.objective_function_values))
-    plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-    plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+        plt.figure() # to avoid all results on same plot
+        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
 
     # STEP FOUR
     start = time.time()
@@ -218,35 +300,24 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     ren = wma.registration_functions.view_polydatas(output_pds)
     ren.save_views(outdir_current)
     wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
+    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
     plt.figure() # to avoid all results on same plot
     #plt.plot(range(len(register.objective_function_values)), numpy.log(register.objective_function_values))
     plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
     plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
 
-
-
     return register, elapsed
 
 ## run the registration ONCE and output result to disk
-number_of_fibers = 400
-points_per_fiber = 5
-number_of_fibers_per_step = [25, 50, 75, 100]
-sigma_per_step = [30, 10, 10, 5]
-maxfun = 300
-# output location
-if not os.path.exists(outdir):
-    os.makedirs(outdir)
-
-# registration
 register, elapsed = run_registration(input_poly_datas, outdir,
                         number_of_fibers=number_of_fibers,
                         points_per_fiber=points_per_fiber,
                         parallel_jobs=parallel_jobs,
                         number_of_fibers_per_step=number_of_fibers_per_step,
                         sigma_per_step=sigma_per_step,
-                        maxfun=maxfun\
-                        )
+                        maxfun=maxfun,
+                        verbose=verbose,
+                        fiber_length=fiber_length)
 
 print "TIME:", elapsed
