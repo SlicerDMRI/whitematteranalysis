@@ -65,14 +65,9 @@ class CongealTractography:
         """ Set objective function mode to use fiber similarity total. """
         self._objective_function_mode = "TotalFiberSimilarity"
 
-    def use_probabilistic_objective(self):
-        """ Set objective function mode to probabilistic. """
-        self._objective_function_mode = "Probabilistic"
-        
     def use_entropy_objective(self):
         """ Set objective function mode to entropy. """
         self._objective_function_mode = "Entropy"
-        print "Entropy objective function NOT IMPLEMENTED"
 
     def set_rhobeg(self, rot, trans, scale, shear):
         self.rhobeg = [rot, rot, rot, trans, trans, trans, scale, scale, scale, shear, shear, shear, shear, shear, shear]
@@ -104,7 +99,7 @@ class CongealTractography:
         # internal parameters, please set with functions above
         self._registration_mode = "TranslateOnly"
         #self._objective_function_mode = "TotalFiberSimilarity"
-        self._objective_function_mode = "Probabilistic"
+        self._objective_function_mode = "Entropy"
 
         # squared sigma for use in objective function
         self._sigmasq = self.sigma * self.sigma
@@ -378,7 +373,7 @@ class CongealTractography:
                     self.pairwise_subject_similarity[pair[0], pair[1]] = ret[idx][0]            
                 idx += 1
 
-        elif self._objective_function_mode == "Probabilistic":
+        elif self._objective_function_mode == "Entropy":
             ret = Parallel(
                 n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
                     delayed(inner_loop_fiber)(self._subjects[idx],
@@ -412,7 +407,7 @@ class CongealTractography:
             #obj = numpy.log(100.0 / total_similarity)
             obj = numpy.log(1.0 / total_similarity)
             
-        elif self._objective_function_mode == "Probabilistic":
+        elif self._objective_function_mode == "Entropy":
             # sum for total probability of each brain, in leave-one-out model
             total_similarity = numpy.sum(self.pairwise_subject_similarity, axis=0)
             # log (multiply) for independence across brains
