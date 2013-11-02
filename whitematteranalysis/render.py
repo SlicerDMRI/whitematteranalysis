@@ -167,7 +167,7 @@ class RenderPolyData:
             if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
                 mapper.SetInputConnection(tube_filter.GetOutputPort())
             else:
-                mapper.SetInput(tube_filter.GetOutputPort())
+                mapper.SetInput(tube_filter.GetOutput())
         else:
             if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
                 mapper.SetInputData(input_polydata)
@@ -225,7 +225,7 @@ class RenderPolyData:
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             self.axes_mapper.SetInputConnection(self.axes.GetOutputPort())
         else:
-            self.axes_mapper.SetInput(self.axes.GetOutputPort())
+            self.axes_mapper.SetInput(self.axes.GetOutput())
         self.axes_actor = vtk.vtkActor()
         self.axes_actor.SetMapper(self.axes_mapper)
         self.axes_mapper.SetLookupTable(lut)
@@ -299,7 +299,7 @@ class RenderPolyData:
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             writer.SetInputConnection(img.GetOutputPort())
         else:
-            writer.SetInput(img.GetOutputPort())
+            writer.SetInput(img.GetOutput())
         
         writer.SetFileName(filename)
         writer.Write()
