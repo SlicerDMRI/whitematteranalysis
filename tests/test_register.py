@@ -69,17 +69,18 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
 
 if args.numberOfFibers is not None:
-    print "fibers to analyze per subject: ", args.numberOfFibers
+    number_of_fibers = args.numberOfFibers
 else:
-    print "fibers to analyze per subject: ALL"
-number_of_fibers = args.numberOfFibers
+    number_of_fibers = 300
+print "fibers to analyze per subject: ", number_of_fibers
+
 
 if args.fiberLength is not None:
-    print "minimum length of fibers to analyze (in mm): ", args.fiberLength
     fiber_length = args.fiberLength
 else:
     fiber_length = 75
-
+print "minimum length of fibers to analyze (in mm): ", fiber_length
+    
 print 'CPUs detected:', multiprocessing.cpu_count()
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
