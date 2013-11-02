@@ -70,11 +70,12 @@ class RenderPolyData:
     def build_vtk_renderer(self):
 
         # offscreen rendering
-        graphics_factory = vtk.vtkGraphicsFactory()
-        graphics_factory.SetOffScreenOnlyMode( 1);
-        graphics_factory.SetUseMesaClasses( 1 );
-        imaging_factory = vtk.vtkImagingFactory()
-        imaging_factory.SetUseMesaClasses( 1 );
+        if (vtk.vtkVersion().GetVTKMajorVersion() == 5.0):
+            graphics_factory = vtk.vtkGraphicsFactory()
+            graphics_factory.SetOffScreenOnlyMode( 1);
+            graphics_factory.SetUseMesaClasses( 1 );
+            imaging_factory = vtk.vtkImagingFactory()
+            imaging_factory.SetUseMesaClasses( 1 );
   
         self.renderer = vtk.vtkRenderer()
         self.renderer.SetBackground(1, 1, 1)
