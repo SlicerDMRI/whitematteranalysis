@@ -68,17 +68,27 @@ class RenderPolyData:
     """Makes a vtk render window to display polydata tracts"""
 
     def build_vtk_renderer(self):
-        self.renderer = vtk.vtkRenderer()
 
+        # offscreen rendering
+        graphics_factory = vtk.vtkGraphicsFactory()
+        graphics_factory.SetOffScreenOnlyMode( 1);
+        graphics_factory.SetUseMesaClasses( 1 );
+        imaging_factory = vtk.vtkImagingFactory()
+        imaging_factory.SetUseMesaClasses( 1 );
+  
+        self.renderer = vtk.vtkRenderer()
         self.renderer.SetBackground(1, 1, 1)
         self.render_window = vtk.vtkRenderWindow()
+        # offscreen rendering
+        self.render_window.SetOffScreenRendering(1)
+
         self.render_window.AddRenderer(self.renderer)
         # create a renderwindowinteractor
         #if self.interact:
-        self.iren = vtk.vtkRenderWindowInteractor()
-        self.iren.SetRenderWindow(self.render_window)
+        #self.iren = vtk.vtkRenderWindowInteractor()
+        #self.iren.SetRenderWindow(self.render_window)
 
-        # scalar bar
+        # scalar bar        
         self.scalarbar = vtk.vtkScalarBarActor()
         # black text since background is white for printing
         self.scalarbar.GetLabelTextProperty().SetColor(0, 0, 0)
