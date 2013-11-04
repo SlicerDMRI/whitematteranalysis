@@ -22,9 +22,18 @@ except:
 #outdir = 'test_register_results'
 
 # defaults that may be added as parameters later
-number_of_fibers_per_step = [25, 50, 75, 100]
+#fiber_sample_sizes = [25, 50, 75, 100]
+fiber_sample_sizes = [50, 150, 200, 200]
 sigma_per_step = [30, 10, 10, 5]
-maxfun = 300
+# not used
+#maxfun = 300
+## for multiple subjects this is good. for two, it's not enough.
+##minfun = number_of_datasets * 3
+##maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
+
+#maxfun_per_step = [50, 75, 200]
+maxfun_per_step = [10, 40, 60, 80]
+
 
 #-----------------
 # Parse arguments
@@ -113,30 +122,63 @@ inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
 input_poly_datas = glob.glob(inputMask1) + glob.glob(inputMask2)
 print "<wm_register.py> Input number of files: ", len(input_poly_datas)
 print input_poly_datas
+
+def register_scale_step(register, scale_mode, n_steps):
+
+    if scale_mode == "Coarse":
+        # n = 5
+        # only translation and rotation. initialization.
+        for idx in range(0, n_steps):
+            register.translate_only()
+            register.compute()
+            register.rotate_only()
+            register.compute()
+    elif scale_mode == "Medium":
+        # n = 1
+        for idx in range(0, n_steps):
+            register.translate_only()
+            register.compute()
+            register.rotate_only()
+            register.compute()
+            register.scale_only()
+            register.compute()
+            register.shear_only()
+            register.compute()
+    elif scale_mode == "Fine":
+        # n = 1
+        for idx in range(0, n_steps):
+            register.translate_only()
+            register.compute()
+            register.rotate_only()
+            register.compute()
+            register.scale_only()
+            register.compute()
+            register.shear_only()
+            register.compute()
+    elif scale_mode == "Finest":
+        # n = 1
+        for idx in range(0, n_steps):
+            register.translate_only()
+            register.compute()
+            register.rotate_only()
+            register.compute()
+            register.scale_only()
+            register.compute()
+            register.shear_only()
+            register.compute()
+            
     
 def run_registration(input_poly_datas, outdir, number_of_fibers=150,
-    number_of_fibers_per_step=[75, 75, 75, 100],
+    fiber_sample_sizes=[75, 75, 75, 100],
     parallel_jobs=2,
     points_per_fiber=5,
     sigma_per_step=[30, 10, 10, 5],
-    maxfun=150,
+    maxfun_per_step=[10, 40, 60, 80],
     distance_method='Hausdorff', verbose=True, fiber_length=75):
 
     elapsed = list()
-    number_of_fibers_step_one = number_of_fibers_per_step[0]
-    number_of_fibers_step_two = number_of_fibers_per_step[1]
-    number_of_fibers_step_three = number_of_fibers_per_step[2]
-    number_of_fibers_step_four = number_of_fibers_per_step[3]
 
     number_of_datasets = len(input_poly_datas)
-    minfun = number_of_datasets * 3
-    #maxfun_per_step = [50, 75, 200]
-    maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
-
-    sigma_step_one = sigma_per_step[0]
-    sigma_step_two = sigma_per_step[1]
-    sigma_step_three = sigma_per_step[2]
-    sigma_step_four = sigma_per_step[3]
 
     print 'Read and preprocess'
     input_pds = list()
@@ -153,7 +195,6 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     register.threshold = 0
     register.points_per_fiber = points_per_fiber
     register.distance_method = distance_method
-    register.maxfun = maxfun
     
     # add inputs to the registration
     for pd in input_pds:
@@ -166,148 +207,40 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
     ren = wma.registration_functions.view_polydatas(output_pds)
     ren.save_views(outdir_current)
+    del ren
     wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
-    # STEP ONE
-    start = time.time()
-    # run the basic iteration of translate, rotate, scale
-    register.fiber_sample_size = number_of_fibers_step_one
-    register.sigma = sigma_step_one
-    register.maxfun = maxfun_per_step[0]
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    # Don't scale at the first step
-    #register.scale_only()
-    #register.compute()
-    elapsed.append(time.time() - start)
-
-    # view output data from this big iteration
-    if verbose:
-        outdir_current =  os.path.join(outdir, 'iteration_1')
-        if not os.path.exists(outdir_current):
-            os.makedirs(outdir_current)
-        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-        ren = wma.registration_functions.view_polydatas(output_pds)
-        ren.save_views(outdir_current)
-        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
+    scales = ["Coarse", "Medium", "Fine", "Finest"]
+    steps_per_scale = [5, 1, 1, 1]
+    scale_idx = 0
+    for scale in scales:
+        start = time.time()
+        # run the basic iteration of translate, rotate, scale
+        register.fiber_sample_size = fiber_sample_sizes[scale_idx]
+        register.sigma = sigma_per_step[scale_idx]
+        register.maxfun = maxfun_per_step[scale_idx]
+        scale_mode = scales[scale_idx]
+        register_scale_step(register, scale_mode, steps_per_scale[scale_idx])
+        elapsed.append(time.time() - start)
+        scale_idx += 1
+        
+        # view output data from this big iteration
+        if verbose | (scale_idx == 4):
+            outdir_current =  os.path.join(outdir, 'iteration_'+str(scale_idx))
+            if not os.path.exists(outdir_current):
+                os.makedirs(outdir_current)
+            output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
+            ren = wma.registration_functions.view_polydatas(output_pds)
+            ren.save_views(outdir_current)
+            del ren
+            if scale_idx == 4:
+                wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
+            wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
-        plt.figure() # to avoid all results on same plot
-        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-
-    # STEP TWO
-    start = time.time()
-    # run the basic iteration of translate, rotate, scale AGAIN
-    register.fiber_sample_size = number_of_fibers_step_two
-    register.sigma = sigma_step_two
-    register.maxfun = maxfun_per_step[1]    
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.scale_only()
-    register.compute()
-    register.shear_only()
-    register.compute()
-    elapsed.append(time.time() - start)
-
-    # view output data from this big iteration
-    if verbose:
-        outdir_current =  os.path.join(outdir, 'iteration_2')
-        if not os.path.exists(outdir_current):
-            os.makedirs(outdir_current)
-        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-        ren = wma.registration_functions.view_polydatas(output_pds)
-        ren.save_views(outdir_current)
-        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
-    
-        plt.figure() # to avoid all results on same plot
-        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-
-    #if 0:
-    # STEP THREE
-    start = time.time()
-    # run the basic iteration of translate, rotate, scale AGAIN
-    register.fiber_sample_size = number_of_fibers_step_three
-    register.sigma = sigma_step_three
-    register.maxfun = maxfun_per_step[2]
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.scale_only()
-    register.compute()
-    register.shear_only()
-    register.compute()
-    elapsed.append(time.time() - start)
-
-    # view output data from this big iteration
-    if verbose:
-        outdir_current =  os.path.join(outdir, 'iteration_3')
-        if not os.path.exists(outdir_current):
-            os.makedirs(outdir_current)
-        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-        ren = wma.registration_functions.view_polydatas(output_pds)
-        ren.save_views(outdir_current)
-        #wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
-    
-        plt.figure() # to avoid all results on same plot
-        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-
-    # STEP FOUR
-    start = time.time()
-    # run the basic iteration of translate, rotate, scale AGAIN
-    register.fiber_sample_size = number_of_fibers_step_four
-    register.sigma = sigma_step_four
-    register.maxfun = maxfun_per_step[3]
-    register.translate_only()
-    register.compute()
-    register.rotate_only()
-    register.compute()
-    register.scale_only()
-    register.compute()
-    register.shear_only()
-    register.compute()
-    elapsed.append(time.time() - start)
-    
-    # view output data from this big iteration
-    outdir_current =  os.path.join(outdir, 'iteration_4')
-    if not os.path.exists(outdir_current):
-        os.makedirs(outdir_current)
-    output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-    ren = wma.registration_functions.view_polydatas(output_pds)
-    ren.save_views(outdir_current)
-    wma.registration_functions.transform_polydatas_from_disk(input_poly_datas, register, outdir_current)
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
-    
-    plt.figure() # to avoid all results on same plot
-    #plt.plot(range(len(register.objective_function_values)), numpy.log(register.objective_function_values))
-    plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-    plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-
+            plt.figure() # to avoid all results on same plot
+            plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+            plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+        
     return register, elapsed
 
 ## run the registration ONCE and output result to disk
@@ -315,9 +248,9 @@ register, elapsed = run_registration(input_poly_datas, outdir,
                         number_of_fibers=number_of_fibers,
                         points_per_fiber=points_per_fiber,
                         parallel_jobs=parallel_jobs,
-                        number_of_fibers_per_step=number_of_fibers_per_step,
+                        fiber_sample_sizes=fiber_sample_sizes,
                         sigma_per_step=sigma_per_step,
-                        maxfun=maxfun,
+                        maxfun_per_step=maxfun_per_step,
                         verbose=verbose,
                         fiber_length=fiber_length)
 
