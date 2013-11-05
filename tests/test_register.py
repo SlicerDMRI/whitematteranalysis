@@ -32,7 +32,9 @@ sigma_per_step = [30, 10, 10, 5]
 ##maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
 
 #maxfun_per_step = [50, 75, 200]
-maxfun_per_step = [10, 40, 60, 80]
+# this is reasonable for two subjects, except for shear.
+# why does shear not converge? what is rho set as?
+maxfun_per_step = [20, 40, 60, 80]
 
 
 #-----------------
