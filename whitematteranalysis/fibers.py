@@ -11,78 +11,7 @@ import numpy
 import vtk
 import time
 
-def transform_fiber_array_NOT_USED(in_array, out_array, transform):
-    """Transform in_array (of class FiberArray) by transform (9
-    components, rotation about R,A,S, translation in R, A, S, and
-    scale along R, A, S. Fibers are assumed to be in RAS.  Transformed
-    fibers are output in out_array (should be allocated before
-    function call) and returned."""
 
-    # initialize output to input values
-    #out_array.fiber_array_r = in_array.fiber_array_r
-    #out_array.fiber_array_a = in_array.fiber_array_a
-    #out_array.fiber_array_s = in_array.fiber_array_s
-
-    # pointers to shorten below code
-    inp = in_array
-    out = out_array
-
-    # now transform the output
-    # rotate about x (R-L) axis
-    # [1 0 0; 0 cos0 -sin0 ; 0 sin0 cos0]
-    # x = x
-    # y =  cos0y - sin0z
-    # z =  sin0y + cos0z
-    cos0 = numpy.cos(transform[0])
-    sin0 = numpy.sin(transform[0])
-    print 'cos', cos0, 'sin', sin0
-
-    out.fiber_array_r = numpy.copy(inp.fiber_array_r)
-    out.fiber_array_a = cos0 * inp.fiber_array_a - sin0 * inp.fiber_array_s
-    out.fiber_array_s = sin0 * inp.fiber_array_a + cos0 * inp.fiber_array_s
-
-    # rotate about y (A-P) axis
-    # [cos0 0 sin0 ; 0 1 0 ; -sin0 0 cos0]
-    # x = cos0x + sin0z
-    # y = y
-    # z = -sin0x + cos0z
-    cos0 = numpy.cos(transform[1])
-    sin0 = numpy.sin(transform[1])
-    print 'cos', cos0, 'sin', sin0
-    out.fiber_array_r = cos0 * out.fiber_array_r + sin0 * out.fiber_array_s
-    out.fiber_array_a = out.fiber_array_a
-    #out.fiber_array_s = -sin0 * out.fiber_array_r + cos0 * out.fiber_array_s
-    out.fiber_array_s = -sin0 * inp.fiber_array_r + cos0 * inp.fiber_array_s
-
-    # rotate again, now about z (S-I) axis
-    # [cos0 -sin0 0 ; sin0 cos0 0 ; 0 0 1]
-    # x = cos0x -sin0y
-    # y = sin0x + cos0y
-    # z = z
-    cos0 = numpy.cos(transform[2])
-    sin0 = numpy.sin(transform[2])
-    out.fiber_array_r = cos0 * out.fiber_array_r - sin0 * out.fiber_array_a
-    out.fiber_array_a = sin0 * out.fiber_array_r + cos0 * out.fiber_array_a
-    out.fiber_array_s = out.fiber_array_s
-
-    # translate along x, y, z axis
-    out.fiber_array_r = out.fiber_array_r + transform[3]
-    out.fiber_array_a = out.fiber_array_a + transform[4]
-    out.fiber_array_s = out.fiber_array_s + transform[5]
-
-    # scale along x, y, z axis
-    out.fiber_array_r = out.fiber_array_r * transform[6]
-    out.fiber_array_a = out.fiber_array_a * transform[7]
-    out.fiber_array_s = out.fiber_array_s * transform[8]
-
-    # object consistency (we skip hemisphere here, expensive to
-    # calculate in loop)
-    out.number_of_fibers = inp.number_of_fibers
-    out.points_per_fiber = inp.points_per_fiber
-
-    return out
-    
-    
 class Fiber:
     """A class for fiber tractography data, represented with a fixed length"""
 
@@ -111,8 +40,7 @@ class Fiber:
         fiber across midsagittal plane. Just sets output R coordinate to -R."""
  
         fiber = Fiber()
-        # get the reverse order of current line
-        # as the fiber can be equivalently represented in either order.
+
         fiber.r = - self.r
         fiber.a = self.a
         fiber.s = self.s
@@ -164,12 +92,15 @@ class Fiber:
         return fiber
     
     def __subtract__(self, other):
-        """This is the + operator for fibers"""
+        """This is the - operator for fibers"""
         other_matched = self.match_order(other)
         fiber = Fiber()
-        fiber.r = self.r + other_matched.r
-        fiber.a = self.a + other_matched.a
-        fiber.s = self.s + other_matched.s
+        fiber.r = self.r - other_matched.r
+        fiber.a = self.a - other_matched.a
+        fiber.s = self.s - other_matched.s
+        #fiber.r = self.r + other_matched.r
+        #fiber.a = self.a + other_matched.a
+        #fiber.s = self.s + other_matched.s
         return fiber
     
 class FiberArray:
@@ -392,10 +323,10 @@ class FiberArray:
         coordinates.
 
         This part assumes we are in RAS so the first coordinate is
-        positive to the RIGHT and negative to the LEFT. We also want to
-        identify likely commissural fibers for exclusion.  The fiber
+        positive to the RIGHT and negative to the LEFT.  The fiber
         must be more than 95% within 1 hemisphere.  This excludes
-        corpus but can retain errant cingulum.
+        corpus but can retain errant cingulum. We also want to
+        identify likely commissural fibers.
 
         """
 
@@ -434,7 +365,7 @@ class FiberArray:
                 raise AssertionError
 
     def convert_to_polydata(self):
-        """Convert fiber arrays to polydata with POINTS. For debugging."""
+        """Convert fiber array to vtkPolyData object."""
 
         outpd = vtk.vtkPolyData()
         outpoints = vtk.vtkPoints()
