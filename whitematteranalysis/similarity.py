@@ -118,9 +118,9 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     dy = fiber_array.fiber_array_a - fiber.a
     dz = fiber_array.fiber_array_s - fiber.s
 
-    dx = numpy.power(dx, 2)
-    dy = numpy.power(dy, 2)
-    dz = numpy.power(dz, 2)
+    dx = numpy.square(dx)
+    dy = numpy.square(dy)
+    dz = numpy.square(dz)
 
     # sum dx dx dz at each point on the fiber and sqrt for threshold
     distance = numpy.sqrt(dx + dy + dz)

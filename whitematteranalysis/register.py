@@ -134,12 +134,12 @@ class RegistrationInformation:
     def set_transform(self, input_transform):
         input_transform = numpy.array(input_transform)
         # decide whether transform was modified
-        if numpy.max(numpy.abs(self.transform - input_transform)) == 0.0:
-            self.modified = False
-        else:
+        if numpy.sum(self.transform - input_transform):
             # directly set it. assume it has 9 components 
             self.transform = numpy.copy(input_transform)
             self.modified = True
+        else:
+            self.modified = False
         #print "Set_transform, modified:", self.modified, "T0:", self.transform, "T1:", input_transform
 
     def convert_transform_to_vtk(self, transform=None):
