@@ -96,7 +96,7 @@ class RegistrationInformation:
 
         # test. this confirmed results were equivalent to old method
         # with time consuming polydata conversion.
-        out_array_2 = self.transform_fiber_array_old(in_array, transform)
+        out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
         print "=========================**************====================="
         print numpy.max(out_array.fiber_array_r - out_array_2.fiber_array_r)
         print numpy.max(out_array.fiber_array_a - out_array_2.fiber_array_a)
