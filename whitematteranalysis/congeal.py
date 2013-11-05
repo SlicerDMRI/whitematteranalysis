@@ -85,7 +85,7 @@ class CongealTractography:
         self.distance_method = 'Hausdorff'
         
         # performance options set by user
-        #self.verbose = 0
+        self.verbose = 0
         self.parallel_verbose = 0
         self.parallel_jobs = 4
 
@@ -136,14 +136,16 @@ class CongealTractography:
 
         # subject data to be input
         self._subjects = list()
-
+        self.number_of_subjects = 0
+                
     def add_subject(self, polydata):
         subj = whitematteranalysis.register.RegistrationInformation()
         self._subjects.append(subj)
         subj.points_per_fiber = self.points_per_fiber
         subj.fiber_sample_size = self.fiber_sample_size
         subj.initialize(polydata)
-
+        self.number_of_subjects = len(self._subjects)
+	
     def initialize_fiber_samples(self):
         for subj in self._subjects:
             subj.fiber_sample_size = self.fiber_sample_size
@@ -157,7 +159,7 @@ class CongealTractography:
         if  numpy.isnan(self._x_opt).any():
             print "ISNAN (conv vs to trans)", numpy.isnan(self._x_opt)
 
-        incr = len(self._x_opt)/len(self._subjects)
+        incr = len(self._x_opt)/self.number_of_subjects
 
         idx = 0
 
@@ -170,11 +172,13 @@ class CongealTractography:
             transform_list.append(subj.transform)
             
         transforms_array = numpy.array(transform_list)
-        print "TRANSFORMS"
-        print numpy.round(transforms_array * 100) / 100
-        meantrans = numpy.mean(transforms_array, 0)
-        print "Mean transform:"
-        print numpy.round(meantrans * 1000) / 1000        
+
+        if self.verbose:
+            print "TRANSFORMS"
+            print numpy.round(transforms_array * 100) / 100
+            meantrans = numpy.mean(transforms_array, 0)
+            print "Mean transform:"
+            print numpy.round(meantrans * 1000) / 1000        
 
     def remove_mean_from_transforms(self):
         """ Remove mean rotations and mean scaling and mean
@@ -191,11 +195,13 @@ class CongealTractography:
             transform_list.append(subj.transform)
 
         transforms_array = numpy.array(transform_list)
-        print "TRANSFORMS"
-        print numpy.round(transforms_array * 100) / 100
         meantrans = numpy.mean(transforms_array, 0)
-        print "Removing current (accumulated) mean transform before computing objective:"
-        print numpy.round(meantrans * 1000) / 1000        
+
+        if self.verbose:
+            print "TRANSFORMS"
+            print numpy.round(transforms_array * 100) / 100
+            print "Removing current (accumulated) mean transform before computing objective:"
+            print numpy.round(meantrans * 1000) / 1000        
 
         for subj in self._subjects:
             subj.transform[0:6] = subj.transform[0:6] - meantrans[0:6]
@@ -357,8 +363,6 @@ class CongealTractography:
                 idx2 += 1
             idx1 += 1
 
-        print "JOBS: ", self.parallel_jobs
-
         # This objective was an initial experiment, is not used, perhaps remove.
         if self._objective_function_mode == "TotalFiberSimilarity":
             ret = Parallel(
@@ -387,17 +391,18 @@ class CongealTractography:
                                               idx, self._subjects,
                                               self.threshold, self._sigmasq,
                                               self.pairwise_subject_similarity, self.distance_method)
-                                              for idx in range(len(self._subjects)))
+                                              for idx in range(self.number_of_subjects))
 
-            for idx in range(len(self._subjects)):
-                print ret[idx]
+            for idx in range(self.number_of_subjects):
+                #print ret[idx]
                 self.pairwise_subject_similarity[idx,:] = ret[idx][0]
                 self.computed_pairwise_similarity[idx] = ret[idx][1][0]
             
-        print "Pairwise similarity:"
-        print numpy.round(self.pairwise_subject_similarity * 100) / 100
-        print "Computed similarity:"
-        print self.computed_pairwise_similarity.astype(int)
+        if self.verbose:
+            print "Pairwise similarity:"
+            print numpy.round(self.pairwise_subject_similarity * 100) / 100
+            print "Computed similarity:"
+            print self.computed_pairwise_similarity.astype(int)
 
         # This objective was an initial experiment, is not used, perhaps remove.
         if self._objective_function_mode == "TotalFiberSimilarity":
@@ -406,7 +411,7 @@ class CongealTractography:
             # number of subjects, for consistency across
             # experiments. Divide by number of subject-subject
             # comparisons. (does not affect optimization)
-            total_similarity = numpy.divide(total_similarity, len(self._subjects) * len(self._subjects))
+            total_similarity = numpy.divide(total_similarity, self.number_of_subjects * self.number_of_subjects)
             
             # the log gives more nicely-scaled values in
             # plots. theoretically has no effect. practically, may
@@ -429,9 +434,11 @@ class CongealTractography:
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
-        print "S:",  total_similarity
-        print "O:",  obj
-        print "            X:", self._x_opt
+        if self.verbose:
+            print "S:",  total_similarity
+            print "O:",  obj
+            print "            X:", self._x_opt
+            
         return obj
 
     # temporary version. really should check bounds on transformation
@@ -504,9 +511,11 @@ class CongealTractography:
             return -100 * numpy.abs(1.0 - r0)
 
     def compute(self):
-        """ Run the registration.  Add subjects first. Then call
-        compute several times, using different parameters for the
-        class, for example first just for translation."""
+
+        """ Run the registration.  Add subjects first (before calling
+        compute). Then call compute several times, using different
+        parameters for the class, for example first just for
+        translation."""
 
         # remove any mean value (from initialization?) from transforms.
         self.remove_mean_from_transforms()
@@ -515,8 +524,8 @@ class CongealTractography:
         self.convert_transforms_to_xs()
 
         # initialize similarity matrix
-        self.pairwise_subject_similarity = numpy.zeros((len(self._subjects), len(self._subjects)))
-        self.computed_pairwise_similarity = numpy.zeros((len(self._subjects), len(self._subjects)))
+        self.pairwise_subject_similarity = numpy.zeros((self.number_of_subjects, self.number_of_subjects))
+        self.computed_pairwise_similarity = numpy.zeros((self.number_of_subjects, self.number_of_subjects))
         # set up randomly sampled fibers according to current settings
         self.initialize_fiber_samples()
 
@@ -526,7 +535,11 @@ class CongealTractography:
         # square current sigma parameter for later Gaussian
         self._sigmasq = self.sigma * self.sigma
 
-        print "Initial value for X:", self._x_opt
+        if self.verbose:
+            print "Initial value for X:", self._x_opt
+
+
+        print "Registration mode:", self._registration_mode
 
         # These optimizers were tested, less successfully than cobyla.
         # This code is left here as documentation.
