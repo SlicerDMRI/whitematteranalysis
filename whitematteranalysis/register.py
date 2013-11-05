@@ -72,23 +72,23 @@ class RegistrationInformation:
         Transformed fibers are returned. Transformation is performed
         in-place and output is written to the input array."""
 
-        if 0:
-            # once sure this works, output results in place no new allocation
-            out_array = whitematteranalysis.fibers.FiberArray()
-            out_array.number_of_fibers = in_array.number_of_fibers
-            out_array.points_per_fiber = in_array.points_per_fiber
-            # allocate array number of lines by line length
-            out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
-                                                   in_array.points_per_fiber))
-            out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
-                                                   in_array.points_per_fiber))
-            out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
-                                                  in_array.points_per_fiber))
+        #if 0:
+        #    # once sure this works, output results in place no new allocation
+        #    out_array = whitematteranalysis.fibers.FiberArray()
+        #    out_array.number_of_fibers = in_array.number_of_fibers
+        #    out_array.points_per_fiber = in_array.points_per_fiber
+        #    # allocate array number of lines by line length
+        #    out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
+        #                                           in_array.points_per_fiber))
+        #    out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
+        #                                           in_array.points_per_fiber))
+        #    out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
+        #                                          in_array.points_per_fiber))
 
         vtktrans = self.convert_transform_to_vtk(transform)
 
         # for testing only
-        out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
+        #out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
 
         # Transform input array in place
         for lidx in range(0, in_array.number_of_fibers):
@@ -111,11 +111,11 @@ class RegistrationInformation:
         # test. this confirmed in-place array modification results
         # were equivalent to old method with time consuming polydata
         # conversion.
-        print "=========================**************====================="
-        print numpy.max(in_array.fiber_array_r - out_array_2.fiber_array_r)
-        print numpy.max(in_array.fiber_array_a - out_array_2.fiber_array_a)
-        print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
-        print "=========================**************====================="
+        #print "=========================**************====================="
+        #print numpy.max(in_array.fiber_array_r - out_array_2.fiber_array_r)
+        #print numpy.max(in_array.fiber_array_a - out_array_2.fiber_array_a)
+        #print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
+        #print "=========================**************====================="
         
         return in_array
 
