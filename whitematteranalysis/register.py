@@ -68,42 +68,56 @@ class RegistrationInformation:
     def transform_fiber_array(self, in_array, transform):
         """Transform in_array (of class FiberArray) by transform (9
         components, rotation about R,A,S, translation in R, A, S, and
-        scale along R, A, S. Fibers are assumed to be in RAS.  Transformed
-        fibers are returned."""
+        scale along R, A, S. Fibers are assumed to be in RAS.
+        Transformed fibers are returned. Transformation is performed
+        in-place and output is written to the input array."""
 
-        # once sure this works, output results in place no new allocation
-        out_array = whitematteranalysis.fibers.FiberArray()
-        out_array.number_of_fibers = in_array.number_of_fibers
-        out_array.points_per_fiber = in_array.points_per_fiber
-        # allocate array number of lines by line length
-        out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
-                                          in_array.points_per_fiber))
-        out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
-                                          in_array.points_per_fiber))
-        out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
-                                          in_array.points_per_fiber))
+        if 0:
+            # once sure this works, output results in place no new allocation
+            out_array = whitematteranalysis.fibers.FiberArray()
+            out_array.number_of_fibers = in_array.number_of_fibers
+            out_array.points_per_fiber = in_array.points_per_fiber
+            # allocate array number of lines by line length
+            out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
+                                                   in_array.points_per_fiber))
+            out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
+                                                   in_array.points_per_fiber))
+            out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
+                                                  in_array.points_per_fiber))
 
         vtktrans = self.convert_transform_to_vtk(transform)
 
+        # for testing only
+        out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
+
+        # Transform input array in place
         for lidx in range(0, in_array.number_of_fibers):
             for pidx in range(0, in_array.points_per_fiber):
                 pt = vtktrans.TransformPoint(in_array.fiber_array_r[lidx, pidx],
                                              in_array.fiber_array_a[lidx, pidx], 
                                              in_array.fiber_array_s[lidx, pidx])
-                out_array.fiber_array_r[lidx, pidx] = pt[0]
-                out_array.fiber_array_a[lidx, pidx] = pt[1]
-                out_array.fiber_array_s[lidx, pidx] = pt[2]
+                in_array.fiber_array_r[lidx, pidx] = pt[0]
+                in_array.fiber_array_a[lidx, pidx] = pt[1]
+                in_array.fiber_array_s[lidx, pidx] = pt[2]
 
         # test. this confirmed results were equivalent to old method
         # with time consuming polydata conversion.
-        out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
+        #print "=========================**************====================="
+        #print numpy.max(out_array.fiber_array_r - out_array_2.fiber_array_r)
+        #print numpy.max(out_array.fiber_array_a - out_array_2.fiber_array_a)
+        #print numpy.max(out_array.fiber_array_s - out_array_2.fiber_array_s)
+        #print "=========================**************====================="
+
+        # test. this confirmed in-place array modification results
+        # were equivalent to old method with time consuming polydata
+        # conversion.
         print "=========================**************====================="
-        print numpy.max(out_array.fiber_array_r - out_array_2.fiber_array_r)
-        print numpy.max(out_array.fiber_array_a - out_array_2.fiber_array_a)
-        print numpy.max(out_array.fiber_array_s - out_array_2.fiber_array_s)
+        print numpy.max(in_array.fiber_array_r - out_array_2.fiber_array_r)
+        print numpy.max(in_array.fiber_array_a - out_array_2.fiber_array_a)
+        print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
         print "=========================**************====================="
         
-        return out_array
+        return in_array
 
 
     def set_transform(self, input_transform):
