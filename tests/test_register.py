@@ -33,7 +33,7 @@ sigma_per_step = [30, 10, 10, 5]
 
 #maxfun_per_step = [50, 75, 200]
 # this is reasonable for two subjects, except for shear.
-# why does shear not converge? what is rho set as?
+# why does shear not always converge? what is rho set as?
 maxfun_per_step = [20, 40, 60, 80]
 
 
@@ -213,7 +213,8 @@ def run_registration(input_poly_datas, outdir, number_of_fibers=150,
     wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
     scales = ["Coarse", "Medium", "Fine", "Finest"]
-    steps_per_scale = [5, 1, 1, 1]
+    #steps_per_scale = [5, 1, 1, 1]
+    steps_per_scale = [10, 3, 2, 2]
     scale_idx = 0
     for scale in scales:
         start = time.time()
