@@ -51,7 +51,8 @@ def preprocess(inpd, min_length_mm,
     ptids = vtk.vtkIdList()
     outpd = vtk.vtkPolyData()
     outlines = vtk.vtkCellArray()
-    outpd.SetPoints(inpd.GetPoints())
+    inpoints = inpd.GetPoints()
+    outpd.SetPoints(inpoints)
     
     # min_length_mm is in mm. Convert to minimum points per fiber
     # by measuring step size (using first two points on first line that has >2 points)
@@ -67,8 +68,8 @@ def preprocess(inpd, min_length_mm,
     # make sure we have some trajectories
     assert ptids.GetNumberOfIds() >= 2
 
-    point0 = inpd.GetPoints().GetPoint(ptids.GetId(0))
-    point1 = inpd.GetPoints().GetPoint(ptids.GetId(1))
+    point0 = inpoints.GetPoint(ptids.GetId(0))
+    point1 = inpoints.GetPoint(ptids.GetId(1))
     step_size = numpy.sqrt(numpy.sum(numpy.power(
                 numpy.subtract(point0, point1), 2)))
     min_length_pts = round(min_length_mm / step_size)
@@ -97,9 +98,9 @@ def preprocess(inpd, min_length_mm,
             if remove_u | remove_brainstem:
                 # find first and last points on the fiber
                 ptid = ptids.GetId(0)
-                point0 = inpd.GetPoints().GetPoint(ptid)
+                point0 = inpoints.GetPoint(ptid)
                 ptid = ptids.GetId(ptids.GetNumberOfIds() - 1)
-                point1 = inpd.GetPoints().GetPoint(ptid)
+                point1 = inpoints.GetPoint(ptid)
 
             if remove_u:
                 # compute distance between endpoints
@@ -177,12 +178,16 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
 
      """
 
+    inpoints = inpd.GetPoints()
+    inpointdata = inpd.GetPointData()
+    
     # output and temporary objects
     ptids = vtk.vtkIdList()
     outpd = vtk.vtkPolyData()
     outlines = vtk.vtkCellArray()
     outpoints = vtk.vtkPoints()
     outcolors = None
+    outpointdata = outpd.GetPointData()
 
     if color is not None:
         # if input is RGB
@@ -223,14 +228,14 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
 
     #check for point data arrays to keep
     if preserve_point_data:
-        if inpd.GetPointData().GetNumberOfArrays() > 0:
-            point_data_array_indices = range(inpd.GetPointData().GetNumberOfArrays())            
+        if inpointdata.GetNumberOfArrays() > 0:
+            point_data_array_indices = range(inpointdata.GetNumberOfArrays())            
             for idx in point_data_array_indices:
-                array = inpd.GetPointData().GetArray(idx)
+                array = inpointdata.GetArray(idx)
                 out_array = vtk.vtkFloatArray()
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
-                outpd.GetPointData().AddArray(out_array)
+                outpointdata.AddArray(out_array)
         else:
             preserve_point_data = False
                 
@@ -251,13 +256,13 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
             cellptids = vtk.vtkIdList()
 
             for pidx in range(0, ptids.GetNumberOfIds()):
-                point = inpd.GetPoints().GetPoint(ptids.GetId(pidx))
+                point = inpoints.GetPoint(ptids.GetId(pidx))
                 idx = outpoints.InsertNextPoint(point)
                 cellptids.InsertNextId(idx)
                 if preserve_point_data:
                     for idx in point_data_array_indices:
-                        array = inpd.GetPointData().GetArray(idx)
-                        out_array = outpd.GetPointData().GetArray(idx)
+                        array = inpointdata.GetArray(idx)
+                        out_array = outpointdata.GetArray(idx)
                         out_array.InsertNextTuple(array.GetTuple(ptids.GetId(pidx)))
 
             outlines.InsertNextCell(cellptids)
