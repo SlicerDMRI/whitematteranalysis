@@ -126,7 +126,9 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     distance = numpy.sqrt(dx + dy + dz)
 
     # threshold if requested
-    distance = numpy.maximum(distance - threshold, 0)
+    if threshold:
+        print "FIX thresholded distance computation"
+        distance = numpy.maximum(distance - threshold, 0)   
 
     # note to self: this coding error produces very interesting colors
     # that are completely symmetric across hemispheres.
