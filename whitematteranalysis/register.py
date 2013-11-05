@@ -26,8 +26,18 @@ class RegistrationInformation:
         # internal representation for fast similarity computation
         self._original_fibers.convert_from_polydata(polydata,
                                                 self.points_per_fiber)
-        #self._moving_fibers.convert_from_polydata(movingpd,
-        #                                         self.points_per_fiber)
+
+        # allocate matching storage for moving fibers
+        self._moving_fibers = whitematteranalysis.fibers.FiberArray()
+        nf = self._original_fibers.number_of_fibers
+        np = self._original_fibers.points_per_fiber
+        self._moving_fibers.number_of_fibers = nf
+        self._moving_fibers.points_per_fiber = np
+        # allocate array number of lines by line length
+        self._moving_fibers.fiber_array_r = numpy.zeros((nf, np))
+        self._moving_fibers.fiber_array_a = numpy.zeros((nf, np))
+        self._moving_fibers.fiber_array_s = numpy.zeros((nf, np))
+        
         self.modified = True
         self.apply_transform()
 
@@ -41,9 +51,7 @@ class RegistrationInformation:
     def apply_transform(self):
         # apply transform to moving fiber data IF the transform is modified
         if self.modified:
-            self._moving_fibers = \
-                self.transform_fiber_array(self._original_fibers,
-                                           self.transform)
+            self.transform_fiber_array()
 
     def transform_fiber_array_NOT_USED(self, in_array, transform):
         """Transform in_array (of class FiberArray) by transform (9
@@ -65,29 +73,33 @@ class RegistrationInformation:
         out_array.convert_from_polydata(pd_out, self.points_per_fiber)
         return out_array
 
-    def transform_fiber_array(self, in_array, transform):
+    def transform_fiber_array(self):
         """Transform in_array (of class FiberArray) by transform (9
         components, rotation about R,A,S, translation in R, A, S, and
         scale along R, A, S. Fibers are assumed to be in RAS.
         Transformed fibers are returned. """
 
-        out_array = whitematteranalysis.fibers.FiberArray()
-        out_array.number_of_fibers = in_array.number_of_fibers
-        out_array.points_per_fiber = in_array.points_per_fiber
-        # allocate array number of lines by line length
-        out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
-                                               in_array.points_per_fiber))
-        out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
-                                               in_array.points_per_fiber))
-        out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
-                                               in_array.points_per_fiber))
+        in_array = self._original_fibers
+        out_array = self._moving_fibers
+        
+        #if 0:
+        #    out_array = whitematteranalysis.fibers.FiberArray()
+        #    out_array.number_of_fibers = in_array.number_of_fibers
+        #    out_array.points_per_fiber = in_array.points_per_fiber
+        #    # allocate array number of lines by line length
+        #    out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
+        #                                           in_array.points_per_fiber))
+        #    out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
+        #                                           in_array.points_per_fiber))
+        #    out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
+        #                                           in_array.points_per_fiber))
 
-        vtktrans = self.convert_transform_to_vtk(transform)
+        vtktrans = self.convert_transform_to_vtk(self.transform)
 
         # for testing only
         #out_array_2 = self.transform_fiber_array_NOT_USED(in_array, transform)
 
-        # Transform input array in place
+        # Transform moving fiber array by applying transform to original fibers
         for lidx in range(0, in_array.number_of_fibers):
             for pidx in range(0, in_array.points_per_fiber):
                 pt = vtktrans.TransformPoint(in_array.fiber_array_r[lidx, pidx],
@@ -97,6 +109,8 @@ class RegistrationInformation:
                 out_array.fiber_array_a[lidx, pidx] = pt[1]
                 out_array.fiber_array_s[lidx, pidx] = pt[2]
 
+        del vtktrans
+        
         # test. this confirmed results were equivalent to old method
         # with time consuming polydata conversion.
         #print "=========================**************====================="
@@ -114,7 +128,7 @@ class RegistrationInformation:
         #print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
         #print "=========================**************====================="
         
-        return out_array
+        #return out_array
 
 
     def set_transform(self, input_transform):
