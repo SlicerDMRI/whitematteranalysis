@@ -355,7 +355,8 @@ class FiberArray:
         # loop over lines
         input_vtk_polydata.GetLines().InitTraversal()
         line_ptids = vtk.vtkIdList()
-
+        inpoints = input_vtk_polydata.GetPoints()
+        
         for lidx in range(0, self.number_of_fibers):
 
             input_vtk_polydata.GetLines().GetNextCell(line_ptids)
@@ -374,7 +375,7 @@ class FiberArray:
                 # do nearest neighbor interpolation: round index
                 ptidx = line_ptids.GetId(int(round(line_index)))
 
-                point = input_vtk_polydata.GetPoints().GetPoint(ptidx)
+                point = inpoints.GetPoint(ptidx)
 
                 self.fiber_array_r[lidx, pidx] = point[0]
                 self.fiber_array_a[lidx, pidx] = point[1]
