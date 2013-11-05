@@ -363,71 +363,35 @@ class CongealTractography:
                 idx2 += 1
             idx1 += 1
 
-        # This objective was an initial experiment, is not used, perhaps remove.
-        if self._objective_function_mode == "TotalFiberSimilarity":
-            ret = Parallel(
-                n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                        delayed(inner_loop)(self._subjects[subj_pairs[idx][0]], subj_pairs[idx][0],
-                                        self._subjects[subj_pairs[idx][1]], subj_pairs[idx][1],
-                                        self.threshold, self._sigmasq,
-                                        self.pairwise_subject_similarity, self.distance_method,
-                                        self._objective_function_mode)
-                                        for idx in range(len(subj_pairs)))
-
-            idx = 0
-            for pair in subj_pairs:
-                self.computed_pairwise_similarity[pair[0], pair[1]] = ret[idx][1]
-                if ret[idx][0]:
-                    # update the cached value only if it was re-computed due to a
-                    # transform change
-                    self.pairwise_subject_similarity[pair[0], pair[1]] = ret[idx][0]            
-                idx += 1
-
         # The Entropy objective was tested and published
-        elif self._objective_function_mode == "Entropy":
+        if self._objective_function_mode == "Entropy":
             ret = Parallel(
                 n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                    delayed(inner_loop_fiber)(self._subjects[idx],
+                    delayed(inner_loop_objective)(self._subjects[idx],
                                               idx, self._subjects,
                                               self.threshold, self._sigmasq,
                                               self.pairwise_subject_similarity, self.distance_method)
                                               for idx in range(self.number_of_subjects))
 
             for idx in range(self.number_of_subjects):
-                #print ret[idx]
                 self.pairwise_subject_similarity[idx,:] = ret[idx][0]
                 self.computed_pairwise_similarity[idx] = ret[idx][1][0]
-            
+        else:
+            print "Chosen objective function NOT IMPLEMENTED"
+		
         if self.verbose:
             print "Pairwise similarity:"
             print numpy.round(self.pairwise_subject_similarity * 100) / 100
             print "Computed similarity:"
             print self.computed_pairwise_similarity.astype(int)
 
-        # This objective was an initial experiment, is not used, perhaps remove.
-        if self._objective_function_mode == "TotalFiberSimilarity":
-            total_similarity = numpy.sum(numpy.sum(self.pairwise_subject_similarity))
-            # keep the range of values similar despite increasing
-            # number of subjects, for consistency across
-            # experiments. Divide by number of subject-subject
-            # comparisons. (does not affect optimization)
-            total_similarity = numpy.divide(total_similarity, self.number_of_subjects * self.number_of_subjects)
-            
-            # the log gives more nicely-scaled values in
-            # plots. theoretically has no effect. practically, may
-            # help the optimizer.
-            # 1/similarity so that we can minimize
-            obj = numpy.log(1.0 / total_similarity)
-            
         # The Entropy objective was tested and published
-        elif self._objective_function_mode == "Entropy":
-            # sum for total probability of each brain, in leave-one-out model
-            total_similarity = numpy.sum(self.pairwise_subject_similarity, axis=0)
-            # log (multiply) for independence across brains
-            #obj = -numpy.sum(numpy.log(total_similarity))
+        if self._objective_function_mode == "Entropy":
             # sum negative log probabilities of all fibers, across all brains.
-            # I don't think two logs are needed. They don't work anyway.
-            obj = numpy.sum(total_similarity)
+            # sum for total probability of each brain, in leave-one-out model
+            #total_similarity = numpy.sum(self.pairwise_subject_similarity, axis=0)
+            #obj = numpy.sum(total_similarity)
+            obj = numpy.sum(self.pairwise_subject_similarity)
         else:
             print "Chosen objective function NOT IMPLEMENTED"
 
@@ -440,12 +404,6 @@ class CongealTractography:
             print "            X:", self._x_opt
             
         return obj
-
-    # temporary version. really should check bounds on transformation
-    def constraint(self, current_x):
-        """ Constraint function for cobyla optimizer. Makes sure scale is positive."""
-        print "constraint needed??"
-        return 1
 
     def c0(self, current_x):
         return self.constraint_component(current_x, 0)
@@ -488,6 +446,10 @@ class CongealTractography:
         return self.constraint_component(current_x, 14)
     
     def constraint_component(self, current_x, component):
+	""" Return appropriate constraint to keep optimizer searching
+	in good region where there is no mean transform added
+	meaninglessly to all subjects. """
+	
         if (component < 6) | (component > 8):
             # 0-mean: translation, rotation, shear
             r0 = 0
@@ -571,45 +533,12 @@ class CongealTractography:
         # Return output transforms from this iteration
         return self.convert_transforms_to_vtk()
 
-def inner_loop(subj1, idx1, subj2, idx2, threshold, sigmasq, global_subject_similarity, distance_method, mode):
-    """ The code called within the objective_function to compare two brains """
 
-    pairwise_similarity = 0
-    computed_similarity = 0
-
-    if subj1 != subj2:
-        # compute if changed, or first iteration
-        if (subj1.modified | subj2.modified)  | (global_subject_similarity[idx1, idx2] == 0):
-            similarity = 0
-                
-            for lidx in subj1._moving_fiber_sample:
-                similarity += \
-                    whitematteranalysis.similarity.total_similarity(
-                    subj1._moving_fibers.get_fiber(lidx),
-                    subj2._moving_fibers,
-                    threshold,
-                    sigmasq, distance_method)
- 
-            # divide total similarity by number of fiber comparisons
-            # in order to have consistent values across runs (unless sigma changes)
-            pairwise_similarity = 1000 * numpy.sum(similarity) / (
-                subj1.fiber_sample_size * subj2._moving_fibers.number_of_fibers)
-
-            # Record that the similarity was computed for this brain
-            # pair.
-            computed_similarity = 1
-
-            # end if subjects are not the same
-
-    return pairwise_similarity, computed_similarity
-
-def inner_loop_fiber(subj1, idx1, subjects, threshold, sigmasq, global_subject_similarity, distance_method):
+def inner_loop_objective(subj1, idx1, subjects, threshold, sigmasq, global_subject_similarity, distance_method):
     """ The code called within the objective_function to find the
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
 
-    #print " in inner_loop_fiber ***************************"
-    
     pairwise_similarity = numpy.zeros((len(subjects), 1))
     computed_similarity = numpy.zeros((len(subjects), 1))
     
@@ -657,8 +586,6 @@ def inner_loop_fiber(subj1, idx1, subjects, threshold, sigmasq, global_subject_s
     # the output must be between 0 and 1
     probability /= number_comparisons
 
-    #print "Probabilities:\n", probability
-    
     # add negative log probabilities of all fibers in this brain.
     pairwise_similarity = numpy.sum(- numpy.log(probability))
     

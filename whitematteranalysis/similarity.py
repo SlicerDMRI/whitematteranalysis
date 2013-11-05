@@ -14,16 +14,14 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
 
     Find pairwise fiber distance from fiber to all fibers in fiber_array.
 
-    The Mean and MeanSquared distances are the average distance per fiber unit length, to
-    remove scaling effects (dependence on number of points chosen for
-    fiber parameterization). The Hausdorff distance is the maximum distance between corresponding points.
+    The Mean and MeanSquared distances are the average distance per
+    fiber point, to remove scaling effects (dependence on number of
+    points chosen for fiber parameterization). The Hausdorff distance
+    is the maximum distance between corresponding points.
 
     input fiber should be class Fiber. fibers should be class FiberArray
 
     """
-
-    #nfib = fiber_array.number_of_fibers 
-    #npts = fiber_array.points_per_fiber
 
     # get fiber in reverse point order, equivalent representation
     fiber_equiv = fiber.get_equivalent_fiber()
@@ -66,13 +64,6 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         diffs = numpy.zeros((n_fibers, n_landmarks))
         for lidx in range(n_landmarks):
             # compute fiber array landmark distances to this landmark
-            #l0 = numpy.tile(landmarks[:,lidx,0], (1,fiber_array.fiber_array_r.shape[2]))
-            #l1 = numpy.tile(landmarks[:,lidx,1], (1,fiber_array.fiber_array_r.shape[2]))
-            #l2 = numpy.tile(landmarks[:,lidx,2], (1,fiber_array.fiber_array_r.shape[2]))
-            #dx = numpy.subtract(fiber_array.fiber_array_r, l0)
-            #dy = numpy.subtract(fiber_array.fiber_array_a, l1)
-            #dz = numpy.subtract(fiber_array.fiber_array_s, l2)
-
             dx = numpy.subtract(fiber_array.fiber_array_r.T, landmarks[:,lidx,0]).T
             dy = numpy.subtract(fiber_array.fiber_array_a.T, landmarks[:,lidx,1]).T
             dz = numpy.subtract(fiber_array.fiber_array_s.T, landmarks[:,lidx,2]).T
@@ -105,13 +96,6 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
 
         distance = numpy.sqrt(numpy.mean(diffs, 1))
         return distance
-
-    #nfib = fiber_array.number_of_fibers 
-
-    # like repmat. copy current line to full matrix size of all lines
-    #fiber_r = numpy.tile(fiber.r, (nfib, 1))
-    #fiber_a = numpy.tile(fiber.a, (nfib, 1))
-    #fiber_s = numpy.tile(fiber.s, (nfib, 1))
 
     # compute the distance from this fiber to the array of other fibers
     dx = fiber_array.fiber_array_r - fiber.r
@@ -188,86 +172,3 @@ def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='Me
     total_similarity = numpy.sum(similarity)
 
     return total_similarity
-
-def computeTotalFiberSimilarity(fiber_array, sigmasq, lidx, numLines, threshold):
-    fiber = fiber_array.get_fiber(lidx)
-    return total_similarity(fiber, fiber_array, threshold, sigmasq)
-
-# this is not part of the class to allow pickling by Parallel     
-def computeTotalFiberSimilarityOLD(fibers, sigmasq, lidx, numLines, threshold):
-    # compare reflected fiber to all other fibers
-
-    #print fibers.fiber_array_r[0]
-
-    # like repmat. copy current line to full matrix size of all lines
-    currx = -numpy.tile(fibers.fiber_array_r[lidx,:],(numLines,1))
-    curry = numpy.tile(fibers.fiber_array_a[lidx,:],(numLines,1))
-    currz = numpy.tile(fibers.fiber_array_s[lidx,:],(numLines,1))
-    
-    # do the same for the reverse order of current line
-    # as the fiber can be equivalently represented in either order.
-    currx2 = -numpy.tile(fibers.fiber_array_r[lidx,::-1],(numLines,1))
-    curry2 = numpy.tile(fibers.fiber_array_a[lidx,::-1],(numLines,1))
-    currz2 = numpy.tile(fibers.fiber_array_s[lidx,::-1],(numLines,1))
-
-    # compute the distance (and sum along fiber for total distance)
-    # handle forward order of fiber points
-    dx = fibers.fiber_array_r - currx
-    dy = fibers.fiber_array_a - curry
-    dz = fibers.fiber_array_s - currz
-
-    dx = numpy.power(dx, 2)
-    dy = numpy.power(dy, 2)
-    dz = numpy.power(dz, 2)
-    
-    # sum dx dx dz at each point and along fiber
-    #d  = numpy.sum(dx+dy+dz, 1)
-    d  = numpy.sqrt(dx+dy+dz)
-
-    # threshold if requested
-    d =  numpy.maximum(d-threshold,0)
-    
-    # sum along fiber
-    d = numpy.sum(d, 1)
-
-    # handle reverse order of fiber points
-    dx2 = fibers.fiber_array_r - currx2
-    dy2 = fibers.fiber_array_a - curry2
-    dz2 = fibers.fiber_array_s - currz2
-    
-    dx2 = numpy.power(dx2, 2)
-    dy2 = numpy.power(dy2, 2)
-    dz2 = numpy.power(dz2, 2)
-
-    # sum dx dx dz at each point and along fiber
-    #d2  = numpy.sum(dx2+dy2+dz2, 1)
-    d2  = numpy.sqrt(dx2+dy2+dz2)
-
-    # threshold if requested
-    d2 =  numpy.maximum(d2-threshold,0)
-    
-    # sum along fiber
-    d2 = numpy.sum(d2, 1)
-
-    # use the minimum total squared distance (this must be the one
-    # with the best possible point correspondence, either forward or reverse order)
-    dfinal = numpy.minimum(d,d2)
-
-    # now find the average squared distance to remove effect of number of 
-    # points chosen to represent the fiber
-    lineLen = fibers.fiber_array_r.shape[1]
-    #dfinal = dfinal/float(lineLen*lineLen)
-    dfinal = dfinal/float(lineLen)
-
-    # compute the similarities using Gaussian kernel
-    #s  = numpy.exp(-dfinal/(sigmasq))
-    s  = numpy.exp(-numpy.power(dfinal,2)/(sigmasq))
-     
-    # TEST hard threshold for debugging
-    #s = (dfinal < 20)
-
-    # compute fiber similarity totals for this hemisphere
-    totalSimilarity= numpy.sum( s );
-
-    return totalSimilarity
-
