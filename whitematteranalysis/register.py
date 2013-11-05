@@ -69,21 +69,18 @@ class RegistrationInformation:
         """Transform in_array (of class FiberArray) by transform (9
         components, rotation about R,A,S, translation in R, A, S, and
         scale along R, A, S. Fibers are assumed to be in RAS.
-        Transformed fibers are returned. Transformation is performed
-        in-place and output is written to the input array."""
+        Transformed fibers are returned. """
 
-        #if 0:
-        #    # once sure this works, output results in place no new allocation
-        #    out_array = whitematteranalysis.fibers.FiberArray()
-        #    out_array.number_of_fibers = in_array.number_of_fibers
-        #    out_array.points_per_fiber = in_array.points_per_fiber
-        #    # allocate array number of lines by line length
-        #    out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
-        #                                           in_array.points_per_fiber))
-        #    out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
-        #                                           in_array.points_per_fiber))
-        #    out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
-        #                                          in_array.points_per_fiber))
+        out_array = whitematteranalysis.fibers.FiberArray()
+        out_array.number_of_fibers = in_array.number_of_fibers
+        out_array.points_per_fiber = in_array.points_per_fiber
+        # allocate array number of lines by line length
+        out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
+                                               in_array.points_per_fiber))
+        out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
+                                               in_array.points_per_fiber))
+        out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
+                                               in_array.points_per_fiber))
 
         vtktrans = self.convert_transform_to_vtk(transform)
 
@@ -96,9 +93,9 @@ class RegistrationInformation:
                 pt = vtktrans.TransformPoint(in_array.fiber_array_r[lidx, pidx],
                                              in_array.fiber_array_a[lidx, pidx], 
                                              in_array.fiber_array_s[lidx, pidx])
-                in_array.fiber_array_r[lidx, pidx] = pt[0]
-                in_array.fiber_array_a[lidx, pidx] = pt[1]
-                in_array.fiber_array_s[lidx, pidx] = pt[2]
+                out_array.fiber_array_r[lidx, pidx] = pt[0]
+                out_array.fiber_array_a[lidx, pidx] = pt[1]
+                out_array.fiber_array_s[lidx, pidx] = pt[2]
 
         # test. this confirmed results were equivalent to old method
         # with time consuming polydata conversion.
@@ -117,7 +114,7 @@ class RegistrationInformation:
         #print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
         #print "=========================**************====================="
         
-        return in_array
+        return out_array
 
 
     def set_transform(self, input_transform):
