@@ -193,7 +193,7 @@ def run_registration(input_directory, outdir, number_of_fibers=150,
     if not os.path.exists(outdir_current):
         os.makedirs(outdir_current)
     output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-    ren = wma.registration_functions.view_polydatas(output_pds)
+    ren = wma.registration_functions.view_polydatas(output_pds, 200)
     ren.save_views(outdir_current)
     del ren
     wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
@@ -219,7 +219,16 @@ def run_registration(input_directory, outdir, number_of_fibers=150,
             if not os.path.exists(outdir_current):
                 os.makedirs(outdir_current)
             output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-            ren = wma.registration_functions.view_polydatas(output_pds)
+            ren = wma.registration_functions.view_polydatas(output_pds, 200)
+            print "==="
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "MAKE NUMBER OF RENDERED FIBERS A PARAMETER!"
+            print "==="
             ren.save_views(outdir_current)
             del ren
             if scale_idx == 4:
