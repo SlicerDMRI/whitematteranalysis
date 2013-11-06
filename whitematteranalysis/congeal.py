@@ -123,7 +123,10 @@ class CongealTractography:
         inc_rot = (3 / 180.0) * numpy.pi
         inc_trans = 2.0
         inc_scale = 0.005
-        inc_shear = (0.5 / 180.0) * numpy.pi
+        # this was taking longer to converge than other optimizations
+        # so it was too fine of a change.
+        #inc_shear = (0.5 / 180.0) * numpy.pi
+        inc_shear = (1.0 / 180.0) * numpy.pi
         self.rhoend = [inc_rot, inc_rot, inc_rot,
                        inc_trans, inc_trans, inc_trans,
                        inc_scale, inc_scale, inc_scale,
