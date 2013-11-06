@@ -47,15 +47,17 @@ def write_transforms_to_itk_format(transform_list, outdir):
 
     
 def view_polydatas(polydata_list, number_of_fibers=None):
+    print "<registration_functions.py>: Appending downsampled polydatas for rendering with color by subject."
     appender = vtk.vtkAppendPolyData()
     idx = 0
+    n_subj = len(polydata_list)
     for pd in polydata_list:
+        nf0 = pd.GetNumberOfLines()
         if number_of_fibers is not None:
             # downsample if requested
             pd = wma.filter.downsample(pd, number_of_fibers)
         nf = pd.GetNumberOfLines()
-        print idx
-        print nf
+        print "<registration_functions.py> subject:", idx+1, "/" , n_subj, "fibers:", nf,  "/" , nf0    
         mask = numpy.ones(nf)
         colors = numpy.multiply(mask, idx-1)
         pd2 = wma.filter.mask(pd, mask, colors)
@@ -87,35 +89,45 @@ def transform_polydatas(input_pds, register):
     return output_pds
 
 
-def transform_polydatas_from_disk(input_pd_fnames, register, outdir):
+def transform_polydatas_from_disk(input_dir, register, output_dir):
+
+    # Find input files
+    input_pd_fnames = wma.io.list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames) 
+    print "<registration_functions.py> ======================================="
+    print "<registration_functions.py> Transforming vtk and vtp files from directory: ", input_dir
+    print "<registration_functions.py> Total number of files found: ", num_pd
+    print "<registration_functions.py> Writing output to directory: ", output_dir
+    print "<registration_functions.py> ======================================="
+
+    if not os.path.exists(output_dir):
+        print "<registration_functions.py> ERROR: Output directory does not exist."
+        return
+    if not os.path.exists(input_dir):
+        print "<registration_functions.py> ERROR: Output directory does not exist."        
+        return
+    
     transforms = register.convert_transforms_to_vtk()
     for idx in range(0, len(input_pd_fnames)):
-        transformer = vtk.vtkTransformPolyDataFilter()
+
         fname = input_pd_fnames[idx]
-        print fname
+        subject_id = os.path.splitext(os.path.basename(fname))[0]
+        out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
+        print "<registration_functions.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", fname, "->", out_fname, "..."
+
         pd = wma.io.read_polydata(fname)
+
+        transformer = vtk.vtkTransformPolyDataFilter()
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             transformer.SetInputData(pd)
         else:
             transformer.SetInput(pd)
-        
         transformer.SetTransform(transforms[idx])
         transformer.Update()
-        pd2 = transformer.GetOutput()
-        writer = vtk.vtkPolyDataWriter()
-        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-            writer.SetInputData(pd2)
-        else:
-            writer.SetInput(pd2)
         
-        # this seemed to not work correctly for re-reading by wma or slicer
-        #fname = 'white_matter_{:04}.vtp'.format(idx)
-        fname = 'white_matter_{:04}.vtk'.format(idx)
-        writer.SetFileName(os.path.join(outdir, fname))
-        #writer.SetFileName(os.path.join(outdir, str(idx) + '.vtk'))
-        writer.SetFileTypeToBinary()
-        writer.Write()
-        del writer
+        pd2 = transformer.GetOutput()
+        wma.io.write_polydata(pd2, out_fname)
+        
         del transformer
         del pd2
         del pd
