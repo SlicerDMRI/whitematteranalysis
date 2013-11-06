@@ -160,7 +160,7 @@ class CongealTractography:
         function is calculated. Mean rotation/translation/scale are removed."""
 
         if  numpy.isnan(self._x_opt).any():
-            print "ISNAN (conv vs to trans)", numpy.isnan(self._x_opt)
+            print "<congeal.py> ISNAN (conv vs to trans)", numpy.isnan(self._x_opt)
 
         incr = len(self._x_opt)/self.number_of_subjects
 
@@ -177,10 +177,10 @@ class CongealTractography:
         transforms_array = numpy.array(transform_list)
 
         if self.verbose:
-            print "TRANSFORMS"
+            print "<congeal.py> TRANSFORMS"
             print numpy.round(transforms_array * 100) / 100
             meantrans = numpy.mean(transforms_array, 0)
-            print "Mean transform:"
+            print "<congeal.py> Mean transform:"
             print numpy.round(meantrans * 1000) / 1000        
 
     def remove_mean_from_transforms(self):
@@ -201,9 +201,9 @@ class CongealTractography:
         meantrans = numpy.mean(transforms_array, 0)
 
         if self.verbose:
-            print "TRANSFORMS"
+            print "<congeal.py> TRANSFORMS"
             print numpy.round(transforms_array * 100) / 100
-            print "Removing current (accumulated) mean transform before computing objective:"
+            print "<congeal.py> Removing current (accumulated) mean transform before computing objective:"
             print numpy.round(meantrans * 1000) / 1000        
 
         for subj in self._subjects:
@@ -228,7 +228,7 @@ class CongealTractography:
         self._x_opt = self._x_opt.reshape(1,self._x_opt.size)[0]
 
         if  numpy.isnan(self._x_opt).any():
-            print "ISNAN (conv trans to x)", numpy.isnan(self._x_opt)
+            print "<congeal.py> ISNAN (conv trans to x)", numpy.isnan(self._x_opt)
 
     def convert_transforms_to_vtk(self):
         """ Convert all subjects' transforms to vtk objects. """
@@ -380,12 +380,12 @@ class CongealTractography:
                 self.pairwise_subject_similarity[idx,:] = ret[idx][0]
                 self.computed_pairwise_similarity[idx] = ret[idx][1][0]
         else:
-            print "Chosen objective function NOT IMPLEMENTED"
+            print "<congeal.py> Chosen objective function NOT IMPLEMENTED"
 		
         if self.verbose:
-            print "Pairwise similarity:"
+            print "<congeal.py> Pairwise similarity:"
             print numpy.round(self.pairwise_subject_similarity * 100) / 100
-            print "Computed similarity:"
+            print "<congeal.py> Computed similarity:"
             print self.computed_pairwise_similarity.astype(int)
 
         # The Entropy objective was tested and published
@@ -396,15 +396,15 @@ class CongealTractography:
             #obj = numpy.sum(total_similarity)
             obj = numpy.sum(self.pairwise_subject_similarity)
         else:
-            print "Chosen objective function NOT IMPLEMENTED"
+            print "<congeal.py> Chosen objective function NOT IMPLEMENTED"
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print "S:",  total_similarity
-            print "O:",  obj
-            print "            X:", self._x_opt
+            print "<congeal.py> S:",  total_similarity
+            print "<congeal.py> O:",  obj
+            print "<congeal.py>             X:", self._x_opt
             
         return obj
 
@@ -501,10 +501,10 @@ class CongealTractography:
         self._sigmasq = self.sigma * self.sigma
 
         if self.verbose:
-            print "Initial value for X:", self._x_opt
+            print "<congeal.py> Initial value for X:", self._x_opt
 
 
-        print "Registration mode:", self._registration_mode
+        print "<congeal.py> Computing. Registration mode:", self._registration_mode
 
         # These optimizers were tested, less successfully than cobyla.
         # This code is left here as documentation.

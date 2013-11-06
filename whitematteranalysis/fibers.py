@@ -272,7 +272,7 @@ class FiberArray:
         self.number_of_fibers = input_vtk_polydata.GetNumberOfLines()
 
         if self.verbose:
-            print "Converting polydata to array representation. Lines:", \
+            print "<fibers.py> Converting polydata to array representation. Lines:", \
                 self.number_of_fibers
 
         # allocate array number of lines by line length
@@ -295,8 +295,8 @@ class FiberArray:
 
             if self.verbose:
                 if lidx % 100 == 0:
-                    print "Line:", lidx, "/", self.number_of_fibers
-                    print "number of points:", line_length
+                    print "<fibers.py> Line:", lidx, "/", self.number_of_fibers
+                    print "<fibers.py> number of points:", line_length
 
             # loop over the indices that we want and get those points
             pidx = 0

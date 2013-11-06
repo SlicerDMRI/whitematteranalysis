@@ -15,16 +15,18 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
     Returns RenderPolyData object which can be used directly for more
     functionality."""
 
+    print "<render.py> Initiating rendering."
+        
     if number_of_fibers is not None:
+        print "<render.py> Downsampling vtkPolyData:", number_of_fibers
         # downsample if requested
         input_polydata = filter.downsample(input_polydata, number_of_fibers)
 
     ren = RenderPolyData()
     
-    
     ren.render_polydata(input_polydata, opacity=opacity, depth_peeling=depth_peeling, scalar_bar=scalar_bar, axes=axes, scalar_range=scalar_range, data_mode=data_mode, tube=tube, colormap=colormap)
 
-    #print "render"
+    print "<render.py> Render pipeline created."
     return ren
 
 def save_views(render_object, directory="."):
@@ -109,7 +111,7 @@ class RenderPolyData:
         
     def __del__(self):
         try:
-            print "in DELETE"
+            print "<render.py> in DELETE"
             #del self.renderer
             #del self.render_window
             #del self.iren
@@ -132,6 +134,8 @@ class RenderPolyData:
         # and re-use the object
         #self.build_vtk()
 
+        print "<render.py> Rendering vtkPolyData."
+        
         # actor and mapper
         mapper = vtk.vtkPolyDataMapper()
         actor = vtk.vtkActor()
@@ -157,7 +161,7 @@ class RenderPolyData:
                 self.render_RGB = True
                 self.renderer.RemoveActor2D(self.scalarbar)
 
-        #print "RGB: ", self.render_RGB
+        #print "<render.py> RGB: ", self.render_RGB
 
         if data_mode == "Cell":
             mapper.SetScalarModeToUseCellData()
@@ -319,6 +323,8 @@ class RenderPolyData:
 
     def save_views(self, directory="."):
 
+        print "<render.py> Saving rendered views to disk:", directory
+        
         if not os.path.isdir(directory):
             print "<render.py> ERROR: directory does not exist.", directory
             return

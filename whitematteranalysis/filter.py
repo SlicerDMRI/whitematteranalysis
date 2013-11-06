@@ -25,8 +25,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<laterality.py> Failed to import joblib, cannot multiprocess."
-    print "<io.py> Please install joblib for this functionality."
+    print "<filter.py> Failed to import joblib, cannot multiprocess."
+    print "<filter.py> Please install joblib for this functionality."
 
 import fibers
 import similarity
@@ -73,11 +73,8 @@ def preprocess(inpd, min_length_mm,
     step_size = numpy.sqrt(numpy.sum(numpy.power(
                 numpy.subtract(point0, point1), 2)))
     min_length_pts = round(min_length_mm / step_size)
-    print "Discarding fibers shorter than", min_length_mm, \
-        "mm (= step size * npts =", step_size, "*", min_length_pts, ")"
-    
-    #print "Removing short fibers. Tractography step size: ",  step_size
-    #print "Keeping fibers of minimum length (in points): ", min_length_pts
+    print "<filter.py> Minimum length", min_length_mm, \
+        "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")"
 
     # loop over lines
     inpd.GetLines().InitTraversal()
@@ -121,13 +118,13 @@ def preprocess(inpd, min_length_mm,
             line_indices.append(lidx)
             if verbose:
                 if lidx % 100 == 0:
-                    print "Line:", lidx, "/", inpd.GetNumberOfLines()
+                    print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
 
     outpd.SetLines(outlines)
 
     if verbose:
         msg = outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
-        print "Number of lines:", msg
+        print "<filter.py> Number of lines:", msg
 
     if return_indices:
         return outpd, numpy.array(line_indices)
@@ -153,7 +150,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data)
 
     # final line count
-    #print "Number of lines selected:", outpd.GetNumberOfLines()
+    #print "<filter.py> Number of lines selected:", outpd.GetNumberOfLines()
     if return_indices:
         # return sorted indices, this is the line ordering of output
         # polydata (because we mask rather than changing input line order)
@@ -205,7 +202,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
         if inpd.GetCellData().GetNumberOfArrays() > 0:
             # look for our arrays by name
             if verbose:
-                print "looking for arrays"
+                print "<filter.py> looking for arrays"
             if inpd.GetCellData().GetArray('ClusterNumber'):
                 array = vtk.vtkIntArray()
                 array.SetName('ClusterNumber')
@@ -218,7 +215,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
                 array.SetName('EmbeddingColor')
                 outpd.GetCellData().AddArray(array)
                 outpd.GetCellData().SetActiveScalars('EmbeddingColor')
-                print "added array embed color"
+                print "<filter.py> added array embed color"
             if inpd.GetCellData().GetArray('EmbeddingCoordinate'):
                 array = vtk.vtkFloatArray()
                 ncomp = inpd.GetCellData().GetArray('EmbeddingCoordinate').GetNumberOfComponents()
@@ -250,7 +247,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
 
             if verbose:
                 if lidx % 100 == 0:
-                    print "Line:", lidx, "/", inpd.GetNumberOfLines()
+                    print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
 
             # get points for each ptid and add to output polydata
             cellptids = vtk.vtkIdList()
@@ -289,7 +286,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
     if color is not None:
         outpd.GetCellData().SetScalars(outcolors)
 
-    print "Fibers sampled:", outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
+    print "<filter.py> Fibers sampled:", outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
 
     return outpd
 
@@ -318,14 +315,14 @@ def symmetrize(inpd):
 
     # index into end of point array
     lastidx = outpoints.GetNumberOfPoints()
-    print "Input number of points: ", lastidx
+    print "<filter.py> Input number of points: ", lastidx
 
     # loop over all lines, insert line and reflected copy into output pd
     for lidx in range(0, inpd.GetNumberOfLines()):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print "Line:", lidx, "/", inpd.GetNumberOfLines()
+                print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -376,7 +373,7 @@ def remove_hemisphere(inpd, hemisphere=-1):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print "Line:", lidx, "/", inpd.GetNumberOfLines()
+                print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -453,7 +450,7 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=2):
 
     if True:
         num_fibers = len(numpy.nonzero(fiber_mask)[0]), "/", len(fiber_mask)
-        print "Number retained after outlier removal: ", num_fibers
+        print "<filter.py> Number retained after outlier removal: ", num_fibers
 
     outpd = mask(inpd, fiber_mask, mindist)
 
@@ -486,7 +483,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
 
     fiber_indices = range(0, current_fiber_array.number_of_fibers)
 
-    print "Computing pairwise distances..."
+    print "<filter.py> Computing pairwise distances..."
     
     # pairwise distance matrix
     if USE_PARALLEL:
@@ -595,8 +592,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     iteration_count = 0
     
     while not converged:
-        print "ITERATION:", iteration_count, "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count))
-        print "number indices", len(curr_indices)
+        print "<filter.py> ITERATION:", iteration_count, "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count))
+        print "<filter.py> number indices", len(curr_indices)
         
         # fiber data structures for output of this iteration
         next_fibers = list()
@@ -635,17 +632,17 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         distances_flat = distances.flatten()
         pair_order = numpy.argsort(distances_flat)
 
-        print "DISTANCE MIN:", distances_flat[pair_order[0]], \
+        print "<filter.py> DISTANCE MIN:", distances_flat[pair_order[0]], \
             "DISTANCE COUNT:", distances.shape
 
         # if the smallest distance is greater or equal to the
         # threshold, we have converged
         if distances_flat[pair_order[0]] >= fiber_distance_threshold:
             converged = True
-            print "CONVERGED"
+            print "<filter.py> CONVERGED"
             break
         else:
-            print "NOT CONVERGED"
+            print "<filter.py> NOT CONVERGED"
             
         # loop variables
         idx = 0
@@ -710,8 +707,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
             current_fiber_array.fiber_array_s[curr_fidx] = curr_fib.s
             curr_fidx += 1
 
-        print "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)), "SUM DONE FIBERS:", numpy.sum(done)
-        print "MAX COUNT:" , numpy.max(numpy.array(curr_count)), "AVGS THIS ITER:", number_averages
+        print "<filter.py> SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)), "SUM DONE FIBERS:", numpy.sum(done)
+        print "<filter.py> MAX COUNT:" , numpy.max(numpy.array(curr_count)), "AVGS THIS ITER:", number_averages
 
     # when converged, convert output to polydata
     outpd = current_fiber_array.convert_to_polydata()
@@ -932,7 +929,7 @@ def pd_to_array(inpd, dims=225):
         data_vol = numpy.ndarray([dims,dims,dims])
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print "Input number of points: ",\
+    print "<filter.py> Input number of points: ",\
         points.GetNumberOfPoints(),\
         "lines:", inpd.GetNumberOfLines() 
     # loop over all lines
@@ -940,7 +937,7 @@ def pd_to_array(inpd, dims=225):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print "Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
         inpd.GetLines().GetNextCell(ptids)
         num_points = ptids.GetNumberOfIds()
         for pidx in range(0, num_points):
@@ -974,7 +971,7 @@ def measure_line_lengths(inpd):
     output_lengths = numpy.zeros(inpd.GetNumberOfLines())
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print "Input number of points: ",\
+    print "<filter.py> Input number of points: ",\
         points.GetNumberOfPoints(),\
         "lines:", inpd.GetNumberOfLines() 
     # loop over all lines
@@ -982,7 +979,7 @@ def measure_line_lengths(inpd):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print "Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
         inpd.GetLines().GetNextCell(ptids)
         output_lengths[lidx] = ptids.GetNumberOfIds()
     return(output_lengths)
