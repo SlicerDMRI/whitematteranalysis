@@ -20,6 +20,7 @@ This function reads in the laterality data for further analysis.
 
 import os
 import pickle
+import glob
 
 import numpy
 import vtk
@@ -33,7 +34,7 @@ except ImportError:
 
 
 import render
-
+import filter
 
 VERBOSE = 0
 
@@ -64,6 +65,53 @@ def read_polydata(filename):
 
     return outpd
 
+def list_vtk_files(input_dir):
+    # Find input files
+    input_mask = "{0}/*.vtk".format(input_dir)
+    input_mask2 = "{0}/*.vtp".format(input_dir)
+    input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
+    return(input_pd_fnames)
+    
+def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fibers):
+    """ Find and read all .vtk and .vtp files in the given directory
+    input_dir. Preprocess with fiber length threshold and downsample
+    to desired number of fibers."""
+    
+    input_pd_fnames = list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames)
+    
+    print "<io.py> ======================================="
+    print "<io.py> Reading vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files found: ", num_pd
+    print "<io.py> ======================================="
+
+    input_pds = list()
+    subject_ids = list()
+    sidx = 0
+
+    for fname in input_pd_fnames:
+        subject_id = os.path.splitext(os.path.basename(fname))[0]
+        subject_ids.append(subject_id)
+        print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Reading ", fname, "..."
+        pd = read_polydata(fname)
+        print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Input number of fibers:", pd.GetNumberOfLines()
+        pd2 = filter.preprocess(pd, fiber_length)
+        print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Length threshold", fiber_length, "mm. Number of fibers retained:", pd2.GetNumberOfLines()
+        pd3 = filter.downsample(pd2, number_of_fibers)
+        print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Downsample to", number_of_fibers, "fibers. Number of fibers retained:", pd3.GetNumberOfLines()        
+        input_pds.append(pd3)
+        sidx += 1
+        print "<io.py> ======================================="
+
+    print "<io.py> ======================================="
+    print "<io.py> Done reading vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files read: ", len(input_pds)
+    print "<io.py> ======================================="
+        
+    return input_pds, subject_ids
+
+    
+                            
 def write_polydata(polydata, filename):
     """Write polydata as vtkPolyData format, according to extension."""
 
