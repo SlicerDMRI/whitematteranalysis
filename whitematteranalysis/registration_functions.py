@@ -46,6 +46,23 @@ def write_transforms_to_itk_format(transform_list, outdir):
     return(tx_fnames)
 
     
+def save_atlas(polydata_list, out_dir):
+    print "<registration_functions.py>: Save current atlas (sampled registered polydata)."
+    appender = vtk.vtkAppendPolyData()
+    idx = 0
+    n_subj = len(polydata_list)
+    for pd in polydata_list:
+        nf = pd.GetNumberOfLines()
+        print "<registration_functions.py> subject:", idx+1, "/" , n_subj, "fibers:", nf    
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            appender.AddInputData(pd)
+        else:
+            appender.AddInput(pd)
+        idx = idx + 1
+    appender.Update()
+    wma.io.write_polydata(appender.GetOutput(), os.path.join(out_dir, 'atlas.vtk'))
+    del appender
+
 def view_polydatas(polydata_list, number_of_fibers=None):
     print "<registration_functions.py>: Appending downsampled polydatas for rendering with color by subject."
     appender = vtk.vtkAppendPolyData()
