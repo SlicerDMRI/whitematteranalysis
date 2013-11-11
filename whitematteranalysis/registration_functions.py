@@ -244,15 +244,16 @@ def run_atlas_registration(input_dir,
     
         register.add_subject(pd)
         register.add_subject(atlas)
+        reg_pds = list()
+        reg_pds.append(pd)
+        reg_pds.append(atlas)
         
         # view output data from the initialization
         outdir_current =  os.path.join(output_dir, subject_ids[sidx], 'iteration_0')
         if not os.path.exists(outdir_current):
             os.makedirs(outdir_current)
-        output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-        # save the current atlas representation to disk
-        wma.registration_functions.save_atlas(output_pds, outdir_current)
-        # save pictures of the current 'atlas' or registered data
+        output_pds = wma.registration_functions.transform_polydatas(reg_pds, register)
+        # save pictures of the current data
         ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
         ren.save_views(outdir_current)
         del ren
@@ -269,18 +270,14 @@ def run_atlas_registration(input_dir,
         
             # view output data from this big iteration
             if verbose | (scale == "Finest"):
-                outdir_current =  os.path.join(output_dir, 'iteration_'+str(scale_idx))
+                outdir_current =  os.path.join(output_dir, subject_ids[sidx], 'iteration_'+str(scale_idx))
                 if not os.path.exists(outdir_current):
                     os.makedirs(outdir_current)
-                output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
-                # save the current atlas representation to disk
-                wma.registration_functions.save_atlas(output_pds, outdir_current)
-                # save pictures of the current 'atlas' or registered data
+                output_pds = wma.registration_functions.transform_polydatas(reg_pds, register)
+                # save pictures of the current registered data
                 ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
                 ren.save_views(outdir_current)
                 del ren
-                if scale == "Finest":
-                    wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
                 wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
                 plt.figure() # to avoid all results on same plot
