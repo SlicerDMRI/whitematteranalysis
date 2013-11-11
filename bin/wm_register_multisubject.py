@@ -28,12 +28,14 @@ sigma_per_step = [30, 10, 10, 5]
 # not used
 #maxfun = 300
 ## for multiple subjects this is good. for two, it's not enough.
-##minfun = number_of_datasets * 3
-##maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
+
+number_of_datasets = 30
+minfun = number_of_datasets * 3
+maxfun_per_step = [minfun*1.5, minfun*2, minfun*5, minfun*10]
 
 #maxfun_per_step = [50, 75, 200]
 # this is reasonable for two subjects, except for shear.
-maxfun_per_step = [20, 40, 60, 80]
+#maxfun_per_step = [20, 40, 60, 80]
 
 
 #-----------------
