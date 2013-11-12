@@ -123,17 +123,17 @@ print "\n<register> Starting registration...\n"
 
 
 ## run the registration ONCE and output result to disk
-register, elapsed = wma.registration_functions.run_atlas_registration(args.inputDirectory,
-                                                                      args.inputAtlas,
-                                                                      outdir,
-                                                                      number_of_fibers=number_of_fibers,
-                                                                      points_per_fiber=points_per_fiber,
-                                                                      parallel_jobs=parallel_jobs,
-                                                                      fiber_sample_fractions=fiber_sample_fractions,
-                                                                      sigma_per_scale=sigma_per_scale,
-                                                                      verbose=verbose,
-                                                                      fiber_length=fiber_length,
-                                                                      fibers_rendered=fibers_rendered,
-                                                                      steps_per_scale=steps_per_scale)
+elapsed = wma.registration_functions.run_atlas_registration(args.inputDirectory,
+                                                            args.inputAtlas,
+                                                            outdir,
+                                                            number_of_fibers=number_of_fibers,
+                                                            points_per_fiber=points_per_fiber,
+                                                            parallel_jobs=parallel_jobs,
+                                                            fiber_sample_fractions=fiber_sample_fractions,
+                                                            sigma_per_scale=sigma_per_scale,
+                                                            verbose=verbose,
+                                                            fiber_length=fiber_length,
+                                                            fibers_rendered=fibers_rendered,
+                                                            steps_per_scale=steps_per_scale)
 
 print "TIME:", elapsed

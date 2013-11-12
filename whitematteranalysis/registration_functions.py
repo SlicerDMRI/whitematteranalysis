@@ -298,7 +298,7 @@ def run_atlas_registration(input_dir,
         del register
 
     transform_polydatas_from_disk(input_dir, transforms, output_dir)
-    
+    return elapsed
 
 def write_transforms_to_itk_format(transform_list, outdir):
     # use with the slicer module, something like this applies things
