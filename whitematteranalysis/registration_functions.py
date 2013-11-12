@@ -126,7 +126,17 @@ def run_multisubject_registration(input_directory, outdir,
                                   verbose=True, 
                                   fiber_length=75,
                                   fibers_rendered=100,
-                                  steps_per_scale=[10, 3, 2, 2]):
+                                  steps_per_scale=[5, 3, 2, 1]):
+
+    # the big gain in objective from the 1st scale is early,
+    # and actually after the fine (3rd scale) registration
+    # the result looks good enough. So, save output after third step,
+    # and also reduce the time spent in first and last scales.
+    # note: this is still more computation than in the publication.
+    # was:
+    # steps_per_scale=[10, 3, 2, 2]
+    # now using:
+    # steps_per_scale=[5, 3, 2, 1]
 
     elapsed = list()
 
@@ -169,6 +179,7 @@ def run_multisubject_registration(input_directory, outdir,
     
     scales = ["Coarse", "Medium", "Fine", "Finest"]
     scale_idx = 0
+    iter_count = 0
     for scale in scales:
         start = time.time()
         # run the basic iteration of translate, rotate, scale
@@ -177,7 +188,7 @@ def run_multisubject_registration(input_directory, outdir,
         scale_idx += 1
         
         # view output data from this big iteration
-        if verbose | (scale == "Finest"):
+        if verbose | (scale == "Fine") | (scale == "Finest"):
             outdir_current =  os.path.join(outdir, 'iteration_'+str(scale_idx))
             if not os.path.exists(outdir_current):
                 os.makedirs(outdir_current)
@@ -188,14 +199,18 @@ def run_multisubject_registration(input_directory, outdir,
             ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
             ren.save_views(outdir_current)
             del ren
-            if scale == "Finest":
+            if (scale == "Fine") | (scale == "Finest"):
                 wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
             wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
-    
+
+            iter_count_new = len(register.objective_function_values)
             plt.figure() # to avoid all results on same plot
-            plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+            #plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+            # plot just the most recent scale's objective. otherwise the y axis range is too large.
+            plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
             plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-        
+            iter_count = iter_count_new
+            
     return register, elapsed
 
 

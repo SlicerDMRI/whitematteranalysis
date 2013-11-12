@@ -22,7 +22,17 @@ except:
 # (may be added as parameters later)
 fiber_sample_fractions = [.10, .20, .30, .40]
 sigma_per_scale = [30, 10, 10, 5]
-steps_per_scale=[10, 3, 2, 2]
+# on a 27-subject dataset, 12 or 14 processors, this takes nearly 24 hours.
+# the implementation is not fast, but this is a long time to wait.
+#steps_per_scale=[10, 3, 2, 2]
+# the big gain in objective from the 1st scale is early,
+# and actually after the fine (3rd scale) registration
+# the result looks good enough. So, save output after third step,
+# and also reduce the time spent in first and last scales.
+# note: this is still more computation than in the publication.
+# Trying to decide how much computation is needed for desired result quality.
+steps_per_scale=[5, 3, 2, 1]
+
 fibers_rendered = 100
 
 # figure out how many cobyla iterations are needed
