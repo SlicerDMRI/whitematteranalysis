@@ -126,7 +126,8 @@ def run_multisubject_registration(input_directory, outdir,
                                   verbose=True, 
                                   fiber_length=75,
                                   fibers_rendered=100,
-                                  steps_per_scale=[5, 3, 2, 1]):
+                                  steps_per_scale=[5, 3, 2, 1],
+                                  no_render=False):
 
     # the big gain in objective from the 1st scale is early,
     # and actually after the fine (3rd scale) registration
@@ -172,9 +173,12 @@ def run_multisubject_registration(input_directory, outdir,
     # save the current atlas representation to disk
     wma.registration_functions.save_atlas(output_pds, outdir_current)
     # save pictures of the current 'atlas' or registered data
-    ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
-    ren.save_views(outdir_current)
-    del ren
+    if no_render:
+        print "<register> Intermediate rendering OFF"
+    else:
+        ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
+        ren.save_views(outdir_current)
+        del ren
     wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
     
     scales = ["Coarse", "Medium", "Fine", "Finest"]
@@ -196,9 +200,12 @@ def run_multisubject_registration(input_directory, outdir,
             # save the current atlas representation to disk
             wma.registration_functions.save_atlas(output_pds, outdir_current)
             # save pictures of the current 'atlas' or registered data
-            ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
-            ren.save_views(outdir_current)
-            del ren
+            if no_render:
+                print "<register> Intermediate rendering OFF"
+            else:
+                ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
+                ren.save_views(outdir_current)
+                del ren
             if (scale == "Fine") | (scale == "Finest"):
                 wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
             wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)

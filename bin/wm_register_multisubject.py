@@ -69,7 +69,9 @@ parser.add_argument(
 parser.add_argument(
     '-pf', action="store", dest="pointsPerFiber", type=int,
     help='Number of points for fiber representation during registration. 5 is reasonable, or more.')
-
+parser.add_argument(
+    '-norender', action='store_true', dest="flag_norender",
+    help='No Render. Prevents rendering of images that would require an X connection.')
  
 args = parser.parse_args()
 
@@ -118,6 +120,12 @@ else:
     points_per_fiber = 5
 print "<register> Number of points for fiber representation: ", points_per_fiber
 
+if args.flag_norender:
+    print "<register> No rendering (for compute servers without X connection)."
+else:
+    print "<register> Rendering. For intermediate image saving to check progress."
+no_render = args.flag_norender
+
 
 print "\n<register> Starting registration...\n"
 
@@ -134,6 +142,7 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              verbose=verbose,
                                                                              fiber_length=fiber_length,
                                                                              fibers_rendered=fibers_rendered,
-                                                                             steps_per_scale=steps_per_scale)
+                                                                             steps_per_scale=steps_per_scale,
+                                                                             no_render=no_render)
 
 print "TIME:", elapsed
