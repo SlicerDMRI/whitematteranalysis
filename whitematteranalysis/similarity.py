@@ -3,13 +3,37 @@ import numpy
 import fibers
 
 def distance_to_similarity(distance, sigmasq=100):
+    #s1 = distance_to_similarity_NOT_USED(distance, sigmasq=100)
+    s2  = distance_to_similarity_new(distance, sigmasq=100)
+
+    return s2
+
+def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
+    # test if old and new are the same
+    d1 = fiber_distance_new(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None)
+    d2 = fiber_distance_NOT_USED(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None)
+
+    s1 = distance_to_similarity_new(d1, sigmasq=100)
+    s2  = distance_to_similarity_NOT_USED(d2, sigmasq=100)
+    assert numpy.max(s1-s2) < 0.0001
+    
+    return d1
+
+def distance_to_similarity_NOT_USED(distance, sigmasq=100):
 
     # compute the similarities using Gaussian kernel
     similarities = numpy.exp(-numpy.power(distance, 2) / (sigmasq))
 
     return similarities
 
-def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
+def distance_to_similarity_new(distance, sigmasq=100):
+
+    # compute the similarities using Gaussian kernel
+    similarities = numpy.exp(-distance / (sigmasq))
+
+    return similarities
+
+def fiber_distance_new(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
     """
 
     Find pairwise fiber distance from fiber to all fibers in fiber_array.
@@ -33,7 +57,35 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
     distance = numpy.minimum(distance_1, distance_2)
+    
+    return distance
 
+def fiber_distance_NOT_USED(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
+    """
+
+    Find pairwise fiber distance from fiber to all fibers in fiber_array.
+
+    The Mean and MeanSquared distances are the average distance per
+    fiber point, to remove scaling effects (dependence on number of
+    points chosen for fiber parameterization). The Hausdorff distance
+    is the maximum distance between corresponding points.
+
+    input fiber should be class Fiber. fibers should be class FiberArray
+
+    """
+
+    # get fiber in reverse point order, equivalent representation
+    fiber_equiv = fiber.get_equivalent_fiber()
+
+    # compute pairwise fiber distances along fibers
+    distance_1 = _fiber_distance_internal_use_NOT_USED(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks)
+    distance_2 = _fiber_distance_internal_use_NOT_USED(fiber_equiv, fiber_array, threshold, distance_method, fiber_landmarks, landmarks)
+
+    # choose the lowest distance, corresponding to the optimal fiber
+    # representation (either forward or reverse order)
+    distance = numpy.minimum(distance_1, distance_2)
+
+    # Remove effect of number of points along fiber
     if distance_method == 'Mean':
         # now find the average distance to remove effect of number of
         # points chosen to represent the fiber
@@ -54,49 +106,64 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     for that use fiber_distance, above.
     """
 
+    if distance_method == 'Landmarks':
+        return _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, landmarks)
     if landmarks is not None:
-        # compute the distance from this fiber to the array of other fibers
-        # where distance is according to differences in landmark distance
-        [n_fibers, n_landmarks, dims] = landmarks.shape
-        #print "*******************************"
-        #print "Using landmarks. N fibers:", n_fibers, "N landmarks:", n_landmarks, "dimensions (3):", dims
-        #print "*******************************"
-        diffs = numpy.zeros((n_fibers, n_landmarks))
-        for lidx in range(n_landmarks):
-            # compute fiber array landmark distances to this landmark
-            dx = numpy.subtract(fiber_array.fiber_array_r.T, landmarks[:,lidx,0]).T
-            dy = numpy.subtract(fiber_array.fiber_array_a.T, landmarks[:,lidx,1]).T
-            dz = numpy.subtract(fiber_array.fiber_array_s.T, landmarks[:,lidx,2]).T
+        print "ERROR: Please use distance method Landmarks to compute landmark distances"
+        
+    # compute the distance from this fiber to the array of other fibers
+    dx = fiber_array.fiber_array_r - fiber.r
+    dy = fiber_array.fiber_array_a - fiber.a
+    dz = fiber_array.fiber_array_s - fiber.s
 
-            dx = numpy.power(dx, 2)
-            dy = numpy.power(dy, 2)
-            dz = numpy.power(dz, 2)
-            landmark_distance = numpy.sqrt(dx + dy + dz)
-            #print "lm dist array shape", landmark_distance.shape
+    dx = numpy.square(dx)
+    dy = numpy.square(dy)
+    dz = numpy.square(dz)
 
-            del dx 
-            del dy 
-            del dz
-            # compute for individual fiber
-            dx = fiber.r - fiber_landmarks[lidx,0]
-            dy = fiber.a - fiber_landmarks[lidx,1]
-            dz = fiber.s - fiber_landmarks[lidx,2]
-            dx = numpy.power(dx, 2)
-            dy = numpy.power(dy, 2)
-            dz = numpy.power(dz, 2)
-            fiber_landmark_distance = numpy.sqrt(dx + dy + dz)
-            #print "lm dist fiber shape", fiber_landmark_distance.shape
-            del dx 
-            del dy 
-            del dz
-            # difference between LD at all points on fiber
-            ld_diff = landmark_distance - fiber_landmark_distance
-            # summarize for this landmark
-            diffs[:,lidx] = numpy.mean(numpy.multiply(ld_diff, ld_diff), 1)
+    # sum dx dx dz at each point on the fiber and sqrt for threshold
+    #distance = numpy.sqrt(dx + dy + dz)
+    distance = dx + dy + dz
 
-        distance = numpy.sqrt(numpy.mean(diffs, 1))
-        return distance
+    # threshold if requested
+    if threshold:
+        print "FIX thresholded distance computation"
+        # set values less than threshold to 0
+        idx = numpy.nonzero(distance < threshold*threshold)
+        distance[idx] = 0
 
+    if distance_method == 'Mean':
+        # sum along fiber
+        distance = numpy.sum(numpy.sqrt(distance), 1)
+        # Remove effect of number of points along fiber (mean)
+        npts = float(fiber_array.points_per_fiber)
+        distance = distance / npts
+        # for consistency with other methods we need to square this value
+        distance = numpy.square(distance)
+    elif distance_method == 'Hausdorff':
+        # take max along fiber
+        distance = numpy.max(distance, 1)
+    elif distance_method == 'MeanSquared':
+        # sum along fiber
+        distance = numpy.sum(distance, 1)
+        # Remove effect of number of points along fiber (mean)
+        npts = float(fiber_array.points_per_fiber)
+        distance = distance / (npts * npts)
+
+    return distance
+
+def _fiber_distance_internal_use_NOT_USED(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
+    """ Compute the total fiber distance from one fiber to an array of
+    many fibers.
+
+    This function does not handle equivalent fiber representations,
+    for that use fiber_distance, above.
+    """
+
+    if distance_method == 'Landmarks':
+        return _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, landmarks)
+    if landmarks is not None:
+        print "ERROR: Please use distance method Landmarks to compute landmark distances"
+        
     # compute the distance from this fiber to the array of other fibers
     dx = fiber_array.fiber_array_r - fiber.r
     dy = fiber_array.fiber_array_a - fiber.a
@@ -132,6 +199,48 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         
     return distance
 
+def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, landmarks):
+    # compute the distance from this fiber to the array of other fibers
+    # where distance is according to differences in landmark distance
+    [n_fibers, n_landmarks, dims] = landmarks.shape
+    #print "*******************************"
+    #print "Using landmarks. N fibers:", n_fibers, "N landmarks:", n_landmarks, "dimensions (3):", dims
+    #print "*******************************"
+    diffs = numpy.zeros((n_fibers, n_landmarks))
+    for lidx in range(n_landmarks):
+        # compute fiber array landmark distances to this landmark
+        dx = numpy.subtract(fiber_array.fiber_array_r.T, landmarks[:,lidx,0]).T
+        dy = numpy.subtract(fiber_array.fiber_array_a.T, landmarks[:,lidx,1]).T
+        dz = numpy.subtract(fiber_array.fiber_array_s.T, landmarks[:,lidx,2]).T
+        
+        dx = numpy.power(dx, 2)
+        dy = numpy.power(dy, 2)
+        dz = numpy.power(dz, 2)
+        landmark_distance = numpy.sqrt(dx + dy + dz)
+        #print "lm dist array shape", landmark_distance.shape
+        
+        del dx 
+        del dy 
+        del dz
+        # compute for individual fiber
+        dx = fiber.r - fiber_landmarks[lidx,0]
+        dy = fiber.a - fiber_landmarks[lidx,1]
+        dz = fiber.s - fiber_landmarks[lidx,2]
+        dx = numpy.power(dx, 2)
+        dy = numpy.power(dy, 2)
+        dz = numpy.power(dz, 2)
+        fiber_landmark_distance = numpy.sqrt(dx + dy + dz)
+        #print "lm dist fiber shape", fiber_landmark_distance.shape
+        del dx 
+        del dy 
+        del dz
+        # difference between LD at all points on fiber
+        ld_diff = landmark_distance - fiber_landmark_distance
+        # summarize for this landmark
+        diffs[:,lidx] = numpy.mean(numpy.multiply(ld_diff, ld_diff), 1)
+        
+    distance = numpy.sqrt(numpy.mean(diffs, 1))
+    return distance
 
 # this must be a function to allow pickling by Parallel
 def total_similarity_and_distances(fiber, fiber_array, reflect, threshold, sigmasq, distance_method='MeanSquared'):
