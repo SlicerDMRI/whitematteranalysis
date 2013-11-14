@@ -143,6 +143,7 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              fiber_length=fiber_length,
                                                                              fibers_rendered=fibers_rendered,
                                                                              steps_per_scale=steps_per_scale,
-                                                                             no_render=no_render)
+                                                                             no_render=no_render,
+                                                                             distance_method='Hausdorff')
 
 print "TIME:", elapsed
