@@ -3,15 +3,15 @@ import numpy
 import fibers
 
 def distance_to_similarity(distance, sigmasq=100):
-    #s1 = distance_to_similarity_NOT_USED(distance, sigmasq=100)
-    s2  = distance_to_similarity_new(distance, sigmasq=100)
+    #s1 = distance_to_similarity_NOT_USED(distance, sigmasq)
+    s2  = distance_to_similarity_new(distance, sigmasq)
 
     return s2
 
 def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
     # test if old and new are the same
-    d1 = fiber_distance_new(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None)
-    d2 = fiber_distance_NOT_USED(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None)
+    d1 = fiber_distance_new(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks)
+    d2 = fiber_distance_NOT_USED(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks)
 
     s1 = distance_to_similarity_new(d1, sigmasq=100)
     s2  = distance_to_similarity_NOT_USED(d2, sigmasq=100)
@@ -148,7 +148,11 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
         distance = distance / (npts * npts)
-
+    else:
+        print "<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method
+        raise Exception("unknown distance method")
+        
+    
     return distance
 
 def _fiber_distance_internal_use_NOT_USED(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None):
@@ -273,7 +277,6 @@ def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='Me
     whole brain, etc).
 
     """
-
     distance = fiber_distance(fiber, fiber_array, threshold, distance_method)
     similarity = distance_to_similarity(distance, sigmasq)
 
