@@ -72,6 +72,10 @@ parser.add_argument(
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
+parser.add_argument(
+    '-distance_method', action="store", dest="distance_method", type=str,
+    help='Distance method to use. Options are Hausdorff, Mean, and MeanSquared.')
+ 
  
 args = parser.parse_args()
 
@@ -126,6 +130,12 @@ else:
     print "<register> Rendering. For intermediate image saving to check progress."
 no_render = args.flag_norender
 
+if args.distance_method is not None:
+    distance_method = args.distance_method
+else:
+    distance_method = 'Hausdorff'
+    
+print "<register> Distance method: ", distance_method
 
 print "\n<register> Starting registration...\n"
 
@@ -144,6 +154,6 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              fibers_rendered=fibers_rendered,
                                                                              steps_per_scale=steps_per_scale,
                                                                              no_render=no_render,
-                                                                             distance_method='Hausdorff')
+                                                                             distance_method=distance_method)
 
 print "TIME:", elapsed
