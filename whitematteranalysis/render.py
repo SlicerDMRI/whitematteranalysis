@@ -20,7 +20,7 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
     if number_of_fibers is not None:
         print "<render.py> Downsampling vtkPolyData:", number_of_fibers
         # downsample if requested
-        input_polydata = filter.downsample(input_polydata, number_of_fibers)
+        input_polydata = filter.downsample(input_polydata, number_of_fibers, preserve_point_data=True, preserve_cell_data=True)
 
     ren = RenderPolyData()
     
