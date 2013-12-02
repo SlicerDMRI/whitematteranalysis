@@ -131,7 +131,7 @@ def preprocess(inpd, min_length_mm,
     else:
         return outpd
 
-def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False):
+def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True):
     """ Random (down)sampling of fibers without replacement. """
 
     num_lines = inpd.GetNumberOfLines()
@@ -159,7 +159,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
         return outpd
 
 
-def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
+def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_data=True):
     """ Keep lines and their points where fiber_mask == 1.
 
      Unlike vtkMaskPolyData that samples every nth cell, this function
@@ -177,6 +177,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
 
     inpoints = inpd.GetPoints()
     inpointdata = inpd.GetPointData()
+    incelldata = inpd.GetCellData()
     
     # output and temporary objects
     ptids = vtk.vtkIdList()
@@ -185,7 +186,8 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
     outpoints = vtk.vtkPoints()
     outcolors = None
     outpointdata = outpd.GetPointData()
-
+    outcelldata = outpd.GetCellData()
+    
     if color is not None:
         # if input is RGB
         if len(color.shape) == 2:
@@ -196,32 +198,36 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
         # otherwise output floats as colors
         if outcolors == None:
             outcolors = vtk.vtkFloatArray()
-    else:
-        # this is really specific to our code, perhaps there is a more
-        # general way
-        if inpd.GetCellData().GetNumberOfArrays() > 0:
-            # look for our arrays by name
-            if verbose:
-                print "<filter.py> looking for arrays"
+
+    # check for cell data arrays to keep
+    if preserve_cell_data:
+        if incelldata.GetNumberOfArrays() > 0:
+            cell_data_array_indices = range(incelldata.GetNumberOfArrays())            
+            for idx in cell_data_array_indices:
+                array = incelldata.GetArray(idx)
+                dtype = array.GetDataType()
+                if dtype == 10:
+                    out_array = vtk.vtkFloatArray()
+                elif dtype == 6:
+                    out_array = vtk.vtkIntArray()
+                elif dtype == 3:
+                    out_array = vtk.vtkUnsignedCharArray()
+                else:
+                    out_array = vtk.vtkFloatArray()
+                out_array.SetNumberOfComponents(array.GetNumberOfComponents())
+                out_array.SetName(array.GetName())
+                outcelldata.AddArray(out_array)
+                # make sure some scalars are active so rendering works
+                outpd.GetCellData().SetActiveScalars(array.GetName())
+                
             if inpd.GetCellData().GetArray('ClusterNumber'):
-                array = vtk.vtkIntArray()
-                array.SetName('ClusterNumber')
-                outpd.GetCellData().AddArray(array)
                 # this will be active unless we have embedding colors
                 outpd.GetCellData().SetActiveScalars('ClusterNumber')
             if inpd.GetCellData().GetArray('EmbeddingColor'):
-                array = vtk.vtkUnsignedCharArray()
-                array.SetNumberOfComponents(3)
-                array.SetName('EmbeddingColor')
-                outpd.GetCellData().AddArray(array)
                 outpd.GetCellData().SetActiveScalars('EmbeddingColor')
-                print "<filter.py> added array embed color"
-            if inpd.GetCellData().GetArray('EmbeddingCoordinate'):
-                array = vtk.vtkFloatArray()
-                ncomp = inpd.GetCellData().GetArray('EmbeddingCoordinate').GetNumberOfComponents()
-                array.SetNumberOfComponents(ncomp)
-                array.SetName('EmbeddingCoordinate')
-                outpd.GetCellData().AddArray(array)
+
+        else:
+            preserve_cell_data = False
 
     #check for point data arrays to keep
     if preserve_point_data:
@@ -233,6 +239,8 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
                 outpointdata.AddArray(out_array)
+                # make sure some scalars are active so rendering works
+                outpd.GetPointData().SetActiveScalars(array.GetName())
         else:
             preserve_point_data = False
                 
@@ -272,13 +280,12 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False):
                     outcolors.InsertNextTuple3(color[lidx,0], color[lidx,1], color[lidx,2])
                 else:
                     outcolors.InsertNextTuple1(color[lidx])
-            else:
-                if outpd.GetCellData().GetArray('EmbeddingColor'):
-                    outpd.GetCellData().GetArray('EmbeddingColor').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingColor').GetTuple(lidx))
-                if outpd.GetCellData().GetArray('ClusterNumber'):
-                    outpd.GetCellData().GetArray('ClusterNumber').InsertNextTuple(inpd.GetCellData().GetArray('ClusterNumber').GetTuple(lidx))
-                if outpd.GetCellData().GetArray('EmbeddingCoordinate'):
-                    outpd.GetCellData().GetArray('EmbeddingCoordinate').InsertNextTuple(inpd.GetCellData().GetArray('EmbeddingCoordinate').GetTuple(lidx))
+
+            if preserve_cell_data:
+                for idx in cell_data_array_indices:
+                    array = incelldata.GetArray(idx)
+                    out_array = outcelldata.GetArray(idx)
+                    out_array.InsertNextTuple(array.GetTuple(lidx))
 
     # put data into output polydata
     outpd.SetLines(outlines)
