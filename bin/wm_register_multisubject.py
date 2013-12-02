@@ -2,15 +2,9 @@
 
 # Run registration on the test dataset.
 
-import os
-import glob
-import matplotlib.pyplot as plt
-import numpy
-import time
-import multiprocessing
 import argparse
-
-import vtk
+import os
+import multiprocessing
 
 try:
     import whitematteranalysis as wma
