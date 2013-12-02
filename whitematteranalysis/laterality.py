@@ -156,7 +156,7 @@ class WhiteMatterLaterality:
             # compare to right hemisphere (reflect fiber first if in left hem)
             ret = Parallel(
                 n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                delayed(similarity.total_similarity_and_distances)(
+                delayed(similarity.total_similarity_for_laterality)(
                     self.fibers.get_fiber(lidx),
                     fiber_array_right,
                     self.fibers.is_left_hem[lidx],
@@ -164,23 +164,23 @@ class WhiteMatterLaterality:
                     sigmasq)
                 for lidx in self.fibers.index_hem)
 
-            ret = zip(*ret)
-            right_hem_total[self.fibers.index_hem] = ret[0]
-            right_hem_distance = ret[1]
+            #ret = zip(*ret)
+            right_hem_total[self.fibers.index_hem] = ret
+            #right_hem_distance = ret[1]
 
             # compare to left hemisphere (reflect fiber first if in right hem)
             ret = Parallel(
                 n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                delayed(similarity.total_similarity_and_distances)(
+                delayed(similarity.total_similarity_for_laterality)(
                     self.fibers.get_fiber(lidx),
                     fiber_array_left,
                     self.fibers.is_right_hem[lidx],
                     self.threshold,
                     sigmasq)
                 for lidx in self.fibers.index_hem)
-            ret = zip(*ret)
-            left_hem_total[self.fibers.index_hem] = ret[0]
-            left_hem_distance = ret[1]
+            #ret = zip(*ret)
+            left_hem_total[self.fibers.index_hem] = ret
+            #left_hem_distance = ret[1]
 
         else:
             right_hem_distance = numpy.zeros([nf, len(self.fibers.index_right_hem)])
@@ -188,25 +188,26 @@ class WhiteMatterLaterality:
 
             # compare to right hemisphere (reflect fiber first if in left hem)
             for lidx in self.fibers.index_hem:
-                ret = similarity.total_similarity_and_distances(
+                ret = similarity.total_similarity_for_laterality(
                     self.fibers.get_fiber(lidx),
                     fiber_array_right,
                     self.fibers.is_left_hem[lidx],
                     self.threshold,
                     sigmasq)
-                right_hem_total[lidx] = ret[0]
-                right_hem_distance[lidx,:] = ret[1]
+                right_hem_total[lidx] = ret
+                #right_hem_total[lidx] = ret[0]
+                #right_hem_distance[lidx,:] = ret[1]
 
             # compare to left hemisphere (reflect fiber first if in right hem)
             for lidx in self.fibers.index_hem:
-                ret = similarity.total_similarity_and_distances(
+                ret = similarity.total_similarity_for_laterality(
                     self.fibers.get_fiber(lidx),
                     fiber_array_left,
                     self.fibers.is_right_hem[lidx],
                     self.threshold,
                     sigmasq)
-                left_hem_total[lidx] = ret[0]
-                left_hem_distance[lidx,:] = ret[1]
+                left_hem_total[lidx] = ret
+                #left_hem_distance[lidx,:] = ret[1]
 
         laterality_index = compute_laterality_index(left_hem_total,
                                                     right_hem_total,
