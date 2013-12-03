@@ -122,9 +122,8 @@ def preprocess(inpd, min_length_mm,
 
     outpd.SetLines(outlines)
 
-    if verbose:
-        msg = outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
-        print "<filter.py> Number of lines:", msg
+    msg = outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
+    print "<filter.py> Number of lines kept in preprocess:", msg
 
     if return_indices:
         return outpd, numpy.array(line_indices)
