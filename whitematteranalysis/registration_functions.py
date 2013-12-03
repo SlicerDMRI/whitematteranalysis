@@ -211,11 +211,15 @@ def run_multisubject_registration(input_directory, outdir,
             wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
 
             iter_count_new = len(register.objective_function_values)
-            plt.figure() # to avoid all results on same plot
-            #plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-            # plot just the most recent scale's objective. otherwise the y axis range is too large.
-            plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
-            plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+            if no_render:
+                print "<register> Intermediate saving of objective function plot off (no render)."
+            else:
+                plt.figure() # to avoid all results on same plot
+                #plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+                # plot just the most recent scale's objective. otherwise the y axis range is too large.
+                plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
+                plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+
             iter_count = iter_count_new
             
     return register, elapsed
