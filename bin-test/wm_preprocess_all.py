@@ -23,7 +23,7 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Applies preprocessing to input directory. Downsamples, removes short fibers. Does not preserve tensors or retain scalar point data.",
+    description="Applies preprocessing to input directory. Downsamples, removes short fibers. Preserves tensors and scalar point data along retained fibers.",
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
     version='1.0')
 
@@ -34,16 +34,21 @@ parser.add_argument(
     'outputDirectory',
     help='The output directory should be a new empty directory. It will be created if needed.')
 parser.add_argument(
-    'numberOfFibers', type=int,
+    '-f', action="store", dest="numberOfFibers", type=int,
     help='Number of fibers to keep from each dataset.')
 parser.add_argument(
-    "fiberLength", type=int,
+    '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to keep.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
 
 args = parser.parse_args()
+
+
+if not os.path.isdir(args.inputDirectory):
+    print "Error: Input directory", args.inputDirectory, "does not exist."
+    exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
@@ -56,10 +61,15 @@ print "=====input directory======\n", args.inputDirectory
 print "=====output directory=====\n", args.outputDirectory
 print "=========================="
 
-print "fibers to retain per subject: ", args.numberOfFibers
+if args.numberOfFibers is not None:
+    print "fibers to retain per subject: ", args.numberOfFibers
+else:
+    print "fibers to retain per subject: ALL"
 
 if args.fiberLength is not None:
     print "minimum length of fibers to retain (in mm): ", args.fiberLength
+else:
+    print "minimum length of fibers to retain (in mm): 0"
 
 print 'CPUs detected:', multiprocessing.cpu_count()
 if args.numberOfJobs is not None:
@@ -92,33 +102,47 @@ def pipeline(inputPolyDatas, sidx, args):
     subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
     id_msg = "<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)  
     msg = "**Starting subject:", subjectID
-    print id_msg, msg
+    print(id_msg + msg)
 
     # read input vtk data
     # -------------------
     msg = "**Reading input:", subjectID
-    print id_msg, msg
+    print(id_msg + msg)
 
     wm = wma.io.read_polydata(inputPolyDatas[sidx])
 
+    num_lines = wm.GetNumberOfLines()
+    print "Input number of fibers", num_lines
+    
     # remove short fibers
     # -------------------
-    msg = "**Preprocessing:", subjectID
-    print id_msg, msg
+    wm2 = None
+    if args.fiberLength is not None:
+        msg = "**Preprocessing:", subjectID
+        print(id_msg + msg)
+        wm2 = wma.filter.preprocess(wm, args.fiberLength)
+        print "Number of fibers retained: ", wm2.GetNumberOfLines(), "/", num_lines
 
-    wm2 = wma.filter.preprocess(wm, args.fiberLength)
-    del wm
-    print "Number of fibers retained: ", wm2.GetNumberOfLines()
+    if wm2 is None:
+        wm2 = wm
+    else:
+        del wm
         
     # downsample 
     # -------------------
-    msg = "**Downsampling input:", subjectID, " number of fibers: ", args.numberOfFibers
-    print id_msg, msg
+    wm3 = None
+    if args.numberOfFibers is not None:
+        msg = "**Downsampling input:", subjectID, " number of fibers: ", args.numberOfFibers
+        print(id_msg + msg)
 
-    # , preserve_point_data=True needs editing of preprocess function to use mask function
-    wm3 = wma.filter.downsample(wm2, args.numberOfFibers)
-    del wm2
-    print "Number of fibers retained: ", wm3.GetNumberOfLines()
+        # , preserve_point_data=True needs editing of preprocess function to use mask function
+        wm3 = wma.filter.downsample(wm2, args.numberOfFibers)
+        print "Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines
+
+    if wm3 is None:
+        wm3 = wm2
+    else:
+        del wm2
         
     # outputs
     # -------------------
