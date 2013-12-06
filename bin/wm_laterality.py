@@ -159,7 +159,9 @@ for sidx in range(0, len(inputPolyDatas)):
     if args.sigma is not None:
         laterality.sigma = args.sigma
     if args.threshold is not None:
-        laterality.threshold = args.threshold
+        laterality.threshold = float(args.threshold)
+    else:
+        laterality.threshold = 0.0
     if args.flag_equalFibers:
         laterality.equal_fiber_num = True
     else:
