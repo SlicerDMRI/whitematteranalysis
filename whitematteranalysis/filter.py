@@ -428,7 +428,7 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=2, distance_method ='Mean')
     min_fiber_distance = min_fiber_distance * min_fiber_distance
     
     # pairwise distance matrix
-    if USE_PARALLEL:
+    if USE_PARALLEL and n_jobs > 0:
         distances = Parallel(n_jobs=n_jobs, verbose=1)(
             delayed(similarity.fiber_distance)(
                 fiber_array.get_fiber(lidx),
