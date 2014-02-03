@@ -12,51 +12,24 @@ import os
 number_of_jobs = multiprocessing.cpu_count()
 print 'CPUs detected:', number_of_jobs
 
-print 'Read and preprocess'
-
 # these are small with only 500 fibers each
-indir = 'test_data'
+input_directory = 'test_data'
 outdir = 'test_cluster_results'
 
 # parameters for clustering creation
 number_of_clusters = 20
 #number_of_fibers_per_subject = 3000
 number_of_fibers_per_subject = 500
-minimum_length = 40
+fiber_length = 40
 number_of_sampled_fibers = 500
 number_of_eigenvectors = 15
 sigma = 50
 
-# read all polydata in the directory
-#input_mask = "{0}/*.vtp".format(indir)
-input_mask = "{0}/*.vtk".format(indir)
-input_poly_datas = glob.glob(input_mask)
+# read and process input
+print 'Read and preprocess'
+input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers_per_subject)
 
-if len(input_poly_datas) == 0:
-    print ""
-    print "ERROR: no polydatas found in input directory:"
-    print input_mask
-    print "<cluster_atlas> exiting."
-    sys.exit(0) 
-
-print input_poly_datas
-
-# below this line the pds are read and clustered
-number_of_subjects = len(input_poly_datas)
-
-# read in data
-input_pds = list()
-for fname in input_poly_datas:
-    print fname
-    pd = wma.io.read_polydata(fname)
-    #print pd
-    pd2 = wma.filter.preprocess(pd, minimum_length)
-    pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject)
-    input_pds.append(pd3)
-    #print pd3
-    del pd
-    del pd2
-    del pd3
+number_of_subjects = len(subject_ids)
 
 # append input data into one object
 appender = vtk.vtkAppendPolyData()
