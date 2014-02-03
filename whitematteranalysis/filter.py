@@ -408,30 +408,33 @@ def remove_hemisphere(inpd, hemisphere=-1):
     return outpd
 
 
-def remove_outliers(inpd, min_fiber_distance, n_jobs=2):
+def remove_outliers(inpd, min_fiber_distance, n_jobs=2, distance_method ='Mean'):
     """ Remove fibers that have no other nearby fibers, i.e. outliers.
 
     The pairwise fiber distance matrix is computed, then fibers
-    are rejected if their average neighbor distance (using top 3
+    are rejected if their average neighbor distance (using closest 3
     neighbors) is higher than min_fiber_distance.
 
     """
 
     fiber_array = fibers.FiberArray()
-    fiber_array.points_per_fiber = 5
+    #fiber_array.points_per_fiber = 5
+    fiber_array.points_per_fiber = 10
     fiber_array.convert_from_polydata(inpd)
 
     fiber_indices = range(0, fiber_array.number_of_fibers)
 
-    sigmasq = 10 * 10
-
+    # squared distances are computed
+    min_fiber_distance = min_fiber_distance * min_fiber_distance
+    
     # pairwise distance matrix
     if USE_PARALLEL:
         distances = Parallel(n_jobs=n_jobs, verbose=1)(
             delayed(similarity.fiber_distance)(
                 fiber_array.get_fiber(lidx),
                 fiber_array,
-                0)
+                threshold = 0,
+                distance_method = distance_method)
             for lidx in fiber_indices)
 
         distances = numpy.array(distances)
@@ -440,14 +443,15 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=2):
         distances = numpy.zeros((fiber_array.number_of_fibers, fiber_array.number_of_fibers))
         for lidx in fiber_indices:
             distances[lidx, :] = \
-                similarity.fiber_distance(fiber_array.get_fiber(lidx), fiber_array, 0)
+                similarity.fiber_distance(fiber_array.get_fiber(lidx), fiber_array, 0,  distance_method = distance_method)
 
     # now we check where there are no nearby fibers in d
-    fiber_mask = numpy.ones(fiber_array.number_of_fibers)
+    #fiber_mask = numpy.ones(fiber_array.number_of_fibers)
     mindist = numpy.zeros(fiber_array.number_of_fibers)
     for lidx in fiber_indices:
         dist = numpy.sort(distances[lidx, :])
-        mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3
+        mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
+        #mindist[lidx] = (dist[1] + dist[2]) / 2.0
         #print mindist[lidx], dist[-1]
         #fiber_mask[lidx] = (mindist[lidx] < 5)
 
@@ -459,8 +463,9 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=2):
         print "<filter.py> Number retained after outlier removal: ", num_fibers
 
     outpd = mask(inpd, fiber_mask, mindist)
+    outpd_reject = mask(inpd, ~fiber_mask, mindist)
 
-    return outpd
+    return outpd, fiber_mask, outpd_reject
 
 def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper_thresh=30):
     """ Average nearby fibers.
