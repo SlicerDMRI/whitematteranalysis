@@ -31,6 +31,14 @@ import filter
 import render
 import io
 
+try:    
+    from sklearn.cluster import AffinityPropagation
+    from sklearn import metrics
+except ImportError:
+    SKLEARN = 0
+    print "<cluster.py> Failed to import sklearn, cannot use affinity propagation."
+    print "<cluster.py> Please install sklearn for this functionality."
+    
 class ClusterAtlas:
     """Variables necessary to label a new subject from a spectral cluster atlas."""
 
@@ -97,7 +105,7 @@ def hierarchical(input_polydata, number_of_clusters=300,
 def spectral(input_polydata, number_of_clusters=300,
              number_of_eigenvectors=10, sigma=20, threshold=2,
              number_of_jobs=3, use_nystrom=False, nystrom_mask = None,
-             landmarks=None):
+             landmarks=None, distance_method='Hausdorff', normalized_cuts = True):
 
     """ Spectral clustering based on pairwise fiber affinity matrix.
 
@@ -159,55 +167,102 @@ def spectral(input_polydata, number_of_clusters=300,
         # Calculate fiber similarities
         A = \
             _pairwise_similarity_matrix(polydata_m, threshold,
-                                        sigma, number_of_jobs, landmarks_m)
+                                        sigma, number_of_jobs, landmarks_m, distance_method)
         B = \
             _rectangular_similarity_matrix(polydata_n, polydata_m, threshold,
-                                           sigma, number_of_jobs, landmarks_n, landmarks_m)
+                                           sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method)
         atlas.sigma = sigma
     else:
         # Calculate all fiber similarities
         A = \
             _pairwise_similarity_matrix(input_polydata, threshold,
-                                    sigma, number_of_jobs, landmarks)
+                                    sigma, number_of_jobs, landmarks, distance_method)
 
+        # test longer-range similarities
+        # need literature search here
+        #A = similarity.update_test(A)
+        
+    testval = numpy.max(A-A.T) 
+    if not testval == 0.0:
+        if testval > 1e-10:
+            print "<cluster.py> ERROR: A matrix is not symmetric."
+            raise AssertionError
+        else:
+            print "Maximum of A - A^T:", testval
+            A = numpy.divide(A+A.T, 2.0)
+        
+    testval = numpy.min(A)
+    if not testval > 0.0:
+        print "<cluster.py> ERROR: A matrix is not positive."
+        print "Minimum value in A: ", testval
+        if testval < 0.0:
+            raise AssertionError
+   
     # 2) Do Normalized Cuts transform of similarity matrix.
     # See the paper: "Spectral Grouping Using the Nystrom Method"
     # (D^-1/2 W D^-1/2) V = V Lambda
-    if use_nystrom:
-        # calculate the sum of the rows we know from the full matrix
-        atlas.row_sum_1 = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)        
-        # approximate the sum of the columns
-        # weights for approximating row sum use the known columns of B'
-        # pseudo inverse of A is needed for atlas (?)
-        atlas.pinv_A = numpy.linalg.pinv(A)  
+    if normalized_cuts:
+        if use_nystrom:
+            # calculate the sum of the rows we know from the full matrix
+            atlas.row_sum_1 = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)        
+            # approximate the sum of the columns
+            # weights for approximating row sum use the known columns of B'
+            # pseudo inverse of A is needed for atlas
+            # this may lead to negative eigenvalues below, for smaller values of sigma.
+            #atlas.pinv_A = numpy.linalg.pinv(A)  
+            # construct an approximate inverse using the largest eigenvalues of A.
+            # approximate the inverse of A for dual basis
+            # using A's top eigenvectors (must have pos eigenvalues)
 
-        e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
-        print "test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
+            numA = len(A)
+            nvec = 40
+            if nvec > numA / 2.0:
+                nvec = numpy.round(numA / 2)
+            if nvec < number_of_eigenvectors + 1:
+                nvec = number_of_eigenvectors + 1
 
-        # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
-        # this matrix is needed for atlas.
-        atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
-        # row sum estimate for current B part of the matrix
-        row_sum_2 = numpy.sum(B, axis=0) + \
-            numpy.dot(atlas.row_sum_matrix, B)
-        print "row sum check", numpy.min(atlas.row_sum_1), \
-            numpy.max(atlas.row_sum_1), numpy.min(row_sum_2), \
-            numpy.max(row_sum_2)
-        print "check 2:", numpy.min(numpy.sum(B.T, axis=0)), numpy.min(atlas.row_sum_matrix)
+            val, vec = numpy.linalg.eigh(A)
+            # numpy.dot(numpy.dot(vec,numpy.diag(val)),vec.T)
+            ind = numpy.argsort(val)
+            ##mask = val > 2.0
+            mask = ind[-nvec:-1]
+            vec2 = vec[:,mask]
+            val2 = val[mask]
+            #print val2
+            #print numpy.divide(1.0,val2)
+            print val.shape
+            #A2 = numpy.dot(numpy.dot(vec2,numpy.diag(val2)),vec2.T)
+            atlas.pinv_A = numpy.dot(numpy.dot(vec2,numpy.diag(numpy.divide(1.0,val2))),vec2.T)
+        
+            e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
+            print "test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
 
-        # normalized cuts normalization
-        dhat = numpy.sqrt(numpy.divide(1, numpy.concatenate((atlas.row_sum_1, row_sum_2))))
+            print "test B:", numpy.min(numpy.sum(B.T, axis=0))
+        
+            # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
+            # this matrix is needed for atlas.
+            atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
+            # row sum estimate for current B part of the matrix
+            row_sum_2 = numpy.sum(B, axis=0) + \
+                numpy.dot(atlas.row_sum_matrix, B)
+            print "row sum check", numpy.min(atlas.row_sum_1), \
+                numpy.max(atlas.row_sum_1), numpy.min(row_sum_2), \
+                numpy.max(row_sum_2)
+            print "check 2:", numpy.min(numpy.sum(B.T, axis=0)), numpy.min(atlas.row_sum_matrix)
 
-        A = \
-            numpy.multiply(A, numpy.outer(dhat[0:sz], dhat[0:sz].T))
-        B = \
-            numpy.multiply(B, numpy.outer(dhat[0:sz], dhat[sz:].T))
-    else:
-        # normalized cuts normalization using row (same as column) sums
-        row_sum = numpy.sum(A, axis=0)
-        dhat = numpy.divide(1, numpy.sqrt(row_sum))
-        A = \
-            numpy.multiply(A, numpy.outer(dhat, dhat.T))
+            # normalized cuts normalization
+            dhat = numpy.sqrt(numpy.divide(1, numpy.concatenate((atlas.row_sum_1, row_sum_2))))
+
+            A = \
+                numpy.multiply(A, numpy.outer(dhat[0:sz], dhat[0:sz].T))
+            B = \
+                numpy.multiply(B, numpy.outer(dhat[0:sz], dhat[sz:].T))
+        else:
+            # normalized cuts normalization using row (same as column) sums
+            row_sum = numpy.sum(A, axis=0)
+            dhat = numpy.divide(1, numpy.sqrt(row_sum))
+            A = \
+                numpy.multiply(A, numpy.outer(dhat, dhat.T))
 
     # 3) Compute eigenvectors for use in spectral embedding
     print '<cluster.py> Calculating eigenvectors of similarity matrix A...'
@@ -267,11 +322,37 @@ def spectral(input_polydata, number_of_clusters=300,
 
     atlas.number_of_eigenvectors = number_of_eigenvectors
 
+    #centroid_finder = 'AffinityPropagation'
+    centroid_finder = 'K-means'
+    
     # 5) Find clusters using k-means in embedding space.
-    print '<cluster.py> K-means clustering in embedding space.'
-    atlas.centroids, distortion = scipy.cluster.vq.kmeans(embed, number_of_clusters)
-    cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
+    cluster_metric = None
+    if centroid_finder == 'K-means':
+        print '<cluster.py> K-means clustering in embedding space.'
+        atlas.centroids, cluster_metric = scipy.cluster.vq.kmeans(embed, number_of_clusters)
+        cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
+        print "Distortion metric:", cluster_metric
+        cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
+        print("Silhouette Coefficient: %0.3f" % cluster_metric)
+ 
+    else:
+        print '<cluster.py> Affinity Propagation clustering in embedding space.'
+        af = AffinityPropagation(preference=-50).fit(embed)
+        cluster_centers_indices = af.cluster_centers_indices_
+        labels = af.labels_
+        n_clusters_ = len(cluster_centers_indices)
 
+        print('Estimated number of clusters: %d' % n_clusters_)
+
+        cluster_idx = labels
+        for k in range(n_clusters_):
+            class_members = labels == k
+            atlas.centroids = embed[cluster_centers_indices[k]]
+
+        # return metrics
+        cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
+        print("Silhouette Coefficient: %0.3f" % cluster_metric)
+        
     # 6) Output results.
     print '<cluster.py> Done spectral clustering, returning results.'
     # visualize embedding coordinates as RGB
@@ -284,7 +365,7 @@ def spectral(input_polydata, number_of_clusters=300,
     output_polydata = \
         _format_output_polydata(output_polydata, cluster_idx, color, embed)
 
-    return output_polydata, cluster_idx, color, embed, distortion, atlas
+    return output_polydata, cluster_idx, color, embed, cluster_metric, atlas
 
 
 def view_cluster_number(input_polydata, cluster_number, cluster_indices=None):
@@ -365,7 +446,8 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     return output_polydata, cluster_idx, color, embed
 
 def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
-                              number_of_jobs=3, landmarks_n=None, landmarks_m=None):
+                              number_of_jobs=3, landmarks_n=None, landmarks_m=None,
+                              distance_method='Hausdorff'):
 
     """ Internal convenience function available to clustering
     routines.
@@ -378,9 +460,9 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
     """
 
     fiber_array_n = fibers.FiberArray()
-    fiber_array_n.convert_from_polydata(input_polydata_n)
+    fiber_array_n.convert_from_polydata(input_polydata_n, points_per_fiber=10)
     fiber_array_m = fibers.FiberArray()
-    fiber_array_m.convert_from_polydata(input_polydata_m)
+    fiber_array_m.convert_from_polydata(input_polydata_m, points_per_fiber=10)
 
     if landmarks_n is None:
         landmarks_n = numpy.zeros((fiber_array_n.number_of_fibers,3))
@@ -393,7 +475,7 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
         delayed(similarity.fiber_distance)(
             fiber_array_n.get_fiber(lidx),
             fiber_array_m,
-            threshold, distance_method='Hausdorff',
+            threshold, distance_method=distance_method,
             fiber_landmarks=landmarks_n[lidx,:], 
             landmarks=landmarks_m)
         for lidx in all_fibers_n)
@@ -403,7 +485,7 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
     return distances
 
 def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold, sigma,
-                                number_of_jobs=3, landmarks_n=None, landmarks_m=None):
+                                number_of_jobs=3, landmarks_n=None, landmarks_m=None, distance_method='Hausdorff'):
 
     """ Internal convenience function available to clustering
     routines.
@@ -417,17 +499,19 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
     """
 
     distances = _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
-                                             number_of_jobs, landmarks_n, landmarks_m)
+                                             number_of_jobs, landmarks_n, landmarks_m, distance_method)
 
-    # similarity matrix
-    sigmasq = sigma * sigma
-
-    similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
+    if distance_method == 'StrictSimilarity':
+        similarity_matrix = distances
+    else:
+        # similarity matrix
+        sigmasq = sigma * sigma
+        similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
 
     return similarity_matrix
 
 def _pairwise_distance_matrix(input_polydata, threshold,
-                              number_of_jobs=3, landmarks=None):
+                              number_of_jobs=3, landmarks=None, distance_method='Hausdorff'):
 
     """ Internal convenience function available to clustering
     routines.
@@ -438,7 +522,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     """
 
     fiber_array = fibers.FiberArray()
-    fiber_array.convert_from_polydata(input_polydata)
+    fiber_array.convert_from_polydata(input_polydata, points_per_fiber=10)
 
     # pairwise distance matrix
     all_fibers = range(0, fiber_array.number_of_fibers)
@@ -453,7 +537,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
         delayed(similarity.fiber_distance)(
             fiber_array.get_fiber(lidx),
             fiber_array,
-            threshold, distance_method='Hausdorff', 
+            threshold, distance_method=distance_method, 
             fiber_landmarks=landmarks2[lidx,:], 
             landmarks=landmarks)
         for lidx in all_fibers)
@@ -465,7 +549,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     return distances
 
 def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
-                                number_of_jobs=3, landmarks=None):
+                                number_of_jobs=3, landmarks=None, distance_method='Hausdorff'):
 
     """ Internal convenience function available to clustering
     routines.
@@ -479,12 +563,14 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
     """
 
     distances = _pairwise_distance_matrix(input_polydata, threshold,
-                                          number_of_jobs, landmarks)
-
-    # similarity matrix
-    sigmasq = sigma * sigma
-
-    similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
+                                          number_of_jobs, landmarks, distance_method)
+    
+    if distance_method == 'StrictSimilarity':
+        similarity_matrix = distances
+    else:
+        # similarity matrix
+        sigmasq = sigma * sigma
+        similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
 
     # sanity check that on-diagonal elements are all 1
     #print "This should be 1.0: ", numpy.min(numpy.diag(similarity_matrix))
@@ -495,6 +581,9 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
         test = numpy.min(numpy.diag(similarity_matrix)) == 1.0
         if not test:
             print "<cluster.py> ERROR: On-diagonal elements are not all 1.0."
+            print" Minimum on-diagonal value:", numpy.min(numpy.diag(similarity_matrix))
+            print" Maximum on-diagonal value:", numpy.max(numpy.diag(similarity_matrix))
+            print" Mean value:", numpy.mean(numpy.diag(similarity_matrix))
             raise AssertionError
 
     return similarity_matrix
