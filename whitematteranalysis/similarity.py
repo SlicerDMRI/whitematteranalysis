@@ -9,7 +9,7 @@ def distance_to_similarity(distance, sigmasq=100):
 
     return similarities
 
-def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=None):
+def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400):
     """
 
     Find pairwise fiber distance from fiber to all fibers in fiber_array.
@@ -32,11 +32,16 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
 
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
-    distance = numpy.minimum(distance_1, distance_2)
+    if distance_method == 'StrictSimilarity':
+        # for use in laterality
+        # this is the product of all similarity values along the fiber
+        distance = numpy.maximum(distance_1, distance_2)
+    else:
+        distance = numpy.minimum(distance_1, distance_2)
     
     return distance
 
-def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=100):
+def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=None):
     """ Compute the total fiber distance from one fiber to an array of
     many fibers.
 
@@ -85,14 +90,17 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         distance = numpy.sum(distance, 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
-        distance = distance / (npts * npts)
+        distance = distance / npts
     elif distance_method == 'StrictSimilarity':
         # for use in laterality
         # this is the product of all similarity values along the fiber
         # not truly a distance but it's easiest to compute here in this function
         # where we have all distances along the fiber
+        #print "distance range :", numpy.min(distance), numpy.max(distance)
         distance = distance_to_similarity(distance, sigmasq)
+        #print "similarity range :", numpy.min(distance), numpy.max(distance)        
         distance = numpy.prod(distance, 1)
+        #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
         
     else:
         print "<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method
