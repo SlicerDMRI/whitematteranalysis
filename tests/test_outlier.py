@@ -11,7 +11,7 @@ pd = wma.io.read_polydata(fname)
 
 #print pd
 min_fiber_distance = 15.0
-n_jobs = 4
+n_jobs = 0
 distance_method ='Mean'
 #distance_method ='Hausdorff'
 keep, mask, reject = wma.filter.remove_outliers(pd, min_fiber_distance, n_jobs=n_jobs, distance_method = distance_method)
