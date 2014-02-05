@@ -408,7 +408,7 @@ def remove_hemisphere(inpd, hemisphere=-1):
     return outpd
 
 
-def remove_outliers(inpd, min_fiber_distance, n_jobs=2, distance_method ='Mean'):
+def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean'):
     """ Remove fibers that have no other nearby fibers, i.e. outliers.
 
     The pairwise fiber distance matrix is computed, then fibers
@@ -439,22 +439,24 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=2, distance_method ='Mean')
 
         distances = numpy.array(distances)
 
-    else:
-        distances = numpy.zeros((fiber_array.number_of_fibers, fiber_array.number_of_fibers))
+        # now we check where there are no nearby fibers in d
+        mindist = numpy.zeros(fiber_array.number_of_fibers)
         for lidx in fiber_indices:
-            distances[lidx, :] = \
-                similarity.fiber_distance(fiber_array.get_fiber(lidx), fiber_array, 0,  distance_method = distance_method)
+            dist = numpy.sort(distances[lidx, :])
+            # robust minimum distance
+            mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
+            #mindist[lidx] = (dist[1] + dist[2]) / 2.0
 
-    # now we check where there are no nearby fibers in d
-    #fiber_mask = numpy.ones(fiber_array.number_of_fibers)
-    mindist = numpy.zeros(fiber_array.number_of_fibers)
-    for lidx in fiber_indices:
-        dist = numpy.sort(distances[lidx, :])
-        mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
-        #mindist[lidx] = (dist[1] + dist[2]) / 2.0
-        #print mindist[lidx], dist[-1]
-        #fiber_mask[lidx] = (mindist[lidx] < 5)
-
+    else:
+        # do this in a loop to use less memory. then parallelization can 
+        # happen over the number of subjects.
+        mindist = numpy.zeros(fiber_array.number_of_fibers)
+        for lidx in fiber_indices:
+            distances = similarity.fiber_distance(fiber_array.get_fiber(lidx), fiber_array, 0,  distance_method = distance_method)
+            dist = numpy.sort(distances)
+            # robust minimum distance
+            mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
+            
     # keep only fibers who have nearby similar fibers
     fiber_mask = mindist < min_fiber_distance
 
