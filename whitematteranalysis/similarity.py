@@ -201,6 +201,7 @@ def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='Me
     whole brain, etc).
 
     """
+    
     distance = fiber_distance(fiber, fiber_array, threshold, distance_method)
     similarity = distance_to_similarity(distance, sigmasq)
 
