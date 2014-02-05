@@ -5,9 +5,9 @@ output in MRML scene file format (XML)
 """
 import os
 
-def write(pd_filenames, colors, filename):
+def write(pd_filenames, colors, filename, ratio=1.0):
     writer = WriteMRML()
-    writer.write(pd_filenames, colors, filename)
+    writer.write(pd_filenames, colors, filename, ratio)
     del writer
     print "LAUREN figure out subsampling ratio that is reasonable for the data"
     
@@ -20,7 +20,7 @@ class WriteMRML:
         self.node_id = 0
         self.props_id = 0
         
-    def write(self, pd_filenames, colors, filename):
+    def write(self, pd_filenames, colors, filename, ratio=1.0):
         #print "converting colors to strings"
         color_list = list()
         for cidx in range(len(colors)):
@@ -32,11 +32,11 @@ class WriteMRML:
         f.write(self.header)
         for pidx in range(len(pd_filenames)):
             name = os.path.splitext(os.path.split(pd_filenames[pidx])[1])[0]
-            self.write_node(pd_filenames[pidx], color_list[pidx], name, f)
+            self.write_node(pd_filenames[pidx], color_list[pidx], name, f, ratio)
         f.write(self.footer)
         f.close()
         
-    def write_node(self, pd_fname, color, name, f):
+    def write_node(self, pd_fname, color, name, f, ratio):
 
         self.node_id += 1
         idx = self.node_id
@@ -118,7 +118,8 @@ class WriteMRML:
         f.write("vtkMRMLFiberBundleGlyphDisplayNode" + str(idx) + ";")
         f.write("storage:")
         f.write("vtkMRMLFiberBundleStorageNode" + str(idx) + ";\"  ")
-        f.write("userTags=\"\"  SelectWithAnnotationNode=\"0\"  SelectionWithAnnotationNodeMode=\"0\"  SubsamplingRatio=\"1\" ></FiberBundle>")
+        f.write("userTags=\"\"  SelectWithAnnotationNode=\"0\"  SelectionWithAnnotationNodeMode=\"0\"  ")
+        f.write("SubsamplingRatio=\"" + str(ratio) + "\" ></FiberBundle>")
         f.write("\n")
 
         for prop in props:
