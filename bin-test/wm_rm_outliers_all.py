@@ -23,7 +23,7 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Applies preprocessing to input directory. Downsamples, removes short fibers. Preserves tensors and scalar point data along retained fibers.",
+    description="Applies outlier removal to input directory. Removes any fiber whose closest 3 neighbors' average distance is larger than the input distance threshold."
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
     version='1.0')
 
@@ -84,7 +84,7 @@ inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
 
 inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
 
-print "<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)
+print "<wm_outlier.py> Input number of files: ", len(inputPolyDatas)
 
 # for testing
 #inputPolyDatas = inputPolyDatas[0:2]
@@ -93,7 +93,7 @@ def pipeline(inputPolyDatas, sidx, args):
     # get subject identifier from unique input filename
     # -------------------
     subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
-    id_msg = "<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)  
+    id_msg = "<wm_outlier.py> ", sidx + 1, "/", len(inputPolyDatas)  
     msg = "**Starting subject:", subjectID
     print(id_msg + msg)
 
@@ -111,7 +111,7 @@ def pipeline(inputPolyDatas, sidx, args):
     # -------------------
     wm2 = None
     if args.distanceThreshold is not None:
-        msg = "**Downsampling input:", subjectID, " number of fibers: ", args.distanceThreshold
+        msg = "**Removing outliers from input:", subjectID, "neighbor threshold in mm: ", args.distanceThreshold
         print(id_msg + msg)
 
         # , preserve_point_data=True needs editing of preprocess function to use mask function
