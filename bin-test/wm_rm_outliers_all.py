@@ -23,9 +23,13 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Applies outlier removal to input directory. Removes any fiber whose closest 3 neighbors' average distance is larger than the input distance threshold."
-    epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
-    version='1.0')
+    description="Applies outlier removal to input directory. Removes any fiber whose closest 3 neighbors' average distance is larger than the input distance threshold.",
+    epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
+
+parser.add_argument("-v", "--version",
+    action="version", default=argparse.SUPPRESS,
+    version='1.0',
+    help="Show program's version number and exit")
 
 parser.add_argument(
     'inputDirectory',
