@@ -127,7 +127,10 @@ def run_registration(input_poly_data, outdir, number_of_fibers=150,
     trans.Scale(-1,1,1)
     transformer = vtk.vtkTransformPolyDataFilter()
     transformer.SetTransform(trans)
-    transformer.SetInputData(pd4)
+    if (vtk.vtkVersion().GetVTKMajorVersion() > 5.0):
+        transformer.SetInputData(pd4)
+    else:
+        transformer.SetInput(pd4)
     transformer.Update()
     pd5 = transformer.GetOutput()
     # append input and its reflection to list of data to register
@@ -290,8 +293,12 @@ print "Re-reading and transforming original data to aligned. Writing outputs."
 # half of transform 1 times transform 2 inverse
 
 tx = register.convert_transforms_to_vtk()
+print tx[0]
+print tx[1]
 tx[1].Inverse()
 tx[0].Concatenate(tx[1])
+
+print tx[0]
 
 txs = vtk.vtkTransform()
 m = vtk.vtkMatrix4x4()
@@ -306,11 +313,16 @@ for i in range(0,4):
 
 txs.SetMatrix(m)
 
+print m
+
 pd = wma.io.read_polydata(input_poly_data)
 
 trans = vtk.vtkTransformPolyDataFilter()
 trans.SetTransform(txs)
-trans.SetInputData(pd)
+if (vtk.vtkVersion().GetVTKMajorVersion() > 5.0):
+    trans.SetInputData(pd)
+else:
+    trans.SetInput(pd)
 trans.Update()
 
 outdir_current =  os.path.join(outdir, 'output')
