@@ -93,6 +93,8 @@ class RenderPolyData:
 
         # scalar bar        
         self.scalarbar = vtk.vtkScalarBarActor()
+        # To avoid uninitialized warning in VTK 6
+        self.scalarbar.SetTitle("") 
         # black text since background is white for printing
         self.scalarbar.GetLabelTextProperty().SetColor(0, 0, 0)
         self.scalarbar.GetTitleTextProperty().SetColor(0, 0, 0)
