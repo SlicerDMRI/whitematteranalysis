@@ -9,7 +9,6 @@ def write(pd_filenames, colors, filename, ratio=1.0):
     writer = WriteMRML()
     writer.write(pd_filenames, colors, filename, ratio)
     del writer
-    print "LAUREN figure out subsampling ratio that is reasonable for the data"
     
 class WriteMRML:
     
