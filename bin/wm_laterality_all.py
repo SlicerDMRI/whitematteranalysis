@@ -16,9 +16,12 @@ except:
 #-----------------
 parser = argparse.ArgumentParser(
     description="Applies white matter laterality pipeline to input directory.",
-    epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
-    version='1.0')
+    epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
 
+parser.add_argument("-v", "--version",
+    action="version", default=argparse.SUPPRESS,
+    version='1.0',
+    help="Show program's version number and exit")
 parser.add_argument(
     'inputDirectory',
     help='Contains whole-brain tractography as vtkPolyData file(s).')
@@ -32,10 +35,10 @@ parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to analyze.')
 parser.add_argument(
-    '-s', action="store", dest="sigma", type=int,
-    help='Sigma for laterality computation. Useful range 5-15 (mm).')
+    '-s', action="store", dest="sigma", type=float,
+    help='Sigma for laterality computation. Useful values are near 50 (mm).')
 parser.add_argument(
-    '-t', action="store", dest="threshold", type=int,
+    '-t', action="store", dest="threshold", type=float,
     help='Threshold lower fiber distances to 0. Useful range 0-5mm.')
 parser.add_argument(
     '-rm_outlier', action='store_true', dest="flag_removeOutliers")
