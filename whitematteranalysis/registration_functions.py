@@ -726,6 +726,6 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     all_pds.append(input_pds[0])
     all_pds.append(input_pds[1])
     all_pds.append(trans.GetOutput())
-    ren = wma.registration_functions.view_polydatas(all_pds, 500)
+    ren = wma.registration_functions.view_polydatas(all_pds, 250)
     ren.save_views(outdir_current)
     
