@@ -129,7 +129,7 @@ for sidx in range(0,len(data)) :
 threshold = 60
 #threshold = 40
 # --------------
-gL = numpy.nonzero(handedness <= threshold)[0]
+gL = numpy.nonzero(handedness <= -threshold)[0]
 gR = numpy.nonzero(handedness >= threshold)[0]
 
 # test remove r lang lat by fMRI
