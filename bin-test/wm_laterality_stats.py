@@ -10,8 +10,22 @@ import whitematteranalysis as wma
 inputDirectory = '../.'
 
 inputMask1 = "{0}/*".format(inputDirectory);
-inputDirs = glob.glob(inputMask1)
+inputDirs = sorted(glob.glob(inputMask1))
 
+print inputDirs
+
+# Read groups file, in theory
+###handedness = numpy.array([75, 85, 55, -35, -90, -85, -95, 70, -75, -25, 60, -70, 75, 100, 75, -35, -45, 90, 85, -75, 5, -80, 50, -40, -95, 100])
+###fMRIlat  = numpy.array([0.25, 0.388, 0.291, 0.1885, -0.1605, 0.4435, 0.6385, 0.0455, 0.3805, -0.358, 0.6595, 0.3045, 0.537, 0.236, 0.202, 0.321, 0.4405, 0.038, 0.435, 0.304, 0.1385, 0.667, 0.337, 0.699, 0.31, 0.3925])
+# add new data
+handedness = numpy.array([75, 85, 55, -35, -90, -85, -95, 70, -75, -25, 60, -70, 75, 100, 75, -35, -45, 90, 85, -75, 5, -80, 50, -40, -95, 100, -80, -75, -70])
+# female=1 male=2
+gender = numpy.array([1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 2,   2, 2, 2])
+
+IDs = numpy.array(['AG_5114', 'AG_5123', 'AG_5125', 'AG_5129', 'AG_5131', 'AG_5132', 'AG_5138', 'AG_5139', 'AG_5142', 'AG_5146', 'AG_5147', 'AG_5148', 'AG_5149', 'AG_5150', 'AG_5151', 'AG_5152', 'AG_5153', 'AG_5154', 'AG_5155', 'AG_5156', 'AG_5158', 'AG_5159', 'AG_5160', 'AG_5162', 'AG_5163', 'AG_5205', 'AG_5263', 'AG_5266', 'AG_5268']) 
+
+
+print IDs
 
 def plot_box(data, labels, fname):
     f = plt.figure()
@@ -101,16 +115,6 @@ for sidx in range(0,len(data)) :
     plt.close()
 
     
-# Read groups file, in theory
-###handedness = numpy.array([75, 85, 55, -35, -90, -85, -95, 70, -75, -25, 60, -70, 75, 100, 75, -35, -45, 90, 85, -75, 5, -80, 50, -40, -95, 100])
-###fMRIlat  = numpy.array([0.25, 0.388, 0.291, 0.1885, -0.1605, 0.4435, 0.6385, 0.0455, 0.3805, -0.358, 0.6595, 0.3045, 0.537, 0.236, 0.202, 0.321, 0.4405, 0.038, 0.435, 0.304, 0.1385, 0.667, 0.337, 0.699, 0.31, 0.3925])
-# add new data
-handedness = numpy.array([75, 85, 55, -35, -90, -85, -95, 70, -75, -25, 60, -70, 75, 100, 75, -35, -45, 90, 85, -75, 5, -80, 50, -40, -95, 100, -80, -75, -70])
-# female=1 male=2
-gender = numpy.array([1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 2, 2,   2, 2, 2])
-
-IDs = numpy.array(['AG_5114', 'AG_5123', 'AG_5125', 'AG_5129', 'AG_5131', 'AG_5132', 'AG_5138', 'AG_5139', 'AG_5142', 'AG_5146', 'AG_5147', 'AG_5148', 'AG_5149', 'AG_5150', 'AG_5151', 'AG_5152', 'AG_5153', 'AG_5154', 'AG_5155', 'AG_5156', 'AG_5158', 'AG_5159', 'AG_5160', 'AG_5162', 'AG_5163', 'AG_5205', 'AG_5263', 'AG_5266', 'AG_5268']) 
-
 
 # still need to re-run entire pipeline with optimal parameters and max # fibers possible
 # if need to exclude
