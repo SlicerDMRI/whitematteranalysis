@@ -52,11 +52,12 @@ if not os.path.isdir(args.inputDirectory):
     print "Error: Input directory", args.inputDirectory, "does not exist."
     exit()
 
-if not os.path.isdir(args.outputDirectory):
-    print "Error: Output directory", args.outputDirectory, "does not exist."
-    exit()
-
-print "wm_laterality. Starting white matter laterality computation."
+outdir = args.outputDirectory
+if not os.path.exists(outdir):
+    print "<wm_laterality.py> Output directory", outdir, "does not exist, creating it."
+    os.makedirs(outdir)
+    
+print "<wm_laterality.py> Starting white matter laterality computation."
 print ""
 print "=====input directory======\n", args.inputDirectory
 print "=====output directory=====\n", args.outputDirectory
