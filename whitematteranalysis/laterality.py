@@ -32,7 +32,7 @@ except ImportError:
 from fibers import FiberArray
 import similarity
 from io import LateralityResults
-
+import filter
 
 def compute_laterality_index(left, right, idx=None):
     ''' Compute laterality index from left and right hemisphere quantities.'''
@@ -115,7 +115,25 @@ class WhiteMatterLaterality:
         self.fibers.hemispheres = True
         # Now convert to array with points and hemispheres as above
         self.fibers.convert_from_polydata(input_vtk_polydata)
-
+        
+        # get the same number from each hemisphere if requested
+        # -------------------------
+        if self.equal_fiber_num:
+            num_fibers = min(self.fibers.number_left_hem, self.fibers.number_right_hem)        
+            # grab num_fibers fibers from each hemisphere.
+            # use the first n since they were randomly sampled from the whole dataset
+            selected_right = self.fibers.index_right_hem[0:num_fibers]
+            selected_left = self.fibers.index_left_hem[0:num_fibers]
+            mask = numpy.zeros(input_vtk_polydata.GetNumberOfLines())
+            mask[selected_right] = 1
+            mask[selected_left] = 1
+            # go back to the input data and use just those fibers
+            input_vtk_polydata = filter.mask(input_vtk_polydata, mask)
+            # Now convert to array with points and hemispheres as above
+            self.fibers.convert_from_polydata(input_vtk_polydata)
+            if self.verbose:
+                print "<laterality.py> Using ", num_fibers , " fibers per hemisphere."
+                
         # square sigma for later Gaussian
         sigmasq = self.sigma * self.sigma
 
@@ -128,20 +146,9 @@ class WhiteMatterLaterality:
         #left_hem_distance = numpy.zeros([nf, nf])
 
 
-        # get the same number from each hemisphere if requested
-        # -------------------------
-        if self.equal_fiber_num:
-            num_fibers = min(self.fibers.number_left_hem, self.fibers.number_right_hem)        
-            # grab num_fibers fibers from each hemisphere.
-            # use the first n since they were randomly sampled from the whole dataset
-            fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem[0:num_fibers])
-            fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem[0:num_fibers])
-            if self.verbose:
-                print "<laterality.py> Using ", num_fibers , " fibers per hemisphere."
-        else:
-            # grab all fibers from each hemisphere
-            fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem)
-            fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem)
+        # grab all fibers from each hemisphere
+        fiber_array_right = self.fibers.get_fibers(self.fibers.index_right_hem)
+        fiber_array_left = self.fibers.get_fibers(self.fibers.index_left_hem)
 
         # tell user we are doing something
         if self.verbose:
