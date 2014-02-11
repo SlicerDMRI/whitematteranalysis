@@ -242,7 +242,7 @@ class LateralityResults:
         #    print "<io.py> polydata was saved to disk so you can re-render."
         #    raise
 
-        print "IMPLEMENT SAVING OF PARAMETERS TOO"
+        #print "IMPLEMENT SAVING OF PARAMETERS TOO"
 
     def read(self, dirname, readpd=False, readdist=False):
         """Read output (class laterality.LateralityResults) for one subject."""
@@ -287,4 +287,4 @@ class LateralityResults:
 
         self.directory = dirname
 
-        print "IMPLEMENT READING OF PARAMETERS TOO"
+        #print "IMPLEMENT READING OF PARAMETERS TOO"
