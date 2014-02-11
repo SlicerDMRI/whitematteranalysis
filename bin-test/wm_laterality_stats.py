@@ -282,8 +282,8 @@ gCH2 = numpy.nonzero(numpy.abs(handedness) >= thresh)[0]
 gIC2 = numpy.nonzero(numpy.abs(handedness) < thresh)[0]
 
 # any gender differences
-gF = numpy.nonzero(gender == 1)
-gM = numpy.nonzero(gender == 2)
+gF = numpy.nonzero(gender == 1)[0]
+gM = numpy.nonzero(gender == 2)[0]
 
 
 # significance
@@ -554,6 +554,24 @@ plt.savefig('group_R_histograms.pdf')
 plt.close()
 
 
+plt.figure()
+print gM
+for sidx in gM:
+    print sidx
+    plt.plot(histograms_smooth[sidx])
+
+plt.title('M')
+plt.savefig('group_M_histograms.pdf')
+plt.close()
+
+
+plt.figure()
+for sidx in gF:
+    plt.plot(histograms_smooth[sidx])
+
+plt.title('F')
+plt.savefig('group_F_histograms.pdf')
+plt.close()
 
 
 plt.figure()
