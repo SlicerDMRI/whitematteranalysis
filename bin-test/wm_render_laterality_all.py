@@ -44,8 +44,6 @@ if not os.path.isdir(args.inputDirectory):
 
 input_directories = os.listdir(args.inputDirectory)
 print input_directories
-current_dir = os.getcwd()
-
 
 print "wm_render_laterality_all. Starting white matter outlier computation."
 print ""
@@ -66,17 +64,18 @@ print "=========================="
 # =======================================================================
 
 def pipeline(indir):
-    #li_dir = os.path.join(args.inputDirectory,indir)
-    print "<wm_render_laterality_all.py> processing directory:", indir
-    if os.path.isdir(indir):
+    li_dir = os.path.join(args.inputDirectory,indir)
+    print "<wm_render_laterality_all.py> processing directory:", li_dir
+    if os.path.isdir(li_dir):
         pd = None
-        fname = os.path.join(indir,fname_to_read)
+        fname = os.path.join(li_dir,fname_to_read)
+        print fname
         if os.path.exists(fname):
             pd = wma.io.read_polydata(fname)
             if pd is not None:
                 print "<wm_render_laterality_all.py> Rendering polydata:", fname
                 ren = wma.render.render(pd, scalar_range=[-.5,.5], scalar_bar=True, number_of_fibers=1000)
-                ren.save_views(indir)
+                ren.save_views(li_dir)
 
 # loop over all inputs
 Parallel(n_jobs=parallel_jobs, verbose=0)(
