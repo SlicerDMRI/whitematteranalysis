@@ -36,7 +36,7 @@ parser.add_argument(
     help='Minimum length (in mm) of fibers to analyze.')
 parser.add_argument(
     '-s', action="store", dest="sigma", type=float,
-    help='Sigma for laterality computation. Useful values are near 50 (mm).')
+    help='Sigma for laterality computation. Useful values are 10-50 (mm).')
 parser.add_argument(
     '-t', action="store", dest="threshold", type=float,
     help='Threshold lower fiber distances to 0. Useful range 0-5mm.')
