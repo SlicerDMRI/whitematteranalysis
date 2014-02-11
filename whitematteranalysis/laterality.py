@@ -57,10 +57,14 @@ class WhiteMatterLaterality:
 
     def __init__(self):
         # parameters
-        self.sigma = 10
-        self.points_per_fiber = 5
-        self.threshold = 5
+        # medium sigma
+        self.sigma = 20.0
+        # stricter and more accurate than 5 points
+        self.points_per_fiber = 20
+        # aid in matching across hemispheres with threshold
+        self.threshold = 5.0
         # same number of fibers measured from each hemisphere
+        # avoid biasing due just to number of fibers
         self.equal_fiber_num = True
         
         # performance options
