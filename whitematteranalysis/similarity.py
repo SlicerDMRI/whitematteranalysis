@@ -168,6 +168,12 @@ def total_similarity_for_laterality(fiber, fiber_array, reflect, threshold, sigm
     # compute fiber similarity total (eg to all fibers in a hemisphere)
     total_similarity = numpy.sum(similarity)
 
+    # Do not include the self fiber in the computation (subtract 1.0)
+    #if ~reflect:
+    #    total_similarity = total_similarity - 1
+    # DO not do the above. Prevents a completely symmetric brain from having all LIs of 0
+    # because the self fiber is missing.
+        
     return total_similarity
 
 # this must be a function to allow pickling by Parallel
