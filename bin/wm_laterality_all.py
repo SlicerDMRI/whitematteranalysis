@@ -93,11 +93,7 @@ print "=========================="
 # Above this line is argument parsing. Below this line is the pipeline.
 # =======================================================================
 
-# Loop over input DWIs
-inputMask1 = "{0}/*.vtk".format(args.inputDirectory)
-inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
-
-inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
+inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
 print "<wm_laterality.py> Input number of files: ", len(inputPolyDatas)
 
