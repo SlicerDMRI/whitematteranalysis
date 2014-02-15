@@ -70,7 +70,13 @@ for dir in inputs:
 verbose = args.flag_verbose
 print "verbose:\t\t", verbose
 
-IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01373', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358', '01432']))
+# tensors misoriented
+exclude = ['01373']
+print "Excluding:", exclude
+
+IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358', '01432']))
+
+#IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01373', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358', '01432']))
 
 fe_list = ['caseD01222','caseD01229','caseD01246','caseD01267','caseD01270','caseD01289','caseD01343','caseD01352','caseD01360','caseD01362','caseD01373','caseD01405','caseD01406','caseD01450']
 
@@ -137,7 +143,8 @@ number_IDs_matched = len(numpy.nonzero(match_IDs)[0])
 number_dirs_matched = len(numpy.nonzero(match_dirs)[0])
 
 # grab only the matched ones
-print match_IDs
+#print match_IDs
+input_dirs = numpy.array(input_dirs)[match_dirs]
 IDs = IDs[match_IDs]
 status = status[match_IDs]
 
@@ -304,14 +311,16 @@ plt.figure()
 hist_sum = numpy.zeros(len(histograms[0]))
 for sidx in g1:
     #print sidx
-    #plt.plot(histograms[sidx])
+    plt.plot(histograms[sidx])
+    plt.savefig('hist_g1_'+str(IDs[sidx])+'.pdf')
     hist_sum = hist_sum + histograms[sidx]
 hist_sum = numpy.divide(hist_sum, len(g1))
 plt.plot(hist_sum,'b')
 hist_sum = numpy.zeros(len(histograms[0]))
 for sidx in g2:
     #print sidx
-    #plt.plot(histograms[sidx])
+    plt.plot(histograms[sidx])
+    plt.savefig('hist_g2_'+str(IDs[sidx])+'.pdf')
     hist_sum = hist_sum + histograms[sidx]
 hist_sum = numpy.divide(hist_sum, len(g2))
 plt.plot(hist_sum,'r')
