@@ -65,7 +65,9 @@ class WhiteMatterLaterality:
         self.threshold = 5.0
         # same number of fibers measured from each hemisphere
         # avoid biasing due just to number of fibers
-        self.equal_fiber_num = True
+        self.use_equal_fibers = True
+        # If using equal fibers, can set how many to use same number across subjects
+        self.fibers_per_hemisphere = None
         
         # performance options
         self.verbose = True
@@ -118,8 +120,14 @@ class WhiteMatterLaterality:
         
         # get the same number from each hemisphere if requested
         # -------------------------
-        if self.equal_fiber_num:
+        if self.use_equal_fibers:
             num_fibers = min(self.fibers.number_left_hem, self.fibers.number_right_hem)        
+            if self.fibers_per_hemisphere is not None:
+                if self.fibers_per_hemisphere <= num_fibers:
+                    num_fibers = self.fibers_per_hemisphere
+                else:
+                    raise Exception("Fibers per hemisphere is set too high for the dataset. Current subject maximum is"+str(num_fibers))
+        
             # grab num_fibers fibers from each hemisphere.
             # use the first n since they were randomly sampled from the whole dataset
             selected_right = self.fibers.index_right_hem[0:num_fibers]

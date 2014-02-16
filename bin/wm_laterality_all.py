@@ -45,6 +45,9 @@ parser.add_argument(
 parser.add_argument(
     '-equal_fiber_num', action='store_true', dest="flag_equalFibers",
     help='To analyze an equal number of fibers per hemisphere')
+parser.add_argument(
+    '-fibers_per_hem', action="store", dest="numberOfFibersPerHem", type=int,
+    help='Number of fibers to analyze from each hemisphere.')
 
 args = parser.parse_args()
 
@@ -86,6 +89,11 @@ if args.flag_equalFibers:
     print "Use equal fiber number from each hemisphere is ON."
 else:
     print "Use equal fiber number from each hemisphere is OFF. Using input fiber number."
+
+if args.numberOfFibersPerHem is not None:
+    print "fibers to analyze per hemisphere: ", args.numberOfFibersPerHem
+else:
+    print "fibers to analyze per hemisphere: all or equal"
 
 print "=========================="
 
@@ -163,10 +171,12 @@ for sidx in range(0, len(inputPolyDatas)):
     else:
         laterality.threshold = 0.0
     if args.flag_equalFibers:
-        laterality.equal_fiber_num = True
+        laterality.use_equal_fibers = True
     else:
-        laterality.equal_fiber_num = False
+        laterality.use_equal_fibers = False
 
+    if args.numberOfFibersPerHem is not None:
+        laterality.fibers_per_hemisphere = args.numberOfFibersPerHem
 
     laterality_results = laterality.compute(wm_align)
 
