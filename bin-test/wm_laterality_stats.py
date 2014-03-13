@@ -80,7 +80,25 @@ gender = numpy.array([1, 2, 1, 1, 2, 1, 1, 2, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1
 
 IDs = numpy.array(['AG_5114', 'AG_5123', 'AG_5125', 'AG_5129', 'AG_5131', 'AG_5132', 'AG_5138', 'AG_5139', 'AG_5142', 'AG_5146', 'AG_5147', 'AG_5148', 'AG_5149', 'AG_5150', 'AG_5151', 'AG_5152', 'AG_5153', 'AG_5154', 'AG_5155', 'AG_5156', 'AG_5158', 'AG_5159', 'AG_5160', 'AG_5162', 'AG_5163', 'AG_5205', 'AG_5263', 'AG_5266', 'AG_5268']) 
 
+exclude = ['5125', '5129']
+#exclude = ['5125', '5129', '5139', '5268']
 
+#exclude = []
+keep = numpy.empty(len(IDs),dtype=bool)
+keep.fill(True)
+for exc in exclude:
+    for id_idx in range(len(IDs)):
+        if exc in IDs[id_idx]:
+            keep[id_idx] = False
+
+print "Excluding:"
+print IDs[~keep]
+print gender[~keep]
+print handedness[~keep]
+# exclude
+IDs = IDs[keep]
+gender = gender[keep]
+handedness = handedness[keep]
 
 # test that IDs correspond to the input directories
 number_IDs = len(IDs)
@@ -161,7 +179,9 @@ def plot_box(data, labels, fname):
     plt.setp(a,xticklabels=labels)
     plt.savefig(fname)
     plt.close()
-    
+
+
+
 #readPolyDatas = 0
 
 data = []
@@ -210,6 +230,7 @@ for sidx in range(0,len(data)):
     plt.plot(confidence_NZ, LI_NZ, 'o')
     plt.savefig('confidence_vs_LI'+str(sidx)+'.pdf')
     plt.close()
+
     #mode = scipy.stats.mode(numpy.array(LI_NZ*1000).astype(int))[0]/1000
     #print mode
     #print numpy.median(LI_NZ)
@@ -259,7 +280,8 @@ for sidx in range(0,len(data)) :
 print "<wm_laterality_stats.py> Making pdf figures..."
 
 # --------------
-threshold = 60
+threshold = 0
+#threshold = 60
 #threshold = 40
 # --------------
 gL = numpy.nonzero(handedness <= -threshold)[0]
@@ -271,6 +293,9 @@ gR = numpy.nonzero(handedness >= threshold)[0]
 ##### 3 groups (thresh 60 divides into 3 almost even groups 9,9,8)
 ###thresh = 60
 #thresh = 50
+if threshold == 0:
+    threshold = 60
+
 thresh = threshold
 gL3 = numpy.nonzero(handedness < -thresh)[0]
 gIC3 = numpy.nonzero(numpy.abs(handedness) <= thresh)[0]
@@ -285,6 +310,17 @@ gIC2 = numpy.nonzero(numpy.abs(handedness) < thresh)[0]
 gF = numpy.nonzero(gender == 1)[0]
 gM = numpy.nonzero(gender == 2)[0]
 
+
+# plot dataset composition
+plt.figure()
+plt.hist([handedness[gM], handedness[gF]], label = ['males (n='+str(len(gM))+')', 'females (n='+str(len(gF))+')'])
+plt.xlabel('handedness')
+plt.ylabel('number of subjects')
+plt.title('handedness by gender in current dataset')
+plt.legend()
+plt.savefig('handedness_by_gender_dataset.pdf')
+
+plt.close()
 
 # significance
 # ANOVA and TTEST
@@ -508,17 +544,30 @@ plt.legend(['CL', 'ICH', 'CR'])
 
 varlist = [[median, "median"], [iqr, "iqr"], [skew, "skew"], [kurtosis, "kurtosis"], [num_fibers, "num_fibers"], [num_fibers_Rhem, "num_fibers_Rhem"], [num_fibers_Lhem, "num_fibers_Lhem"], [num_fibers_comm, "num_fibers_comm"], [num_fibers_hem, "num_fibers_hem"], [num_fibers_comm/num_fibers, "commissural percent"], [num_fibers_hem/num_fibers, "hemispheric percent"]]
 
-for var in varlist:
-    plt.figure()
-    plt.plot(handedness, var[0],'o')
-    (a_s, b_s, r, p, stderr) = scipy.stats.linregress(handedness, var[0])
-    xr=numpy.polyval([a_s,b_s],handedness)
-    plt.plot(handedness,xr)
-    plt.title(var[1])
-    plt.savefig('handedness'+var[1]+'.pdf')
-    plt.close()
-    r,p = scipy.stats.pearsonr(handedness, var[0])
-    print var[1],".. r:", r, " p: ", p
+for hand_type in ['signed', 'abs']:
+    for var in varlist:
+        if hand_type == 'signed':
+            hand_var = handedness
+        else:
+            hand_var = numpy.abs(handedness)
+        plt.figure()
+        #plt.plot(hand_var, var[0],'o')
+        plt.plot(hand_var[gM], var[0][gM],'bo')
+        plt.plot(hand_var[gF], var[0][gF],'ro')
+        (a_s, b_s, r, p, stderr) = scipy.stats.linregress(hand_var, var[0])
+        xr=numpy.polyval([a_s,b_s],hand_var)
+        plt.plot(hand_var,xr,'k')
+        (a_s, b_s, r, p, stderr) = scipy.stats.linregress(hand_var[gM], var[0][gM])
+        xr=numpy.polyval([a_s,b_s],hand_var)
+        plt.plot(hand_var,xr,'b')
+        (a_s, b_s, r, p, stderr) = scipy.stats.linregress(hand_var[gF], var[0][gF])
+        xr=numpy.polyval([a_s,b_s],hand_var)
+        plt.plot(hand_var,xr,'r')
+        plt.title(var[1])
+        plt.savefig('handedness_'+hand_type+var[1]+'.pdf')
+        plt.close()
+        r,p = scipy.stats.pearsonr(hand_var, var[0])
+        print var[1],hand_type,".. r:", r, " p: ", p
 
 
 histograms_smooth=[]
@@ -528,7 +577,8 @@ kernel = kernel/numpy.sum(kernel)
 
 for sidx in range(0,len(data)):
     histograms_smooth.append(scipy.signal.convolve(histograms[sidx], kernel, mode='same'))
-
+    
+    
 plt.figure()
 for sidx in gL3:
     plt.plot(histograms_smooth[sidx])
@@ -606,3 +656,15 @@ plt.plot(hist_sum,'r')
 plt.title('CL-ICH-CR')
 plt.savefig('groups_mean_histogram.pdf')
 plt.close()
+
+# median and skew, how related?
+plt.figure()
+plt.plot(median[gM], skew[gM], 'bo')
+plt.plot(median[gF], skew[gF], 'ro')
+plt.savefig('groups_median_vs_skew.pdf')
+
+# iqr and kurtosis, how related?
+plt.figure()
+plt.plot(iqr[gM], kurtosis[gM], 'bo')
+plt.plot(iqr[gF], kurtosis[gF], 'ro')
+plt.savefig('groups_iqr_vs_kurtosis.pdf')
