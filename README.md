@@ -11,8 +11,7 @@ Anaconda is a nice option since it has VTK.
 
 
 ###Install the following python packages (dependencies). 
-This can be done with easy_install, for example.
-* joblib
+* joblib (This can be done with easy_install, for example.)
 * scipy
 (scipy is included in anaconda or EPD or other python distributions, possibly)
 * vtk (vtk is included in anaconda or other python distributions, possibly)
