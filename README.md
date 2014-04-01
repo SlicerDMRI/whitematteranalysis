@@ -9,6 +9,14 @@ White Matter Analysis provides clustering and tractography analysis tools.
 Anaconda is a nice option since it has VTK.
 ##2. Install required packages:
 
+
+###Install the following python packages (dependencies). 
+This can be done with easy_install, for example.
+* joblib
+* scipy
+(scipy is included in anaconda or EPD or other python distributions, possibly)
+* vtk (vtk is included in anaconda or other python distributions, possibly)
+
 ###If your python does not already have VTK, install it.
 * VTK: http://www.vtk.org/Wiki/VTK/Building
 * http://www.vtk.org/Wiki/VTK/Git/Download
@@ -28,12 +36,6 @@ Note this requires git and cmake. More information is at vtk.org.
 Then install it into your python:
      cd VTK-build/Wrapping/Python
      python setup.py install
-
-###Install the following python packages (dependencies). 
-This can be done with easy_install, for example.
-* joblib
-* scipy
-(scipy is included in anaconda or EPD or other python distributions, possibly)
 
 ##3. Install WhiteMatterAnalysis in your python
 
