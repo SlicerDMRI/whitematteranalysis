@@ -67,11 +67,32 @@ class ClusterAtlas:
         self.nystrom_polydata = polydata_tmp
 
     def load(self, directory, atlas_name):
-        fname = os.path.join(directory,atlas_name)
-        atlas = pickle.load(open(fname+'.p','rb'))
-        atlas.nystrom_polydata = io.read_polydata(fname+'.vtp')
-        return(atlas)
+        if not os.path.isdir(directory):
+            print "Error: Atlas directory", directory, "does not exist or is not a directory."
+            raise "<cluster.py> I/O error"
+        
+        fname_base = os.path.join(directory,atlas_name)
+        fname_atlas = fname_base+'.p'
+        fname_polydata = fname_base+'.vtp'
+        
+        if not os.path.exists(fname_atlas):
+            print "Error: Atlas file", fname_atlas, "does not exist."
+            raise "<cluster.py> I/O error"
+        if not os.path.exists(fname_polydata):
+            print "Error: Atlas file", fname_polydata, "does not exist."
+            raise "<cluster.py> I/O error"
     
+        atlas = pickle.load(open(fname_atlas,'rb'))
+        atlas.nystrom_polydata = io.read_polydata(fname_polydata)
+        print "<cluster.py> Atlas loaded. Nystrom polydata sample:", atlas.nystrom_polydata.GetNumberOfLines(), \
+            "Atlas size:", atlas.pinv_A.shape, "number of eigenvectors:", atlas.number_of_eigenvectors
+        return(atlas)
+
+def load_atlas(directory, atlas_name):
+    """ Convenience function to load a spectral cluster atlas """
+    tmp_atlas = ClusterAtlas()
+    return tmp_atlas.load(directory, atlas_name)
+        
 def hierarchical(input_polydata, number_of_clusters=300,
                  threshold=2, fcluster_threshold=0.4,
                  number_of_jobs=3):
@@ -435,10 +456,9 @@ def view_cluster_number(input_polydata, cluster_number, cluster_indices=None):
     return ren
 
 def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
-    """ test
+    """ Use an existing atlas to label a new polydata.
 
-    test
-
+    Returns the cluster indices for all the fibers. output_polydata, cluster_numbers, color, embed = wma.cluster.spectral_atlas_label(input_data, atlas)
 
     """
     number_fibers = input_polydata.GetNumberOfLines()
