@@ -1,7 +1,3 @@
-#!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
-
-# Run registration on the test dataset.
-
 import os
 import glob
 import matplotlib.pyplot as plt
