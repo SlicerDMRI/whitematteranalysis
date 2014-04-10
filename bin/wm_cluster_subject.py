@@ -79,10 +79,10 @@ else:
 number_of_fibers = args.numberOfFibers
 
 if args.fiberLength is not None:
-    print "minimum length of fibers to analyze (in mm): ", args.fiberLength
     fiber_length = args.fiberLength
 else:
     fiber_length = 25.0
+print "minimum length of fibers to analyze (in mm): ", fiber_length
 
 if args.numberOfJobs is not None:
     number_of_jobs = args.numberOfJobs
