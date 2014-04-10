@@ -57,15 +57,15 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.exists(args.inputFile):
-    print "<register> Error: Input file", args.inputFile, "does not exist."
+    print "<wm_cluster_subject.py> Error: Input file", args.inputFile, "does not exist."
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "Output directory", outdir, "does not exist, creating it."
+    print "<wm_cluster_subject.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
-print "<wm_cluster_subject> Starting computation."
+print "<wm_cluster_subject.py> Starting computation."
 print ""
 print "=====input file name======\n", args.inputFile
 print "=====output directory =====\n", args.outputDirectory
