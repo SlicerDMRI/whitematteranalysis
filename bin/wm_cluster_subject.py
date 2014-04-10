@@ -141,9 +141,9 @@ number_of_eigenvectors = 10
 # contain almost as much information and reduce noise for single subject clustering
 #number_of_eigenvectors = 20
 
-#-----------------
-# Run clustering
-#-----------------
+# =======================================================================
+# Above this line is argument parsing. Below this line is the pipeline.
+# =======================================================================
 
 # read data
 print "<wm_cluster_subject.py> Reading input file:", args.inputFile
