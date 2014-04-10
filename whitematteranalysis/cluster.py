@@ -102,17 +102,17 @@ def hierarchical(input_polydata, number_of_clusters=300,
 
     return output_polydata, cluster_idx
 
-def spectral(input_polydata, number_of_clusters=300,
-             number_of_eigenvectors=10, sigma=20, threshold=2,
+def spectral(input_polydata, number_of_clusters=200,
+             number_of_eigenvectors=20, sigma=60, threshold=0.0,
              number_of_jobs=3, use_nystrom=False, nystrom_mask = None,
-             landmarks=None, distance_method='Hausdorff', normalized_cuts = True):
+             landmarks=None, distance_method='Mean', normalized_cuts = True):
 
     """ Spectral clustering based on pairwise fiber affinity matrix.
 
     As in O'Donnell and Westin TMI 2007.
 
-    Differences from that implementation: fiber distance is defined
-    using fixed-length fiber parameterization.
+    Differences from that implementation: fiber point correspondences are defined
+    using fixed-length fiber parameterization (instead of closest point).
 
     """
 
@@ -172,12 +172,20 @@ def spectral(input_polydata, number_of_clusters=300,
             _rectangular_similarity_matrix(polydata_n, polydata_m, threshold,
                                            sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method)
         atlas.sigma = sigma
+
+        # sanity check
+        print "Range of values in A:", numpy.min(A), numpy.max(A)
+        print "Range of values in B:", numpy.min(B), numpy.max(B)
+        
     else:
         # Calculate all fiber similarities
         A = \
             _pairwise_similarity_matrix(input_polydata, threshold,
                                     sigma, number_of_jobs, landmarks, distance_method)
 
+        # sanity check
+        print "Range of values in A:", numpy.min(A), numpy.max(A)
+        
         # test longer-range similarities
         # need literature search here
         #A = similarity.update_test(A)
@@ -203,53 +211,86 @@ def spectral(input_polydata, number_of_clusters=300,
     # (D^-1/2 W D^-1/2) V = V Lambda
     if normalized_cuts:
         if use_nystrom:
-            # calculate the sum of the rows we know from the full matrix
-            atlas.row_sum_1 = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)        
-            # approximate the sum of the columns
-            # weights for approximating row sum use the known columns of B'
-            # pseudo inverse of A is needed for atlas
-            # this may lead to negative eigenvalues below, for smaller values of sigma.
-            #atlas.pinv_A = numpy.linalg.pinv(A)  
-            # construct an approximate inverse using the largest eigenvalues of A.
-            # approximate the inverse of A for dual basis
-            # using A's top eigenvectors (must have pos eigenvalues)
+            # Form of entire affinity matrix: 
+            # A   B
+            # B^T   C
+            # C is not computed.
+            # Calculate the sum of the partial rows we've computed:
+            atlas.row_sum_1 = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)  
+            print "A size:", A.shape
+            print "B size:", B.shape
+            print "row sum size:", atlas.row_sum_1.shape
+            test = atlas.row_sum_1
+            print "A-B matrix row sums range (should be > 0):", numpy.min(atlas.row_sum_1), numpy.max(atlas.row_sum_1)
+            
+            # Approximate the sum of the rest of the data (including C)
+            # These are weighted sums of the columns we did compute
+            # where the weight depends on how similar that fiber 
+            # was to each path in A.  This uses the dual basis
+            # of the columns in A.
+            # Approximate the inverse of A for dual basis
 
-            numA = len(A)
-            nvec = 40
-            if nvec > numA / 2.0:
-                nvec = numpy.round(numA / 2)
-            if nvec < number_of_eigenvectors + 1:
-                nvec = number_of_eigenvectors + 1
+            
+            # Use A's top eigenvectors (must have pos eigenvalues)
+            # Construct an approximate inverse using the largest eigenvalues of A.
+            pos_def_approx = True
+            if pos_def_approx:
+                print "Using A's top eigenvectors in pinv"
+                numA = len(A)
+                nvec = 40
+                #nvec = 10
+                if nvec > numA / 2.0:
+                    nvec = numpy.round(numA / 2)
+                if nvec < number_of_eigenvectors + 1:
+                    nvec = number_of_eigenvectors + 1
 
-            val, vec = numpy.linalg.eigh(A)
-            # numpy.dot(numpy.dot(vec,numpy.diag(val)),vec.T)
-            ind = numpy.argsort(val)
-            ##mask = val > 2.0
-            mask = ind[-nvec:-1]
-            vec2 = vec[:,mask]
-            val2 = val[mask]
-            #print val2
-            #print numpy.divide(1.0,val2)
-            print val.shape
-            #A2 = numpy.dot(numpy.dot(vec2,numpy.diag(val2)),vec2.T)
-            atlas.pinv_A = numpy.dot(numpy.dot(vec2,numpy.diag(numpy.divide(1.0,val2))),vec2.T)
-        
+                val, vec = numpy.linalg.eigh(A)
+                # numpy.dot(numpy.dot(vec,numpy.diag(val)),vec.T)
+                ind = numpy.argsort(val)
+                ##mask = val > 2.0
+                mask = ind[-nvec:-1]
+                vec2 = vec[:,mask]
+                val2 = val[mask]
+                #print val2
+                #print numpy.divide(1.0,val2)
+                print val.shape
+                #A2 = numpy.dot(numpy.dot(vec2,numpy.diag(val2)),vec2.T)
+                atlas.pinv_A = numpy.dot(numpy.dot(vec2,numpy.diag(numpy.divide(1.0,val2))),vec2.T)
+            else:
+                print "Using numpy linalg pinv A"
+                atlas.pinv_A = numpy.linalg.pinv(A)
+                
             e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
             print "test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
+            e_val, e_vec = numpy.linalg.eigh(A)
+            print "Was A positive definite? Eigenvalue range:", e_val[0], e_val[-1]  
 
-            print "test B:", numpy.min(numpy.sum(B.T, axis=0))
-        
+            #print "test B:", numpy.min(numpy.sum(B.T, axis=0))
+
+            # row sum formula:
+            # dhat = [a_r + b_r; b_c + B^T*A-1*b_r]
+            # this matrix is A^-1 * b_r, where b_r are the row sums of B
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
-            # this matrix is needed for atlas.
             atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
+            #print numpy.sum(B.T, axis=0).shape
+            test = numpy.sum(B.T, axis=0)
+            print "B column sums range (should be > 0):", numpy.min(test), numpy.max(test)
+            print "Range of row sum weights:", numpy.min(atlas.row_sum_matrix), numpy.max(atlas.row_sum_matrix)
+            print "First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
+            test = numpy.dot(atlas.row_sum_matrix, B)
+            print "Test partial sum estimation for B (should be > 0):", numpy.min(test), numpy.max(test)
+            
             # row sum estimate for current B part of the matrix
             row_sum_2 = numpy.sum(B, axis=0) + \
                 numpy.dot(atlas.row_sum_matrix, B)
-            print "row sum check", numpy.min(atlas.row_sum_1), \
-                numpy.max(atlas.row_sum_1), numpy.min(row_sum_2), \
+            print "Row sum check (min/max, should be > 0) A:", numpy.min(atlas.row_sum_1), \
+                numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), \
                 numpy.max(row_sum_2)
-            print "check 2:", numpy.min(numpy.sum(B.T, axis=0)), numpy.min(atlas.row_sum_matrix)
+            #print "check 2:", numpy.min(numpy.sum(B.T, axis=0)), numpy.min(atlas.row_sum_matrix)
 
+            print atlas.row_sum_1.shape
+            print row_sum_2.shape
+            
             # normalized cuts normalization
             dhat = numpy.sqrt(numpy.divide(1, numpy.concatenate((atlas.row_sum_1, row_sum_2))))
 
@@ -460,9 +501,9 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
     """
 
     fiber_array_n = fibers.FiberArray()
-    fiber_array_n.convert_from_polydata(input_polydata_n, points_per_fiber=10)
+    fiber_array_n.convert_from_polydata(input_polydata_n, points_per_fiber=15)
     fiber_array_m = fibers.FiberArray()
-    fiber_array_m.convert_from_polydata(input_polydata_m, points_per_fiber=10)
+    fiber_array_m.convert_from_polydata(input_polydata_m, points_per_fiber=15)
 
     if landmarks_n is None:
         landmarks_n = numpy.zeros((fiber_array_n.number_of_fibers,3))
@@ -522,7 +563,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     """
 
     fiber_array = fibers.FiberArray()
-    fiber_array.convert_from_polydata(input_polydata, points_per_fiber=10)
+    fiber_array.convert_from_polydata(input_polydata, points_per_fiber=15)
 
     # pairwise distance matrix
     all_fibers = range(0, fiber_array.number_of_fibers)
