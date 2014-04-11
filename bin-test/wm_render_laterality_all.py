@@ -34,6 +34,12 @@ parser.add_argument(
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
+parser.add_argument(
+    '-range_low', action="store", dest="scalarRangeLow", type=float,
+    help='Low value for the scalar display and scalar bar, mapped to dark blue (-1.0 or -0.5).')
+parser.add_argument(
+    '-range_high', action="store", dest="scalarRangeHigh", type=float,
+    help='High value for the scalar display and scalar bar, mapped to dark red (0.5 or 1.0).')
 
 
 args = parser.parse_args()
@@ -57,6 +63,12 @@ else:
     parallel_jobs = multiprocessing.cpu_count()
 print 'Using N jobs:', parallel_jobs
 
+scalar_range = [-0.5, 0.5]
+if args.scalarRangeLow is not None:
+    scalar_range[0] = args.scalarRangeLow
+if args.scalarRangeHigh is not None:
+    scalar_range[1] = args.scalarRangeHigh
+    
 print "=========================="
 
 # =======================================================================
@@ -74,7 +86,7 @@ def pipeline(indir):
             pd = wma.io.read_polydata(fname)
             if pd is not None:
                 print "<wm_render_laterality_all.py> Rendering polydata:", fname
-                ren = wma.render.render(pd, scalar_range=[-.5,.5], scalar_bar=True, number_of_fibers=1000)
+                ren = wma.render.render(pd, scalar_range=scalar_range, scalar_bar=True, number_of_fibers=1000)
                 ren.save_views(li_dir)
 
 # loop over all inputs

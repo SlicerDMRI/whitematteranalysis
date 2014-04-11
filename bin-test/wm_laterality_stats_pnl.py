@@ -70,11 +70,11 @@ for dir in inputs:
 verbose = args.flag_verbose
 print "verbose:\t\t", verbose
 
-# tensors misoriented
-exclude = ['01373']
+# tensors misoriented 01373.  very flat distro/rotated: align failed in 3
+exclude = ['01373', '01352', '01406', '01432']
 print "Excluding:", exclude
 
-IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358', '01432']))
+IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358']))
 
 #IDs = numpy.array(sorted(['01190', '01289', '01360', '01222', '01316', '01362', '01229', '01338', '01363', '01246', '01341', '01373', '01265', '01342', '01376', '01267', '01343', '01400', '01269', '01352', '01406', '01270', '01357', '01407', '01288', '01358', '01432']))
 
@@ -282,15 +282,40 @@ print "<wm_laterality_stats.py> Making pdf figures..."
 #gM = numpy.nonzero(gender == 2)[0]
 
 
+histograms_smooth=[]
+#kernel = scipy.signal.gaussian(20,5)
+kernel = scipy.signal.gaussian(10,1.5)
+kernel = kernel/numpy.sum(kernel)
+
+for sidx in range(0,len(data)):
+    histograms_smooth.append(scipy.signal.convolve(histograms[sidx], kernel, mode='same'))
+
+# measure peak height
+height=[]
+height_10=[]
+height_30=[]
+for sidx in range(0,len(data)):
+    height.append(numpy.max(histograms_smooth[sidx]))
+    height_10.append(histograms_smooth[sidx][10])
+    height_30.append(histograms_smooth[sidx][30])
+height = numpy.array(height)
+height_10 = numpy.array(height_10)
+height_30 = numpy.array(height_30)
+
 # significance
 # ANOVA and TTEST
 p_vals_group = list()
 p_vals_MF = list()
 values_tested = list()
 
+print "height"
+print height
+print "height_10"
+print height_10
+
 plt.close('all')
-f_list = [median, iqr, skew, kurtosis, num_fibers, num_fibers_Rhem, num_fibers_Lhem, num_fibers_comm, num_fibers_hem]
-f_str_list = ['median', 'iqr', 'skew', 'kurtosis', 'num_fibers', 'num_fibers_Rhem', 'num_fibers_Lhem', 'num_fibers_comm', 'num_fibers_hem']
+f_list = [height_10, height_30, height, median, iqr, skew, kurtosis, num_fibers, num_fibers_Rhem, num_fibers_Lhem, num_fibers_comm, num_fibers_hem]
+f_str_list = ['height_10', 'height_30','height', 'median', 'iqr', 'skew', 'kurtosis', 'num_fibers', 'num_fibers_Rhem', 'num_fibers_Lhem', 'num_fibers_comm', 'num_fibers_hem']
 for f, f_str in zip(f_list, f_str_list):
     values_tested.append(f_str)
     [s, p] = scipy.stats.ttest_ind(f[g1],f[g2])
@@ -314,28 +339,25 @@ for sidx in g1:
     plt.plot(histograms[sidx])
     plt.savefig('hist_g1_'+str(IDs[sidx])+'.pdf')
     hist_sum = hist_sum + histograms[sidx]
-hist_sum = numpy.divide(hist_sum, len(g1))
-plt.plot(hist_sum,'b')
+hist_sum_g1 = numpy.divide(hist_sum, len(g1))
+plt.close()
+
+plt.figure()
 hist_sum = numpy.zeros(len(histograms[0]))
 for sidx in g2:
     #print sidx
     plt.plot(histograms[sidx])
     plt.savefig('hist_g2_'+str(IDs[sidx])+'.pdf')
     hist_sum = hist_sum + histograms[sidx]
-hist_sum = numpy.divide(hist_sum, len(g2))
-plt.plot(hist_sum,'r')
+hist_sum_g2 = numpy.divide(hist_sum, len(g2))
+plt.close()
+
+plt.plot(hist_sum_g1,'b')
+plt.plot(hist_sum_g2,'r')
 plt.title('g1 and g2')
 plt.legend(['1', '2'])
 plt.savefig('groups_hist.pdf')
 plt.close()
-
-histograms_smooth=[]
-#kernel = scipy.signal.gaussian(20,5)
-kernel = scipy.signal.gaussian(10,1.5)
-kernel = kernel/numpy.sum(kernel)
-
-for sidx in range(0,len(data)):
-    histograms_smooth.append(scipy.signal.convolve(histograms[sidx], kernel, mode='same'))
 
 plt.figure()
 for sidx in g1:
@@ -353,3 +375,16 @@ plt.title('2')
 plt.savefig('group_2_histograms.pdf')
 plt.close()
 
+# plot height and kurtosis
+plt.figure()
+plt.plot(height[g1], kurtosis[g1], 'bo')
+plt.plot(height[g2], kurtosis[g2], 'ro')
+plt.savefig('groups_height_kurtosis.pdf')
+
+# how does the overal amount of asymmetry relate to the number of fibers
+# with lower nuber, higher asymmetry expected.
+# not sure how to best control for all these factors.
+plt.figure()
+plt.plot(num_fibers[g1], height[g1], 'bo')
+plt.plot(num_fibers[g2], height[g2], 'ro')
+plt.savefig('groups_fibers_vs_height.pdf')

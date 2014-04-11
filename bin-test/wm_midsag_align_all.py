@@ -98,11 +98,14 @@ print input_poly_data
 
 ## run the registration ONCE and output result to disk
 points_per_fiber = 5
-number_of_fibers_per_step = [100, 200, 200, 250]
+#number_of_fibers_per_step = [100, 200, 200, 250]
+#number_of_fibers_per_step = [200, 200, 200, 300]
+number_of_fibers_per_step = [300, 400, 500, 500]
 # small sigmas only, this is a minor adjustment 
 sigma_per_step = [10, 10, 5, 5]
-# cobyla: number of objective function calculations per iteration
-maxfun = 30
+# cobyla: max number of objective function calculations per iteration
+#maxfun = 30
+maxfun = 80
 
 
 # =======================================================================

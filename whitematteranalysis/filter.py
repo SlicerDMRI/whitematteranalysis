@@ -578,7 +578,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
 
     return outpd, numpy.array(next_weights)
     
-def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jobs=2):
+def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jobs=2, cluster_max = 10):
     """ Average nearby fibers.
     
     The pairwise fiber distance matrix is computed, then fibers
@@ -616,7 +616,10 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         # information for this iteration
         done = numpy.zeros(current_fiber_array.number_of_fibers)
         fiber_indices = range(0, current_fiber_array.number_of_fibers)
-    
+
+        # if the maximum number of fibers have been combined, stop averaging this fiber
+        done[numpy.nonzero(numpy.array(curr_count) >= cluster_max)] = 1
+        
         # pairwise distance matrix
         if USE_PARALLEL:
             distances = Parallel(n_jobs=n_jobs, verbose=1)(
@@ -635,7 +638,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
                 distances[lidx, :] = \
                     similarity.fiber_distance(
                         current_fiber_array.get_fiber(lidx),
-                        current_fiber_array, 0)
+                        current_fiber_array, 0, 'Hausdorff')
 
         # distances to self are not of interest
         for lidx in fiber_indices:

@@ -511,6 +511,7 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     minfun = maxfun/5.0
     #maxfun_per_step = [50, 75, 200]
     maxfun_per_step = [minfun*1.5, minfun*2, minfun*3, minfun*5]
+    maxfun_per_step = [minfun*2, minfun*3, minfun*4, minfun*5]
 
     sigma_step_one = sigma_per_step[0]
     sigma_step_two = sigma_per_step[1]
@@ -548,13 +549,7 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     register.points_per_fiber = points_per_fiber
     register.distance_method = distance_method
     #register.maxfun = maxfun
-    # make sure we take very small steps, the brains are already overlapping
-    inc_rot = (0.5 / 180.0) * numpy.pi
-    inc_trans = 0.5
-    inc_scale = 0.001
-    inc_shear = (.5 / 180.0) * numpy.pi
-    register.set_rhobeg(inc_rot, inc_trans, inc_scale, inc_shear)
-    
+  
     # add inputs to the registration
     for pd in input_pds:
         register.add_subject(pd)
@@ -571,6 +566,14 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
         wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
     
     # STEP ONE
+    # make sure we take very small steps, the brains are already overlapping
+    # step one has larger rotate and translate to avoid local minima if brains quite rotated
+    inc_rot = (5.0 / 180.0) * numpy.pi
+    inc_trans = 2.0
+    inc_scale = 0.001
+    inc_shear = (.5 / 180.0) * numpy.pi
+    register.set_rhobeg(inc_rot, inc_trans, inc_scale, inc_shear)
+  
     start = time.time()
     # run the basic iteration of translate, rotate, scale
     register.fiber_sample_size = number_of_fibers_step_one
@@ -602,6 +605,13 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     elapsed.append(time.time() - start)
 
     # STEP TWO
+    # make sure we take very small steps, the brains are already overlapping
+    # step one has larger rotate and translate to avoid local minima if brains quite rotated
+    inc_rot = (0.5 / 180.0) * numpy.pi
+    inc_trans = 0.5
+    inc_scale = 0.001
+    inc_shear = (.5 / 180.0) * numpy.pi
+    register.set_rhobeg(inc_rot, inc_trans, inc_scale, inc_shear)
     start = time.time()
     # run the basic iteration of translate, rotate, scale AGAIN
     register.fiber_sample_size = number_of_fibers_step_two
@@ -648,6 +658,22 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     register.compute()
     register.shear_only()
     register.compute()
+    elapsed.append(time.time() - start)
+
+    # STEP FIVE
+    # run more with the final settings.
+    # See if shear is improved
+    start = time.time()
+    for idx in range(3):
+        # run the basic iteration of translate, rotate, scale AGAIN
+        register.translate_only()
+        register.compute()
+        register.rotate_only()
+        register.compute()
+        #register.scale_only()
+        register.compute()
+        register.shear_only()
+        register.compute()
     elapsed.append(time.time() - start)
     
     # view output data from this big iteration
@@ -728,4 +754,11 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     all_pds.append(trans.GetOutput())
     ren = wma.registration_functions.view_polydatas(all_pds, 250)
     ren.save_views(outdir_current)
-    
+
+    # also render just the output
+    outdir_current2 = os.path.join(outdir_current, 'view_output')
+    if not os.path.exists(outdir_current2):
+        os.makedirs(outdir_current2)
+    ren = wma.render.render(trans.GetOutput(), 1000)
+    ren.save_views(outdir_current2)
+ 
