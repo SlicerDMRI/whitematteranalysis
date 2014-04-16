@@ -172,12 +172,12 @@ pd = wma.io.read_polydata(args.inputFile)
     
 # preprocessing step: minimum length
 print "<wm_label_from_atlas.py> Preprocessing by length:", fiber_length, "mm."
-pd2 = wma.filter.preprocess(pd, fiber_length)
+pd2 = wma.filter.preprocess(pd, fiber_length, return_indices=False, preserve_point_data=True, preserve_cell_data=True)
 
 # preprocessing step: fibers to analyze
 if number_of_fibers is not None:
     print "<wm_label_from_atlas.py> Downsampling to ", number_of_fibers, "fibers."
-    input_data = wma.filter.downsample(pd2, number_of_fibers)
+    input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True)
 else:
     input_data = pd2
 
@@ -195,6 +195,9 @@ wma.io.write_polydata(output_polydata_s, fname_output)
 fnames = list()
 cluster_colors = list()
 number_of_clusters = numpy.max(cluster_numbers_s)
+first_cluster = numpy.min(cluster_numbers_s)
+print "Cluster indices range from:", first_cluster, "to", number_of_clusters
+
 for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
     pd_c = wma.filter.mask(output_polydata_s, mask)
