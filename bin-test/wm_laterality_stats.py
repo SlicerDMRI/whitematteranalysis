@@ -169,7 +169,7 @@ else:
 print "--------------------------------------------------------------------"
 if found_error:
     print "<wm_laterality_stats.py> Please check your subject ID list against the subject directories within the input directory."
-    raise
+    raise IOError()
 
 
 def plot_box(data, labels, fname):
@@ -197,7 +197,7 @@ for sidx in range(0,len(input_dirs)):
         data.append(resultIO)
     except:
         print "<wm_laterality_stats.py>  Unexpected error reading data directory:" , dir
-        raise
+        raise IOError()
 
 
 # change to the output directory to save things there
