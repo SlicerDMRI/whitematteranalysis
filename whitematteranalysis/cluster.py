@@ -495,7 +495,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
 
     # 6) Output results.
-    print '<cluster.py> Done spectral clustering, returning results.'
+    print '<cluster.py> Done labeling clusters, returning results.'
     # visualize embedding coordinates as RGB
     color = _embed_to_rgb(embed)
     # set up polydata with clustering output info.
@@ -700,7 +700,7 @@ def _embed_to_rgb(embed):
 
     # normalize all colors to length 1
     color_len = numpy.sqrt(numpy.sum(numpy.power(color, 2), 1))
-    print numpy.min(color_len)
+    #print numpy.min(color_len)
     color_len += 0.0001
     color = numpy.divide(color.T, color_len).T
 
