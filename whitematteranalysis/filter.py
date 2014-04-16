@@ -38,7 +38,9 @@ def preprocess(inpd, min_length_mm,
                remove_u=False,
                remove_u_endpoint_dist=40,
                remove_brainstem=False,
-               return_indices=False):
+               return_indices=False,
+               preserve_point_data=False,
+               preserve_cell_data=False):
     """Remove low-quality fibers.
 
     Based on fiber length, and optionally on distance between
@@ -49,10 +51,7 @@ def preprocess(inpd, min_length_mm,
 
     # set up processing and output objects
     ptids = vtk.vtkIdList()
-    outpd = vtk.vtkPolyData()
-    outlines = vtk.vtkCellArray()
     inpoints = inpd.GetPoints()
-    outpd.SetPoints(inpoints)
     
     # min_length_mm is in mm. Convert to minimum points per fiber
     # by measuring step size (using first two points on first line that has >2 points)
@@ -78,19 +77,18 @@ def preprocess(inpd, min_length_mm,
 
     # loop over lines
     inpd.GetLines().InitTraversal()
-    outlines.InitTraversal()
-
-    # keep track of the lines we have kept
+    num_lines = inpd.GetNumberOfLines()
+    # keep track of the lines we will keep
     line_indices = list()
-    
-    for lidx in range(0, inpd.GetNumberOfLines()):
+ 
+    for lidx in range(0, num_lines):
         inpd.GetLines().GetNextCell(ptids)
 
         # first figure out whether to keep this line
-        fiber_mask = False
+        keep_curr_fiber = False
         # test for line being long enough
         if ptids.GetNumberOfIds() > min_length_pts:
-            fiber_mask = True
+            keep_curr_fiber = True
 
             if remove_u | remove_brainstem:
                 # find first and last points on the fiber
@@ -104,26 +102,21 @@ def preprocess(inpd, min_length_mm,
                 endpoint_dist = numpy.sqrt(numpy.sum(numpy.power(
                             numpy.subtract(point0, point1), 2)))
                 if endpoint_dist < remove_u_endpoint_dist:
-                    fiber_mask = False
+                    keep_curr_fiber = False
 
             if remove_brainstem:
                 # compute average SI (third coordinate) < -40
                 mean_sup_inf = (point0[2] + point1[2]) / 2
                 if mean_sup_inf < -40:
-                    fiber_mask = False
+                    keep_curr_fiber = False
 
-        # if we are keeping the line do it
-        if fiber_mask:
-            outlines.InsertNextCell(ptids)
+        # if we are keeping the line record its index
+        if keep_curr_fiber:
             line_indices.append(lidx)
-            if verbose:
-                if lidx % 100 == 0:
-                    print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
 
-    outpd.SetLines(outlines)
-
-    msg = outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines()
-    print "<filter.py> Number of lines kept in preprocess:", msg
+    fiber_mask = numpy.zeros(num_lines)
+    fiber_mask[line_indices] = 1
+    outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data)
 
     if return_indices:
         return outpd, numpy.array(line_indices)
@@ -146,7 +139,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
 
     # don't color by line index by default, preserve whatever was there
     #outpd = mask(inpd, fiber_mask, fiber_mask)
-    outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data)
+    outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data)
 
     # final line count
     #print "<filter.py> Number of lines selected:", outpd.GetNumberOfLines()
