@@ -98,12 +98,14 @@ class ThreeDNodePicker:
             nodes = slicer.util.getNodes(self.nodePattern)
                 
             # check which one was chosen in the pick
+            slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
             for key in nodes:
                 m = nodes[key]
                 for n in range(m.GetNumberOfDisplayNodes()):
                     dn = m.GetNthDisplayNode(n)
                     if dn.GetOutputPolyData() == pd_picked:
                         picked_node = m
+            slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     # return the node object
     return picked_node          
   
@@ -139,9 +141,11 @@ class ModelDisplayHelper:
             oldColor = color
     if oldColor:
         print "found old color", oldColor
+        slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for n in range(m.GetNumberOfDisplayNodes()):
             dn = m.GetNthDisplayNode(n)
             dn.SetColor(oldColor)
+        slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
         
   def resetAllColors(self):
     # remove all observers and reset
@@ -154,10 +158,12 @@ class ModelDisplayHelper:
     if nodeType == 'FiberBundleNode' or nodeType == 'ModelNode':
         nodePattern = '*'+nodeType+'*'
         nodes = slicer.util.getNodes(nodePattern)
+        slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
             print "show model", m.GetName()
             self.visibleOn(m)
+        slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
         print "NodeType", nodeType, "is unsupported"
 
@@ -166,10 +172,12 @@ class ModelDisplayHelper:
     if nodeType == 'FiberBundleNode' or nodeType == 'ModelNode':
         nodePattern = '*'+nodeType+'*'
         nodes = slicer.util.getNodes(nodePattern)
+        slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
             print "hide model", m.GetName()
             self.visibleOff(m)
+        slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
         print "NodeType", nodeType, "is unsupported"
         
@@ -204,12 +212,14 @@ class ModelDisplayHelper:
     if nodeType == 'FiberBundleNode':
         nodePattern = '*'+nodeType+'*'
         nodes = slicer.util.getNodes(nodePattern)
+        slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
             print "update model", m.GetName()
             # update visibility of correct display type, if it's visible now
             if m.GetTubeDisplayNode().GetVisibility() or m.GetLineDisplayNode().GetVisibility():
                 self.visibleOn(m)
+        slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
         print "NodeType", nodeType, "is not in need of update"
 
