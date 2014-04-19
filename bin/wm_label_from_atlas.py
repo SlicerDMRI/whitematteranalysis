@@ -49,18 +49,6 @@ parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
-    '-k', action="store", dest="numberOfClusters", type=int,
-    help='Number of clusters to find. Default is 200. Useful range is from 200 to 500+.')
-parser.add_argument(
-    '-thresh', action="store", dest="distanceThreshold", type=float,
-    help='Threshold (in mm) below which fiber points are considered in the same position. 0mm is default. Set to 2mm for cross-subject clustering.')
-parser.add_argument(
-    '-nystrom_sample', action="store", dest="sizeOfNystromSample", type=int,
-    help='Number of fibers to use in the Nystrom sample. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use.')
-parser.add_argument(
-    '-sigma', action="store", dest="sigma", type=float,
-    help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Reduce for stricter clustering with ample data, or for physically smaller problems like a subset of the brain.')
-parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
 
@@ -113,29 +101,6 @@ if args.flag_verbose:
 else:
     print "Verbose OFF."
 verbose = args.flag_verbose
-if args.numberOfClusters is not None:
-    number_of_clusters = args.numberOfClusters
-else:
-    number_of_clusters = 200
-print "Number of clusters to find: ", number_of_clusters
-
-if args.distanceThreshold is not None:
-    threshold = args.distanceThreshold
-else:
-    threshold = 0.0
-print "Threshold (in mm) for fiber distances: ", threshold
-
-if args.sizeOfNystromSample is not None:
-    number_of_sampled_fibers = args.sizeOfNystromSample
-else:
-    number_of_sampled_fibers = 2000
-print "Size of Nystrom sample: ", number_of_sampled_fibers
-
-if args.sigma is not None:
-    sigma = args.sigma
-else:
-    sigma = 60
-print "Sigma in mm: ", sigma
 
 if args.showNFibersInSlicer is not None:
     show_fibers = args.showNFibersInSlicer
@@ -143,20 +108,6 @@ else:
     show_fibers = 5000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
-
-# default clustering parameters that probably don't need to be changed
-# from TMI 2007 paper
-use_nystrom=True
-distance_method = 'Mean'
-use_normalized_cuts = True
-number_of_eigenvectors = 10
-
-
-# another option. was not used in TMI 2007 paper. would need a different sigma.
-#distance_method ='Hausdorff'
-# This was used in the TMI paper but 10 eigenvectors
-# contain almost as much information and reduce noise for single subject clustering
-#number_of_eigenvectors = 20
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
