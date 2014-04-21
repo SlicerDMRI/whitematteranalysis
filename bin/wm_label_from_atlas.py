@@ -2,6 +2,8 @@ import numpy
 import argparse
 import os
 import multiprocessing
+import time
+
 import vtk
 
 try:
@@ -21,7 +23,7 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Runs clustering of tractography for multiple subjects to create an atlas.",
+    description="Labels tractography according to a multi-subject/multi-atlas cluster representation.",
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
 parser.add_argument("-v", "--version",
     action="version", default=argparse.SUPPRESS,
@@ -51,6 +53,9 @@ parser.add_argument(
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
+parser.add_argument(
+    '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
+    help='To label in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
 
 args = parser.parse_args()
 
@@ -108,7 +113,11 @@ else:
     show_fibers = 5000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
-
+if args.registerAtlasToSubjectSpace:
+    print "Registration of atlas fibers to subject fibers is ON."
+else:
+    print "Registration of atlas fibers to subject fibers is OFF. Subject must be in atlas space before calling this script."
+            
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
 # =======================================================================
@@ -131,6 +140,80 @@ if number_of_fibers is not None:
     input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True)
 else:
     input_data = pd2
+
+#-----------------
+# Register if needed
+#-----------------
+
+if args.registerAtlasToSubjectSpace:
+
+    if 0:
+        # test: transform input data to test this works
+        translation = vtk.vtkTransform()
+        translation.Translate(100.0, 50.0, 22.0)
+        transformer = vtk.vtkTransformPolyDataFilter()
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            transformer.SetInputData(input_data)
+        else:
+            transformer.SetInput(input_data)
+        transformer.SetTransform(translation)
+        transformer.Update()
+        input_data = transformer.GetOutput()
+
+    # defaults for two subject registration
+    # (may be added as parameters later)
+    fiber_sample_fractions = [.4, .5, .6, .8]
+    #sigma_per_scale = [30, 10, 10, 5]
+    sigma_per_scale = [10, 10, 10, 5]
+    #steps_per_scale=[10, 3, 2, 2]
+    steps_per_scale=[5, 2, 2, 2]
+    fibers_rendered = 100
+    # figure out maximum function evals for optimizer if not requested
+    # default for two dataset registration
+    maxfun_per_scale = [20, 40, 60, 80]
+    number_of_fibers = 300
+    fiber_length = 75
+    points_per_fiber = 5
+    distance_method='Hausdorff'
+    # figure out numbers of fibers to sample
+    fiber_sample_sizes = (number_of_fibers * numpy.array(fiber_sample_fractions)).astype(int)
+    # create registration object and apply settings
+    register = wma.congeal.CongealTractography()
+    register.parallel_jobs = number_of_jobs
+    register.threshold = 0
+    register.points_per_fiber = points_per_fiber
+    register.distance_method = distance_method
+    register.add_subject(atlas.nystrom_polydata)
+    register.add_subject(input_data)
+    scales = ["Coarse", "Medium", "Fine", "Finest"]
+    scale_idx = 0
+    elapsed = list()
+    for scale in scales:
+        start = time.time()
+        # run the basic iteration of translate, rotate, scale
+        wma.registration_functions.compute_multiscale_registration(register, scale, steps_per_scale[scale_idx], fiber_sample_sizes[scale_idx], sigma_per_scale[scale_idx], maxfun_per_scale[scale_idx])
+        elapsed.append(time.time() - start)
+        scale_idx += 1
+        print elapsed
+    #  NEED TO OUTPUT THE COMBINED TRANSFORM APPLIED TO ATLAS NOT TO PD
+    # now apply the appropriate transform to the input data.
+    # transform 0 times transform 1 inverse
+    tx = register.convert_transforms_to_vtk()
+    tx[1].Inverse()
+    tx[0].Concatenate(tx[1])
+    # apply this transform to the atlas polydata
+    transformer = vtk.vtkTransformPolyDataFilter()
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        transformer.SetInputData(atlas.nystrom_polydata)
+    else:
+        transformer.SetInput(atlas.nystrom_polydata)
+    transformer.SetTransform(tx[0])
+    print tx[0]
+    transformer.Update()
+    pd = transformer.GetOutput()
+
+    # update the atlas polydata with the new polydata in subject space
+    atlas.nystrom_polydata = pd
 
 #-----------------
 # Label the data
