@@ -207,10 +207,6 @@ def spectral(input_polydata, number_of_clusters=200,
         # sanity check
         print "Range of values in A:", numpy.min(A), numpy.max(A)
         
-        # test longer-range similarities
-        # need literature search here
-        #A = similarity.update_test(A)
-        
     testval = numpy.max(A-A.T) 
     if not testval == 0.0:
         if testval > 1e-10:
@@ -259,7 +255,6 @@ def spectral(input_polydata, number_of_clusters=200,
                 print "Using A's top eigenvectors in pinv"
                 numA = len(A)
                 nvec = 40
-                #nvec = 10
                 if nvec > numA / 2.0:
                     nvec = numpy.round(numA / 2)
                 if nvec < number_of_eigenvectors + 1:
@@ -268,13 +263,9 @@ def spectral(input_polydata, number_of_clusters=200,
                 val, vec = numpy.linalg.eigh(A)
                 # numpy.dot(numpy.dot(vec,numpy.diag(val)),vec.T)
                 ind = numpy.argsort(val)
-                ##mask = val > 2.0
                 mask = ind[-nvec:-1]
                 vec2 = vec[:,mask]
                 val2 = val[mask]
-                #print val2
-                #print numpy.divide(1.0,val2)
-                print val.shape
                 #A2 = numpy.dot(numpy.dot(vec2,numpy.diag(val2)),vec2.T)
                 atlas.pinv_A = numpy.dot(numpy.dot(vec2,numpy.diag(numpy.divide(1.0,val2))),vec2.T)
             else:
@@ -284,22 +275,20 @@ def spectral(input_polydata, number_of_clusters=200,
             e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
             print "test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
             e_val, e_vec = numpy.linalg.eigh(A)
-            print "Was A positive definite? Eigenvalue range:", e_val[0], e_val[-1]  
+            print "Was A positive definite? Eigenvalue range of A:", e_val[0], e_val[-1]  
 
-            #print "test B:", numpy.min(numpy.sum(B.T, axis=0))
 
             # row sum formula:
             # dhat = [a_r + b_r; b_c + B^T*A-1*b_r]
             # this matrix is A^-1 * b_r, where b_r are the row sums of B
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
             atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
-            #print numpy.sum(B.T, axis=0).shape
             test = numpy.sum(B.T, axis=0)
             print "B column sums range (should be > 0):", numpy.min(test), numpy.max(test)
             print "Range of row sum weights:", numpy.min(atlas.row_sum_matrix), numpy.max(atlas.row_sum_matrix)
             print "First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
             test = numpy.dot(atlas.row_sum_matrix, B)
-            print "Test partial sum estimation for B (should be > 0):", numpy.min(test), numpy.max(test)
+            print "Test partial sum estimation for B:", numpy.min(test), numpy.max(test)
             
             # row sum estimate for current B part of the matrix
             row_sum_2 = numpy.sum(B, axis=0) + \
@@ -307,7 +296,6 @@ def spectral(input_polydata, number_of_clusters=200,
             print "Row sum check (min/max, should be > 0) A:", numpy.min(atlas.row_sum_1), \
                 numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), \
                 numpy.max(row_sum_2)
-            #print "check 2:", numpy.min(numpy.sum(B.T, axis=0)), numpy.min(atlas.row_sum_matrix)
 
             print atlas.row_sum_1.shape
             print row_sum_2.shape
@@ -394,23 +382,24 @@ def spectral(input_polydata, number_of_clusters=200,
         atlas.centroids, cluster_metric = scipy.cluster.vq.kmeans(embed, number_of_clusters)
         cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
         print "Distortion metric:", cluster_metric
-        cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
-        print("Silhouette Coefficient: %0.3f" % cluster_metric)
+        if 0:
+            # This is extremely slow, but leave code here if ever wanted for testing
+            cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
+            print("Silhouette Coefficient: %0.3f" % cluster_metric)
  
     else:
+        # This found fewer clusters than we need to represent the anatomy well
+        # Leave code here in case wanted in future for more testing.
         print '<cluster.py> Affinity Propagation clustering in embedding space.'
         af = AffinityPropagation(preference=-50).fit(embed)
         cluster_centers_indices = af.cluster_centers_indices_
         labels = af.labels_
         n_clusters_ = len(cluster_centers_indices)
-
         print('Estimated number of clusters: %d' % n_clusters_)
-
         cluster_idx = labels
         for k in range(n_clusters_):
             class_members = labels == k
             atlas.centroids = embed[cluster_centers_indices[k]]
-
         # return metrics
         cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
         print("Silhouette Coefficient: %0.3f" % cluster_metric)
