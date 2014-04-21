@@ -47,7 +47,7 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-k', action="store", dest="numberOfClusters", type=int,
-    help='Number of clusters to find. Default is 200. Useful range is from 200 to 500+.')
+    help='Number of clusters to find. Default is 200. Useful range is from 200 to 600+.')
 parser.add_argument(
     '-thresh', action="store", dest="distanceThreshold", type=float,
     help='Threshold (in mm) below which fiber points are considered in the same position. 0mm is default. Set to 2mm for cross-subject clustering.')
@@ -60,6 +60,12 @@ parser.add_argument(
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
+parser.add_argument(
+    '-remove_outliers', action='store_true', dest="flag_remove_outliers",
+    help='Define outlier clusters (default, ones with less than 90% of subjects present). These will be segmented separately.')
+parser.add_argument(
+    '-subject_percent', action="store", dest="subjectPercent", type=float,
+    help='Threshold for defining good vs outlier clusters. Default is 90% of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
 
 args = parser.parse_args()
 
@@ -135,7 +141,17 @@ else:
     show_fibers = 5000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
+if args.flag_remove_outliers:
+    if args.subjectPercent is not None:
+        fraction_to_keep_cluster = args.subjectPercent / 100.0
+    else:
+        fraction_to_keep_cluster = 0.9
+    print "Separating outlier clusters with fewer than: ", fraction_to_keep_cluster * 100.0, "percent of subjects."
+else:
+    print "Not removing outlier clusters."
 
+
+    
 # default clustering parameters that probably don't need to be changed
 # from TMI 2007 paper
 use_nystrom=True
@@ -233,7 +249,7 @@ for sidx in range(number_of_subjects):
     for fidx in range(number_of_fibers_per_subject):
         subject_fiber_list.append(sidx)
 subject_fiber_list = numpy.array(subject_fiber_list)
-# Figure out how many subjects in most clusters (ideally, most subjects in most clusters)
+# Figure out how many subjects in each cluster (ideally, most subjects in most clusters)
 subjects_per_cluster = list()
 for cidx in range(atlas.centroids.shape[0]):
     cluster_mask = (cluster_numbers_s==cidx) 
@@ -244,6 +260,22 @@ if HAVE_PLT:
     plt.savefig( os.path.join(outdir, 'subjects_per_cluster_hist.pdf'))
     plt.close()
 
+
+# Figure out what clusters we have, and keep the consistent ones if requested.
+number_of_clusters = numpy.max(cluster_numbers_s)
+        
+if args.flag_remove_outliers:
+    subjects_to_keep_cluster = numpy.round(fraction_to_keep_cluster * number_of_subjects)
+    print "Separating outlier clusters with fewer than: ", subjects_to_keep_cluster, "/", number_of_subjects, "subjects."   
+    # experiment
+    cluster_indices = numpy.where(numpy.array(subjects_per_cluster) >= subjects_to_keep_cluster)[0]
+    outlier_indices = numpy.where(numpy.array(subjects_per_cluster) < subjects_to_keep_cluster)[0]
+    print "Keeping", len(cluster_indices), "/", number_of_clusters, "clusters."
+else:
+    first_cluster = numpy.min(cluster_numbers_s)
+    print "Cluster indices range from:", first_cluster, "to", number_of_clusters
+    cluster_indices = range(first_cluster,number_of_clusters)
+
 # Also save the entire combined atlas as individual clusters for visualization
 # and labeling/naming of structures. This will be the subset of the data
 # that was analyzed to make the atlas.
@@ -251,8 +283,7 @@ if HAVE_PLT:
 # Figure out file name and mean color for each cluster, and write the individual polydatas
 fnames = list()
 cluster_colors = list()
-number_of_clusters = numpy.max(cluster_numbers_s)
-for c in range(number_of_clusters):
+for c in cluster_indices:
     mask = cluster_numbers_s == c
     pd_c = wma.filter.mask(output_polydata_s, mask)
     fname_c = 'cluster_{0:05d}.vtp'.format(c)
@@ -278,6 +309,34 @@ print "<wm_cluster_atlas.py> Subsampling ratio estimated as:", ratio
 fname = os.path.join(outdir, 'clustered_tracts.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
+# Also save the outlier clusters for quality control
+if args.flag_remove_outliers:
+    outdir_outlier = os.path.join(outdir, 'outliers')
+    if not os.path.exists(outdir_outlier):
+        os.makedirs(outdir_outlier)
+    # Figure out file name and mean color for each cluster, and write the individual polydatas
+    fnames = list()
+    cluster_colors = list()
+    for c in outlier_indices:
+        mask = cluster_numbers_s == c
+        pd_c = wma.filter.mask(output_polydata_s, mask)
+        fname_c = 'cluster_{0:05d}.vtp'.format(c)
+        # save the filename for writing into the MRML file
+        fnames.append(fname_c)
+        # prepend the output directory
+        fname_c = os.path.join(outdir_outlier, fname_c)
+        print fname_c
+        wma.io.write_polydata(pd_c, fname_c)
+        color_c = color[mask,:]
+        cluster_colors.append(numpy.mean(color_c,0))
+        
+    # Write the MRML file into the directory where the polydatas were already stored
+    fname = os.path.join(outdir_outlier, 'outlier_tracts.mrml')
+    wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
+
+    # Save the outlier information into the atlas...
+    print "LAUREN SAVE OUTLIER and qc number of subjects INFORMATION IN ATLAS AND MOVE THAT CODE TO cluster.py"
+    
 # View the whole thing in png format for quality control
 print '<wm_cluster_atlas.py> Rendering and saving image'
 ren = wma.render.render(output_polydata_s, 1000)
