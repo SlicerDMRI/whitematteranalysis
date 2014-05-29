@@ -17,10 +17,6 @@ except:
     print "<wm_cluster_atlas.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
     HAVE_PLT = 0    
 
-#TESTING
-bilateral = True
-#TESTING
-
 #-----------------
 # Parse arguments
 #-----------------
@@ -70,6 +66,9 @@ parser.add_argument(
 parser.add_argument(
     '-subject_percent', action="store", dest="subjectPercent", type=float,
     help='Threshold for defining good vs outlier clusters. Default is 90% of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
+parser.add_argument(
+    '-bilateral_off', action='store_true', dest="flag_bilateral_off",
+    help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters. They can be split at the midline later if needed')
 
 args = parser.parse_args()
 
@@ -154,6 +153,12 @@ if args.flag_remove_outliers:
 else:
     print "Not removing outlier clusters."
 
+if args.flag_bilateral_off:
+    bilateral = False
+    print "Bilateral clustering OFF."
+else:
+    bilateral = True
+    print "Bilateral clustering ON."
 
     
 # default clustering parameters that probably don't need to be changed
