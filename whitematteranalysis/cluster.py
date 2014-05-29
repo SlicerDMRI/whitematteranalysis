@@ -31,13 +31,16 @@ import filter
 import render
 import io
 
-try:    
-    from sklearn.cluster import AffinityPropagation
-    from sklearn import metrics
-except ImportError:
-    SKLEARN = 0
-    print "<cluster.py> Failed to import sklearn, cannot use affinity propagation."
-    print "<cluster.py> Please install sklearn for this functionality."
+
+# This did not work better. Leave here for future testing if of interest
+if 0:
+    try:    
+        from sklearn.cluster import AffinityPropagation
+        from sklearn import metrics
+    except ImportError:
+        SKLEARN = 0
+        print "<cluster.py> Failed to import sklearn, cannot use affinity propagation."
+        print "<cluster.py> Please install sklearn for this functionality."
     
 class ClusterAtlas:
     """Variables necessary to label a new subject from a spectral cluster atlas."""
@@ -382,6 +385,7 @@ def spectral(input_polydata, number_of_clusters=200,
         embed = embed[:, ::-1]
 
 
+    # Default is always k-means. Other code is just left for testing. Did not improve results.
     #centroid_finder = 'AffinityPropagation'
     centroid_finder = 'K-means'
     
@@ -411,8 +415,10 @@ def spectral(input_polydata, number_of_clusters=200,
             class_members = labels == k
             atlas.centroids = embed[cluster_centers_indices[k]]
         # return metrics
-        cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
-        print("Silhouette Coefficient: %0.3f" % cluster_metric)
+        if 0:
+            # This is extremely slow, but leave code here if ever wanted for testing
+            cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
+            print("Silhouette Coefficient: %0.3f" % cluster_metric)
         
     # 6) Output results.
     print '<cluster.py> Done spectral clustering, returning results.'
