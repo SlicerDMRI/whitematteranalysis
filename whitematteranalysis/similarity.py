@@ -9,7 +9,7 @@ def distance_to_similarity(distance, sigmasq=100):
 
     return similarities
 
-def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400):
+def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400, bilateral=False):
     """
 
     Find pairwise fiber distance from fiber to all fibers in fiber_array.
@@ -29,7 +29,7 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
     # compute pairwise fiber distances along fibers
     distance_1 = _fiber_distance_internal_use(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
     distance_2 = _fiber_distance_internal_use(fiber_equiv, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
-
+        
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
     if distance_method == 'StrictSimilarity':
@@ -38,7 +38,19 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
         distance = numpy.maximum(distance_1, distance_2)
     else:
         distance = numpy.minimum(distance_1, distance_2)
-    
+
+    if bilateral:
+        fiber_reflect = fiber.get_reflected_fiber()
+        # call this function again with the reflected fiber. Do NOT reflect again (bilateral=False) to avoid infinite loop.
+        distance_reflect = fiber_distance(fiber_reflect, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq, bilateral=False)
+        # choose the best distance, corresponding to the optimal fiber
+        # representation (either reflected or not)
+        if distance_method == 'StrictSimilarity':
+            # this is the product of all similarity values along the fiber
+            distance = numpy.maximum(distance, distance_reflect)
+        else:
+            distance = numpy.minimum(distance, distance_reflect)
+        
     return distance
 
 def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=None):

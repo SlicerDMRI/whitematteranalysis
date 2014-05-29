@@ -17,6 +17,10 @@ except:
     print "<wm_cluster_atlas.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
     HAVE_PLT = 0    
 
+#TESTING
+bilateral = True
+#TESTING
+
 #-----------------
 # Parse arguments
 #-----------------
@@ -232,7 +236,8 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
                              nystrom_mask = nystrom_mask, \
                              number_of_eigenvectors=number_of_eigenvectors, \
                              sigma=sigma, distance_method=distance_method, \
-                             normalized_cuts=use_normalized_cuts, threshold=threshold)
+                             normalized_cuts=use_normalized_cuts, threshold=threshold, \
+                             bilateral=bilateral)
 
 # Save the output in our atlas format for automatic labeling of full brain datasets
 atlas.save(outdir,'atlas')

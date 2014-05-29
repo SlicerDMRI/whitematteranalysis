@@ -54,7 +54,9 @@ class ClusterAtlas:
         self.number_of_eigenvectors = None
         self.centroids = None
         self.sigma = None
-
+        self.bilateral = None
+        self.distance_method = None
+        
     def save(self, directory, atlas_name):
         # temporarily remove polydata object to enable pickling
         polydata_tmp = self.nystrom_polydata
@@ -125,8 +127,8 @@ def hierarchical(input_polydata, number_of_clusters=300,
 
 def spectral(input_polydata, number_of_clusters=200,
              number_of_eigenvectors=20, sigma=60, threshold=0.0,
-             number_of_jobs=3, use_nystrom=False, nystrom_mask = None,
-             landmarks=None, distance_method='Mean', normalized_cuts = True):
+             number_of_jobs=3, use_nystrom=False, nystrom_mask=None,
+             landmarks=None, distance_method='Mean', normalized_cuts=True, bilateral=False):
 
     """ Spectral clustering based on pairwise fiber affinity matrix.
 
@@ -148,6 +150,16 @@ def spectral(input_polydata, number_of_clusters=200,
         return
 
     atlas = ClusterAtlas() 
+
+    # Store all parameters to this function. They must be identical later to label new data.
+    # Below, calculated values will also be stored in the atlas.
+    atlas.number_of_eigenvectors = number_of_eigenvectors
+    atlas.sigma = sigma
+    atlas.threshold = threshold
+    atlas.use_nystrom = use_nystrom
+    atlas.landmarks = landmarks
+    atlas.distance_method = distance_method
+    atlas.bilateral = bilateral
 
     # 1) Compute fiber similarities.
     # Nystrom version of the code uses a sample of the data.
@@ -173,7 +185,6 @@ def spectral(input_polydata, number_of_clusters=200,
         # Separate the Nystrom sample and the rest of the data.
         polydata_m = filter.mask(input_polydata, nystrom_mask)
         atlas.nystrom_polydata = polydata_m
-        atlas.threshold = threshold
         polydata_n = filter.mask(input_polydata, nystrom_mask == False)
         sz = polydata_m.GetNumberOfLines()
         print '<cluster.py> Using Nystrom approximation. Subset size:',  sz, '/', number_fibers
@@ -188,11 +199,10 @@ def spectral(input_polydata, number_of_clusters=200,
         # Calculate fiber similarities
         A = \
             _pairwise_similarity_matrix(polydata_m, threshold,
-                                        sigma, number_of_jobs, landmarks_m, distance_method)
+                                        sigma, number_of_jobs, landmarks_m, distance_method, bilateral)
         B = \
             _rectangular_similarity_matrix(polydata_n, polydata_m, threshold,
-                                           sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method)
-        atlas.sigma = sigma
+                                           sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method, bilateral)
 
         # sanity check
         print "Range of values in A:", numpy.min(A), numpy.max(A)
@@ -202,8 +212,9 @@ def spectral(input_polydata, number_of_clusters=200,
         # Calculate all fiber similarities
         A = \
             _pairwise_similarity_matrix(input_polydata, threshold,
-                                    sigma, number_of_jobs, landmarks, distance_method)
+                                    sigma, number_of_jobs, landmarks, distance_method, bilateral)
 
+        atlas.nystrom_polydata = input_polydata
         # sanity check
         print "Range of values in A:", numpy.min(A), numpy.max(A)
         
@@ -370,7 +381,6 @@ def spectral(input_polydata, number_of_clusters=200,
         # information is first
         embed = embed[:, ::-1]
 
-    atlas.number_of_eigenvectors = number_of_eigenvectors
 
     #centroid_finder = 'AffinityPropagation'
     centroid_finder = 'K-means'
@@ -456,7 +466,8 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     # 1) Compute fiber similarities.
     B = \
         _rectangular_similarity_matrix(input_polydata, atlas.nystrom_polydata, 
-                                       atlas.threshold, atlas.sigma, number_of_jobs)
+                                       atlas.threshold, atlas.sigma, number_of_jobs, distance_method=atlas.distance_method,
+                                       bilateral=atlas.bilateral)
 
     # 2) Do Normalized Cuts transform of similarity matrix.
     # row sum estimate for current B part of the matrix
@@ -497,7 +508,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
 
 def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
                               number_of_jobs=3, landmarks_n=None, landmarks_m=None,
-                              distance_method='Hausdorff'):
+                              distance_method='Hausdorff', bilateral=False):
 
     """ Internal convenience function available to clustering
     routines.
@@ -527,7 +538,7 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
             fiber_array_m,
             threshold, distance_method=distance_method,
             fiber_landmarks=landmarks_n[lidx,:], 
-            landmarks=landmarks_m)
+            landmarks=landmarks_m, bilateral=bilateral)
         for lidx in all_fibers_n)
 
     distances = numpy.array(distances).T
@@ -535,7 +546,8 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
     return distances
 
 def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold, sigma,
-                                number_of_jobs=3, landmarks_n=None, landmarks_m=None, distance_method='Hausdorff'):
+                                number_of_jobs=3, landmarks_n=None, landmarks_m=None, distance_method='Hausdorff',
+                                bilateral=False):
 
     """ Internal convenience function available to clustering
     routines.
@@ -549,7 +561,7 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
     """
 
     distances = _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
-                                             number_of_jobs, landmarks_n, landmarks_m, distance_method)
+                                             number_of_jobs, landmarks_n, landmarks_m, distance_method, bilateral=bilateral)
 
     if distance_method == 'StrictSimilarity':
         similarity_matrix = distances
@@ -561,7 +573,8 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
     return similarity_matrix
 
 def _pairwise_distance_matrix(input_polydata, threshold,
-                              number_of_jobs=3, landmarks=None, distance_method='Hausdorff'):
+                              number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
+                              bilateral=False):
 
     """ Internal convenience function available to clustering
     routines.
@@ -589,7 +602,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
             fiber_array,
             threshold, distance_method=distance_method, 
             fiber_landmarks=landmarks2[lidx,:], 
-            landmarks=landmarks)
+            landmarks=landmarks, bilateral=bilateral)
         for lidx in all_fibers)
 
     distances = numpy.array(distances)
@@ -599,7 +612,8 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     return distances
 
 def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
-                                number_of_jobs=3, landmarks=None, distance_method='Hausdorff'):
+                                number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
+                                bilateral=False):
 
     """ Internal convenience function available to clustering
     routines.
@@ -613,7 +627,7 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
     """
 
     distances = _pairwise_distance_matrix(input_polydata, threshold,
-                                          number_of_jobs, landmarks, distance_method)
+                                          number_of_jobs, landmarks, distance_method, bilateral=bilateral)
     
     if distance_method == 'StrictSimilarity':
         similarity_matrix = distances
