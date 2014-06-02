@@ -47,10 +47,10 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-k', action="store", dest="numberOfClusters", type=int,
-    help='Number of clusters to find. Default is 200. Useful range is from 200 to 600+.')
+    help='Number of clusters to find. Default is 250. Useful range is from 200 to 600+.')
 parser.add_argument(
     '-thresh', action="store", dest="distanceThreshold", type=float,
-    help='Threshold (in mm) below which fiber points are considered in the same position. 0mm is default. Set to 2mm for cross-subject clustering.')
+    help='Threshold (in mm) below which fiber points are considered in the same position. Default is 2mm for cross-subject atlas clustering.')
 parser.add_argument(
     '-nystrom_sample', action="store", dest="sizeOfNystromSample", type=int,
     help='Number of fibers to use in the Nystrom sample. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use.')
@@ -117,13 +117,14 @@ verbose = args.flag_verbose
 if args.numberOfClusters is not None:
     number_of_clusters = args.numberOfClusters
 else:
-    number_of_clusters = 200
+    number_of_clusters = 250
 print "Number of clusters to find: ", number_of_clusters
 
 if args.distanceThreshold is not None:
     threshold = args.distanceThreshold
 else:
-    threshold = 0.0
+    # for across-subjects matching
+    threshold = 2.0
 print "Threshold (in mm) for fiber distances: ", threshold
 
 if args.sizeOfNystromSample is not None:
@@ -259,11 +260,71 @@ for sidx in range(number_of_subjects):
     for fidx in range(number_of_fibers_per_subject):
         subject_fiber_list.append(sidx)
 subject_fiber_list = numpy.array(subject_fiber_list)
+        
 # Figure out how many subjects in each cluster (ideally, most subjects in most clusters)
 subjects_per_cluster = list()
+percent_subjects_per_cluster = list()
+fibers_per_cluster = list()
+mean_fiber_len_per_cluster = list()
+std_fiber_len_per_cluster = list()
+mean_fibers_per_subject_per_cluster = list()
+std_fibers_per_subject_per_cluster = list()
+
+# find out length of each fiber
+fiber_length = list()
+cell_idx = 0
+ptids = vtk.vtkIdList()
+inpoints = output_polydata_s.GetPoints()
+# loop over lines
+output_polydata_s.GetLines().InitTraversal()
+num_lines = output_polydata_s.GetNumberOfLines()
+for lidx in range(0, num_lines):
+    output_polydata_s.GetLines().GetNextCell(ptids)
+    # compute step size (assume it's fixed along line length)
+    if ptids.GetNumberOfIds() >= 2:
+        point0 = inpoints.GetPoint(ptids.GetId(0))
+        point1 = inpoints.GetPoint(ptids.GetId(1))
+        step_size = numpy.sqrt(numpy.sum(numpy.power(
+            numpy.subtract(point0, point1), 2)))
+    else:
+        step_size = 0.0
+    fiber_length.append(ptids.GetNumberOfIds() * step_size)
+fiber_length = numpy.array(fiber_length)
+
+# loop over each cluster and compute quality control metrics
 for cidx in range(atlas.centroids.shape[0]):
     cluster_mask = (cluster_numbers_s==cidx) 
     subjects_per_cluster.append(len(set(subject_fiber_list[cluster_mask])))
+    fibers_per_subject = list()
+    for sidx in range(number_of_subjects):
+        fibers_per_subject.append(list(subject_fiber_list[cluster_mask]).count(sidx))
+    mean_fibers_per_subject_per_cluster.append(numpy.mean(numpy.array(fibers_per_subject)))
+    std_fibers_per_subject_per_cluster.append(numpy.std(numpy.array(fibers_per_subject)))
+    mean_fiber_len_per_cluster.append(numpy.mean(fiber_length[cluster_mask]))
+    std_fiber_len_per_cluster.append(numpy.std(fiber_length[cluster_mask]))
+
+percent_subjects_per_cluster = numpy.divide(numpy.array(subjects_per_cluster),float(number_of_subjects))
+    
+# for now, print to screen
+for cidx in range(atlas.centroids.shape[0]):
+    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
+      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
+      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
+
+# quality metric for sorting clusters in output
+# clusters that have high length, are present in many subjects, and have many fibers per subject are high quality
+cluster_quality = numpy.multiply(numpy.multiply(percent_subjects_per_cluster,mean_fiber_len_per_cluster),mean_fibers_per_subject_per_cluster)
+# want high quality first so sort negative of array
+cluster_order = numpy.argsort(-cluster_quality)
+
+print "=============================="
+print len(cluster_order)
+# test printing again
+for cidx in cluster_order:
+    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
+      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
+      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
+
 if HAVE_PLT:
     plt.figure()
     plt.hist(subjects_per_cluster, number_of_subjects)
@@ -278,13 +339,13 @@ if args.flag_remove_outliers:
     subjects_to_keep_cluster = numpy.round(fraction_to_keep_cluster * number_of_subjects)
     print "Separating outlier clusters with fewer than: ", subjects_to_keep_cluster, "/", number_of_subjects, "subjects."   
     # experiment
-    cluster_indices = numpy.where(numpy.array(subjects_per_cluster) >= subjects_to_keep_cluster)[0]
-    outlier_indices = numpy.where(numpy.array(subjects_per_cluster) < subjects_to_keep_cluster)[0]
+    cluster_indices = numpy.where(numpy.array(subjects_per_cluster[cluster_order]) >= subjects_to_keep_cluster)[0]
+    outlier_indices = numpy.where(numpy.array(subjects_per_cluster[cluster_order]) < subjects_to_keep_cluster)[0]
     print "Keeping", len(cluster_indices), "/", number_of_clusters, "clusters."
 else:
     first_cluster = numpy.min(cluster_numbers_s)
     print "Cluster indices range from:", first_cluster, "to", number_of_clusters
-    cluster_indices = range(first_cluster,number_of_clusters)
+    cluster_indices = cluster_order
 
 # Also save the entire combined atlas as individual clusters for visualization
 # and labeling/naming of structures. This will be the subset of the data
@@ -293,10 +354,11 @@ else:
 # Figure out file name and mean color for each cluster, and write the individual polydatas
 fnames = list()
 cluster_colors = list()
+cidx = 1
 for c in cluster_indices:
     mask = cluster_numbers_s == c
     pd_c = wma.filter.mask(output_polydata_s, mask)
-    fname_c = 'cluster_{0:05d}.vtp'.format(c)
+    fname_c = 'cluster_{0:05d}.vtp'.format(cidx)
     # save the filename for writing into the MRML file
     fnames.append(fname_c)
     # prepend the output directory
@@ -305,6 +367,7 @@ for c in cluster_indices:
     wma.io.write_polydata(pd_c, fname_c)
     color_c = color[mask,:]
     cluster_colors.append(numpy.mean(color_c,0))
+    cidx = cidx + 1
     
 # Estimate subsampling ratio to display approx. show_fibers total fibers
 number_fibers = len(cluster_numbers_s)
@@ -330,7 +393,7 @@ if args.flag_remove_outliers:
     for c in outlier_indices:
         mask = cluster_numbers_s == c
         pd_c = wma.filter.mask(output_polydata_s, mask)
-        fname_c = 'cluster_{0:05d}.vtp'.format(c)
+        fname_c = 'cluster_{0:05d}.vtp'.format(cidx)
         # save the filename for writing into the MRML file
         fnames.append(fname_c)
         # prepend the output directory
@@ -339,7 +402,7 @@ if args.flag_remove_outliers:
         wma.io.write_polydata(pd_c, fname_c)
         color_c = color[mask,:]
         cluster_colors.append(numpy.mean(color_c,0))
-        
+        cidx = cidx + 1
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir_outlier, 'outlier_tracts.mrml')
     wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
