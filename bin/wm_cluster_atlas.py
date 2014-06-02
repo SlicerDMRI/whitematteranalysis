@@ -62,10 +62,10 @@ parser.add_argument(
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
 parser.add_argument(
     '-remove_outliers', action='store_true', dest="flag_remove_outliers",
-    help='Define outlier clusters (default, ones with less than 90% of subjects present). These will be segmented separately.')
+    help='Define outlier clusters (default, ones with less than 90 percent of subjects present). These will be segmented separately.')
 parser.add_argument(
     '-subject_percent', action="store", dest="subjectPercent", type=float,
-    help='Threshold for defining good vs outlier clusters. Default is 90% of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
+    help='Threshold for defining good vs outlier clusters. Default is 90 percent of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
 parser.add_argument(
     '-bilateral_off', action='store_true', dest="flag_bilateral_off",
     help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters. They can be split at the midline later if needed')
