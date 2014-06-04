@@ -89,6 +89,7 @@ print "=====output directory =====\n", args.outputDirectory
 print "=========================="
 print ""
 
+
 if args.numberOfFibers is not None:
     print "fibers to analyze per subject: ", args.numberOfFibers
     number_of_fibers_per_subject = args.numberOfFibers
@@ -169,6 +170,12 @@ distance_method = 'Mean'
 use_normalized_cuts = True
 number_of_eigenvectors = 10
 
+
+# Print input parameter information to a file as well as to the terminal
+print args
+f = open(os.path.join(outdir, 'parameters.txt'), 'w+')
+print >> f, args
+f.close()
 
 # another option. was not used in TMI 2007 paper. would need a different sigma.
 #distance_method ='Hausdorff'
@@ -306,24 +313,34 @@ for cidx in range(atlas.centroids.shape[0]):
 percent_subjects_per_cluster = numpy.divide(numpy.array(subjects_per_cluster),float(number_of_subjects))
     
 # for now, print to screen
-for cidx in range(atlas.centroids.shape[0]):
-    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
-      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
-      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
+#for cidx in range(atlas.centroids.shape[0]):
+#    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
+#      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
+#      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
 
 # quality metric for sorting clusters in output
 # clusters that have high length, are present in many subjects, and have many fibers per subject are high quality
-cluster_quality = numpy.multiply(numpy.multiply(percent_subjects_per_cluster,mean_fiber_len_per_cluster),mean_fibers_per_subject_per_cluster)
+#cluster_quality = numpy.multiply(numpy.multiply(percent_subjects_per_cluster,mean_fiber_len_per_cluster),mean_fibers_per_subject_per_cluster)
 # want high quality first so sort negative of array
-cluster_order = numpy.argsort(-cluster_quality)
+#cluster_order = numpy.argsort(-cluster_quality)
+
+# Sort by percent_subjects_per_cluster, then by mean_fiber_len_per_cluster
+cluster_order = numpy.lexsort((mean_fiber_len_per_cluster,percent_subjects_per_cluster)) 
+# want high quality first so reverse ordering
+cluster_order = cluster_order[::-1]
 
 print "=============================="
 print len(cluster_order)
-# test printing again
+# Print output metrics to a file
+f = open(os.path.join(outdir, 'cluster_quality_metrics.txt'), 'w+')
+print >> f, 'cluster', 'subjects', 'percent_subjects', 'mean_length', 'std_length', 'mean_fibers_per_subject', 'std_fibers_per_subject' 
+cidx_out = 1
 for cidx in cluster_order:
-    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
-      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
-      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
+    print >> f, cidx_out, subjects_per_cluster[cidx], percent_subjects_per_cluster[cidx], \
+      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx], \
+      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx]
+    cidx_out = cidx_out + 1
+f.close()
 
 if HAVE_PLT:
     plt.figure()
