@@ -23,7 +23,7 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Labels tractography according to a multi-subject/multi-atlas cluster representation.",
+    description="Labels tractography (propagates clusters) from a cluster atlas (a multi-subject/multi-atlas cluster representation).",
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
 parser.add_argument("-v", "--version",
     action="version", default=argparse.SUPPRESS,
@@ -216,7 +216,7 @@ if args.registerAtlasToSubjectSpace:
     atlas.nystrom_polydata = pd
 
 #-----------------
-# Label the data
+# Label the data using clusters from the atlas
 #-----------------
 output_polydata_s, cluster_numbers_s, color, embed = \
     wma.cluster.spectral_atlas_label(input_data, atlas)
