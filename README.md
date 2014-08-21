@@ -3,6 +3,8 @@ whitematteranalysis
 
 #Synopsis
 White Matter Analysis provides clustering and tractography analysis tools.
+It implements algorithms from publications listed here:
+http://projects.iq.harvard.edu/whitematteranalysis/publications
 
 #Installation
 ###1. Install python. 
@@ -45,3 +47,6 @@ Run python, then:
     >>> import whitematteranalysis as wma
 
 This will produce errors if the required packages are not found.
+
+###5. Please see the wiki for usage instructions.
+https://github.com/ljod/whitematteranalysis/wiki
