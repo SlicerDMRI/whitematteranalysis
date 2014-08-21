@@ -102,7 +102,7 @@ class ClusterAtlas:
             atlas.version = '0.0'
         # this is an atlas from pre 1.0 version code. Set to default values.
         if not hasattr(atlas, 'distance_method'):    
-            atlas.distance_method = 'Mean'
+            atlas.distance_method = 'Hausdorff'
         if not hasattr(atlas, 'bilateral'):    
             atlas.bilateral = 'False'
 
@@ -443,7 +443,7 @@ def spectral(input_polydata, number_of_clusters=200,
     print '<cluster.py> Done spectral clustering, returning results.'
     # visualize embedding coordinates as RGB
     embed2 = embed
-    embed2[numpy.isnan(embed)] = 0.0
+    #embed2[numpy.isnan(embed)] = 0.0
     color = _embed_to_rgb(embed2)
     # set up polydata with clustering output info.
     # for now modify input polydata by adding two arrays
@@ -485,9 +485,12 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     Returns the cluster indices for all the fibers. output_polydata, cluster_numbers, color, embed = wma.cluster.spectral_atlas_label(input_data, atlas)
 
     """
+
+    pprint (vars(atlas))
+
     number_fibers = input_polydata.GetNumberOfLines()
     sz = atlas.nystrom_polydata.GetNumberOfLines()
-
+    
     # 1) Compute fiber similarities.
     B = \
         _rectangular_similarity_matrix(input_polydata, atlas.nystrom_polydata, 
@@ -498,6 +501,14 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     # row sum estimate for current B part of the matrix
     row_sum_2 = numpy.sum(B, axis=0) + \
         numpy.dot(atlas.row_sum_matrix, B)
+
+    # in case of negative row sum estimation
+    if (row_sum_2<0).any:
+        print "<cluster.py> Warning: Consider increasing sigma or using the Mean distance. negative row sum approximations."
+        print sum(numpy.array(row_sum_2<0))
+        row_sum_2[row_sum_2<0] = 0.1
+
+             
     # normalized cuts normalization
     dhat = numpy.sqrt(numpy.divide(1, numpy.concatenate((atlas.row_sum_1, row_sum_2))))
     B = \
@@ -722,6 +733,11 @@ def _embed_to_rgb(embed):
     output values (brightnesses) are equal.
 
      """
+
+    # make sure nothing is NaN
+    if numpy.isnan(embed).any:
+        print "<cluster.py> Warning: Consider increasing sigma or using the Mean distance. NaN values encountered in embedding."
+    embed[numpy.isnan(embed)] = 0.0
 
     # first 3 components of embedding
     color = embed[:, 0:3]
