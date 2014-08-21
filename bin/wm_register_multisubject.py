@@ -50,7 +50,7 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each dataset. 300-1000 or more is reasonable. Depends on total number of datasets and desired run time/memory use.')
+    help='Number of fibers to analyze from each dataset. 300-1000 or more is reasonable. Depends on total number of datasets and desired run time/memory use. Default is 300 fibers per subject.')
 parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
