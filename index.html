@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Whitematteranalysis by ljod</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Whitematteranalysis</h1>
+        <p class="header">White matter tractography clustering, segmentation, registration</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/ljod/whitematteranalysis/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/ljod/whitematteranalysis/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/ljod/whitematteranalysis">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/ljod">ljod</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="whitematteranalysis" class="anchor" href="#whitematteranalysis"><span class="octicon octicon-link"></span></a>whitematteranalysis</h1>
+
+<h1>
+<a name="synopsis" class="anchor" href="#synopsis"><span class="octicon octicon-link"></span></a>Synopsis</h1>
+
+<p>White Matter Analysis provides clustering and tractography analysis tools.</p>
+
+<h1>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h1>
+
+<h3>
+<a name="1-install-python" class="anchor" href="#1-install-python"><span class="octicon octicon-link"></span></a>1. Install python.</h3>
+
+<p>Anaconda is a nice option since it has VTK.</p>
+
+<h3>
+<a name="2-install-the-following-python-packages-dependencies" class="anchor" href="#2-install-the-following-python-packages-dependencies"><span class="octicon octicon-link"></span></a>2. Install the following python packages (dependencies).</h3>
+
+<ul>
+<li>joblib (This can be done with easy_install, for example.)</li>
+<li>scipy
+(scipy is included in anaconda or EPD or other python distributions, possibly)</li>
+<li>vtk (vtk is included in anaconda or other python distributions, possibly)</li>
+</ul><h4>
+<a name="if-your-python-does-not-already-have-vtk-compile-it" class="anchor" href="#if-your-python-does-not-already-have-vtk-compile-it"><span class="octicon octicon-link"></span></a>If your python does not already have VTK, compile it.</h4>
+
+<ul>
+<li>VTK: <a href="http://www.vtk.org/Wiki/VTK/Building">http://www.vtk.org/Wiki/VTK/Building</a>
+</li>
+<li><a href="http://www.vtk.org/Wiki/VTK/Git/Download">http://www.vtk.org/Wiki/VTK/Git/Download</a></li>
+</ul><p>You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
+Make sure it finds the version of python that you want to use for this project, at configure time. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
+     cd VTK-build
+     ccmake ../VTK</p>
+
+<pre><code>   PYTHON_EXECUTABLE                /Users/lauren/anaconda/bin/python            
+   PYTHON_EXTRA_LIBS                                                             
+   PYTHON_INCLUDE_DIR               /Users/lauren/anaconda/pkgs/python-2.7.4-1/in
+   PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
+   PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
+</code></pre>
+
+<p>Note this requires git and cmake. More information is at vtk.org.
+Then install it into your python:
+     cd VTK-build/Wrapping/Python
+     python setup.py install</p>
+
+<h3>
+<a name="3-install-whitematteranalysis-into-your-python" class="anchor" href="#3-install-whitematteranalysis-into-your-python"><span class="octicon octicon-link"></span></a>3. Install WhiteMatterAnalysis into your python.</h3>
+
+<pre><code> cd WhiteMatterAnalysis
+ python setup.py install
+</code></pre>
+
+<h3>
+<a name="4-test-the-installation" class="anchor" href="#4-test-the-installation"><span class="octicon octicon-link"></span></a>4. Test the installation.</h3>
+
+<p>Run python, then:</p>
+
+<pre><code>&gt;&gt;&gt; import whitematteranalysis as wma
+</code></pre>
+
+<p>This will produce errors if the required packages are not found.</p>
+
+<h3>
+<a name="5-please-see-the-wiki-for-usage-instructions" class="anchor" href="#5-please-see-the-wiki-for-usage-instructions"><span class="octicon octicon-link"></span></a>5. Please see the wiki for usage instructions.</h3>
+
+<p><a href="https://github.com/ljod/whitematteranalysis/wiki">https://github.com/ljod/whitematteranalysis/wiki</a></p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
