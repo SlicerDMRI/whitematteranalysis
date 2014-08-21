@@ -45,3 +45,6 @@ Run python, then:
     >>> import whitematteranalysis as wma
 
 This will produce errors if the required packages are not found.
+
+###5. Please see the wiki for usage instructions.
+https://github.com/ljod/whitematteranalysis/wiki
