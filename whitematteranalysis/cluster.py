@@ -31,6 +31,7 @@ import filter
 import render
 import io
 
+from pprint import pprint
 
 # This did not work better. Leave here for future testing if of interest
 if 0:
@@ -59,6 +60,8 @@ class ClusterAtlas:
         self.sigma = None
         self.bilateral = None
         self.distance_method = None
+        self.version = 1.0
+        self.polydata_filename = None
         
     def save(self, directory, atlas_name):
         # temporarily remove polydata object to enable pickling
@@ -86,11 +89,27 @@ class ClusterAtlas:
         if not os.path.exists(fname_polydata):
             print "Error: Atlas file", fname_polydata, "does not exist."
             raise "<cluster.py> I/O error"
-    
+
         atlas = pickle.load(open(fname_atlas,'rb'))
         atlas.nystrom_polydata = io.read_polydata(fname_polydata)
         print "<cluster.py> Atlas loaded. Nystrom polydata sample:", atlas.nystrom_polydata.GetNumberOfLines(), \
             "Atlas size:", atlas.pinv_A.shape, "number of eigenvectors:", atlas.number_of_eigenvectors
+
+        atlas.polydata_filename = fname_polydata
+
+        # check for any version issues
+        if not hasattr(atlas, 'version'):    
+            atlas.version = '0.0'
+        # this is an atlas from pre 1.0 version code. Set to default values.
+        if not hasattr(atlas, 'distance_method'):    
+            atlas.distance_method = 'Mean'
+        if not hasattr(atlas, 'bilateral'):    
+            atlas.bilateral = 'False'
+
+        print "Loaded atlas", atlas_name, "from", directory
+        #print atlas
+        pprint (vars(atlas))
+
         return(atlas)
 
 def load_atlas(directory, atlas_name):
