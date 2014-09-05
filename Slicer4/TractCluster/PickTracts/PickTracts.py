@@ -1,11 +1,80 @@
 import os
 import unittest
+import time
 from __main__ import vtk, qt, ctk, slicer
 
 #
 # PickTracts
 #
 
+try:
+    _fromUtf8 = qt.QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
+
+#class UI_Write_FileDialog()
+
+#class Write_FileDialog(qt.QFileDialog):
+  
+#  def __init__(self):
+#      qt.QFileDialog.__init__(self)
+#      self.ui = UI_Write_FileDialog()
+#      self.ui.setupui(self)
+
+class UI_Newgroup_Dialog(object):
+  
+  def setupui(self,Dialog):
+      Dialog.setObjectName(_fromUtf8("Dialog"))
+      Dialog.resize(387, 153)
+      self.QDialogLayout = qt.QFormLayout()    
+      self.temLineEdit = qt.QLineEdit()
+      self.temSaveButton = qt.QPushButton("Create New Group")
+      Dialog.setLayout(self.QDialogLayout)
+      self.QDialogLayout.addRow("Edit a Group Name:",self.temLineEdit)
+      self.QDialogLayout.addWidget(self.temSaveButton)
+      #self.temSaveButton.connect('clicked()',self.createnewgroup)
+
+class Newgroup_Dialog(qt.QDialog):
+  
+  def __init__(self):
+      qt.QDialog.__init__(self)
+      self.ui = UI_Newgroup_Dialog()
+      self.ui.setupui(self)
+
+class UI_Changegroupname_Dialog(object):
+  
+  def setupui(self,Dialog):
+      Dialog.setObjectName(_fromUtf8("Dialog"))
+      Dialog.resize(387, 153)
+      self.QDialogLayout = qt.QFormLayout()    
+      self.temComboBox = qt.QComboBox()
+      self.temLineEdit = qt.QLineEdit()
+      self.temLineEdit.insert(self.temComboBox.itemText(0))
+      self.temComboBox.connect('currentIndexChanged(int)',self.comboboxchanged)
+      #self.temComboBox.editable = True
+      self.temSaveButton = qt.QPushButton("Change Group Name")
+      Dialog.setLayout(self.QDialogLayout)
+      self.QDialogLayout.addRow("Choose a Group Name:",self.temComboBox)
+      self.QDialogLayout.addRow("Edit a New Name:",self.temLineEdit)
+      self.QDialogLayout.addWidget(self.temSaveButton)
+      #self.temSaveButton.connect('clicked()',self.createnewgroup)
+  
+  def comboboxchanged(self):
+      self.temLineEdit.clear()
+      self.temLineEdit.insert(self.temComboBox.currentText)
+class Changegroupname_Dialog(qt.QDialog):
+  
+  def __init__(self):
+      qt.QDialog.__init__(self)
+      self.ui = UI_Changegroupname_Dialog()
+      self.ui.setupui(self)
+  
+  def additem(self,groupname):
+      self.ui.temComboBox.addItem(groupname)
+
+  def cleargroupnamelist(self):
+      self.ui.temComboBox.clear()
+  
 class ModuleEventsList:
   """A helper class to manage a list of observers for a module. Call removeObservers on module exit."""
     
@@ -27,7 +96,6 @@ class ModuleEventsList:
 
 class ThreeDNodePicker:
   """A helper class to pick nodes in the 3D View. Can pick fiber bundles or models."""
-
   def __init__(self):
     # find the slicer objects needed for picking in the 3D window
     layoutManager = slicer.app.layoutManager()
@@ -66,16 +134,14 @@ class ThreeDNodePicker:
     self.eventsList.removeObservers()
     
   def processEvent(self, caller=None, event=None):
-      """ example event processing code. when using the class the
-       process event callback should be defined when calling
-       startPicking.  This is an example."""
-      print "Using example processEvent. Please create your own based on this example code."
-      key = self.interactor.GetKeySym()
-      print "key:", key
-      ret = self.pick()
-      if ret:
-          selection = self.getPickedNode()
-          print "picked:", selection.GetName()
+    # example event processing code. when using the class the process event callback should be defined when calling startPicking.  This is an example.
+    print "Using example processEvent. Please create your own based on this example code."
+    key = self.interactor.GetKeySym()
+    print "key:", key
+    ret = self.pick()
+    if ret:
+        selection = self.getPickedNode()
+        print "picked:", selection.GetName()
         
   def pick(self):    
     pos = self.interactor.GetEventPosition()
@@ -107,7 +173,24 @@ class ThreeDNodePicker:
                         picked_node = m
             slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     # return the node object
-    return picked_node          
+    return picked_node   
+
+  def findPickedNode(self,Name):
+    picked_node = None
+    # find the picked mapper and its polydata
+                
+    # dictionary of the kind of nodes we are picking
+    nodes = slicer.util.getNodes(self.nodePattern)
+                
+    # check which one was chosen in the pick
+    slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
+    for key in nodes:
+        m = nodes[key]
+        if m.GetName() == Name:
+            picked_node = m
+    slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
+    # return the node object
+    return picked_node        
   
 
 class ModelDisplayHelper:
@@ -244,13 +327,126 @@ class ModelDisplayHelper:
 
   def render(self):
     print "Render 3D"
+
+class TractsGroup:
+  """A helper class to maintain one saved tracts group. """
+  
+  def __init__(self):
+    self.groupname = None
+    self.contents = list()
+    self.display = ModelDisplayHelper()
+
+  def setgroupname(self, name):
+    self.groupname = name
+
+  def addcontents(self, tract):
+    self.contents.append(tract)
+
+
+class TractsGroupManager:
+  """A helper class to manage saved tracts groups. """
+  
+  def __init__(self):
+    self.groups = list()
+    self.groupnames = list()
+    #self.newTractsTextBox = None
+    self.oldTractsTextBox = None
+    self.groupnameSelector = None 
+    self.group = TractsGroup()
+    self.display = ModelDisplayHelper()
+  
+  def savetogroup(self,namestring,clipmanager):
+    if namestring not in self.groupnames:
+        self.groupnames.append(namestring)
+        self.addgroup(namestring,clipmanager)
+    else:
+        self.addtogroup(namestring,clipmanager)
+    #clipmanager.updateGUI()
+
+  def addgroup(self,namestring,clipmanager):
+    g = TractsGroup()
+    g.setgroupname(namestring)
+    for tract in clipmanager.newt.contents:
+        print "1",tract
+        g.addcontents(tract)
+    while len(clipmanager.newt.contents) > 0:
+        clipmanager.newt.contents.pop()
+    self.groups.append(g)
+    print "2",g
+
+  def addtogroup(self,namestring,clipmanager):
+    for g in self.groups:
+        if g.groupname == namestring:
+            for tract in clipmanager.newt.contents:
+                print "3",tract
+                g.addcontents(tract)
+            while len(clipmanager.newt.contents) > 0:
+                clipmanager.newt.contents.pop()
+            print "4",g
+            return
+  
+  def listgroup(self,namestring,clipmanager):
+    while len(clipmanager.oldt.contents) > 0:
+        clipmanager.oldt.contents.pop()
+    for g in self.groups:
+        if g.groupname == namestring:
+            for tract in g.contents:
+                print "5",tract
+                clipmanager.oldt.add(tract)
+            #clipmanager.updateGUI()
+            return
+
+  def viewgroup(self,namestring,clipmanager):
+    for g in self.groups:
+        if g.groupname == namestring:
+            self.display.allVisibleOff(clipmanager.nodeType)
+            for tract in g.contents:
+                self.display.visibleOn(tract)
+            self.display.render()
+            return
+  
+  def delete(self,tract):
+    for g in self.groups:
+        for t in g.contents:
+            if t == tract:
+                g.contents.remove(t)
+
+  def changegroupname(self,groupname,newgroupname):
+    while len(self.groupnames) > 0:
+        self.groupnames.pop()
+    for g in self.groups:
+        if groupname == g.groupname:
+            g.groupname = newgroupname
+        self.groupnames.append(g.groupname)
+
+          
+class IDTracts:
+  """A helper class to maintain ungrouped selected tracts. """
+
+  def __init__(self):
+    self.contents = list()
+  
+  def add(self, m):
+    # Check if this model node is already on the list
+    if m not in self.contents:
+        # add model to ner selected tracts list
+        self.contents.append(m)
+        # sort list
+        self.contents.sort()
+
+  def remove(self, m):
+    # Check if this model is already on the list
+    if m in self.contents:
+        # if so, remove
+        self.contents.remove(m)
     
 class IDClipboard:
   """A helper class to maintain one interactively edited list or clipboard of nodes, and its display at the individual clipboard level. """
 
   def __init__(self):
-    self.name = 'Selection'
+    self.name = 'All'
     self.ID = 0
+    #self.group = list()
     self.contents = list()
     # display at the individual clipboard level
     self.display = ModelDisplayHelper()
@@ -326,18 +522,21 @@ class IDClipboard:
     elif self.ModelInteractionClipboardVisibility == 0:
         self.ModelInteractionClipboardVisible()
 
-        
 class IDClipboardManager:
   """A helper class to manage many editable clipboards of nodes and their appearance in 3D, as well as their GUI display."""
 
   def __init__(self):
     self.clipboards = list()
     c = IDClipboard()
+    self.newt = IDTracts()
+    self.oldt = IDTracts()
     self.clipboards.append(c)
     self.active = c
     self.displayMode = 'ModelNames'
     self.clipboardTextBox = None
-    self.nameTextBox = None
+    #self.newTractsTextBox = None
+    self.oldTractsTextBox = None
+    #self.nameTextBox = None
     # choices: 'AllVisible', 'AllClipboardsInvisible', 'AllInvisible'
     self.visibilityState = 'AllInvisible'
     # choices: 'Visible', 'Invisible'
@@ -447,16 +646,18 @@ class IDClipboardManager:
     print "call something to update a GUI"
     # clear the text box to put current list there
 
-    if not self.clipboardTextBox:
-        print "no text box widget set"
-        return
+    #if not self.clipboardTextBox:
+        #print "no text box widget set"
+        #return
 
-    if not self.nameTextBox:
-        print "no name text box widget set"
-        return
+    #if not self.nameTextBox:
+        #print "no name text box widget set"
+        #return
 
     guiString = ''
-    
+    guiString2 = ''
+    guiString3 = ''
+
     # Either put numbers or model names, depending on
     # the mode
     if self.displayMode is "ModelIDs":
@@ -473,8 +674,40 @@ class IDClipboardManager:
             #print "get model name", m
     print "add model names to GUI"
 
+    # Either put numbers or model names, depending on
+    # the mode
+    #if self.displayMode is "ModelIDs":
+        # fix off by one error with regards to slicer internal IDs vs. model numbers
+        # and model IDs in MRML file
+        #for m in self.newt.contents:
+            #guiString.append( [Model($m,node) GetModelID]
+            #guiString2 = guiString2 + m.GetID() + '\n'
+            #print "get model id", m
+    #elif self.displayMode is "ModelNames":
+        #for m in self.newt.contents:
+            #lappend guiString [Model($m,node) GetName]
+            #guiString2 = guiString2 + m.GetName() + '\n'
+            #print "get model name", m
+
+    # Either put numbers or model names, depending on
+    # the mode
+    if self.displayMode is "ModelIDs":
+        # fix off by one error with regards to slicer internal IDs vs. model numbers
+        # and model IDs in MRML file
+        for m in self.oldt.contents:
+            #guiString.append( [Model($m,node) GetModelID]
+            guiString3 = guiString3 + m.GetID() + '\n'
+            #print "get model id", m
+    elif self.displayMode is "ModelNames":
+        for m in self.oldt.contents:
+            #lappend guiString [Model($m,node) GetName]
+            guiString3 = guiString3 + m.GetName() + '\n'
+            #print "get model name", m
+
     #self.clipboardTextBox.text = self.active.contents
-    self.clipboardTextBox.setText(guiString)
+    #self.clipboardTextBox.setText(guiString)
+    #self.newTractsTextBox.setText(guiString2)
+    self.oldTractsTextBox.setText(guiString3)
     
     # make sure the menu of clipboards is up to date
     #$ModelInteraction(clipboardMenuButton) config -text \
@@ -492,14 +725,20 @@ class IDClipboardManager:
     self.active.remove(m)
     self.updateGUI()
 
-  def select(self, m):
+  def select(self, m, TractsGroupManager, namestring):
     self.checkActive()
     self.active.select(m)
+    self.newt.add(m)
+    TractsGroupManager.savetogroup(namestring,self)
+    TractsGroupManager.listgroup(namestring,self)
     self.updateGUI()    
 
-  def deselect(self, m):
+  def deselect(self, m, tractsgroupmanager,picktractswidget):
     self.checkActive()
     self.active.deselect(m)
+    self.newt.remove(m)
+    tractsgroupmanager.delete(m)
+    picktractswidget.ongroupList()
     self.updateGUI()    
 
   def checkActive(self):
@@ -584,6 +823,7 @@ class IDClipboardManager:
     print "give a clipboard a name that the user has requested"
     c = self.getActive()
     c.name = name
+    #c.group.append(name)
     print name
     # the name came from the GUI so no need to update it until create menu
     print "update menus"
@@ -641,6 +881,24 @@ class PickTractsWidget:
       self.parent = parent
     self.layout = self.parent.layout()
 
+    # whther or not to edit tracts group name first time
+    self.flag = 1
+    self.flag_existgroup = 0
+    
+    self.qmessage1 = qt.QMessageBox()
+    self.qmessage2 = qt.QMessageBox()
+    self.QDialog = Newgroup_Dialog()
+    self.QDialog2 = Changegroupname_Dialog()
+    #self.QLineEdit = qt.QLineEdit(self.QDialog)
+    self.TractsGroupManager = TractsGroupManager()
+    self.newgroupname = ""
+    self.QDir = qt.QDir()    
+
+    self.filedialog1 = qt.QFileDialog()
+    self.filedialog2 = qt.QFileDialog()
+    # group name list
+    #self.group = list()
+
     # one persistent logic object for current settings
     self.logic = PickTractsLogic()
     self.manager = self.logic.manager
@@ -654,7 +912,7 @@ class PickTractsWidget:
 
   def onNameChange(self):
     widget = self.nameTextBox
-    print "hello"
+    print "hello",widget.text
     self.manager.nameClipboard(widget.text)
 
 
@@ -673,23 +931,6 @@ class PickTractsWidget:
     # as above for text file
     
     # menu for all of the groups
-    
-    # editable name of the current group
-    # (should be a popup if change name button is pressed?)
-    self.nameTextBox = qt.QLineEdit()
-    self.nameTextBox.text = self.manager.getActive().name
-    self.layout.addWidget(self.nameTextBox)
-    reloadFormLayout = qt.QFormLayout(self.nameTextBox)
-    self.nameTextBox.connect('editingFinished()', self.onNameChange)
-    self.manager.nameTextBox = self.nameTextBox
-
-    # text box for list of models in the current group
-    self.clipboardTextBox = qt.QTextBrowser()
-    self.clipboardTextBox.setText("")
-    self.layout.addWidget(self.clipboardTextBox)
-    reloadFormLayout = qt.QFormLayout(self.clipboardTextBox)
-    self.manager.clipboardTextBox = self.clipboardTextBox
-    #self.nameTextBox.connect('editingFinished()', self.onNameChange)
     
     #
     # Reload and Test area
@@ -715,6 +956,137 @@ class PickTractsWidget:
     self.reloadAndTestButton.toolTip = "Reload this module and then run the self tests."
     reloadFormLayout.addWidget(self.reloadAndTestButton)
     self.reloadAndTestButton.connect('clicked()', self.onReloadAndTest)
+
+    #
+    # Select Tracts area
+    #
+    selectCollapsibleButton = ctk.ctkCollapsibleButton()
+    selectCollapsibleButton.text = "Select Tracts"
+    #self.layout.addWidget(selectCollapsibleButton)
+    selectFormLayout = qt.QFormLayout(selectCollapsibleButton)
+
+    # editable name of the current group
+    # (should be a popup if change name button is pressed?)
+    #self.nameTextBox = qt.QLineEdit()
+    #self.nameTextBox.text = self.manager.getActive().name
+    #self.nameTextBox.readOnly = True
+    #selectFormLayout.addRow(self.nameTextBox)
+    #reloadFormLayout = qt.QFormLayout(self.nameTextBox)
+    #self.nameTextBox.connect('editingFinished()', self.onNameChange)
+    #self.manager.nameTextBox = self.nameTextBox
+
+    # text box for list of models in the current group
+    #selectFormLayout.addRow("All Selected Tracts:",self.nameTextBox)
+    #self.clipboardTextBox = qt.QTextBrowser()
+    #self.clipboardTextBox.setText("")
+    #selectFormLayout.addRow(self.clipboardTextBox)
+    #reloadFormLayout = qt.QFormLayout(self.clipboardTextBox)
+    #self.manager.clipboardTextBox = self.clipboardTextBox
+    #self.nameTextBox.connect('editingFinished()', self.onNameChange)
+    #self.TractsGroupManager.clipboardTextBox = self.clipboardTextBox
+
+    # Build and Manage Tracts Groups 
+    self.groupnameSelector = qt.QComboBox()
+    self.groupnameSelector.setToolTip("Edit or choose a tracts group name.")
+    #selectFormLayout.addRow("Edit or Choose a Tracts Group Name:",self.groupnameSelector)
+    self.groupnameSelector.setEditable(1)
+    self.groupnameSelector.setDuplicatesEnabled(0)
+    #self.manager.nameTextBox = self.groupnameSelector
+    self.TractsGroupManager.groupnameSelector = self.groupnameSelector
+    #self.groupnameSelector.connect('currentIndexChanged(int)',self.groupnameChanged)
+    #self.groupnameSelector.connect('editTextChanged(QString)',self.groupnameActivated)
+
+    # New Selected Tracts Table
+    #self.newTractsTextBox = qt.QTextBrowser()
+    #self.newTractsTextBox.setToolTip("List new selected tracts.")
+    #selectFormLayout.addRow("Ungrouped Selected Tracts:", self.newTractsTextBox)
+    #self.manager.newTractsTextBox = self.newTractsTextBox
+    #self.TractsGroupManager.newTractsTextBox = self.newTractsTextBox
+ 
+    #Save Button
+    self.saveGroupButton = qt.QPushButton("Save Selected Tracts in the Group")
+    self.saveGroupButton.toolTip = "Save selected tracts in the group."
+    #selectFormLayout.addRow(self.saveGroupButton)
+    self.saveGroupButton.connect('clicked(bool)',self.onSaveTracts)  
+
+    #
+    # Manage Tracts area
+    #
+    manageCollapsibleButton = ctk.ctkCollapsibleButton()
+    manageCollapsibleButton.text = "Manage Selected Tracts"
+    self.layout.addWidget(manageCollapsibleButton)
+    manageFormLayout = qt.QFormLayout(manageCollapsibleButton)
+
+
+    # Input Button
+    self.inputGroupButton = qt.QPushButton("Load Tracts Grouping State")
+    self.inputGroupButton.toolTip = "Input selected tracts groups from a txt file."
+    manageFormLayout.addRow(self.inputGroupButton)
+    self.inputGroupButton.connect('clicked(bool)',self.onReadFile) 
+
+    # Group List
+    self.groupChoose = qt.QComboBox()
+    self.groupChoose.setToolTip("Choose a tracts group name.")
+    self.groupChoose.editable = False   
+    manageFormLayout.addRow("Edit or Choose a Tracts Group:", self.groupChoose)
+    self.groupChoose.addItem("")
+    self.groupChoose.addItem("Create a New Group")
+    self.groupChoose.addItem("Change a Group Name")
+    self.groupChoose.connect('currentIndexChanged(int)',self.ongroupList)
+    x = int
+    self.groupChoose.connect('activated(int)',self.onnewgroup)
+
+    # List Button
+    self.listGroupButton = qt.QPushButton("List Tracts in the Group")
+    self.listGroupButton.toolTip = "List tracts in the group."
+    #manageFormLayout.addRow(self.listGroupButton)
+    self.listGroupButton.connect('clicked(bool)',self.onListTracts) 
+
+    # Tracts in the Selected Group
+    self.oldTractsTextBox = qt.QTextBrowser()
+    self.oldTractsTextBox.setToolTip("List tracts in the selected group.")
+    manageFormLayout.addRow(self.oldTractsTextBox)
+    self.manager.oldTractsTextBox = self.oldTractsTextBox
+
+    # View Button
+    self.viewGroupButton = qt.QPushButton("View Tracts in the Group")
+    self.viewGroupButton.toolTip = "View tracts in the group."
+    manageFormLayout.addRow(self.viewGroupButton)
+    self.viewGroupButton.connect('clicked(bool)',self.onViewTracts) 
+
+    # Output Button
+    self.outputGroupButton = qt.QPushButton("Save Selected Tracts Groups")
+    self.outputGroupButton.toolTip = "Output selected tracts groups as a txt file."
+    manageFormLayout.addRow(self.outputGroupButton)
+    self.outputGroupButton.connect('clicked(bool)',self.onWriteFile) 
+
+    #
+    # Global Visibility State area
+    #
+    stateCollapsibleButton = ctk.ctkCollapsibleButton()
+    stateCollapsibleButton.text = "Global Visibility State"
+    self.layout.addWidget(stateCollapsibleButton)
+    stateFormLayout = qt.QFormLayout(stateCollapsibleButton)
+
+    #
+    # Global Visilibility State Selector
+    #
+    self.globalviewSelector = qt.QComboBox()
+    self.globalviewSelector.setToolTip("Choose a global visibility state.")
+    self.globalviewSelector.addItem("All Tracts Visible")
+    self.globalviewSelector.addItem("Only Selected Tracts Visible")
+    self.globalviewSelector.addItem("Only Unselected Tracts Visible")
+    self.globalviewSelector.addItem("All Tracts Unvisible")
+    stateFormLayout.addRow("Choose a Visibility State:",self.globalviewSelector)
+    self.globalviewSelector.setCurrentIndex(0)
+
+    # View Apply Button
+    #
+    self.viewapplyButton = qt.QPushButton("Apply")
+    self.viewapplyButton.toolTip = "Apply the visibility state."
+    self.viewapplyButton.enabled = True
+    stateFormLayout.addRow(self.viewapplyButton)
+    self.viewapplyButton.connect('clicked(bool)',self.onViewapply)
 
     #
     # Parameters Area
@@ -822,8 +1194,7 @@ class PickTractsWidget:
     if not sys.path.__contains__(p):
       sys.path.insert(0,p)
     fp = open(filePath, "r")
-    globals()[moduleName] = imp.load_module(
-        moduleName, fp, filePath, ('.py', 'r', imp.PY_SOURCE))
+    globals()[moduleName] = imp.load_module(moduleName, fp, filePath, ('.py', 'r', imp.PY_SOURCE))
     fp.close()
 
     # rebuild the widget
@@ -846,8 +1217,7 @@ class PickTractsWidget:
       getattr(globals()['slicer'].modules, widgetName).cleanup()
 
     # create new widget inside existing parent
-    globals()[widgetName.lower()] = eval(
-        'globals()["%s"].%s(parent)' % (moduleName, widgetName))
+    globals()[widgetName.lower()] = eval('globals()["%s"].%s(parent)' % (moduleName, widgetName))
     globals()[widgetName.lower()].setup()
     setattr(globals()['slicer'].modules, widgetName, globals()[widgetName.lower()])
 
@@ -875,9 +1245,13 @@ class PickTractsWidget:
                 print "Picked: ", node.GetName()
                 if node:
                     if key == 's' or key == 'S':
-                        self.manager.select(node)
+                        namestring = self.groupChoose.currentText
+                        if namestring == "":
+                            self.qmessage1.about(self.parent,"Error!","No Group Name!")
+                            return
+                        self.manager.select(node, self.TractsGroupManager, namestring)
                     elif key == 'd' or key == 'D':
-                        self.manager.deselect(node)         
+                        self.manager.deselect(node,self.TractsGroupManager,self)         
 
         elif key == 'v' or key == 'V':
             self.manager.toggleVisibilityState() 
@@ -906,6 +1280,260 @@ class PickTractsWidget:
     # remove the event we added
     self.picker.stopPicking()
 
+  def onViewapply(self):
+    print("ViewApply")
+    viewselect = self.globalviewSelector.currentIndex
+    print(viewselect)
+    # Visibility State: All Tracts Visible
+    if viewselect == 0:
+        self.manager.allModelsVisible()
+        self.manager.visibilityState = 'AllVisible'
+        print "NEW STATE:", self.globalviewSelector.currentText
+    # Visibility State: Only Selected Tracts Visible
+    if viewselect == 1:
+        self.manager.allModelsInvisible()
+        self.manager.visibilityState = 'AllInvisible'
+        self.manager.checkActive()
+        self.manager.active.visibleOn()
+        self.manager.clipboardVisibilityState = 'Visible'                
+        print "NEW STATE:", self.globalviewSelector.currentText
+    # Visibility State: Only Unselected Tracts Visible
+    if viewselect == 2:
+        self.manager.allModelsVisible()
+        self.manager.visibilityState = 'AllClipboardsInvisible'
+        self.manager.checkActive()
+        self.manager.active.visibleOff()
+        self.manager.clipboardVisibilityState = 'Invisible'
+        print "NEW STATE:", self.globalviewSelector.currentText
+    # Visibility State: All Tracts Unvisible
+    if viewselect == 3:
+        self.manager.allModelsInvisible()
+        self.manager.visibilityState = 'AllInvisible'
+        print "NEW STATE:", self.globalviewSelector.currentText            
+
+  def onSaveSelectedTracts(self,m):
+    NameString = self.groupChoose.currentText
+    if NameString == "":
+        self.qmessage1.about(self.parent,"Error!","No Group Name!")
+        return
+    self.TractsGroupManager.savetogroup(NameString,self.manager,m)
+
+      
+
+  def onSaveTracts(self):
+    NameString = self.groupnameSelector.currentText
+    if NameString == "":
+        self.qmessage1.about(self.parent,"Error!","No Group Name!")
+        return
+    #if len(self.manager.newt.contents) == 0:
+        #self.qmessage2.about(self.parent,"Error!","No Ungrouped Tract!")
+        #return
+    # if it is the first time to edit the groupname
+    if self.flag == 1:
+        self.groupnameSelector.addItem(NameString)
+        tI = self.groupnameSelector.findText(NameString)           
+        self.groupnameSelector.setCurrentIndex(tI)
+        #self.TractsGroupManager.addgroup()
+        self.flag = 0
+        self.groupnameSelector.setCurrentIndex(0)
+        self.groupnameSelector.clearEditText()
+        self.TractsGroupManager.savetogroup(NameString,self.manager)
+        self.groupChoose.addItem(NameString)
+    else:
+        self.groupnameSelector.clearEditText()
+        if self.groupnameSelector.findText(NameString) == -1:
+            self.groupnameSelector.addItem(NameString) 
+            tI = self.groupnameSelector.findText(NameString)           
+            self.groupnameSelector.setCurrentIndex(tI)
+            #self.TractsGroupManager.addgroup()
+            self.groupnameSelector.setCurrentIndex(0)
+            self.groupnameSelector.clearEditText()
+            self.groupChoose.addItem(NameString)
+        self.TractsGroupManager.savetogroup(NameString,self.manager)
+
+  def ongroupList(self):
+    print "Here!"
+    namestring = self.groupChoose.currentText
+    print namestring
+    self.TractsGroupManager.listgroup(namestring,self.manager)
+    self.manager.updateGUI()    
+
+  def onListTracts(self):
+    namestring = self.groupChoose.currentText
+    print namestring
+    self.TractsGroupManager.listgroup(namestring,self.manager)            
+
+  def onViewTracts(self):
+    namestring = self.groupChoose.currentText
+    self.TractsGroupManager.viewgroup(namestring,self.manager)  
+    
+  def groupnameChanged(self):
+    print "HaHa"
+    string = ""
+    self.flag_existgroup = 0
+    for i in self.TractsGroupManager.groups:
+        if i.groupname == self.groupnameSelector.currentText:
+            self.flag_existgroup = 1
+            for s in i.contents:
+                self.clipboardTextBox.setText(i.contents)
+    if self.flag_existgroup == 0:
+        self.clipboardTextBox.setText("")
+  
+
+  def groupnameActivated(self):
+    print "activated"
+    self.clipboardTextBox.setText("")
+
+  def onnewgroup(self):
+    print "CH" 
+    if self.groupChoose.currentText == "Create a New Group":
+        #self.QDialog.show()
+        #self.QDialogLayout = qt.QVBoxLayout()
+        #self.temLineEdit = qt.QLineEdit()
+        #self.temSaveButton = qt.QPushButton("Create")
+        #self.QDialog.setLayout(self.QDialogLayout)
+        #self.QDialogLayout.addWidget(self.temLineEdit)
+        #self.QDialogLayout.addWidget(self.temSaveButton)
+        #self.newgroupname = ""
+        #self.newgroupname = self.QDialog.temLienEdit.text
+        self.QDialog.ui.temSaveButton.connect('clicked()',self.createnewgroup)
+        self.QDialog.exec_()
+        print self.newgroupname
+        print "New"
+    if self.groupChoose.currentText == "Change a Group Name":
+        print self.groupChoose.count
+        for i in range(0,self.groupChoose.count-2):
+            groupname = ""
+            groupname = self.groupChoose.itemText(i)
+            print "copy",groupname
+            self.QDialog2.additem(groupname)
+        self.QDialog2.ui.temSaveButton.connect('clicked()',self.changegroupname)
+        self.QDialog2.exec_()
+        #self.QDialog2.show()
+        self.QDialog2.cleargroupnamelist()
+        self.oldTractsTextBox.setText("")
+ 
+  def changegroupname(self):
+    i = self.QDialog2.ui.temComboBox.currentIndex
+    groupname = self.QDialog2.ui.temComboBox.currentText
+    newgroupname = self.QDialog2.ui.temLineEdit.text
+    self.groupChoose.setItemText(i,newgroupname)
+    self.QDialog2.ui.temComboBox.setItemText(i,newgroupname)
+    print "changegroupname",newgroupname
+    if groupname != newgroupname:
+        self.TractsGroupManager.changegroupname(groupname,newgroupname)
+   
+
+  def createnewgroup(self):
+    self.newgroupname = ""
+    self.newgroupname = self.QDialog.ui.temLineEdit.text
+    self.groupChoose.addItem(self.newgroupname)
+    i = self.groupChoose.findText("")
+    if i != -1:
+        self.groupChoose.removeItem(i)
+    i = self.groupChoose.findText("Create a New Group")
+    self.groupChoose.removeItem(i)
+    i = self.groupChoose.findText("Change a Group Name")
+    self.groupChoose.removeItem(i)
+    self.groupChoose.addItem("Create a New Group")
+    self.groupChoose.addItem("Change a Group Name")
+    self.groupChoose.setCurrentIndex(0)
+    self.QDialog.ui.temLineEdit.clear()
+    self.oldTractsTextBox.clear()
+
+  def onReadFile(self):
+    self.filedialog2.setFileMode(1)
+    self.filedialog2.setAcceptMode(0)
+    self.filedialog2.setNameFilter("*.txt")
+    self.filedialog2.fileSelected.connect(self.openfilecall)
+    self.filedialog2.show()
+
+  def onWriteFile(self):
+    self.filedialog1.setFileMode(0)
+    self.filedialog1.setAcceptMode(1)
+    self.filedialog1.setNameFilter("*.txt")
+    self.filedialog1.setDefaultSuffix("txt")
+    self.filedialog1.fileSelected.connect(self.savefilecall)
+    self.filedialog1.show()
+                
+  def openfilecall(self):
+    pathfile = self.filedialog2.selectedFiles()
+    groupfile = file(pathfile[0],"r")
+    groupfile.close()
+    groupfile = file(pathfile[0],"r")
+    groupnum = 0
+    string = groupfile.readline()
+    while string != "END":
+        if string[0:10] == "GROUP NAME":
+            groupnum = groupnum+1
+            groupstring = groupfile.readline()
+            n = len(groupstring) - 1
+            self.newgroupname = ""
+            self.newgroupname = groupstring[0:n]
+            self.groupChoose.addItem(self.newgroupname)
+            i = self.groupChoose.findText("")
+            if i != -1:
+            	self.groupChoose.removeItem(i)
+    	    i = self.groupChoose.findText("Create a New Group")
+            self.groupChoose.removeItem(i)
+            i = self.groupChoose.findText("Change a Group Name")
+            self.groupChoose.removeItem(i)
+            self.groupChoose.addItem("Create a New Group")
+            self.groupChoose.addItem("Change a Group Name")
+            self.groupChoose.setCurrentIndex(0)
+            self.QDialog.ui.temLineEdit.clear()
+            self.oldTractsTextBox.clear()
+        string = groupfile.readline()
+    print groupnum
+    groupfile.close()
+    groupfile = file(pathfile[0],"r")
+    string = groupfile.readline()
+    while string != "END":
+        if string[0:10] == "GROUP NAME":
+            groupstring = groupfile.readline()
+            n = len(groupstring) - 1
+        if string[0:8] == "TRACT ID":
+            tractID = groupfile.readline()
+            n1 = len(tractID) - 1
+        if string[0:10] == "TRACT NAME":
+            tractNAME = groupfile.readline()
+            n2 = len(tractNAME) - 1
+	    node = self.picker.findPickedNode(tractNAME[0:n2])
+            print tractID[0:n1]
+            print tractNAME[0:n2]
+            i = self.groupChoose.findText(groupstring[0:n])
+            self.groupChoose.setCurrentIndex(i)
+            self.manager.select(node, self.TractsGroupManager, groupstring)
+        string = groupfile.readline()
+    groupfile.close()
+
+  def savefilecall(self):
+    pathfile = self.filedialog1.selectedFiles()
+    groupfile = file(pathfile[0],"w")
+    groupfile.write("TRACTS GROUPING STATE\n")
+    curTime = time.strftime("%Y-%m-%d %X", time.localtime(time.time()))
+    groupfile.write("EDITED TIME ")
+    groupfile.write(curTime)
+    groupfile.write("\n")
+    groupfile.write("\n")
+    for g in self.TractsGroupManager.groups:
+        groupfile.write("GROUP NAME")
+        groupfile.write("\n")
+        groupfile.write(g.groupname)
+        groupfile.write("\n")
+        groupfile.write("COLOR ")
+        groupfile.write("\n")
+        for t in g.contents:
+            groupfile.write("TRACT ID ")
+            groupfile.write("\n")
+            groupfile.write(t.GetID())
+            groupfile.write("\n")
+            groupfile.write("TRACT NAME ")
+            groupfile.write("\n")
+            groupfile.write(t.GetName())
+            groupfile.write("\n")
+        groupfile.write("\n")  
+    groupfile.write("END")
 
 #
 # PickTractsLogic
