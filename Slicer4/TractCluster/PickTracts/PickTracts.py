@@ -1013,16 +1013,10 @@ class PickTractsWidget:
     # Manage Tracts area
     #
     manageCollapsibleButton = ctk.ctkCollapsibleButton()
-    manageCollapsibleButton.text = "Manage Selected Tracts"
+    manageCollapsibleButton.text = "Pick and Group Tracts"
     self.layout.addWidget(manageCollapsibleButton)
     manageFormLayout = qt.QFormLayout(manageCollapsibleButton)
 
-
-    # Input Button
-    self.inputGroupButton = qt.QPushButton("Load Tracts Grouping State")
-    self.inputGroupButton.toolTip = "Input selected tracts groups from a txt file."
-    manageFormLayout.addRow(self.inputGroupButton)
-    self.inputGroupButton.connect('clicked(bool)',self.onReadFile) 
 
     # Group List
     self.groupChoose = qt.QComboBox()
@@ -1054,17 +1048,28 @@ class PickTractsWidget:
     manageFormLayout.addRow(self.viewGroupButton)
     self.viewGroupButton.connect('clicked(bool)',self.onViewTracts) 
 
+    loadsaveCollapsibleButton = ctk.ctkCollapsibleButton()
+    loadsaveCollapsibleButton.text = "Load and Save"
+    self.layout.addWidget(loadsaveCollapsibleButton)
+    loadsaveFormLayout = qt.QFormLayout(loadsaveCollapsibleButton)
+
+    # Input Button
+    self.inputGroupButton = qt.QPushButton("Load Tract Groups File")
+    self.inputGroupButton.toolTip = "Input selected tracts groups from a txt file."
+    loadsaveFormLayout.addRow(self.inputGroupButton)
+    self.inputGroupButton.connect('clicked(bool)',self.onReadFile) 
+
     # Output Button
-    self.outputGroupButton = qt.QPushButton("Save Selected Tracts Groups")
+    self.outputGroupButton = qt.QPushButton("Save Tract Groups File")
     self.outputGroupButton.toolTip = "Output selected tracts groups as a txt file."
-    manageFormLayout.addRow(self.outputGroupButton)
+    loadsaveFormLayout.addRow(self.outputGroupButton)
     self.outputGroupButton.connect('clicked(bool)',self.onWriteFile) 
 
     #
     # Global Visibility State area
     #
     stateCollapsibleButton = ctk.ctkCollapsibleButton()
-    stateCollapsibleButton.text = "Global Visibility State"
+    stateCollapsibleButton.text = "Visibility Settings"
     self.layout.addWidget(stateCollapsibleButton)
     stateFormLayout = qt.QFormLayout(stateCollapsibleButton)
 
@@ -1077,7 +1082,7 @@ class PickTractsWidget:
     self.globalviewSelector.addItem("Only Selected Tracts Visible")
     self.globalviewSelector.addItem("Only Unselected Tracts Visible")
     self.globalviewSelector.addItem("All Tracts Unvisible")
-    stateFormLayout.addRow("Choose a Visibility State:",self.globalviewSelector)
+    stateFormLayout.addRow("Visibility of All Tracts:",self.globalviewSelector)
     self.globalviewSelector.setCurrentIndex(0)
 
     # View Apply Button
