@@ -969,7 +969,7 @@ def array_to_vtk(inarray, name='from_numpy'):
     sc.SetNumberOfComponents(1)
     sc.SetName(name)
     for ii,tmp in enumerate(inarray.flatten()):
-	sc.SetValue(ii,round((numpy.abs(tmp))*100))
+        sc.SetValue(ii,round((numpy.abs(tmp))*100))
     vol.GetPointData().SetScalars(sc)
     return vol
     
