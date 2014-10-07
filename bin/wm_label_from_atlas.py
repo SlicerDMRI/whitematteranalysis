@@ -234,7 +234,7 @@ print "Cluster indices range from:", first_cluster, "to", number_of_clusters
 
 for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
-    pd_c = wma.filter.mask(output_polydata_s, mask)
+    pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True)
     fname_c = 'cluster_{0:05d}.vtp'.format(c)
     # save the filename for writing into the MRML file
     fnames.append(fname_c)
