@@ -1,8 +1,12 @@
 import numpy
-
+import vtk
 import fibers
+import math
+import sys
 
-def distance_to_similarity(distance, sigmasq=100):
+sys.setrecursionlimit(1000000)
+
+def distance_to_similarity(distance, sigmasq=1):
 
     # compute the similarities using Gaussian kernel
     similarities = numpy.exp(-distance / (sigmasq))
@@ -113,6 +117,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         #print "similarity range :", numpy.min(distance), numpy.max(distance)        
         distance = numpy.prod(distance, 1)
         #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
+
         
     else:
         print "<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method
@@ -120,6 +125,122 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         
     
     return distance
+
+def Frechet_distances(input_vtk_polydata_m, input_vtk_polydata_n):
+    # compute Frechet distances among one array of fibers
+
+    number_of_lines_m = input_vtk_polydata_m.GetNumberOfLines()
+    number_of_lines_n = input_vtk_polydata_n.GetNumberOfLines()
+    all_fibers_m = range(0,number_of_lines_m)
+    all_fibers_n = range(0,number_of_lines_n)
+    distances = numpy.zeros([number_of_lines_m,number_of_lines_n])
+    
+    #input_vtk_polydata2 = input_vtk_polydata
+    
+    input_vtk_polydata_m.GetLines().InitTraversal()
+    line1_ptids = vtk.vtkIdList()
+    
+    inpoints1 = input_vtk_polydata_m.GetPoints()
+    inpoints2 = input_vtk_polydata_n.GetPoints()
+    
+    for lidx1 in all_fibers_m:
+        input_vtk_polydata_m.GetLines().GetNextCell(line1_ptids)
+        
+        input_vtk_polydata_n.GetLines().InitTraversal()
+        line2_ptids = vtk.vtkIdList()
+        
+        for lidx2 in all_fibers_n:
+            input_vtk_polydata_n.GetLines().GetNextCell(line2_ptids)
+
+            if lidx1 == lidx2:
+                distances[lidx1,lidx2] = 0
+            else:
+                #if lidx1 == 1 and lidx2 == 2:
+                    #print number_of_lines_m
+                    #print number_of_lines_n
+                    #print line1_ptids.GetNumberOfIds()
+                    #print line2_ptids.GetNumberOfIds()
+                if distances[lidx1,lidx2] == 0:
+                    distances[lidx1,lidx2] = _frechet_distance_internal_use(inpoints1,inpoints2,line1_ptids,line2_ptids)
+                    distances[lidx2,lidx1] = distances[lidx1,lidx2]
+
+    return distances
+
+def Frechet_distances_2(input_vtk_polydata_n, input_vtk_polydata_m):
+    # compute Frechet distance from an array of fibers to another array
+
+    number_of_lines_m = input_vtk_polydata_m.GetNumberOfLines()
+    number_of_lines_n = input_vtk_polydata_n.GetNumberOfLines()
+    all_fibers_m = range(0,number_of_lines_m)
+    all_fibers_n = range(0,number_of_lines_n)
+    distances = numpy.zeros([number_of_lines_m,number_of_lines_n])
+    
+    #input_vtk_polydata2 = input_vtk_polydata
+    
+    input_vtk_polydata_m.GetLines().InitTraversal()
+    line1_ptids = vtk.vtkIdList()
+    
+    inpoints1 = input_vtk_polydata_m.GetPoints()
+    inpoints2 = input_vtk_polydata_n.GetPoints()
+    
+    for lidx1 in all_fibers_m:
+        input_vtk_polydata_m.GetLines().GetNextCell(line1_ptids)
+        
+        input_vtk_polydata_n.GetLines().InitTraversal()
+        line2_ptids = vtk.vtkIdList()
+        
+        for lidx2 in all_fibers_n:
+            input_vtk_polydata_n.GetLines().GetNextCell(line2_ptids)
+
+            distances[lidx1,lidx2] = _frechet_distance_internal_use(inpoints1,inpoints2,line1_ptids,line2_ptids)
+
+    return distances
+
+def _euc_dist(pt1,pt2):
+    return math.sqrt((pt2[0]-pt1[0])*(pt2[0]-pt1[0])+(pt2[1]-pt1[1])*(pt2[1]-pt1[1])+(pt2[2]-pt1[2])*(pt2[2]-pt1[2]))
+
+def _c(ca,i,j,P,Q):
+    if ca[i,j] > -1:
+        return ca[i,j]
+    elif i == 0 and j == 0:
+        ca[i,j] = _euc_dist(P[0],Q[0])
+    elif i > 0 and j == 0:
+        ca[i,j] = max(_c(ca,i-1,0,P,Q),_euc_dist(P[i],Q[0]))
+    elif i == 0 and j > 0:
+        ca[i,j] = max(_c(ca,0,j-1,P,Q),_euc_dist(P[0],Q[j]))
+    elif i > 0 and j > 0:
+        ca[i,j] = max(min(_c(ca,i-1,j,P,Q),_c(ca,i-1,j-1,P,Q),_c(ca,i,j-1,P,Q)),_euc_dist(P[i],Q[j]))
+    else:
+        ca[i,j] = float("inf")
+    return ca[i,j]
+
+def frechDist(P,Q):
+    ca = numpy.ones((len(P),len(Q)))
+    ca = numpy.multiply(ca,-1)
+    return _c(ca,len(P)-1,len(Q)-1,P,Q)    
+
+def _frechet_distance_internal_use(inpoints1,inpoints2,line1_ptids,line2_ptids):
+    
+    line1_length = line1_ptids.GetNumberOfIds()
+    line2_length = line2_ptids.GetNumberOfIds()
+    d1 = 0
+    d2 = 0
+    for i in range(0,10):
+        d1 = d1 + _euc_dist(inpoints1.GetPoint(line1_ptids.GetId(i)),inpoints2.GetPoint(line2_ptids.GetId(i)))
+        d2 = d2 + _euc_dist(inpoints1.GetPoint(line1_ptids.GetId(line1_length-1-i)),inpoints2.GetPoint(line2_ptids.GetId(line2_length-1-i)))
+    d1 = d1/10
+    d2 = d2/10
+    line1_points = numpy.zeros([int(round(line1_length/20))-2,3])
+    line2_points = numpy.zeros([int(round(line2_length/20))-2,3])
+    all_points1 = range(1,int(round((line1_length)/20))-1)
+    all_points2 = range(1,int(round((line2_length)/20))-1)
+    for i1 in all_points1:
+        ptidx1 = line1_ptids.GetId(20*i1)
+        line1_points[i1-1] = inpoints1.GetPoint(ptidx1)
+    for i2 in all_points2:
+        ptidx2 = line2_ptids.GetId(20*i2)
+        line2_points[i2-1] = inpoints2.GetPoint(ptidx2)
+    return (frechDist(line1_points,line2_points)*2+d1+d2)/4
 
 def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, landmarks):
     # compute the distance from this fiber to the array of other fibers
