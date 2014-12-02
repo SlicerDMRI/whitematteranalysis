@@ -134,6 +134,7 @@ distance_method = 'Mean'
 use_normalized_cuts = True
 number_of_eigenvectors = 10
 
+#distance_method = 'Frechet'
 
 # another option. was not used in TMI 2007 paper. would need a different sigma.
 #distance_method ='Hausdorff'
@@ -150,15 +151,21 @@ print "<wm_cluster_subject.py> Reading input file:", args.inputFile
 pd = wma.io.read_polydata(args.inputFile)
     
 # preprocessing step: minimum length
-print "<wm_cluster_subject.py> Preprocessing by length:", fiber_length, "mm."
-pd2 = wma.filter.preprocess(pd, fiber_length)
-
 # preprocessing step: fibers to analyze
 if number_of_fibers is not None:
+    # first preprocess just returns indices, does not copy all point data through (since that is slow)
+    print "<wm_cluster_subject.py> Preprocessing by length:", fiber_length, "mm."
+    pd2, indices = wma.filter.preprocess(pd, fiber_length, return_indices=True)
+    # now start from original pd and copy data through
     print "<wm_cluster_subject.py> Downsampling to ", number_of_fibers, "fibers."
-    pd3 = wma.filter.downsample(pd2, number_of_fibers)
+    pd3 = wma.filter.downsample(pd, number_of_fibers, initial_indices=indices, preserve_point_data=True, preserve_cell_data=True)
 else:
-    pd3 = pd2
+    # copy all point data through
+    print "<wm_cluster_subject.py> Preprocessing by length:", fiber_length, "mm."
+    pd3, indices = wma.filter.preprocess(pd, fiber_length, preserve_point_data=True, preserve_cell_data=True)
+    #pd3 = pd2
+
+print pd3
 
 # Check there are enough fibers for requested analysis
 if number_of_sampled_fibers >= pd3.GetNumberOfLines():
@@ -177,6 +184,8 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
                              sigma=sigma, distance_method=distance_method, \
                              normalized_cuts=use_normalized_cuts, threshold=threshold)
 
+print output_polydata_s
+
 # Write the polydata with cluster indices saved as cell data
 fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
 wma.io.write_polydata(output_polydata_s, fname_output)
@@ -187,7 +196,7 @@ cluster_colors = list()
 number_of_clusters = numpy.max(cluster_numbers_s)
 for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
-    pd_c = wma.filter.mask(output_polydata_s, mask)
+    pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True)
     fname_c = 'cluster_{0:05d}.vtp'.format(c)
     # save the filename for writing into the MRML file
     fnames.append(fname_c)
@@ -213,7 +222,10 @@ wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fn
 
 # View the whole thing in png format for quality control
 print '<wm_cluster_subject.py> Rendering and saving image'
-ren = wma.render.render(output_polydata_s, 1000)
+ren = wma.render.render(output_polydata_s, 1000, data_mode="Cell", data_name='EmbeddingColor')
+# set the embedding colors active for this (already saved vtp with inactive cell scalars for Slicer)
+# this is necessary since the downsampling sets cell scalars inactive now
+#output_polydata_s.GetCellData().SetActiveScalars('EmbeddingColor')
 ren.save_views(outdir)
 del ren
 

@@ -7,7 +7,7 @@ import vtk
 
 import filter
 
-def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False, scalar_bar=False, axes=False, scalar_range=None, data_mode="Cell", tube=True, colormap='jet'):
+def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False, scalar_bar=False, axes=False, scalar_range=None, data_mode="Cell", tube=True, colormap='jet', data_name=None):
     """ Function for easy matlab-like use of the rendering
     functionality.
 
@@ -21,6 +21,13 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
         print "<render.py> Downsampling vtkPolyData:", number_of_fibers
         # downsample if requested
         input_polydata = filter.downsample(input_polydata, number_of_fibers, preserve_point_data=True, preserve_cell_data=True)
+
+    if data_name is not None:
+        print "<render.py> Visualizing data:", data_name
+        if data_mode == "Cell":
+            input_polydata.GetCellData().SetActiveScalars(data_name)
+        if data_mode == "Point":
+            input_polydata.GetPointData().SetActiveScalars(data_name)
 
     ren = RenderPolyData()
     

@@ -123,19 +123,27 @@ def preprocess(inpd, min_length_mm,
     else:
         return outpd
 
-def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True):
+def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None):
     """ Random (down)sampling of fibers without replacement. """
 
-    num_lines = inpd.GetNumberOfLines()
+    if initial_indices is None:
+        num_lines = inpd.GetNumberOfLines()
+    else:
+        num_lines = len(initial_indices)
 
     if num_lines < output_number_of_lines:
         return inpd
 
     # randomly pick the lines that we will keep
     line_indices = numpy.random.permutation(num_lines - 1)
-    line_indices = line_indices[0:output_number_of_lines]
-    fiber_mask = numpy.zeros(num_lines)
-    fiber_mask[line_indices] = 1
+    if initial_indices is None:
+        line_indices = line_indices[0:output_number_of_lines]
+        fiber_mask = numpy.zeros(num_lines)
+        fiber_mask[line_indices] = 1
+    else:
+        line_indices = initial_indices[line_indices[0:output_number_of_lines]]
+        fiber_mask = numpy.zeros(inpd.GetNumberOfLines())
+        fiber_mask[line_indices] = 1
 
     # don't color by line index by default, preserve whatever was there
     #outpd = mask(inpd, fiber_mask, fiber_mask)
@@ -179,7 +187,8 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
     outcolors = None
     outpointdata = outpd.GetPointData()
     outcelldata = outpd.GetCellData()
-    
+    tensor_names = []
+
     if color is not None:
         # if input is RGB
         if len(color.shape) == 2:
@@ -208,20 +217,22 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
                     out_array = vtk.vtkFloatArray()
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
+                print "Cell data array found:", array.GetName(), array.GetNumberOfComponents()
                 outcelldata.AddArray(out_array)
                 # make sure some scalars are active so rendering works
-                outpd.GetCellData().SetActiveScalars(array.GetName())
+                #outpd.GetCellData().SetActiveScalars(array.GetName())
                 
-            if inpd.GetCellData().GetArray('ClusterNumber'):
-                # this will be active unless we have embedding colors
-                outpd.GetCellData().SetActiveScalars('ClusterNumber')
-            if inpd.GetCellData().GetArray('EmbeddingColor'):
-                outpd.GetCellData().SetActiveScalars('EmbeddingColor')
+            #if inpd.GetCellData().GetArray('ClusterNumber'):
+            #    # this will be active unless we have embedding colors
+            #    outpd.GetCellData().SetActiveScalars('ClusterNumber')
+            #if inpd.GetCellData().GetArray('EmbeddingColor'):
+            #    # Note Slicer can't display these cell scalars (all is red)
+            #    outpd.GetCellData().SetActiveScalars('EmbeddingColor')
 
         else:
             preserve_cell_data = False
 
-    #check for point data arrays to keep
+    # check for point data arrays to keep
     if preserve_point_data:
         if inpointdata.GetNumberOfArrays() > 0:
             point_data_array_indices = range(inpointdata.GetNumberOfArrays())            
@@ -230,11 +241,43 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
                 out_array = vtk.vtkFloatArray()
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
+                print "Point data array found:", array.GetName(), array.GetNumberOfComponents()
                 outpointdata.AddArray(out_array)
                 # make sure some scalars are active so rendering works
-                outpd.GetPointData().SetActiveScalars(array.GetName())
+                #outpd.GetPointData().SetActiveScalars(array.GetName())
+                # keep track of tensors to choose which is active
+                if array.GetNumberOfComponents() == 9:
+                    tensor_names.append(array.GetName())
         else:
             preserve_point_data = False
+
+    # Set up scalars and tensors attributes for correct visualization in Slicer.
+    # Slicer works with point data and does not handle cell data well.
+    # This set of changes breaks old internal wma default visualization of cell scalars. 
+    # Changes must be propagated through wma so that render is called with the name of the field to visualize.
+    # the new way in wma is like this line, below.
+    #ren = wma.render.render(output_polydata_s, 1000, data_mode="Cell", data_name='EmbeddingColor')
+
+    # For Slicer: First set one of the expected tensor arrays as default for vis
+    tensors_labeled = False
+    for name in tensor_names:
+        if name == "tensors":
+            outpd.GetPointData().SetTensors(outpd.GetPointData().GetArray("tensors"))
+            tensors_labeled = True
+        if name == "Tensors":
+            outpd.GetPointData().SetTensors(outpd.GetPointData().GetArray("Tensors"))
+            tensors_labeled = True
+        if name == "tensor1":
+            outpd.GetPointData().SetTensors(outpd.GetPointData().GetArray("tensor1"))
+            tensors_labeled = True
+        if name == "Tensor1":
+            outpd.GetPointData().SetTensors(outpd.GetPointData().GetArray("Tensor1"))
+            tensors_labeled = True
+    if not tensors_labeled:
+        if len(tensor_names) > 0:
+            print "Data has unexpected tensor name(s). Unable to set active for visualization:", tensor_names
+    # now set cell data visualization inactive.
+    outpd.GetCellData().SetActiveScalars(None)
                 
     # loop over lines
     inpd.GetLines().InitTraversal()
@@ -262,9 +305,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
                         out_array = outpointdata.GetArray(idx)
                         out_array.InsertNextTuple(array.GetTuple(ptids.GetId(pidx)))
 
-            outlines.InsertNextCell(cellptids)
-
-                    
+            outlines.InsertNextCell(cellptids)                    
 
             if color is not None:
                 # this code works with either 3 or 1 component only
@@ -282,6 +323,8 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
     # put data into output polydata
     outpd.SetLines(outlines)
     outpd.SetPoints(outpoints)
+
+    # if we had an input color requested during masking, set that to be the default scalar for vis
     if color is not None:
         outpd.GetCellData().SetScalars(outcolors)
 
