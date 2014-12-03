@@ -438,7 +438,7 @@ def spectral(input_polydata, number_of_clusters=200,
             # This is extremely slow, but leave code here if ever wanted for testing
             cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
             print("Silhouette Coefficient: %0.3f" % cluster_metric)
-        
+
     # 6) Output results.
     print '<cluster.py> Done spectral clustering, returning results.'
     # visualize embedding coordinates as RGB
@@ -558,11 +558,11 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
 
     if distance_method == 'Frechet':
 
-        distances = similarity.Frechet_distances_2(input_polydata_n,input_polydata_m)
+        distances = similarity.rectangular_frechet_distances(input_polydata_n, input_polydata_m)
         distances = numpy.array(distances)
 
     else:
-
+        
         fiber_array_n = fibers.FiberArray()
         fiber_array_n.convert_from_polydata(input_polydata_n, points_per_fiber=15)
         fiber_array_m = fibers.FiberArray()
@@ -570,10 +570,10 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
 
         if landmarks_n is None:
             landmarks_n = numpy.zeros((fiber_array_n.number_of_fibers,3))
-
+    
         # pairwise distance matrix
         all_fibers_n = range(0, fiber_array_n.number_of_fibers)
-    
+
         distances = Parallel(n_jobs=number_of_jobs,
                              verbose=1)(
             delayed(similarity.fiber_distance)(
@@ -581,7 +581,7 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
                 fiber_array_m,
                 threshold, distance_method=distance_method,
                 fiber_landmarks=landmarks_n[lidx,:], 
-               landmarks=landmarks_m, bilateral=bilateral)
+                landmarks=landmarks_m, bilateral=bilateral)
             for lidx in all_fibers_n)
 
         distances = numpy.array(distances).T
@@ -626,9 +626,10 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     polydata.
 
     """
+
     if distance_method == 'Frechet':
 
-        distances = similarity.Frechet_distances(input_polydata,input_polydata)
+        distances = similarity.pairwise_frechet_distances(input_polydata,input_polydata)
         distances = numpy.array(distances)
 
     else:
@@ -638,7 +639,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
 
         # pairwise distance matrix
         all_fibers = range(0, fiber_array.number_of_fibers)
-    
+
         if landmarks is None:
             landmarks2 = numpy.zeros((fiber_array.number_of_fibers,3))
         else:
