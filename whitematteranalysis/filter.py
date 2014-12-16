@@ -39,6 +39,7 @@ def preprocess(inpd, min_length_mm,
                remove_u_endpoint_dist=40,
                remove_brainstem=False,
                return_indices=False,
+               return_lengths=False,
                preserve_point_data=False,
                preserve_cell_data=False):
     """Remove low-quality fibers.
@@ -72,6 +73,7 @@ def preprocess(inpd, min_length_mm,
     step_size = numpy.sqrt(numpy.sum(numpy.power(
                 numpy.subtract(point0, point1), 2)))
     min_length_pts = round(min_length_mm / step_size)
+    fiber_lengths = []
     print "<filter.py> Minimum length", min_length_mm, \
         "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")"
 
@@ -86,6 +88,8 @@ def preprocess(inpd, min_length_mm,
 
         # first figure out whether to keep this line
         keep_curr_fiber = False
+        # save length
+        fiber_lengths.append(ptids.GetNumberOfIds() *  step_size)
         # test for line being long enough
         if ptids.GetNumberOfIds() > min_length_pts:
             keep_curr_fiber = True
@@ -119,9 +123,15 @@ def preprocess(inpd, min_length_mm,
     outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data)
 
     if return_indices:
-        return outpd, numpy.array(line_indices)
+        if return_lengths:
+            return outpd, numpy.array(line_indices), fiber_lengths
+        else:
+            return outpd, numpy.array(line_indices)
     else:
-        return outpd
+        if return_lengths:
+            return outpd, fiber_lengths
+        else:
+            return outpd
 
 def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None):
     """ Random (down)sampling of fibers without replacement. """
