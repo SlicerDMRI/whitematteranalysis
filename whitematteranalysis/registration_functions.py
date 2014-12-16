@@ -179,7 +179,7 @@ def run_multisubject_registration(input_directory, outdir,
         ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
         ren.save_views(outdir_current)
         del ren
-    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
+    wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current, subject_ids)
     
     scales = ["Coarse", "Medium", "Fine", "Finest"]
     scale_idx = 0
@@ -192,10 +192,11 @@ def run_multisubject_registration(input_directory, outdir,
         scale_idx += 1
         
         # view output data from this big iteration
+        outdir_current =  os.path.join(outdir, 'iteration_'+str(scale_idx))
+        if not os.path.exists(outdir_current):
+            os.makedirs(outdir_current)
+        # Only save and render transformed data if near the end of the registration or verbose is on
         if verbose | (scale == "Fine") | (scale == "Finest"):
-            outdir_current =  os.path.join(outdir, 'iteration_'+str(scale_idx))
-            if not os.path.exists(outdir_current):
-                os.makedirs(outdir_current)
             output_pds = wma.registration_functions.transform_polydatas(input_pds, register)
             # save the current atlas representation to disk
             wma.registration_functions.save_atlas(output_pds, outdir_current)
@@ -206,21 +207,20 @@ def run_multisubject_registration(input_directory, outdir,
                 ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
                 ren.save_views(outdir_current)
                 del ren
-            if (scale == "Fine") | (scale == "Finest"):
-                wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
-            wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current)
-
-            iter_count_new = len(register.objective_function_values)
-            if no_render:
-                print "<register> Intermediate saving of objective function plot off (no render)."
-            else:
-                plt.figure() # to avoid all results on same plot
-                #plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-                # plot just the most recent scale's objective. otherwise the y axis range is too large.
-                plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
-                plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
-
-            iter_count = iter_count_new
+            wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
+        # Always save the current transforms and the objective function plot to check progress
+        wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current, subject_ids)
+        # Number of objective function computations this big iteration
+        iter_count_new = len(register.objective_function_values)
+        if no_render:
+            print "<register> Intermediate saving of objective function plot off (no render)."
+        else:
+            plt.figure() # to avoid all results on same plot
+            #plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+            # plot just the most recent scale's objective. otherwise the y axis range is too large.
+            plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
+            plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+        iter_count = iter_count_new
             
     return register, elapsed
 
@@ -326,7 +326,7 @@ def run_atlas_registration(input_dir,
     transform_polydatas_from_disk(input_dir, transforms, output_dir)
     return elapsed
 
-def write_transforms_to_itk_format(transform_list, outdir):
+def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
     # use with the slicer module, something like this applies things
     # and handles the ras lps issues
     #./ResampleScalarVectorDWIVolume --spaceChange -b -c  -f /Users/odonnell/LinearTransform-2.tfm /Users/odonnell/Dropbox/Data/TBI_FE_PNL/controls_images/01231-dwi-filt-Ed-B0.nhdr test.nhdr
@@ -342,7 +342,10 @@ def write_transforms_to_itk_format(transform_list, outdir):
         translation.append(tx.GetMatrix().GetElement(1,3))
         translation.append(tx.GetMatrix().GetElement(2,3))
         
-        fname = 'txform_{0:05d}.tfm'.format(idx)
+        if subject_ids is not None:
+            fname = 'txform_' + str(subject_ids[idx]) + '.tfm'
+        else:
+            fname = 'txform_{0:05d}.tfm'.format(idx)
         fname = os.path.join(outdir, fname)
         tx_fnames.append(fname)
         f = open(fname, 'w')
