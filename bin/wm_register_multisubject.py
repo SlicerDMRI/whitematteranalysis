@@ -15,7 +15,13 @@ except:
 # defaults for multiple subject registration
 # (may be added as parameters later)
 fiber_sample_fractions = [.10, .20, .30, .40]
-sigma_per_scale = [30, 10, 10, 5]
+#sigma_per_scale = [30, 10, 10, 5]
+# Note Dec 15 2014. Scale 3 is not decreasing the objective function much
+# on two-tensor tractography datasets with 10-12 subjects. Perhaps it 
+# has already converged at sigma of 10 and more computation is a waste of time. 
+# So try decreasing sigma to 7.5 for the third scale space step.
+# This seems to do a better, finer registration.
+sigma_per_scale = [30, 10, 7.5, 5]
 # on a 27-subject dataset, 12 or 14 processors, this takes nearly 24 hours.
 # the implementation is not fast, but this is a long time to wait.
 #steps_per_scale=[10, 3, 2, 2]
@@ -50,25 +56,25 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each dataset. 300-1000 or more is reasonable. Depends on total number of datasets and desired run time/memory use. Default is 300 fibers per subject.')
+    help='Number of fibers to analyze from each dataset. 300-2000 or more is reasonable. Depends on total number of datasets and desired run time/memory use. Default setting is for a fast test run: 300 fibers per subject. A good setting for a paper is 1000-2000 per subject, if greater than 10 subjects.')
 parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
-    help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
+    help='Minimum length (in mm) of fibers to analyze. 60mm is default (good for DTI single-tensor tractography which is shorter in general). Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
-    help='Verbose. Run with -verbose to store images of intermediate and final polydatas.')
+    help='Verbose. Run with -verbose to store more files and images of intermediate and final polydatas.')
 parser.add_argument(
     '-pf', action="store", dest="pointsPerFiber", type=int,
-    help='Number of points for fiber representation during registration. 5 is reasonable, or more.')
+    help='Number of points for fiber representation during registration. The default of 5 is reasonable.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
 parser.add_argument(
     '-distance_method', action="store", dest="distance_method", type=str,
-    help='Distance method to use. Options are Hausdorff, Mean, and MeanSquared.')
+    help='Distance method to use. Options are Hausdorff, Mean, and MeanSquared. Changing this from the default of Hausdorff is not recommended.')
  
  
 args = parser.parse_args()
