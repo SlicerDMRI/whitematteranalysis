@@ -127,7 +127,8 @@ def run_multisubject_registration(input_directory, outdir,
                                   fiber_length=75,
                                   fibers_rendered=100,
                                   steps_per_scale=[5, 3, 2, 1],
-                                  no_render=False):
+                                  no_render=False,
+                                  midsag_symmetric=False):
 
     # the big gain in objective from the 1st scale is early,
     # and actually after the fine (3rd scale) registration
@@ -142,6 +143,31 @@ def run_multisubject_registration(input_directory, outdir,
     elapsed = list()
 
     input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers)
+
+    # If we are registering for symmetry, include reflected copy of each brain
+    if midsag_symmetric:
+        input_pds2 = []
+        subject_ids2 = []
+        for pd, id in zip(input_pds, subject_ids):
+            # make the reflected copy
+            trans = vtk.vtkTransform()
+            trans.Scale(-1,1,1)
+            transformer = vtk.vtkTransformPolyDataFilter()
+            transformer.SetTransform(trans)
+            if (vtk.vtkVersion().GetVTKMajorVersion() > 5.0):
+                transformer.SetInputData(pd)
+            else:
+                transformer.SetInput(pd)
+            transformer.Update()
+            pd_reflect = transformer.GetOutput()
+            # append input and its reflection to list of data to register
+            input_pds2.append(pd)
+            input_pds2.append(pd_reflect)
+            # create subject id for reflected
+            subject_ids2.append(id)
+            subject_ids2.append(str(id) + '_reflect')
+        input_pds = input_pds2
+        subject_ids = subject_ids2
 
     number_of_datasets = len(input_pds)
     
@@ -207,7 +233,12 @@ def run_multisubject_registration(input_directory, outdir,
                 ren = wma.registration_functions.view_polydatas(output_pds, fibers_rendered)
                 ren.save_views(outdir_current)
                 del ren
-            wma.registration_functions.transform_polydatas_from_disk(input_directory, register.convert_transforms_to_vtk(), outdir_current)
+            # if half of the brains were reflected find the corrrect transforms for the data on disk
+            transform_list = register.convert_transforms_to_vtk()
+            if midsag_symmetric:
+                transform_list = transform_list[::2]
+            # transform input polydata from disk to keep all attributes (tensors etc) in place
+            wma.registration_functions.transform_polydatas_from_disk(input_directory, transform_list, outdir_current)
         # Always save the current transforms and the objective function plot to check progress
         wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current, subject_ids)
         # Number of objective function computations this big iteration
@@ -221,7 +252,15 @@ def run_multisubject_registration(input_directory, outdir,
             plt.plot(range(iter_count_new - iter_count), register.objective_function_values[iter_count:iter_count_new])
             plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
         iter_count = iter_count_new
-            
+
+
+    # If we are registering for symmetry, make sure group coordinate system is midsagitally aligned
+    # Empirically the group registration is well aligned and the bilateral clustering 
+    # was very successful even before symmetric registration, so this is not needed now.
+    # But it could be implemented/tested later especially if registration is extended to a warp.
+    #if midsag_symmetric:
+    #    print "LAUREN ALIGN ATLAS TO SELF ACROSS MIDSAG LINE FOR COMPLETENESS AND APPLY TXFORM TO ALL SUBJECTS"
+
     return register, elapsed
 
 
@@ -504,7 +543,10 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     distance_method='Hausdorff',
     fiber_length=60,
     verbose=True):
-    
+
+    # note: doing this twice and averaging the output transforms seems
+    # to work well, so consider that when this code is improved.
+
     elapsed = list()
     number_of_fibers_step_one = number_of_fibers_per_step[0]
     number_of_fibers_step_two = number_of_fibers_per_step[1]
@@ -680,6 +722,7 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
     elapsed.append(time.time() - start)
     
     # view output data from this big iteration
+    subjectID = os.path.splitext(os.path.basename(input_poly_data))[0]
     if verbose:
         outdir_current =  os.path.join(outdir, 'iteration_4')
         if not os.path.exists(outdir_current):
@@ -690,9 +733,10 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
         #wma.registration_functions.transform_polydatas_from_disk(input_poly_data, register, outdir_current)
         wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir)
     
-        plt.figure() # to avoid all results on same plot
-        plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
-        plt.savefig(os.path.join(outdir_current, 'objective_function.pdf'))
+    plt.figure() # to avoid all results on same plot
+    plt.plot(range(len(register.objective_function_values)), register.objective_function_values)
+    plt.savefig(os.path.join(outdir, 'objective_function_' + str(subjectID) + '.pdf'))
+    plt.close()
 
     #return register, elapsed, input_pds
 
@@ -726,6 +770,14 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
 
     print m
 
+    # save this transform to disk
+    trans_list = []
+    trans_list.append(txs)
+    id_list = []
+    id_list.append('midsag_' + str(subjectID))
+    wma.registration_functions.write_transforms_to_itk_format(trans_list, outdir, id_list)
+
+    # now apply it to the input data
     pd = wma.io.read_polydata(input_poly_data)
 
     trans = vtk.vtkTransformPolyDataFilter()
@@ -736,7 +788,7 @@ def run_midsag_align(input_poly_data, outdir, number_of_fibers=150,
         trans.SetInput(pd)
     trans.Update()
 
-    subjectID = os.path.splitext(os.path.basename(input_poly_data))[0]
+
     #fname1 = os.path.split(input_poly_data)[1]
     #fname1 = os.path.splitext(fname1)[0]
     fname1 = os.path.join(outdir, subjectID+'_sym.vtp')

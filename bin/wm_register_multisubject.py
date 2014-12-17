@@ -75,6 +75,10 @@ parser.add_argument(
 parser.add_argument(
     '-distance_method', action="store", dest="distance_method", type=str,
     help='Distance method to use. Options are Hausdorff, Mean, and MeanSquared. Changing this from the default of Hausdorff is not recommended.')
+parser.add_argument(
+    '-midsag_symmetric', action="store_true", dest="flag_midsag_symmetric",
+    help='Register all subjects including reflected copies of input subjects, for a symmetric registration.')
+
  
  
 args = parser.parse_args()
@@ -137,6 +141,12 @@ else:
     
 print "<register> Distance method: ", distance_method
 
+if args.flag_midsag_symmetric:
+    print "<register> Midsag_Symmetric registration ON."
+else:
+    print "<register> Midsag_Symmetric registration OFF."
+midsag_symmetric = args.flag_midsag_symmetric
+
 print "\n<register> Starting registration...\n"
 
 
@@ -154,6 +164,7 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              fibers_rendered=fibers_rendered,
                                                                              steps_per_scale=steps_per_scale,
                                                                              no_render=no_render,
-                                                                             distance_method=distance_method)
+                                                                             distance_method=distance_method,
+                                                                             midsag_symmetric=midsag_symmetric)
 
 print "TIME:", elapsed
