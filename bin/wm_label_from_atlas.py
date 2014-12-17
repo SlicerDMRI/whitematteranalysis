@@ -260,7 +260,7 @@ wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fn
 
 # View the whole thing in png format for quality control
 print '<wm_label_from_atlas.py> Rendering and saving image'
-ren = wma.render.render(output_polydata_s, 1000)
+ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor')
 ren.save_views(outdir)
 del ren
 
