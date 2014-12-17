@@ -354,14 +354,14 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     # Figure out file name and mean color for each cluster, and write the individual polydatas
     fnames = list()
     cluster_colors = list()
-    cidx = 1
     for c in cluster_indices:
         mask = cluster_numbers_s == c
         # color by subject so in theory we can see which one it came from
         # but this is cell data and may not be correctly shown in Slicer.
         #colors = subject_fiber_list
         pd_c = wma.filter.mask(output_polydata_s, mask)
-        fname_c = 'cluster_{0:05d}.vtp'.format(cidx)
+        # The clusters are stored starting with 1, not 0, for user friendliness.
+        fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
         # save the filename for writing into the MRML file
         fnames.append(fname_c)
         # prepend the output directory
@@ -370,7 +370,6 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         wma.io.write_polydata(pd_c, fname_c)
         color_c = color[mask,:]
         cluster_colors.append(numpy.mean(color_c,0))
-        cidx = cidx + 1
     
     # Estimate subsampling ratio to display approximately show_fibers total fibers in 3D Slicer
     number_fibers = len(cluster_numbers_s)
