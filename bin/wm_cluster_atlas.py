@@ -146,14 +146,14 @@ else:
     show_fibers = 5000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
-if args.flag_remove_outliers:
-    if args.subjectPercent is not None:
-        fraction_to_keep_cluster = args.subjectPercent / 100.0
-    else:
-        fraction_to_keep_cluster = 0.9
-    print "Separating outlier clusters with fewer than: ", fraction_to_keep_cluster * 100.0, "percent of subjects."
-else:
-    print "Not removing outlier clusters."
+#if args.flag_remove_outliers:
+#    if args.subjectPercent is not None:
+#        fraction_to_keep_cluster = args.subjectPercent / 100.0
+#    else:
+#        fraction_to_keep_cluster = 0.9
+#    print "Separating outlier clusters with fewer than: ", fraction_to_keep_cluster * 100.0, "percent of subjects."
+#else:
+#    print "Not removing outlier clusters."
 
 if args.flag_bilateral_off:
     bilateral = False
@@ -252,185 +252,151 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
                              normalized_cuts=use_normalized_cuts, threshold=threshold, \
                              bilateral=bilateral)
 
-# Save the output in our atlas format for automatic labeling of full brain datasets
+# Save the output in our atlas format for automatic labeling of full brain datasets.
+# This is the data used to label a new subject
 atlas.save(outdir,'atlas')
 
 # Write the polydata with cluster indices saved as cell data
 #fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
 #wma.io.write_polydata(output_polydata_s, fname_output)
 
-
-# Save some quality control metrics.
-# figure out which subject each fiber was from 
+# figure out which subject each fiber was from in the input to the clustering
 subject_fiber_list = list()
 for sidx in range(number_of_subjects):
     for fidx in range(number_of_fibers_per_subject):
         subject_fiber_list.append(sidx)
 subject_fiber_list = numpy.array(subject_fiber_list)
+
+def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, outdir):
+
+    # output summary file to save information about all subjects
+    subjects_qc_fname = os.path.join(outdir, 'input_subjects.txt')
+    subjects_qc_file = open(subjects_qc_fname, 'w')
+    outstr = "Subject_idx\tSubject_ID\tfilename\n"
+    subjects_qc_file.write(outstr)
+    idx = 1
+    for fname in input_polydatas:
+        subject_id = os.path.splitext(os.path.basename(fname))[0]
+        outstr =  str(idx) + '\t' + str(subject_id) + '\t' + str(fname) + '\n'
+        subjects_qc_file.write(outstr)
+        idx += 1
+    subjects_qc_file.close()
+
+    # output summary file to save information about all clusters
+    clusters_qc_fname = os.path.join(outdir, 'cluster_quality_control.txt')
+    clusters_qc_file = open(clusters_qc_fname, 'w')
+
+    # Figure out how many subjects in each cluster (ideally, most subjects in most clusters)
+    subjects_per_cluster = list()
+    percent_subjects_per_cluster = list()
+    fibers_per_cluster = list()
+    mean_fiber_len_per_cluster = list()
+    std_fiber_len_per_cluster = list()
+    mean_fibers_per_subject_per_cluster = list()
+    std_fibers_per_subject_per_cluster = list()
+
+    # find out length of each fiber
+    fiber_length = list()
+    cell_idx = 0
+    ptids = vtk.vtkIdList()
+    inpoints = output_polydata_s.GetPoints()
+    # loop over lines
+    output_polydata_s.GetLines().InitTraversal()
+    num_lines = output_polydata_s.GetNumberOfLines()
+    for lidx in range(0, num_lines):
+        output_polydata_s.GetLines().GetNextCell(ptids)
+        # compute step size (assume it's fixed along line length)
+        if ptids.GetNumberOfIds() >= 2:
+            point0 = inpoints.GetPoint(ptids.GetId(0))
+            point1 = inpoints.GetPoint(ptids.GetId(1))
+            step_size = numpy.sqrt(numpy.sum(numpy.power(
+                        numpy.subtract(point0, point1), 2)))
+        else:
+            step_size = 0.0
+        fiber_length.append(ptids.GetNumberOfIds() * step_size)
+    fiber_length = numpy.array(fiber_length)
+
+    # loop over each cluster and compute quality control metrics
+    cluster_indices = range(atlas.centroids.shape[0])
+    for cidx in cluster_indices:
+        cluster_mask = (cluster_numbers_s==cidx) 
+        subjects_per_cluster.append(len(set(subject_fiber_list[cluster_mask])))
+        fibers_per_subject = list()
+        for sidx in range(number_of_subjects):
+            fibers_per_subject.append(list(subject_fiber_list[cluster_mask]).count(sidx))
+        mean_fibers_per_subject_per_cluster.append(numpy.mean(numpy.array(fibers_per_subject)))
+        std_fibers_per_subject_per_cluster.append(numpy.std(numpy.array(fibers_per_subject)))
+        mean_fiber_len_per_cluster.append(numpy.mean(fiber_length[cluster_mask]))
+        std_fiber_len_per_cluster.append(numpy.std(fiber_length[cluster_mask]))
+
+    percent_subjects_per_cluster = numpy.divide(numpy.array(subjects_per_cluster),float(number_of_subjects))
+
+    # Save output quality control information
+    clusters_qc_file = open(clusters_qc_fname, 'w')
+    print >> clusters_qc_file, 'cluster_idx','\t', 'number_subjects','\t', 'percent_subjects','\t', 'mean_length','\t', 'std_length','\t', 'mean_fibers_per_subject','\t', 'std_fibers_per_subject'
+    for cidx in cluster_indices:
+        print >> clusters_qc_file, cidx,'\t', subjects_per_cluster[cidx],'\t', percent_subjects_per_cluster[cidx],'\t', \
+            mean_fiber_len_per_cluster[cidx],'\t', std_fiber_len_per_cluster[cidx],'\t', \
+            mean_fibers_per_subject_per_cluster[cidx],'\t', std_fibers_per_subject_per_cluster[cidx]
+
+    clusters_qc_file.close()
+
+    if HAVE_PLT:
+        plt.figure()
+        plt.hist(subjects_per_cluster, number_of_subjects)
+        plt.savefig( os.path.join(outdir, 'subjects_per_cluster_hist.pdf'))
+        plt.close()
         
-# Figure out how many subjects in each cluster (ideally, most subjects in most clusters)
-subjects_per_cluster = list()
-percent_subjects_per_cluster = list()
-fibers_per_cluster = list()
-mean_fiber_len_per_cluster = list()
-std_fiber_len_per_cluster = list()
-mean_fibers_per_subject_per_cluster = list()
-std_fibers_per_subject_per_cluster = list()
+    # Save the entire combined atlas as individual clusters for visualization
+    # and labeling/naming of structures. This will include all of the data
+    # that was clustered to make the atlas.
 
-# find out length of each fiber
-fiber_length = list()
-cell_idx = 0
-ptids = vtk.vtkIdList()
-inpoints = output_polydata_s.GetPoints()
-# loop over lines
-output_polydata_s.GetLines().InitTraversal()
-num_lines = output_polydata_s.GetNumberOfLines()
-for lidx in range(0, num_lines):
-    output_polydata_s.GetLines().GetNextCell(ptids)
-    # compute step size (assume it's fixed along line length)
-    if ptids.GetNumberOfIds() >= 2:
-        point0 = inpoints.GetPoint(ptids.GetId(0))
-        point1 = inpoints.GetPoint(ptids.GetId(1))
-        step_size = numpy.sqrt(numpy.sum(numpy.power(
-            numpy.subtract(point0, point1), 2)))
-    else:
-        step_size = 0.0
-    fiber_length.append(ptids.GetNumberOfIds() * step_size)
-fiber_length = numpy.array(fiber_length)
-
-# loop over each cluster and compute quality control metrics
-for cidx in range(atlas.centroids.shape[0]):
-    cluster_mask = (cluster_numbers_s==cidx) 
-    subjects_per_cluster.append(len(set(subject_fiber_list[cluster_mask])))
-    fibers_per_subject = list()
-    for sidx in range(number_of_subjects):
-        fibers_per_subject.append(list(subject_fiber_list[cluster_mask]).count(sidx))
-    mean_fibers_per_subject_per_cluster.append(numpy.mean(numpy.array(fibers_per_subject)))
-    std_fibers_per_subject_per_cluster.append(numpy.std(numpy.array(fibers_per_subject)))
-    mean_fiber_len_per_cluster.append(numpy.mean(fiber_length[cluster_mask]))
-    std_fiber_len_per_cluster.append(numpy.std(fiber_length[cluster_mask]))
-
-percent_subjects_per_cluster = numpy.divide(numpy.array(subjects_per_cluster),float(number_of_subjects))
-    
-# for now, print to screen
-#for cidx in range(atlas.centroids.shape[0]):
-#    print cidx, ':', subjects_per_cluster[cidx], percent_subjects_per_cluster[sidx], \
-#      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx], \
-#      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx]
-
-# quality metric for sorting clusters in output
-# clusters that have high length, are present in many subjects, and have many fibers per subject are high quality
-#cluster_quality = numpy.multiply(numpy.multiply(percent_subjects_per_cluster,mean_fiber_len_per_cluster),mean_fibers_per_subject_per_cluster)
-# want high quality first so sort negative of array
-#cluster_order = numpy.argsort(-cluster_quality)
-
-# Sort by percent_subjects_per_cluster, then by mean_fiber_len_per_cluster
-cluster_order = numpy.lexsort((mean_fiber_len_per_cluster,percent_subjects_per_cluster)) 
-# want high quality first so reverse ordering
-cluster_order = cluster_order[::-1]
-
-print "=============================="
-print len(cluster_order)
-# Print output metrics to a file
-f = open(os.path.join(outdir, 'cluster_quality_metrics.txt'), 'w+')
-print >> f, 'cluster', 'subjects', 'percent_subjects', 'mean_length', 'std_length', 'mean_fibers_per_subject', 'std_fibers_per_subject' 
-cidx_out = 1
-for cidx in cluster_order:
-    print >> f, cidx_out, subjects_per_cluster[cidx], percent_subjects_per_cluster[cidx], \
-      mean_fiber_len_per_cluster[cidx], std_fiber_len_per_cluster[cidx], \
-      mean_fibers_per_subject_per_cluster[cidx], std_fibers_per_subject_per_cluster[cidx]
-    cidx_out = cidx_out + 1
-f.close()
-
-if HAVE_PLT:
-    plt.figure()
-    plt.hist(subjects_per_cluster, number_of_subjects)
-    plt.savefig( os.path.join(outdir, 'subjects_per_cluster_hist.pdf'))
-    plt.close()
-
-
-# Figure out what clusters we have, and keep the consistent ones if requested.
-number_of_clusters = numpy.max(cluster_numbers_s)
-        
-if args.flag_remove_outliers:
-    subjects_to_keep_cluster = numpy.round(fraction_to_keep_cluster * number_of_subjects)
-    print "Separating outlier clusters with fewer than: ", subjects_to_keep_cluster, "/", number_of_subjects, "subjects."   
-    # experiment
-    cluster_indices = numpy.where(numpy.array(subjects_per_cluster[cluster_order]) >= subjects_to_keep_cluster)[0]
-    outlier_indices = numpy.where(numpy.array(subjects_per_cluster[cluster_order]) < subjects_to_keep_cluster)[0]
-    print "Keeping", len(cluster_indices), "/", number_of_clusters, "clusters."
-else:
-    first_cluster = numpy.min(cluster_numbers_s)
-    print "Cluster indices range from:", first_cluster, "to", number_of_clusters
-    cluster_indices = cluster_order
-
-# Also save the entire combined atlas as individual clusters for visualization
-# and labeling/naming of structures. This will be the subset of the data
-# that was analyzed to make the atlas.
-
-# Figure out file name and mean color for each cluster, and write the individual polydatas
-fnames = list()
-cluster_colors = list()
-cidx = 1
-for c in cluster_indices:
-    mask = cluster_numbers_s == c
-    pd_c = wma.filter.mask(output_polydata_s, mask)
-    fname_c = 'cluster_{0:05d}.vtp'.format(cidx)
-    # save the filename for writing into the MRML file
-    fnames.append(fname_c)
-    # prepend the output directory
-    fname_c = os.path.join(outdir, fname_c)
-    print fname_c
-    wma.io.write_polydata(pd_c, fname_c)
-    color_c = color[mask,:]
-    cluster_colors.append(numpy.mean(color_c,0))
-    cidx = cidx + 1
-    
-# Estimate subsampling ratio to display approx. show_fibers total fibers
-number_fibers = len(cluster_numbers_s)
-if number_fibers < show_fibers:
-    ratio = 1.0
-else:
-    ratio = show_fibers / number_fibers
-print "<wm_cluster_atlas.py> Total fibers:", number_fibers, "Fibers to show by default:", show_fibers
-print "<wm_cluster_atlas.py> Subsampling ratio estimated as:", ratio
-
-# Write the MRML file into the directory where the polydatas were already stored
-fname = os.path.join(outdir, 'clustered_tracts.mrml')
-wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
-
-# Also save the outlier clusters for quality control
-if args.flag_remove_outliers:
-    outdir_outlier = os.path.join(outdir, 'outliers')
-    if not os.path.exists(outdir_outlier):
-        os.makedirs(outdir_outlier)
     # Figure out file name and mean color for each cluster, and write the individual polydatas
     fnames = list()
     cluster_colors = list()
-    for c in outlier_indices:
+    cidx = 1
+    for c in cluster_indices:
         mask = cluster_numbers_s == c
+        # color by subject so in theory we can see which one it came from
+        # but this is cell data and may not be correctly shown in Slicer.
+        #colors = subject_fiber_list
         pd_c = wma.filter.mask(output_polydata_s, mask)
         fname_c = 'cluster_{0:05d}.vtp'.format(cidx)
         # save the filename for writing into the MRML file
         fnames.append(fname_c)
         # prepend the output directory
-        fname_c = os.path.join(outdir_outlier, fname_c)
+        fname_c = os.path.join(outdir, fname_c)
         print fname_c
         wma.io.write_polydata(pd_c, fname_c)
         color_c = color[mask,:]
         cluster_colors.append(numpy.mean(color_c,0))
         cidx = cidx + 1
+    
+    # Estimate subsampling ratio to display approximately show_fibers total fibers in 3D Slicer
+    number_fibers = len(cluster_numbers_s)
+    if number_fibers < show_fibers:
+        ratio = 1.0
+    else:
+        ratio = show_fibers / number_fibers
+    #print "<wm_cluster_atlas.py> Total fibers:", number_fibers, "Fibers to show by default:", show_fibers
+    #print "<wm_cluster_atlas.py> Subsampling ratio estimated as:", ratio
+
     # Write the MRML file into the directory where the polydatas were already stored
-    fname = os.path.join(outdir_outlier, 'outlier_tracts.mrml')
+    fname = os.path.join(outdir, 'clustered_tracts.mrml')
     wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
-    # Save the outlier information into the atlas...
-    print "LAUREN SAVE OUTLIER and qc number of subjects INFORMATION IN ATLAS AND MOVE THAT CODE TO cluster.py"
-    
-# View the whole thing in png format for quality control
-print '<wm_cluster_atlas.py> Rendering and saving image'
-ren = wma.render.render(output_polydata_s, 1000)
-ren.save_views(outdir)
-del ren
+    # View the whole thing in png format for quality control
+    print 'Rendering and saving images of cluster atlas.'
+    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor')
+    ren.save_views(outdir)
+    del ren
+
+
+
+# Save some quality control metrics and save the atlas as individual polydata. This is used to 
+# set up a mrml hierarchy file and to visualize the output. This data is not used to label
+# a new subject.
+output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, outdir)
 
 print 'Done clustering atlas.'
+
