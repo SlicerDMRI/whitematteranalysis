@@ -20,7 +20,8 @@ class Fiber:
         self.a = None
         self.s = None
         self.points_per_fiber = None
-
+        self.hemisphere_percent_threshold = 0.95
+        
     def get_equivalent_fiber(self):
         """ Get the reverse order of current line (trajectory), as the
         fiber can be equivalently represented in either order."""
@@ -334,8 +335,12 @@ class FiberArray:
         self.fiber_hemisphere = numpy.zeros(self.number_of_fibers)
         # percentage in left hemisphere
         test = sum(self.fiber_array_r.T < 0) / float(self.points_per_fiber)
-        self.fiber_hemisphere[numpy.nonzero(test > 0.95)] = -1
-        self.fiber_hemisphere[numpy.nonzero(test < 0.05)] = 1
+        thresh = self.hemisphere_percent_threshold
+        self.fiber_hemisphere[numpy.nonzero(test > thresh)] = -1
+        self.fiber_hemisphere[numpy.nonzero(test < 1 - thresh)] = 1
+        # previous code left for clarity below, concrete example of threshold:
+        #self.fiber_hemisphere[numpy.nonzero(test > 0.95)] = -1
+        #self.fiber_hemisphere[numpy.nonzero(test < 0.05)] = 1
         # otherwise hem stays 0 for commissural
 
         # output boolean arrays for each hemisphere and callosal fibers
