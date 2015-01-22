@@ -126,7 +126,10 @@ for fname in input_polydatas:
     mask = numpy.ones(number_rendered_fibers)
     colors = numpy.multiply(mask, subject_idx)
     pd3 = wma.filter.mask(pd3, mask, colors)
-    appender.AddInputData(pd3)
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        appender.AddInputData(pd3)
+    else:
+        appender.AddInput(pd3)
 
     # Record what scalar/tensor data is present in this subject's file
     data_qc_file = open(data_qc_fname, 'a')

@@ -48,7 +48,10 @@ for fname in input_pd_fnames:
 
     print "<append.py> Input number of fibers:", pd.GetNumberOfLines()
 
-    appender.AddInputData(pd)
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        appender.AddInputData(pd)
+    else:
+        appender.AddInput(pd)
 
 # ensure the data are updated
 appender.Update()
