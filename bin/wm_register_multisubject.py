@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
 # Run registration on the test dataset.
