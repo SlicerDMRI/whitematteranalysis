@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # If the cluster was created in bilateral clustering and is not commissural, separate into separate directories
 # output should be a right_hem and a left_hem directory
 # copy MRML files from toplevel directory into this one

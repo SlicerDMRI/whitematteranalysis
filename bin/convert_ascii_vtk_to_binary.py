@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 indir = '/Users/odonnell/Data/tbi_with_scalars'
 outdir = '/Users/odonnell/Data/tbi_with_scalars/binary_data'
 
