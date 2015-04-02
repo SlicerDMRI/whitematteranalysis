@@ -71,13 +71,13 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         print "ERROR: Please use distance method Landmarks to compute landmark distances"
         
     # compute the distance from this fiber to the array of other fibers
-    dx = fiber_array.fiber_array_r - fiber.r
-    dy = fiber_array.fiber_array_a - fiber.a
-    dz = fiber_array.fiber_array_s - fiber.s
+    ddx = fiber_array.fiber_array_r - fiber.r
+    ddy = fiber_array.fiber_array_a - fiber.a
+    ddz = fiber_array.fiber_array_s - fiber.s
 
-    dx = numpy.square(dx)
-    dy = numpy.square(dy)
-    dz = numpy.square(dz)
+    dx = numpy.square(ddx)
+    dy = numpy.square(ddy)
+    dz = numpy.square(ddz)
 
     # sum dx dx dz at each point on the fiber and sqrt for threshold
     #distance = numpy.sqrt(dx + dy + dz)
@@ -117,6 +117,33 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         #print "similarity range :", numpy.min(distance), numpy.max(distance)        
         distance = numpy.prod(distance, 1)
         #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
+    elif distance_method == 'Mean_shape':
+
+        distance_endpoints = (numpy.sqrt(distance[:,0]) + numpy.sqrt(distance[:,npts-1]))/2
+
+        distance = numpy.square(ddx)+numpy.square(ddy)+numpy.square(ddz)
+        for i in numpy.linspace(0,numpy.size(numpy.sqrt(distance),0)-1,numpy.size(numpy.sqrt(distance),0)):
+            for j in numpy.linspace(0,numpy.size(numpy.sqrt(distance),1)-1,numpy.size(numpy.sqrt(distance),1)):
+                if distance[i,j] == 0:
+                    distance[i,j] = 1
+        ddx = numpy.divide(ddx,numpy.sqrt(distance))
+        ddy = numpy.divide(ddy,numpy.sqrt(distance))
+        ddz = numpy.divide(ddz,numpy.sqrt(distance))
+        #print ddx*ddx+ddy*ddy+ddz*ddz
+        npts = float(fiber_array.points_per_fiber)
+        angles = numpy.zeros([(numpy.size(distance))/npts,npts*(npts+1)/2])
+        s = 0
+        n = numpy.linspace(0,npts-1,npts)
+        for i in n:
+            m = numpy.linspace(0,i,i+1)
+            for j in m:
+                angles[:,s] = (ddx[:,i]-ddx[:,j])*(ddx[:,i]-ddx[:,j]) + (ddy[:,i]-ddy[:,j])*(ddy[:,i]-ddy[:,j]) + (ddz[:,i]-ddz[:,j])*(ddz[:,i]-ddz[:,j])
+                s = s+1
+        angles = (numpy.sqrt(angles))/2
+        angle = numpy.max(angles,1)
+        #print angle.max()
+        
+        distance = 0.5*d + 0.4*d/(0.5+0.5*(1-angle*angle)) + 0.1*distance_endpoints
         
     else:
         print "<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method
