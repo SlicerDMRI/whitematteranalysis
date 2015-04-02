@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import numpy
 import argparse
 import os
@@ -22,7 +21,7 @@ except:
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Runs clustering of tractography for multiple subjects to create an atlas.",
+    description="Runs clustering of tractography for multiple subjects to create an atlas. This tract atlas can then be applied to the complete set of fibers from individual subjects of interest. To make it possible to cluster the high number of fibers, this code uses random sampling and the Nystrom method as described in the reference below.",
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
 parser.add_argument("-v", "--version",
     action="version", default=argparse.SUPPRESS,
@@ -36,10 +35,10 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each subject.')
+    help='Number of fibers to analyze from each subject. Default is 2000 (this assumes 10 or more subjects; for fewer subjects, more fibers are needed per subject).')
 parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
-    help='Minimum length (in mm) of fibers to analyze. 25mm is default.')
+    help='Minimum length (in mm) of fibers to analyze. 25mm is default. This default is reasonable for single-tensor DTI tractography. For two-tensor UKF, 80mm is more reasonable (as tracts are longer in general). Run the quality control script on your data first and inspect the fiber length distribution in your dataset. Note that with too low a threshold, the clustering will be dominated by the more prevalent short fibers, such as u-fibers, instead of longer association fibers.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
@@ -48,28 +47,28 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-k', action="store", dest="numberOfClusters", type=int,
-    help='Number of clusters to find. Default is 250. Useful range is from 200 to 600+.')
+    help='Number of clusters to find. Default is 250, which is reasonable for single-tensor DTI tractography. Useful range is from 200 to 600+. For two-tensor UKF, 400 or more is a reasonable number.')
 parser.add_argument(
     '-thresh', action="store", dest="distanceThreshold", type=float,
-    help='Threshold (in mm) below which fiber points are considered in the same position. Default is 2mm for cross-subject atlas clustering.')
+    help='Threshold (in mm) below which fiber points are considered in the same position. Default is 2mm for cross-subject atlas clustering. This helps find correspondences across subjects by ignoring very small differences.')
 parser.add_argument(
     '-nystrom_sample', action="store", dest="sizeOfNystromSample", type=int,
-    help='Number of fibers to use in the Nystrom sample. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use.')
+    help='Number of fibers to use in the Nystrom sample. This is the random sample of fibers to which every input fiber is compared, to structure the clustering problem. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use. One rule of thumb is that this number should be similar to the number of fibers used per subject.')
 parser.add_argument(
     '-sigma', action="store", dest="sigma", type=float,
     help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Reduce for stricter clustering with ample data, or for physically smaller problems like a subset of the brain.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
-parser.add_argument(
-    '-remove_outliers', action='store_true', dest="flag_remove_outliers",
-    help='Define outlier clusters (default, ones with less than 90 percent of subjects present). These will be segmented separately.')
-parser.add_argument(
-    '-subject_percent', action="store", dest="subjectPercent", type=float,
-    help='Threshold for defining good vs outlier clusters. Default is 90 percent of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 5000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format).')
+#parser.add_argument(
+#    '-remove_outliers', action='store_true', dest="flag_remove_outliers",
+#    help='Define outlier clusters (default, ones with less than 90 percent of subjects present). These will be segmented separately.')
+#parser.add_argument(
+#    '-subject_percent', action="store", dest="subjectPercent", type=float,
+#    help='Threshold for defining good vs outlier clusters. Default is 90 percent of subjects must be present to keep a cluster. Lower this to 70 or 80 if data are more variable or the number of clusters is very high.')
 parser.add_argument(
     '-bilateral_off', action='store_true', dest="flag_bilateral_off",
-    help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters. They can be split at the midline later if needed')
+    help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters, so that is the default. The bilateral clusters can be split at the midline later for analyses.')
 
 args = parser.parse_args()
 
