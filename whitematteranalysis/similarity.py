@@ -118,17 +118,30 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         distance = numpy.prod(distance, 1)
         #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
     elif distance_method == 'Mean_shape':
+        
+        # sum along fiber
+        distance_square = distance
+        distance = numpy.sqrt(distance_square)
+        #d = numpy.sum(numpy.sqrt(distance), 1)
+           
+        d = numpy.sum(distance, 1)
+        # Remove effect of number of points along fiber (mean)
+        npts = float(fiber_array.points_per_fiber)
+        d = numpy.divide(d, npts)
+        # for consistency with other methods we need to square this value
+        d = numpy.square(d)
 
-        distance_endpoints = (numpy.sqrt(distance[:,0]) + numpy.sqrt(distance[:,npts-1]))/2
+        #distance = numpy.sqrt(distance)
+        distance_endpoints = (distance[:,0] + distance[:,npts-1])/2
 
-        distance = numpy.square(ddx)+numpy.square(ddy)+numpy.square(ddz)
-        for i in numpy.linspace(0,numpy.size(numpy.sqrt(distance),0)-1,numpy.size(numpy.sqrt(distance),0)):
-            for j in numpy.linspace(0,numpy.size(numpy.sqrt(distance),1)-1,numpy.size(numpy.sqrt(distance),1)):
+        #distance = numpy.square(ddx)+numpy.square(ddy)+numpy.square(ddz)
+        for i in numpy.linspace(0,numpy.size(distance,0)-1,numpy.size(distance,0)):
+            for j in numpy.linspace(0,numpy.size(distance,1)-1,numpy.size(distance,1)):
                 if distance[i,j] == 0:
                     distance[i,j] = 1
-        ddx = numpy.divide(ddx,numpy.sqrt(distance))
-        ddy = numpy.divide(ddy,numpy.sqrt(distance))
-        ddz = numpy.divide(ddz,numpy.sqrt(distance))
+        ddx = numpy.divide(ddx,distance)
+        ddy = numpy.divide(ddy,distance)
+        ddz = numpy.divide(ddz,distance)
         #print ddx*ddx+ddy*ddy+ddz*ddz
         npts = float(fiber_array.points_per_fiber)
         angles = numpy.zeros([(numpy.size(distance))/npts,npts*(npts+1)/2])
@@ -398,3 +411,4 @@ def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='Me
     total_similarity = numpy.sum(similarity)
 
     return total_similarity
+
