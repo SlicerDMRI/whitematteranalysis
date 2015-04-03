@@ -15,16 +15,12 @@ def distance_to_similarity(distance, sigmasq=100):
 
 def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400, bilateral=False):
     """
-
     Find pairwise fiber distance from fiber to all fibers in fiber_array.
-
     The Mean and MeanSquared distances are the average distance per
     fiber point, to remove scaling effects (dependence on number of
     points chosen for fiber parameterization). The Hausdorff distance
     is the maximum distance between corresponding points.
-
     input fiber should be class Fiber. fibers should be class FiberArray
-
     """
 
     # get fiber in reverse point order, equivalent representation
@@ -60,7 +56,6 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
 def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=None):
     """ Compute the total fiber distance from one fiber to an array of
     many fibers.
-
     This function does not handle equivalent fiber representations,
     for that use fiber_distance, above.
     """
@@ -118,25 +113,27 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         distance = numpy.prod(distance, 1)
         #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
     elif distance_method == 'Mean_shape':
-
+        
         # sum along fiber
-        d = numpy.sum(numpy.sqrt(distance), 1)
+        distance_square = distance
+        distance = numpy.sqrt(distance_square)
+
+        d = numpy.sum(distance, 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
-        d = d / npts
+        d = numpy.divide(d, npts)
         # for consistency with other methods we need to square this value
         d = numpy.square(d)
 
-        distance_endpoints = (numpy.sqrt(distance[:,0]) + numpy.sqrt(distance[:,npts-1]))/2
+        distance_endpoints = (distance[:,0] + distance[:,npts-1])/2
 
-        distance = numpy.square(ddx)+numpy.square(ddy)+numpy.square(ddz)
-        for i in numpy.linspace(0,numpy.size(numpy.sqrt(distance),0)-1,numpy.size(numpy.sqrt(distance),0)):
-            for j in numpy.linspace(0,numpy.size(numpy.sqrt(distance),1)-1,numpy.size(numpy.sqrt(distance),1)):
+        for i in numpy.linspace(0,numpy.size(distance,0)-1,numpy.size(distance,0)):
+            for j in numpy.linspace(0,numpy.size(distance,1)-1,numpy.size(distance,1)):
                 if distance[i,j] == 0:
                     distance[i,j] = 1
-        ddx = numpy.divide(ddx,numpy.sqrt(distance))
-        ddy = numpy.divide(ddy,numpy.sqrt(distance))
-        ddz = numpy.divide(ddz,numpy.sqrt(distance))
+        ddx = numpy.divide(ddx,distance)
+        ddy = numpy.divide(ddy,distance)
+        ddz = numpy.divide(ddz,distance)
         #print ddx*ddx+ddy*ddy+ddz*ddz
         npts = float(fiber_array.points_per_fiber)
         angles = numpy.zeros([(numpy.size(distance))/npts,npts*(npts+1)/2])
@@ -345,11 +342,9 @@ def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, land
 
 def total_similarity_for_laterality(fiber, fiber_array, reflect, threshold, sigmasq):
     """ Convenience function for fiber similarity needed for laterality.
-
     Optionally reflects fiber, returns total similarity to all input
     fibers in fiber_array (these are from one hemisphere). Also
     returns distances array for further analysis.
-
     """
 
     if reflect:
@@ -370,11 +365,9 @@ def total_similarity_for_laterality(fiber, fiber_array, reflect, threshold, sigm
 # this must be a function to allow pickling by Parallel
 def total_similarity_and_distances(fiber, fiber_array, reflect, threshold, sigmasq, distance_method='MeanSquared'):
     """ Convenience function for fiber similarity needed for laterality.
-
     Optionally reflects fiber, returns total similarity to all input
     fibers in fiber_array (these are from one hemisphere). Also
     returns distances array for further analysis.
-
     """
 
     if reflect:
@@ -392,11 +385,9 @@ def total_similarity_and_distances(fiber, fiber_array, reflect, threshold, sigma
 # this must be a function to allow pickling by Parallel
 def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='MeanSquared'):
     """ Convenience function that just returns total fiber similarity.
-
     Returns a single scalar value: total similarity to all input
     fibers in fiber_array (these can be from one hemisphere or the
     whole brain, etc).
-
     """
     
     distance = fiber_distance(fiber, fiber_array, threshold, distance_method)
