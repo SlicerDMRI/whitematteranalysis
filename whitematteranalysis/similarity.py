@@ -122,8 +122,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         # sum along fiber
         distance_square = distance
         distance = numpy.sqrt(distance_square)
-        #d = numpy.sum(numpy.sqrt(distance), 1)
-           
+
         d = numpy.sum(distance, 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
@@ -131,10 +130,8 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         # for consistency with other methods we need to square this value
         d = numpy.square(d)
 
-        #distance = numpy.sqrt(distance)
         distance_endpoints = (distance[:,0] + distance[:,npts-1])/2
 
-        #distance = numpy.square(ddx)+numpy.square(ddy)+numpy.square(ddz)
         for i in numpy.linspace(0,numpy.size(distance,0)-1,numpy.size(distance,0)):
             for j in numpy.linspace(0,numpy.size(distance,1)-1,numpy.size(distance,1)):
                 if distance[i,j] == 0:
