@@ -3,6 +3,7 @@ import argparse
 import os
 import multiprocessing
 import vtk
+import time
 
 try:
     import whitematteranalysis as wma
@@ -172,10 +173,10 @@ number_of_eigenvectors = 10
 
 
 # Print input parameter information to a file as well as to the terminal
-print args
-f = open(os.path.join(outdir, 'parameters.txt'), 'w+')
-print >> f, args
-f.close()
+#print args
+#f = open(os.path.join(outdir, 'parameters.txt'), 'w+')
+#print >> f, args
+#f.close()
 
 # another option. was not used in TMI 2007 paper. would need a different sigma.
 #distance_method ='Hausdorff'
@@ -192,6 +193,55 @@ number_of_subjects = len(input_polydatas)
 total_number_of_fibers = number_of_fibers_per_subject * number_of_subjects
 
 print "<wm_cluster_atlas.py> Input number of vtk/vtp files: ", number_of_subjects
+
+# output summary file to save information about what was run
+readme_fname = os.path.join(outdir, 'README.txt')
+readme_file = open(readme_fname, 'w')
+outstr = "Group (Atlas) Clustering Summary\n"
+outstr += '----------------------\n'
+outstr += '\n'
+outstr += "Input Directory: "
+outstr += args.inputDirectory
+outstr += '\n'
+outstr += "Output Directory: "
+outstr += args.outputDirectory
+outstr += '\n'
+outstr += "Number of Subjects: "
+outstr += str(number_of_subjects)
+outstr += '\n'
+outstr += '\n'
+outstr +=  "Current date: "  + time.strftime("%x")
+outstr += '\n'
+outstr +=  "Current time: " + time.strftime("%X")
+outstr += '\n'
+outstr += '\n'
+outstr += "Path to Script: " + os.path.realpath(__file__)
+outstr += '\n'
+outstr += "Working Directory: " + os.getcwd()
+outstr += '\n'
+outstr += '\n'
+outstr += "Description of Outputs\n"
+outstr += '---------------------\n'
+outstr += 'fiber_length_histograms.pdf: Distribution of fiber lengths for all subjects.\n'
+outstr += 'quality_control_data.txt: Data (e.g. FA, tensors) should match for all subjects.\n'
+outstr += 'quality_control_fibers.txt:  Fibers per subject for several length thresholds.\n'
+outstr += 'view_*.png: All subjects (colors) should overlap if coordinate system origins are ok.\n'
+outstr += 'subject directories: Subject-specific histograms and views for visual inspection.'
+outstr += '\n'
+outstr += '\n'
+outstr += "Command Line Arguments\n"
+outstr += '----------------------\n'
+outstr += str(args)
+outstr += '\n'
+outstr += '\n'
+outstr += "Input Fiber Files\n"
+outstr += '-----------------\n'
+for pd in input_polydatas:
+    outstr += pd
+    outstr += '\n'
+readme_file.write(outstr)
+readme_file.close()
+
 
 # read in data
 input_pds = list()
