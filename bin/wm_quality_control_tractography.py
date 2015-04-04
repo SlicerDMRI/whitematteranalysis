@@ -7,6 +7,7 @@ import argparse
 import os
 import numpy
 import vtk
+import time
 
 try:
     import whitematteranalysis as wma
@@ -58,6 +59,49 @@ input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
 print "<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
 
+# output summary files to save information about what was run
+readme_fname = os.path.join(output_dir, 'README.txt')
+readme_file = open(readme_fname, 'w')
+outstr = "Quality Control Summary\n"
+outstr += '----------------------\n'
+outstr += '\n'
+outstr += "Input Directory: "
+outstr += args.inputDirectory
+outstr += '\n'
+outstr += "Output Directory: "
+outstr += args.outputDirectory
+outstr += '\n'
+outstr += "Number of Subjects: "
+outstr += str(number_of_subjects)
+outstr += '\n'
+outstr += '\n'
+outstr +=  "Current date: "  + time.strftime("%x")
+outstr += '\n'
+outstr +=  "Current time: " + time.strftime("%X")
+outstr += '\n'
+outstr += '\n'
+outstr += "Description of Outputs\n"
+outstr += '---------------------\n'
+outstr += 'fiber_length_histograms.pdf: Distribution of fiber lengths for all subjects.\n'
+outstr += 'quality_control_data.txt: Data (e.g. FA, tensors) should match for all subjects.\n'
+outstr += 'quality_control_fibers.txt:  Fibers per subject for several length thresholds.\n'
+outstr += 'view_*.png: All subjects (colors) should overlap if coordinate system origins are ok.\n'
+outstr += 'subject directories: Subject-specific histograms and views for visual inspection.'
+outstr += '\n'
+outstr += '\n'
+outstr += "Command Line Arguments\n"
+outstr += '----------------------\n'
+outstr += str(args)
+outstr += '\n'
+outstr += '\n'
+outstr += "Input Fiber Files\n"
+outstr += '-----------------\n'
+for pd in input_polydatas:
+    outstr += pd
+    outstr += '\n'
+readme_file.write(outstr)
+readme_file.close()
+
 # output summary files to save information about all subjects
 fibers_qc_fname = os.path.join(output_dir, 'quality_control_fibers.txt')
 data_qc_fname = os.path.join(output_dir, 'quality_control_data.txt')
@@ -97,7 +141,7 @@ for fname in input_polydatas:
         os.makedirs(output_dir_subdir)
     ren.save_views(output_dir_subdir)
 
-    # Compute and save stats about this subject's fiber distribution
+    # Compute and save stats about this subject's fiber histogram
     fibers_qc_file = open(fibers_qc_fname, 'a')
     # total number of fibers
     outstr = str(subject_id) +  '\t'
@@ -116,9 +160,12 @@ for fname in input_polydatas:
         plt.figure(1)
         plt.hist(lengths, bins=100, histtype='step', label=subject_id)
         plt.figure(2)
+        plt.title('Histogram of fiber lengths')
         plt.hist(lengths, bins=100, histtype='step', label=subject_id)
-        plt.legend()
-        plt.savefig(os.path.join(output_dir_subdir, 'fiber_length_distribution.pdf'))
+        # Place the legend below the plot so it does not overlap it when there are many subjects
+        lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=False, shadow=False, ncol=1)
+        # save everything even if the legend is long and goes off the plot
+        plt.savefig(os.path.join(output_dir_subdir, 'fiber_length_histogram.pdf'), bbox_extra_artists=(lgd,), bbox_inches='tight')
         plt.close()
 
     # Append selected fibers for rendering of all subjects together to check overlap
@@ -159,8 +206,11 @@ for fname in input_polydatas:
 
 if HAVE_PLT:
     plt.figure(1)
-    plt.legend()
-    plt.savefig(os.path.join(output_dir, 'fiber_length_distributions.pdf'))
+    plt.title('Histogram of fiber lengths')
+    # Place the legend below the plot so it does not overlap it when there are many subjects
+    lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=False, shadow=False, ncol=1)
+    # save everything even if the legend is long and goes off the plot
+    plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
 
 print "<quality_control> Final step: rendering all vtk files together to see if any have a different origin (if far apart registration may fail)."
