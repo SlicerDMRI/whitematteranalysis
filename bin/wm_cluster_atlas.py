@@ -388,7 +388,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     clusters_qc_file = open(clusters_qc_fname, 'w')
     print >> clusters_qc_file, 'cluster_idx','\t', 'number_subjects','\t', 'percent_subjects','\t', 'mean_length','\t', 'std_length','\t', 'mean_fibers_per_subject','\t', 'std_fibers_per_subject'
     for cidx in cluster_indices:
-        print >> clusters_qc_file, cidx,'\t', subjects_per_cluster[cidx],'\t', percent_subjects_per_cluster[cidx],'\t', \
+        print >> clusters_qc_file, cidx + 1,'\t', subjects_per_cluster[cidx],'\t', percent_subjects_per_cluster[cidx] * 100.0,'\t', \
             mean_fiber_len_per_cluster[cidx],'\t', std_fiber_len_per_cluster[cidx],'\t', \
             mean_fibers_per_subject_per_cluster[cidx],'\t', std_fibers_per_subject_per_cluster[cidx]
 
