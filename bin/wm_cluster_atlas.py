@@ -222,11 +222,14 @@ outstr += '\n'
 outstr += '\n'
 outstr += "Description of Outputs\n"
 outstr += '---------------------\n'
-outstr += 'fiber_length_histograms.pdf: Distribution of fiber lengths for all subjects.\n'
-outstr += 'quality_control_data.txt: Data (e.g. FA, tensors) should match for all subjects.\n'
-outstr += 'quality_control_fibers.txt:  Fibers per subject for several length thresholds.\n'
-outstr += 'view_*.png: All subjects (colors) should overlap if coordinate system origins are ok.\n'
-outstr += 'subject directories: Subject-specific histograms and views for visual inspection.'
+outstr += 'atlas.p, atlas.vtp: The information needed to cluster a new subject.\n'
+outstr += 'cluster_*.vtp: Clustered fibers from all subjects for visualization.\n'
+outstr += 'clustered_tracts.mrml:  Slicer scene for loading all fiber files in color.\n'
+outstr += 'cluster_quality_control.txt: Measures from each cluster including mean and variability across subjects.\n'
+outstr += 'input_subjects.txt:  List of subject index, ID, and full path to input file.\n'
+outstr += 'README.txt:  This summary file.\n'
+outstr += 'subjects_per_cluster_hist.pdf:  Histogram showing the number of subjects present in each cluster. Ideally, most clusters should contain all subjects.\n'
+outstr += 'view_*.png: Images of the clustered brains for visual quality control. Colors should be bright and look related to the anatomy.\n'
 outstr += '\n'
 outstr += '\n'
 outstr += "Command Line Arguments\n"
@@ -394,6 +397,9 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     if HAVE_PLT:
         plt.figure()
         plt.hist(subjects_per_cluster, number_of_subjects)
+        plt.title('Histogram of Subjects per Cluster')
+        plt.xlabel('subjects per cluster')
+        plt.ylabel('number of clusters')
         plt.savefig( os.path.join(outdir, 'subjects_per_cluster_hist.pdf'))
         plt.close()
         
