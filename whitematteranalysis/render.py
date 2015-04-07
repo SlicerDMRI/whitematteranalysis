@@ -36,8 +36,8 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
     print "<render.py> Render pipeline created."
     return ren
 
-def save_views(render_object, directory="."):
-    render_object.save_views(directory)
+def save_views(render_object, directory=".", subjectID=None):
+    render_object.save_views(directory, subjectID)
 
 
 def get_jet_lookup_table():
@@ -330,7 +330,7 @@ class RenderPolyData:
         del writer
         del img
 
-    def save_views(self, directory="."):
+    def save_views(self, directory=".", subjectID=None):
 
         print "<render.py> Saving rendered views to disk:", directory
         
@@ -338,6 +338,23 @@ class RenderPolyData:
             print "<render.py> ERROR: directory does not exist.", directory
             return
 
+        # Use subject ID as part of filename for easier visual 
+        # identification of problem cases
+        if subjectID is not None:
+            fname_sup = "view_sup_"+subjectID+".png"
+            fname_inf = "view_inf_"+subjectID+".png"
+            fname_left = "view_left_"+subjectID+".png"
+            fname_right = "view_right_"+subjectID+".png"
+            fname_ant = "view_ant_"+subjectID+".png"
+            fname_post = "view_post_"+subjectID+".png"
+        else:
+            fname_sup = "view_sup.png"
+            fname_inf = "view_inf.png"
+            fname_left = "view_left.png"
+            fname_right = "view_right.png"
+            fname_ant = "view_ant.png"
+            fname_post = "view_post.png"
+            
         # sometimes the model gets clipped, this mostly fixes it
         self.renderer.ResetCameraClippingRange()
 
@@ -350,7 +367,7 @@ class RenderPolyData:
         #    self.renderer.AddActor2D(self.scalarbar)
         #    self.save_image(os.path.join(directory, "view_sup_scalar_bar.png"))
         #self.renderer.RemoveActor2D(self.scalarbar)
-        self.save_image(os.path.join(directory, "view_sup.png"))
+        self.save_image(os.path.join(directory, fname_sup))
 
         # inferior
         self.view_inferior()
@@ -358,23 +375,23 @@ class RenderPolyData:
         #    self.renderer.AddActor2D(self.scalarbar)
         #    self.save_image(os.path.join(directory, "view_inf_scalar_bar.png"))
         #self.renderer.RemoveActor2D(self.scalarbar)
-        self.save_image(os.path.join(directory, "view_inf.png"))
+        self.save_image(os.path.join(directory, fname_inf))
 
         # left
         self.view_left()
-        self.save_image(os.path.join(directory,  "view_left.png"))
+        self.save_image(os.path.join(directory,  fname_left))
 
         # right
         self.view_right()
-        self.save_image(os.path.join(directory,  "view_right.png"))
+        self.save_image(os.path.join(directory,  fname_right))
 
         # anterior
         self.view_anterior()
-        self.save_image(os.path.join(directory,  "view_ant.png"))
+        self.save_image(os.path.join(directory,  fname_ant))
 
         # posterior
         self.view_posterior()
-        self.save_image(os.path.join(directory,  "view_post.png"))
+        self.save_image(os.path.join(directory,  fname_post))
 
         self.render_window.Render()
 
