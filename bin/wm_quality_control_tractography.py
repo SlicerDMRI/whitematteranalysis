@@ -144,7 +144,7 @@ for fname in input_polydatas:
     output_dir_subdir = os.path.join(output_dir, 'tract_QC_' + subject_id)
     if not os.path.exists(output_dir_subdir):
         os.makedirs(output_dir_subdir)
-    ren.save_views(output_dir_subdir)
+    ren.save_views(output_dir_subdir, subject_id)
 
     # Compute and save stats about this subject's fiber histogram
     fibers_qc_file = open(fibers_qc_fname, 'a')
@@ -222,7 +222,7 @@ print "<quality_control> Final step: rendering all vtk files together to see if 
 appender.Update()
 pd_all = appender.GetOutput()
 ren = wma.render.render(pd_all)
-ren.save_views(output_dir)
+ren.save_views(output_dir, "all_subjects")
 del ren
 del appender
 
