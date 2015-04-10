@@ -53,7 +53,7 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
 parser.add_argument(
     '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
     help='To label in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
@@ -66,7 +66,7 @@ if not os.path.exists(args.inputFile):
     exit()
 
 if not os.path.isdir(args.atlasDirectory):
-    print "Error: Atlas directory", args.atlasDirectory, "does not exist."
+    print "<wm_label_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist."
     exit()
 
 outdir = args.outputDirectory
@@ -74,14 +74,10 @@ if not os.path.exists(outdir):
     print "<wm_label_from_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
-print "<wm_label_from_atlas.py> Starting computation."
-print ""
-print "=====input file ======\n", args.inputFile
-print "=====atlas directory =====\n", args.atlasDirectory
-print "=====output directory =====\n", args.outputDirectory
-print "=========================="
-print ""
-
+print "\n=========================="
+print "input file:", args.inputFile
+print "atlas directory:", args.atlasDirectory
+print "output directory:", args.outputDirectory
 
 if args.numberOfFibers is not None:
     print "fibers to analyze per subject: ", args.numberOfFibers
@@ -111,14 +107,16 @@ verbose = args.flag_verbose
 if args.showNFibersInSlicer is not None:
     show_fibers = args.showNFibersInSlicer
 else:
-    show_fibers = 5000.0
+    show_fibers = 10000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
 if args.registerAtlasToSubjectSpace:
     print "Registration of atlas fibers to subject fibers is ON."
 else:
     print "Registration of atlas fibers to subject fibers is OFF. Subject must be in atlas space before calling this script."
-            
+
+print "==========================\n"
+  
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
 # =======================================================================
@@ -133,12 +131,12 @@ pd = wma.io.read_polydata(args.inputFile)
     
 # preprocessing step: minimum length
 print "<wm_label_from_atlas.py> Preprocessing by length:", fiber_length, "mm."
-pd2 = wma.filter.preprocess(pd, fiber_length, return_indices=False, preserve_point_data=True, preserve_cell_data=True)
+pd2 = wma.filter.preprocess(pd, fiber_length, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
 
 # preprocessing step: fibers to analyze
 if number_of_fibers is not None:
     print "<wm_label_from_atlas.py> Downsampling to ", number_of_fibers, "fibers."
-    input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True)
+    input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
 else:
     input_data = pd2
 
@@ -195,7 +193,7 @@ if args.registerAtlasToSubjectSpace:
         wma.registration_functions.compute_multiscale_registration(register, scale, steps_per_scale[scale_idx], fiber_sample_sizes[scale_idx], sigma_per_scale[scale_idx], maxfun_per_scale[scale_idx])
         elapsed.append(time.time() - start)
         scale_idx += 1
-        print elapsed
+        print "Registration Time:", elapsed
     #  NEED TO OUTPUT THE COMBINED TRANSFORM APPLIED TO ATLAS NOT TO PD
     # now apply the appropriate transform to the input data.
     # transform 0 times transform 1 inverse
@@ -223,6 +221,7 @@ output_polydata_s, cluster_numbers_s, color, embed = \
     wma.cluster.spectral_atlas_label(input_data, atlas)
 
 # Write the polydata with cluster indices saved as cell data
+print '<wm_cluster_atlas.py> Saving output whole brain cluster file in directory:', outdir
 fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
 wma.io.write_polydata(output_polydata_s, fname_output)
 
@@ -231,40 +230,62 @@ fnames = list()
 cluster_colors = list()
 number_of_clusters = numpy.max(cluster_numbers_s)
 first_cluster = numpy.min(cluster_numbers_s)
-print "Cluster indices range from:", first_cluster, "to", number_of_clusters
+print "<wm_label_from_atlas.py> Cluster indices range from:", first_cluster, "to", number_of_clusters
 
+print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
+cluster_sizes = list()
+cluster_fnames = list()
 for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
-    pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True)
+    cluster_size = numpy.sum(mask)
+    cluster_sizes.append(cluster_size)
+    pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True,verbose=False)
     # The clusters are stored starting with 1, not 0, for user friendliness.
     fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
     # save the filename for writing into the MRML file
     fnames.append(fname_c)
     # prepend the output directory
     fname_c = os.path.join(outdir, fname_c)
-    print fname_c
+    cluster_fnames.append(fname_c)
     wma.io.write_polydata(pd_c, fname_c)
     color_c = color[mask,:]
-    cluster_colors.append(numpy.mean(color_c,0))
+    if cluster_size:
+        cluster_colors.append(numpy.mean(color_c,0))
+    else:
+        # avoid error if empty mean above
+        cluster_colors.append(color[0,:])
+        
+# Notify user if some clusters empty
+print "<wm_cluster_atlas.py> Checking for empty clusters (can be due to anatomical variability or too few fibers analyzed)."
+for sz, fname in zip(cluster_sizes,cluster_fnames):
+    if sz == 0:
+        print sz, ":", fname
     
+cluster_sizes = numpy.array(cluster_sizes)
+print "<wm_label_from_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
+
 # Estimate subsampling ratio to display approx. show_fibers total fibers
 number_fibers = len(cluster_numbers_s)
 if number_fibers < show_fibers:
     ratio = 1.0
 else:
     ratio = show_fibers / number_fibers
-print "<wm_label_from_atlas.py> Total fibers:", number_fibers, "Fibers to show by default:", show_fibers
-print "<wm_label_from_atlas.py> Subsampling ratio estimated as:", ratio
+print "<wm_cluster_atlas.py> Subsampling ratio for display of", show_fibers, "total fibers estimated as:", ratio
 
 # Write the MRML file into the directory where the polydatas were already stored
 fname = os.path.join(outdir, 'clustered_tracts.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
+# Also write one with 100% of fibers displayed
+fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
+wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
+
 # View the whole thing in png format for quality control
-print '<wm_label_from_atlas.py> Rendering and saving image'
-ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor')
+print '<wm_label_from_atlas.py> Rendering and saving images of clustered subject.'
+ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
 ren.save_views(outdir)
 del ren
 
-print 'Done labeling subject.'
+print "\n=========================="
+print '<wm_label_from_atlas.py> Done labeling subject.  See output in directory:\n ', outdir, '\n'
 

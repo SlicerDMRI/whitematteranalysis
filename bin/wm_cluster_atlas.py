@@ -60,7 +60,7 @@ parser.add_argument(
     help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Reduce for stricter clustering with ample data, or for physically smaller problems like a subset of the brain.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 5000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format).')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
 #parser.add_argument(
 #    '-remove_outliers', action='store_true', dest="flag_remove_outliers",
 #    help='Define outlier clusters (default, ones with less than 90 percent of subjects present). These will be segmented separately.')
@@ -70,7 +70,13 @@ parser.add_argument(
 parser.add_argument(
     '-bilateral_off', action='store_true', dest="flag_bilateral_off",
     help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters, so that is the default. The bilateral clusters can be split at the midline later for analyses.')
-
+parser.add_argument(
+    '-advanced_only_testing_distance', action="store", dest="distanceMethod", type=str,
+    help='(Advanced parameter for testing only.) Distance method for pairwise fiber comparison. Default is Mean, which is the average distance between points on the fibers. Other options are Hausdorff (the worst-case distance), StrictSimilarity (multiplies all pointwise similarities along fiber).')
+parser.add_argument(
+    '-advanced_only_debug_nystrom_off', action='store_true', dest="flag_nystrom_off",
+    help='(Advanced parameter for testing only.) Turn off the Nystrom method, e.g. perform clustering by computing the complete distance matrix of pairwise distances of all input fibers. This will not create an output atlas. It is for small datasets and code testing only.')
+    
 args = parser.parse_args()
 
 
@@ -82,14 +88,11 @@ outdir = args.outputDirectory
 if not os.path.exists(outdir):
     print "<wm_cluster_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
-
-print "<wm_cluster_atlas.py> Starting computation."
-print ""
-print "=====input directory ======\n", args.inputDirectory
-print "=====output directory =====\n", args.outputDirectory
-print "=========================="
-print ""
-
+    
+print "\n=========================="
+print "<wm_cluster_atlas.py> Clustering parameters"
+print "input directory:\n", args.inputDirectory
+print "output directory:\n", args.outputDirectory
 
 if args.numberOfFibers is not None:
     print "fibers to analyze per subject: ", args.numberOfFibers
@@ -144,7 +147,7 @@ print "Sigma in mm: ", sigma
 if args.showNFibersInSlicer is not None:
     show_fibers = args.showNFibersInSlicer
 else:
-    show_fibers = 5000.0
+    show_fibers = 10000.0
 print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
 #if args.flag_remove_outliers:
@@ -163,11 +166,24 @@ else:
     bilateral = True
     print "Bilateral clustering ON."
 
-    
+if args.distanceMethod is not None:
+    distance_method = args.distanceMethod
+else:
+    # for across-subjects matching
+    distance_method = 'Mean'
+print "Fiber distance or comparison method: ", distance_method
+
+if args.flag_nystrom_off:
+    use_nystrom = False
+    print "Nystrom method is OFF (for testing of software with small datasets only)."
+else:
+    use_nystrom=True
+    print "Nystrom method is ON (default)."
+
 # default clustering parameters that probably don't need to be changed
 # from TMI 2007 paper
-use_nystrom=True
-distance_method = 'Mean'
+#use_nystrom=True
+#distance_method = 'Mean'
 use_normalized_cuts = True
 number_of_eigenvectors = 10
 
@@ -192,7 +208,9 @@ input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
 total_number_of_fibers = number_of_fibers_per_subject * number_of_subjects
 
-print "<wm_cluster_atlas.py> Input number of vtk/vtp files: ", number_of_subjects
+print "Input number of subjects (number of vtk/vtp files): ", number_of_subjects
+print "==========================\n"
+print "<wm_cluster_atlas.py> Starting file I/O and computation."
 
 # output summary file to save information about what was run
 readme_fname = os.path.join(outdir, 'README.txt')
@@ -249,17 +267,16 @@ readme_file.close()
 # read in data
 input_pds = list()
 for fname in input_polydatas:
-    print fname
     # read data
     print "<wm_cluster_atlas.py> Reading input file:", fname
     pd = wma.io.read_polydata(fname)
     # preprocessing step: minimum length
-    print "<wm_cluster_atlas.py> Preprocessing by length:", fiber_length, "mm."
-    pd2 = wma.filter.preprocess(pd, fiber_length)
+    #print "<wm_cluster_atlas.py> Preprocessing by length:", fiber_length, "mm."
+    pd2 = wma.filter.preprocess(pd, fiber_length,verbose=False)
     # preprocessing step: fibers to analyze
     if number_of_fibers_per_subject is not None:
         print "<wm_cluster_atlas.py> Downsampling to ", number_of_fibers_per_subject, "fibers."
-        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject)
+        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=False)
     else:
         pd3 = pd2
     input_pds.append(pd3)
@@ -285,7 +302,7 @@ del input_pds
 
 # Check there are enough fibers for requested analysis
 if number_of_sampled_fibers >= input_data.GetNumberOfLines():
-    print "<wm_cluster_atlas.py>Error Nystrom sample size is larger than number of fibers available."
+    print "<wm_cluster_atlas.py>Error: Nystrom sample size is larger than number of fibers available."
     print "number_of_subjects:", number_of_subjects
     print "number_of_fibers_per_subject:", number_of_fibers_per_subject
     print "total_number_of_fibers:", total_number_of_fibers
@@ -305,13 +322,15 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
                              normalized_cuts=use_normalized_cuts, threshold=threshold, \
                              bilateral=bilateral)
 
+print '<wm_cluster_atlas.py>Saving output files in directory:', outdir
+
 # Save the output in our atlas format for automatic labeling of full brain datasets.
 # This is the data used to label a new subject
 atlas.save(outdir,'atlas')
 
 # Write the polydata with cluster indices saved as cell data
-#fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
-#wma.io.write_polydata(output_polydata_s, fname_output)
+fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
+wma.io.write_polydata(output_polydata_s, fname_output)
 
 # figure out which subject each fiber was from in the input to the clustering
 subject_fiber_list = list()
@@ -410,23 +429,37 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     # Figure out file name and mean color for each cluster, and write the individual polydatas
     fnames = list()
     cluster_colors = list()
+    cluster_sizes = list()
+    cluster_fnames = list()
     for c in cluster_indices:
         mask = cluster_numbers_s == c
+        cluster_size = numpy.sum(mask)
+        cluster_sizes.append(cluster_size)
         # color by subject so in theory we can see which one it came from
         # but this is cell data and may not be correctly shown in Slicer.
         #colors = subject_fiber_list
-        pd_c = wma.filter.mask(output_polydata_s, mask)
+        pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
         # The clusters are stored starting with 1, not 0, for user friendliness.
         fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
         # save the filename for writing into the MRML file
         fnames.append(fname_c)
         # prepend the output directory
         fname_c = os.path.join(outdir, fname_c)
-        print fname_c
+        #print fname_c
         wma.io.write_polydata(pd_c, fname_c)
+        cluster_fnames.append(fname_c)
         color_c = color[mask,:]
         cluster_colors.append(numpy.mean(color_c,0))
-    
+
+    # Notify user if some clusters empty
+    print "<wm_cluster_atlas.py> Checking for empty clusters (should not happen in atlas clustering)."
+    for sz, fname in zip(cluster_sizes,cluster_fnames):
+        if sz == 0:
+            print sz, ":", fname
+
+    cluster_sizes = numpy.array(cluster_sizes)
+    print "<wm_cluster_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
+
     # Estimate subsampling ratio to display approximately show_fibers total fibers in 3D Slicer
     number_fibers = len(cluster_numbers_s)
     if number_fibers < show_fibers:
@@ -434,16 +467,20 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     else:
         ratio = show_fibers / number_fibers
     #print "<wm_cluster_atlas.py> Total fibers:", number_fibers, "Fibers to show by default:", show_fibers
-    #print "<wm_cluster_atlas.py> Subsampling ratio estimated as:", ratio
+    print "<wm_cluster_atlas.py> Subsampling ratio for display of", show_fibers, "total fibers estimated as:", ratio
 
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir, 'clustered_tracts.mrml')
     wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
+    # Also write one with 100% of fibers displayed
+    fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
+    wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
+    
     # View the whole thing in png format for quality control
-    print 'Rendering and saving images of cluster atlas.'
-    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor')
-    ren.save_views(outdir)
+    print '<wm_cluster_atlas.py> Rendering and saving images of cluster atlas.'
+    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=False)
+    ren.save_views(outdir, verbose=False)
     del ren
 
 
@@ -453,5 +490,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
 # a new subject.
 output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, outdir)
 
-print 'Done clustering atlas.'
+print "==========================\n"
+print '<wm_cluster_atlas.py> Done clustering atlas. See output in directory:\n ', outdir, '\n'
+
 
