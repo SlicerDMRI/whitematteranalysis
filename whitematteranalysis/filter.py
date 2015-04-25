@@ -75,8 +75,9 @@ def preprocess(inpd, min_length_mm,
                 numpy.subtract(point0, point1), 2)))
     min_length_pts = round(min_length_mm / step_size)
     fiber_lengths = []
-    print "<filter.py> Minimum length", min_length_mm, \
-        "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")"
+    if verbose:
+        print "<filter.py> Minimum length", min_length_mm, \
+            "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")"
 
     # loop over lines
     inpd.GetLines().InitTraversal()
@@ -125,12 +126,12 @@ def preprocess(inpd, min_length_mm,
 
     if return_indices:
         if return_lengths:
-            return outpd, numpy.array(line_indices), fiber_lengths
+            return outpd, numpy.array(line_indices), fiber_lengths, step_size
         else:
             return outpd, numpy.array(line_indices)
     else:
         if return_lengths:
-            return outpd, fiber_lengths
+            return outpd, fiber_lengths, step_size
         else:
             return outpd
 
