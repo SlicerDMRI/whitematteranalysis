@@ -45,7 +45,7 @@ parser.add_argument(
     help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
-    help='Verbose. Run with -verbose for more text output.')
+    help='Verbose. Run with -verbose for more text output in the terminal window.')
 parser.add_argument(
     '-k', action="store", dest="numberOfClusters", type=int,
     help='Number of clusters to find. Default is 250, which is reasonable for single-tensor DTI tractography. Useful range is from 200 to 600+. For two-tensor UKF, 400 or more is a reasonable number.')
@@ -272,11 +272,11 @@ for fname in input_polydatas:
     pd = wma.io.read_polydata(fname)
     # preprocessing step: minimum length
     #print "<wm_cluster_atlas.py> Preprocessing by length:", fiber_length, "mm."
-    pd2 = wma.filter.preprocess(pd, fiber_length,verbose=False)
+    pd2 = wma.filter.preprocess(pd, fiber_length,verbose=verbose)
     # preprocessing step: fibers to analyze
     if number_of_fibers_per_subject is not None:
-        print "<wm_cluster_atlas.py> Downsampling to ", number_of_fibers_per_subject, "fibers."
-        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=False)
+        print "<wm_cluster_atlas.py> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, "."
+        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=verbose)
     else:
         pd3 = pd2
     input_pds.append(pd3)
@@ -438,7 +438,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         # color by subject so in theory we can see which one it came from
         # but this is cell data and may not be correctly shown in Slicer.
         #colors = subject_fiber_list
-        pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
+        pd_c = wma.filter.mask(output_polydata_s, mask,verbose=verbose)
         # The clusters are stored starting with 1, not 0, for user friendliness.
         fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
         # save the filename for writing into the MRML file
@@ -479,8 +479,8 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     
     # View the whole thing in png format for quality control
     print '<wm_cluster_atlas.py> Rendering and saving images of cluster atlas.'
-    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=False)
-    ren.save_views(outdir, verbose=False)
+    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=verbose)
+    ren.save_views(outdir, verbose=verbose)
     del ren
 
 
