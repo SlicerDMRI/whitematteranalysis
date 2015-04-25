@@ -218,7 +218,7 @@ if args.registerAtlasToSubjectSpace:
 # Label the data using clusters from the atlas
 #-----------------
 output_polydata_s, cluster_numbers_s, color, embed = \
-    wma.cluster.spectral_atlas_label(input_data, atlas)
+    wma.cluster.spectral_atlas_label(input_data, atlas, number_of_jobs=number_of_jobs)
 
 # Write the polydata with cluster indices saved as cell data
 print '<wm_cluster_atlas.py> Saving output whole brain cluster file in directory:', outdir
