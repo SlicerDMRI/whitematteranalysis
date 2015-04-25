@@ -320,12 +320,13 @@ class RenderPolyData:
         self.render_window.Render()
         self.renderer.ResetCameraClippingRange()
 
-    def save_image(self, filename="test.png"):
+    def save_image(self, filename="test.jpg"):
         img = vtk.vtkWindowToImageFilter()
         img.SetInput(self.render_window)
         img.SetMagnification(self.magnification)
         img.Update()
-        writer = vtk.vtkPNGWriter()
+        #writer = vtk.vtkPNGWriter()
+        writer = vtk.vtkJPEGWriter()
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             writer.SetInputConnection(img.GetOutputPort())
         else:
@@ -345,22 +346,25 @@ class RenderPolyData:
             print "<render.py> ERROR: directory does not exist.", directory
             return
 
+        #ext = ".png"
+        ext = ".jpg"
+        
         # Use subject ID as part of filename for easier visual 
         # identification of problem cases
         if subjectID is not None:
-            fname_sup = "view_sup_"+subjectID+".png"
-            fname_inf = "view_inf_"+subjectID+".png"
-            fname_left = "view_left_"+subjectID+".png"
-            fname_right = "view_right_"+subjectID+".png"
-            fname_ant = "view_ant_"+subjectID+".png"
-            fname_post = "view_post_"+subjectID+".png"
+            fname_sup = "view_sup_"+subjectID+ext
+            fname_inf = "view_inf_"+subjectID+ext
+            fname_left = "view_left_"+subjectID+ext
+            fname_right = "view_right_"+subjectID+ext
+            fname_ant = "view_ant_"+subjectID+ext
+            fname_post = "view_post_"+subjectID+ext
         else:
-            fname_sup = "view_sup.png"
-            fname_inf = "view_inf.png"
-            fname_left = "view_left.png"
-            fname_right = "view_right.png"
-            fname_ant = "view_ant.png"
-            fname_post = "view_post.png"
+            fname_sup = "view_sup"+ext
+            fname_inf = "view_inf"+ext
+            fname_left = "view_left"+ext
+            fname_right = "view_right"+ext
+            fname_ant = "view_ant"+ext
+            fname_post = "view_post"+ext
             
         # sometimes the model gets clipped, this mostly fixes it
         self.renderer.ResetCameraClippingRange()
