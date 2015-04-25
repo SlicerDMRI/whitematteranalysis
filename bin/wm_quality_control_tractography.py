@@ -95,7 +95,8 @@ outstr += "Description of Outputs\n"
 outstr += '---------------------\n'
 outstr += 'fiber_length_histograms.pdf: Distribution of fiber lengths for all subjects.\n'
 outstr += 'quality_control_data.txt: Data (e.g. FA, tensors) should match for all subjects.\n'
-outstr += 'quality_control_fibers.txt:  Fibers per subject for several length thresholds.\n'
+outstr += 'quality_control_fibers.txt:  Step size and numbers of fibers per subject.\n'
+outstr += 'quality_control_spatial_locations.txt:  Spatial bounds (min/max) of fiber x,y,z.\n'
 outstr += 'view_*.png: All subjects (colors) should overlap if coordinate system origins are ok.\n'
 outstr += 'subject directories: Subject-specific histograms and views for visual inspection.'
 outstr += '\n'
@@ -116,11 +117,12 @@ readme_file.close()
 # output summary files to save information about all subjects
 fibers_qc_fname = os.path.join(output_dir, 'quality_control_fibers.txt')
 data_qc_fname = os.path.join(output_dir, 'quality_control_data.txt')
+spatial_qc_fname = os.path.join(output_dir, 'quality_control_spatial_locations.txt')
 
 fibers_qc_file = open(fibers_qc_fname, 'w')
 fiber_test_lengths = [0, 1, 2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-outstr = "SUBJECT_ID \t FIBER_STEP_SIZE \t"
-for test_length in fiber_test_lengths:
+outstr = "SUBJECT_ID \t FIBER_STEP_SIZE \t TOTAL_POINTS \t TOTAL_FIBERS \t"
+for test_length in fiber_test_lengths[1:]:
     outstr = outstr + "LEN_" + str(test_length) + '\t'
 outstr = outstr + '\n'
 fibers_qc_file.write(outstr)
@@ -131,6 +133,12 @@ outstr = "SUBJECT_ID \t DATA_INFORMATION (field name, number of components, poin
 outstr = outstr + '\n'
 data_qc_file.write(outstr)
 data_qc_file.close()
+
+spatial_qc_file = open(spatial_qc_fname, 'w')
+outstr = "SUBJECT_ID \t Xmin \t Xmax \t Ymin \t Ymax \t Zmin \t Zmax"    
+outstr = outstr + '\n'
+spatial_qc_file.write(outstr)
+spatial_qc_file.close()
 
 if HAVE_PLT:
     plt.figure(1)
@@ -154,12 +162,14 @@ for fname in input_polydatas:
 
     # Compute and save stats about this subject's fiber histogram
     fibers_qc_file = open(fibers_qc_fname, 'a')
-    # total number of fibers
     outstr = str(subject_id) +  '\t'
     # numbers of fibers at different possible threshold lengths
     pd2, lengths, step_size = wma.filter.preprocess(pd, 100, return_lengths=True, verbose=False)
     lengths = numpy.array(lengths)
     outstr = outstr + str(step_size) + '\t'
+    # total points in the dataset
+    outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
+    # total numbers of fibers
     for test_length in fiber_test_lengths:
         number_fibers = numpy.count_nonzero(lengths > test_length)
         outstr = outstr + str(number_fibers) + '\t'
@@ -167,6 +177,14 @@ for fname in input_polydatas:
     fibers_qc_file.write(outstr)
     fibers_qc_file.close()
 
+    # Save information about the spatial location of the fiber tracts
+    spatial_qc_file = open(spatial_qc_fname, 'a')
+    outstr = str(subject_id) +  '\t'
+    for bound in pd.GetBounds():
+        outstr = outstr + str(bound) + '\t'
+    outstr = outstr + '\n'
+    spatial_qc_file.write(outstr)
+    
     # Save the subject's fiber lengths  
     if HAVE_PLT:
         plt.figure(1)
