@@ -54,10 +54,16 @@ if not os.path.exists(output_dir):
     print "<register> Output directory", output_dir, "does not exist, creating it."
     os.makedirs(output_dir)
 
-print "<quality_control> Testing all vtk files for quality control (fiber length measurements and rendering to make sure header and gradient orientations are ok)."
 input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
 print "<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
+
+if number_of_subjects < 1:
+    print "<quality_control> Error: No .vtk or .vtp files were found in the input directory."
+    exit()
+
+print "<quality_control> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok)."
+print "<quality_control> See the README.txt file in the output directory for more overview information."
 
 # output summary files to save information about what was run
 readme_fname = os.path.join(output_dir, 'README.txt')
@@ -113,7 +119,7 @@ data_qc_fname = os.path.join(output_dir, 'quality_control_data.txt')
 
 fibers_qc_file = open(fibers_qc_fname, 'w')
 fiber_test_lengths = [0, 1, 2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-outstr = "SUBJECT_ID \t"
+outstr = "SUBJECT_ID \t FIBER_STEP_SIZE \t"
 for test_length in fiber_test_lengths:
     outstr = outstr + "LEN_" + str(test_length) + '\t'
 outstr = outstr + '\n'
@@ -140,7 +146,7 @@ for fname in input_polydatas:
     pd = wma.io.read_polydata(fname)
 
     # Render individual subject
-    ren = wma.render.render(pd,1000)
+    ren = wma.render.render(pd,1000, verbose=False)
     output_dir_subdir = os.path.join(output_dir, 'tract_QC_' + subject_id)
     if not os.path.exists(output_dir_subdir):
         os.makedirs(output_dir_subdir)
@@ -151,8 +157,9 @@ for fname in input_polydatas:
     # total number of fibers
     outstr = str(subject_id) +  '\t'
     # numbers of fibers at different possible threshold lengths
-    pd2, lengths = wma.filter.preprocess(pd, 100, return_lengths=True)
+    pd2, lengths, step_size = wma.filter.preprocess(pd, 100, return_lengths=True, verbose=False)
     lengths = numpy.array(lengths)
+    outstr = outstr + str(step_size) + '\t'
     for test_length in fiber_test_lengths:
         number_fibers = numpy.count_nonzero(lengths > test_length)
         outstr = outstr + str(number_fibers) + '\t'
@@ -175,10 +182,10 @@ for fname in input_polydatas:
 
     # Append selected fibers for rendering of all subjects together to check overlap
     number_rendered_fibers = 500
-    pd3 = wma.filter.downsample(pd2, number_rendered_fibers)
+    pd3 = wma.filter.downsample(pd2, number_rendered_fibers, verbose=False)
     mask = numpy.ones(number_rendered_fibers)
     colors = numpy.multiply(mask, subject_idx)
-    pd3 = wma.filter.mask(pd3, mask, colors)
+    pd3 = wma.filter.mask(pd3, mask, colors, verbose=False)
     if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
         appender.AddInputData(pd3)
     else:
@@ -221,7 +228,7 @@ if HAVE_PLT:
 print "<quality_control> Final step: rendering all vtk files together to see if any have a different origin (if far apart registration may fail)."
 appender.Update()
 pd_all = appender.GetOutput()
-ren = wma.render.render(pd_all)
+ren = wma.render.render(pd_all, verbose=False)
 ren.save_views(output_dir, "all_subjects")
 del ren
 del appender
