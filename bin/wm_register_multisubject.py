@@ -148,6 +148,15 @@ else:
     print "<register> Midsag_Symmetric registration OFF."
 midsag_symmetric = args.flag_midsag_symmetric
 
+
+# Test the input files exist
+input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
+number_of_subjects = len(input_polydatas)
+print "<register> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
+if number_of_subjects < 1:
+    print "\n<register> Error: No .vtk or .vtp files were found in the input directory.\n"
+    exit()
+    
 print "\n<register> Starting registration...\n"
 
 

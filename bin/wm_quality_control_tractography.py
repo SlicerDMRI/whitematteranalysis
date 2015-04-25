@@ -59,7 +59,7 @@ number_of_subjects = len(input_polydatas)
 print "<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
 
 if number_of_subjects < 1:
-    print "<quality_control> Error: No .vtk or .vtp files were found in the input directory."
+    print "\n<quality_control> Error: No .vtk or .vtp files were found in the input directory.\n"
     exit()
 
 print "<quality_control> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok)."

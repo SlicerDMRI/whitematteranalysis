@@ -216,6 +216,12 @@ number_of_eigenvectors = 10
 
 input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
+
+print "<wm_cluster_atlas.py> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
+if number_of_subjects < 1:
+    print "\n<wm_cluster_atlas.py> Error: No .vtk or .vtp files were found in the input directory.\n"
+    exit()
+
 total_number_of_fibers = number_of_fibers_per_subject * number_of_subjects
 
 print "Input number of subjects (number of vtk/vtp files): ", number_of_subjects
