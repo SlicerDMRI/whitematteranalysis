@@ -65,6 +65,9 @@ parser.add_argument(
     '-bilateral_off', action='store_true', dest="flag_bilateral_off",
     help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters, so that is the default. The bilateral clusters can be split at the midline later for analyses.')
 parser.add_argument(
+    '-outlier_std', action='store', dest="outlierStandardDeviation",type=float,
+    help='Reject fiber outliers whose total fiber similarity is more than this number of standard deviations below the mean. Default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100.')
+parser.add_argument(
     '-advanced_only_testing_distance', action="store", dest="distanceMethod", type=str,
     help='(Advanced parameter for testing only.) Distance method for pairwise fiber comparison. Default is Mean, which is the average distance between points on the fibers. Other options are Hausdorff (the worst-case distance), StrictSimilarity (multiplies all pointwise similarities along fiber).')
 parser.add_argument(
@@ -76,6 +79,9 @@ parser.add_argument(
 parser.add_argument(
     '-advanced_only_random_seed', action='store', dest="randomSeed", type=int,
     help='(Advanced parameter for testing only.) Set random seed for reproducible clustering in software tests.')
+parser.add_argument(
+    '-advanced_only_force_pos_def_off', action='store_true', dest="flag_pos_def_off",
+    help='(Advanced parameter for testing only.) Turn off replacing A matrix by a close positive definite matrix.')
 args = parser.parse_args()
 
 
@@ -124,12 +130,11 @@ else:
     number_of_clusters = 250
 print "Number of clusters to find: ", number_of_clusters
 
-if args.distanceThreshold is not None:
-    threshold = args.distanceThreshold
+if args.outlierStandardDeviation is not None:
+    outlier_std_threshold = args.outlierStandardDeviation 
 else:
-    # for across-subjects matching
-    threshold = 2.0
-print "Threshold (in mm) for fiber distances: ", threshold
+    outlier_std_threshold = 2.0
+print "Standard deviation for fiber outlier removal: ", outlier_std_threshold
 
 if args.sizeOfNystromSample is not None:
     number_of_sampled_fibers = args.sizeOfNystromSample
@@ -165,6 +170,14 @@ else:
     bilateral = True
     print "Bilateral clustering ON."
 
+if args.distanceThreshold is not None:
+    threshold = args.distanceThreshold
+else:
+    # for across-subjects matching
+    threshold = 2.0
+print "Threshold (in mm) for fiber distances: ", threshold
+
+
 if args.distanceMethod is not None:
     distance_method = args.distanceMethod
 else:
@@ -189,7 +202,13 @@ if args.randomSeed is not None:
     print "Setting random seed to: ", args.randomSeed
 random_seed = args.randomSeed
 
+if args.flag_pos_def_off:
+    print "Positive definite approximation for A is OFF (testing only)."
+else:
+    print "Positive definite approximation for A is ON (default)."
     
+pos_def_approx = ~args.flag_pos_def_off
+
 # default clustering parameters that probably don't need to be changed
 # from TMI 2007 paper
 #use_nystrom=True
@@ -342,15 +361,20 @@ nystrom_mask = numpy.random.permutation(input_data.GetNumberOfLines()) < number_
 
 # Run clustering on the polydata
 print '<wm_cluster_atlas.py> Starting clustering.'
-output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
+output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_idx = \
     wma.cluster.spectral(input_data, number_of_clusters=number_of_clusters, \
                              number_of_jobs=number_of_jobs, use_nystrom=use_nystrom, \
                              nystrom_mask = nystrom_mask, \
                              number_of_eigenvectors=number_of_eigenvectors, \
                              sigma=sigma, distance_method=distance_method, \
                              normalized_cuts=use_normalized_cuts, threshold=threshold, \
+                             outlier_std_threshold=outlier_std_threshold, \
+                             pos_def_approx=pos_def_approx, \
                              bilateral=bilateral)
 
+
+# If any fibers were rejected, delete the corresponding entry in this list
+subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
 
 # Save the output in our atlas format for automatic labeling of full brain datasets.
 # This is the data used to label a new subject.
@@ -358,7 +382,7 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
 # Finally, save some quality control metrics and save the atlas clusters as individual polydatas. This is used to 
 # set up a mrml hierarchy file and to visualize the output in Slicer. This data is not used to label
 # a new subject.
-print '<wm_cluster_atlas.py>Saving output files in directory:', outdir
+print '<wm_cluster_atlas.py> Saving output files in directory:', outdir
 wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose)
 
 print "==========================\n"

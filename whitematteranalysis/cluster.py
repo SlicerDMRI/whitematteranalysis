@@ -155,10 +155,25 @@ def hierarchical(input_polydata, number_of_clusters=300,
 
     return output_polydata, cluster_idx
 
+
+def nearPSD(A,epsilon=0):
+   n = A.shape[0]
+   eigval, eigvec = numpy.linalg.eig(A)
+   val = numpy.matrix(numpy.maximum(eigval,epsilon))
+   vec = numpy.matrix(eigvec)
+   T = 1/(numpy.multiply(vec,vec) * val.T)
+   T = numpy.matrix(numpy.sqrt(numpy.diag(numpy.array(T).reshape((n)) )))
+   B = T * vec * numpy.diag(numpy.array(numpy.sqrt(val)).reshape((n)))
+   out = B*B.T
+   return(numpy.asarray(out))
+   
 def spectral(input_polydata, number_of_clusters=200,
              number_of_eigenvectors=20, sigma=60, threshold=0.0,
              number_of_jobs=3, use_nystrom=False, nystrom_mask=None,
-             landmarks=None, distance_method='Mean', normalized_cuts=True, bilateral=False):
+             landmarks=None, distance_method='Mean', normalized_cuts=True,
+             outlier_std_threshold = 2.0,
+             pos_def_approx=True,
+             bilateral=False):
 
     """ Spectral clustering based on pairwise fiber affinity matrix.
 
@@ -255,7 +270,8 @@ def spectral(input_polydata, number_of_clusters=200,
             raise AssertionError
         else:
             print "<cluster.py> Maximum of A - A^T:", testval
-            A = numpy.divide(A+A.T, 2.0)
+        # Ensure that A is symmetric
+        A = numpy.divide(A+A.T, 2.0)
         
     testval = numpy.min(A)
     if not testval > 0.0:
@@ -263,7 +279,38 @@ def spectral(input_polydata, number_of_clusters=200,
         print "<cluster.py> Minimum value in A: ", testval
         if testval < 0.0:
             raise AssertionError
-   
+
+    # Outliers will have low measured (or estimated) row sums. Detect outliers in A:
+    # to turn off for testing: outlier_std_threshold = numpy.inf
+    row_sum_A_initial = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)
+    print "<cluster.py> Initial similarity (row) sum A:", numpy.mean(row_sum_A_initial), numpy.std(row_sum_A_initial), numpy.min(row_sum_A_initial)
+    atlas.outlier_std_threshold = outlier_std_threshold
+    atlas.row_sum_threshold_for_rejection = numpy.mean(row_sum_A_initial) - outlier_std_threshold*numpy.std(row_sum_A_initial)
+    bad_idx = numpy.nonzero(row_sum_A_initial < atlas.row_sum_threshold_for_rejection)[0]
+    reject_A = bad_idx
+    print "<cluster.py> Rejecting n=", len(bad_idx), "/", sz, "fibers >", outlier_std_threshold, "standard deviations below the mean total fiber similarity"
+
+    A = numpy.delete(A,reject_A,0)
+    A = numpy.delete(A,reject_A,1)
+    #print A.shape, B.shape
+    B = numpy.delete(B,reject_A,0)
+    #print A.shape, B.shape, reorder_embedding.shape
+                    
+    # Ensure that A is positive definite.
+    if pos_def_approx:
+        e_val, e_vec = numpy.linalg.eigh(A)
+        print "<cluster.py> Eigenvalue range of A:", e_val[0], e_val[-1]
+        A2 = nearPSD(A)
+        e_val, e_vec = numpy.linalg.eigh(A2)
+        print "<cluster.py> Eigenvalue range of nearest PSD matrix to A:", e_val[0], e_val[-1]  
+        testval = numpy.max(A-A2) 
+        if not testval == 0.0:
+            print "<cluster.py> A matrix differs by PSD matrix by maximum of:", testval
+            if testval > 0.25:
+                print "<cluster.py> ERROR: A matrix changed by more than 0.25."
+                raise AssertionError
+        A = A2
+        
     # 2) Do Normalized Cuts transform of similarity matrix.
     # See the paper: "Spectral Grouping Using the Nystrom Method"
     # (D^-1/2 W D^-1/2) V = V Lambda
@@ -275,11 +322,9 @@ def spectral(input_polydata, number_of_clusters=200,
             # C is not computed.
             # Calculate the sum of the partial rows we've computed:
             atlas.row_sum_1 = numpy.sum(A, axis=0) + numpy.sum(B.T, axis=0)  
-            print "<cluster.py> A size:", A.shape
-            print "<cluster.py> B size:", B.shape
-            #print "<cluster.py> row sum size:", atlas.row_sum_1.shape
-            #test = atlas.row_sum_1
-            print "<cluster.py> A-B matrix row sums range (should be > 0):", numpy.min(atlas.row_sum_1), numpy.max(atlas.row_sum_1)
+            #print "<cluster.py> A size:", A.shape
+            #print "<cluster.py> B size:", B.shape
+            #print "<cluster.py> A-B matrix row sums range (should be > 0):", numpy.min(atlas.row_sum_1), numpy.max(atlas.row_sum_1)
             
             # Approximate the sum of the rest of the data (including C)
             # These are weighted sums of the columns we did compute
@@ -287,38 +332,11 @@ def spectral(input_polydata, number_of_clusters=200,
             # was to each path in A.  This uses the dual basis
             # of the columns in A.
             # Approximate the inverse of A for dual basis
+            #print "<cluster.py> Using numpy linalg pinv A"
+            atlas.pinv_A = numpy.linalg.pinv(A)
 
-            
-            # Use A's top eigenvectors (must have pos eigenvalues)
-            # Construct an approximate inverse using the largest eigenvalues of A.
-            pos_def_approx = True
-            pos_def_approx = False
-            if pos_def_approx:
-                print "<cluster.py> Using A's top eigenvectors in pinv"
-                numA = len(A)
-                nvec = 40
-                if nvec > numA / 2.0:
-                    nvec = numpy.round(numA / 2)
-                if nvec < number_of_eigenvectors + 1:
-                    nvec = number_of_eigenvectors + 1
-
-                val, vec = numpy.linalg.eigh(A)
-                # numpy.dot(numpy.dot(vec,numpy.diag(val)),vec.T)
-                ind = numpy.argsort(val)
-                mask = ind[-nvec:-1]
-                vec2 = vec[:,mask]
-                val2 = val[mask]
-                #A2 = numpy.dot(numpy.dot(vec2,numpy.diag(val2)),vec2.T)
-                atlas.pinv_A = numpy.dot(numpy.dot(vec2,numpy.diag(numpy.divide(1.0,val2))),vec2.T)
-            else:
-                print "<cluster.py> Using numpy linalg pinv A"
-                atlas.pinv_A = numpy.linalg.pinv(A)
-                
-            e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
-            print "<cluster.py> test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
-            e_val, e_vec = numpy.linalg.eigh(A)
-            print "<cluster.py> Was A positive definite? Eigenvalue range of A:", e_val[0], e_val[-1]  
-
+            #e_val, e_vec = numpy.linalg.eigh(atlas.pinv_A)
+            #print "<cluster.py> test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
 
             # row sum formula:
             # dhat = [a_r + b_r; b_c + B^T*A-1*b_r]
@@ -326,12 +344,12 @@ def spectral(input_polydata, number_of_clusters=200,
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
             atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
             test = numpy.sum(B.T, axis=0)
-            print "<cluster.py> B column sums range (should be > 0):", numpy.min(test), numpy.max(test)
+            #print "<cluster.py> B column sums range (should be > 0):", numpy.min(test), numpy.max(test)
             print "<cluster.py> Range of row sum weights:", numpy.min(atlas.row_sum_matrix), numpy.max(atlas.row_sum_matrix)
-            print "<cluster.py> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
-            test = numpy.dot(atlas.row_sum_matrix, B)
-            print "<cluster.py> Test partial sum estimation for B:", numpy.min(test), numpy.max(test)
-            del test
+            #print "<cluster.py> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
+            #test = numpy.dot(atlas.row_sum_matrix, B)
+            #print "<cluster.py> Test partial sum estimation for B:", numpy.min(test), numpy.max(test)
+            #del test
             
             # row sum estimate for current B part of the matrix
             row_sum_2 = numpy.sum(B, axis=0) + \
@@ -340,8 +358,45 @@ def spectral(input_polydata, number_of_clusters=200,
                 numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), \
                 numpy.max(row_sum_2)
 
-            #print atlas.row_sum_1.shape
-            #print row_sum_2.shape
+            # reject outliers in B
+            bad_idx = numpy.nonzero(row_sum_2 < atlas.row_sum_threshold_for_rejection)[0]
+            reject_B = bad_idx
+            print "<cluster.py> Rejecting n=", len(bad_idx), "/", B.shape[1], "fibers >", outlier_std_threshold, "standard deviations below the mean total fiber similarity"
+            row_sum_2 = numpy.delete(row_sum_2,reject_B)
+            B = numpy.delete(B,reject_B,1)
+
+            print "<cluster.py> After outlier rejection A:", A.shape, "B:", B.shape
+
+            # Separate the Nystrom sample and the rest of the data after removing outliers
+            nystrom_mask_2 = nystrom_mask
+            midxA = numpy.nonzero(nystrom_mask_2)[0]
+            nystrom_mask_2[midxA[reject_A]] = False
+            not_nystrom_mask = nystrom_mask == False
+            not_nystrom_mask[midxA[reject_A]] = False
+            midxB = numpy.nonzero(not_nystrom_mask)[0]
+            not_nystrom_mask[midxB[reject_B]] = False
+
+            polydata_m = filter.mask(input_polydata, nystrom_mask_2, verbose=False)
+            atlas.nystrom_polydata = polydata_m
+            polydata_n = filter.mask(input_polydata, not_nystrom_mask, verbose=False)
+            output_polydata = filter.mask(input_polydata, numpy.add(nystrom_mask_2, not_nystrom_mask),verbose=False)
+            sz = polydata_m.GetNumberOfLines()
+            number_fibers = output_polydata.GetNumberOfLines()
+            print '<cluster.py> Using Nystrom approximation. Subset size (A):',  sz, '/', number_fibers, "B:", polydata_n.GetNumberOfLines()
+            # Determine ordering to get embedding to correspond to original input data.
+            # reject outliers from masks
+            reject_idx = numpy.concatenate((midxA[reject_A],midxB[reject_B]))
+            nystrom_mask_2 = numpy.delete(nystrom_mask_2,reject_idx)
+            not_nystrom_mask = numpy.delete(not_nystrom_mask,reject_idx)
+            #print "hi after mask:", reorder_embedding.shape, numpy.sum(nystrom_mask_2), numpy.sum(not_nystrom_mask)
+            reorder_embedding = numpy.concatenate((numpy.where(nystrom_mask_2)[0], numpy.where(not_nystrom_mask)[0]))
+            #print "hi after embed reorder calc:", reorder_embedding.shape, numpy.max(reorder_embedding), numpy.min(reorder_embedding)
+           
+            # in case of negative row sum estimation
+            if any(row_sum_2<=0):
+                print "<cluster.py> Warning: Consider increasing sigma or using the Mean distance. negative row sum approximations."
+                print "Number of negative row sums:", numpy.count_nonzero(row_sum_2<=0)
+                #row_sum_2[row_sum_2<0] = 0.1
 
             # save for testing
             column_sum = numpy.concatenate((numpy.sum(A, axis=1) , numpy.sum(B.T, axis=1)))
@@ -411,6 +466,7 @@ def spectral(input_polydata, number_of_clusters=200,
         # The other option from the literature was to use this:
         # embedding_i,j = V_i+i,j./sqrt(D_j,j)
         embed = numpy.zeros((number_fibers, number_of_eigenvectors))
+        #print "Hi 3:", embed.shape, number_fibers, reorder_embedding.shape, V.shape, A.shape, B.shape
         for i in range(0, number_of_eigenvectors):
             embed[reorder_embedding,i] = numpy.divide(V[:,-(i+2)], V[:,-1])
     else:
@@ -464,7 +520,7 @@ def spectral(input_polydata, number_of_clusters=200,
     color = _embed_to_rgb(embed2)
     # set up polydata with clustering output info.
     # for now modify input polydata by adding two arrays
-    output_polydata = input_polydata
+    #output_polydata = input_polydata
     if use_nystrom:
         output_polydata = \
             _format_output_polydata(output_polydata, cluster_idx, color, embed, row_sum[reorder_embedding], column_sum[reorder_embedding])
@@ -473,7 +529,7 @@ def spectral(input_polydata, number_of_clusters=200,
         output_polydata = \
             _format_output_polydata(output_polydata, cluster_idx, color, embed, row_sum, row_sum)
             
-    return output_polydata, cluster_idx, color, embed, cluster_metric, atlas
+    return output_polydata, cluster_idx, color, embed, cluster_metric, atlas, reject_idx 
 
 
 def view_cluster_number(input_polydata, cluster_number, cluster_indices=None):
@@ -522,10 +578,10 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     row_sum_2 = numpy.sum(B, axis=0) + \
         numpy.dot(atlas.row_sum_matrix, B)
 
-    # in case of negative row sum estimation
-    if (row_sum_2<0).any:
+    # in case of negative row sum estimation (this should not ever happen)
+    if any(row_sum_2<=0):
         print "<cluster.py> Warning: Consider increasing sigma or using the Mean distance. negative row sum approximations."
-        print "Number of negative row sums:", sum(numpy.array(row_sum_2<0))
+        print "Number of negative row sums:", numpy.count_nonzero(row_sum_2<=0)
         row_sum_2[row_sum_2<0] = 0.1
 
              
@@ -549,7 +605,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
 
     # 5) Find clusters using k-means in embedding space.
     # Actually: LABEL using centroids from atlas
-    print '<cluster.py>Cluster labeling in embedding space.'
+    print '<cluster.py> Cluster labeling in embedding space.'
     cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
 
     # 6) Output results.
@@ -780,9 +836,11 @@ def _embed_to_rgb(embed):
      """
 
     # make sure nothing is NaN
-    if numpy.isnan(embed).any:
+    testval = numpy.count_nonzero(numpy.isnan(embed))
+    if testval:
         print "<cluster.py> Warning: Consider increasing sigma or using the Mean distance. NaN values encountered in embedding."
-    embed[numpy.isnan(embed)] = 0.0
+        print "Number of NaN values:", testval
+        embed[numpy.isnan(embed)] = 0.0
 
     # first 3 components of embedding
     color = embed[:, 0:3]
@@ -964,13 +1022,16 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         cluster_colors.append(numpy.mean(color_c,0))
 
     # Notify user if some clusters empty
-    print "<wm_cluster_atlas.py> Checking for empty clusters (should not happen in atlas clustering)."
+    empty_count = 0
     for sz, fname in zip(cluster_sizes,cluster_fnames):
         if sz == 0:
             print sz, ":", fname
+            empty_count += 1
+    if empty_count:
+        print "<cluster.py> Warning. Empty clusters found:", empty_count
 
     cluster_sizes = numpy.array(cluster_sizes)
-    print "<wm_cluster_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
+    print "<cluster.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
 
     # Estimate subsampling ratio to display approximately number_of_fibers_to_display total fibers in 3D Slicer
     number_fibers = len(cluster_numbers_s)
@@ -978,8 +1039,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         ratio = 1.0
     else:
         ratio = number_of_fibers_to_display / number_fibers
-    #print "<wm_cluster_atlas.py> Total fibers:", number_fibers, "Fibers to show by default:", number_of_fibers_to_display
-    print "<wm_cluster_atlas.py> Subsampling ratio for display of", number_of_fibers_to_display, "total fibers estimated as:", ratio
+    print "<cluster.py> Subsampling ratio for display of", number_of_fibers_to_display, "total fibers estimated as:", ratio
 
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir, 'clustered_tracts.mrml')
@@ -990,7 +1050,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
     
     # View the whole thing in png format for quality control
-    print '<wm_cluster_atlas.py> Rendering and saving images of cluster atlas.'
+    print '<cluster.py> Rendering and saving images of cluster atlas.'
     ren = render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=verbose)
     ren.save_views(outdir, verbose=verbose)
     del ren

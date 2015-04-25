@@ -18,8 +18,12 @@ for file_name in test_files:
     test_value = pickle.load(open(test_results_file, 'rb'))
 
     print "Testing for differences in", test_results_file, "vs", expected_results_file, ":"
-    print numpy.array(expected_value) - numpy.array(test_value)
-
+    testval = numpy.array(expected_value) - numpy.array(test_value)
+    print testval
+    print numpy.mean(numpy.abs(testval))
+    print numpy.min(testval)
+    print numpy.max(testval)
+    
 
 
 
