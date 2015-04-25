@@ -3,7 +3,7 @@ import pickle
 import whitematteranalysis as wma
 
 expected_results_file = 'test_distances.pkl'
-test_methods = ['Mean', 'Hausdorff', 'MeanSquared', 'StrictSimilarity']
+test_methods = ['Mean', 'Hausdorff', 'MeanSquared', 'StrictSimilarity', 'Mean_shape']
 sigma = 30
 sigmasq = sigma*sigma
 
@@ -38,8 +38,8 @@ fiber_array_other.convert_from_polydata(pd_test, points_per_fiber=20)
 
 # get another different fiber
 mask = numpy.zeros(pd.GetNumberOfLines())
-idx = indices[1]
-mask[idx] = 2
+idx = indices[2]
+mask[idx] = 1
 pd_test = wma.filter.mask(pd, mask)
 fiber_array_other2 = wma.fibers.FiberArray()
 fiber_array_other2.convert_from_polydata(pd_test, points_per_fiber=20)
