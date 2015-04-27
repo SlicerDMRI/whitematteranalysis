@@ -485,7 +485,13 @@ def spectral(input_polydata, number_of_clusters=200,
     cluster_metric = None
     if centroid_finder == 'K-means':
         print '<cluster.py> K-means clustering in embedding space.'
-        atlas.centroids, cluster_metric = scipy.cluster.vq.kmeans(embed, number_of_clusters)
+        centroids, cluster_metric = scipy.cluster.vq.kmeans(embed, number_of_clusters)
+        # sort centroids by first eigenvector order
+        # centroid_order = numpy.argsort(centroids[:,0])
+        # sort centroids according to colormap and save them in this order in atlas
+        color = _embed_to_rgb(centroids)
+        centroid_order = render.argsort_by_jet_lookup_table(color)
+        atlas.centroids = centroids[centroid_order,:]
         cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
         print "<cluster.py> Distortion metric:", cluster_metric
         if 0:

@@ -76,6 +76,40 @@ def get_hot_lookup_table():
 
     return(lut)
 
+def argsort_by_jet_lookup_table(rgb_color):
+    # create a jet colormap like matlab
+    jet_r = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0625, 0.1250, 0.1875, 0.2500, 0.3125, 0.3750, 0.4375, 0.5000, 0.5625, 0.6250, 0.6875, 0.7500, 0.8125, 0.8750, 0.9375, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.9375, 0.8750, 0.8125, 0.7500, 0.6875, 0.6250, 0.5625, 0.5000]
+
+    jet_g = [0,     0,      0,      0,      0,      0,      0,      0, 0.0625, 0.1250, 0.1875, 0.2500, 0.3125, 0.3750, 0.4375, 0.5000, 0.5625, 0.6250, 0.6875, 0.7500, 0.8125, 0.8750, 0.9375, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.9375, 0.8750, 0.8125, 0.7500, 0.6875, 0.6250, 0.5625, 0.5000, 0.4375, 0.3750, 0.3125, 0.2500, 0.1875, 0.1250, 0.0625,      0,      0,      0,      0,      0,      0,      0,      0,      0]
+
+    jet_b = [0.5625, 0.6250, 0.6875, 0.7500, 0.8125, 0.8750, 0.9375, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.9375, 0.8750, 0.8125, 0.7500, 0.6875, 0.6250, 0.5625, 0.5000, 0.4375, 0.3750, 0.3125, 0.2500, 0.1875, 0.1250, 0.0625,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0,      0]
+
+    # add missing purples, cyans, yellows to this jet map.    
+    jet_r = jet_r + [0.8, 0.8, 0.6, 0.2, 0.8, 0.8]
+    jet_g = jet_g + [0.2, 0.2, 0.2, 0.8, 0.8, 0.8]
+    jet_b = jet_b + [0.6, 0.8, 0.6, 0.8, 0.4, 0.2]
+
+    # map from 0..255 to 0..1
+    rgb_color = numpy.divide(rgb_color, 255)
+    
+    # sort input rgb into this colormap order
+    match_jet = list()
+    match_dist = list()
+    for col_idx in range(len(rgb_color)):
+        diff_r = rgb_color[col_idx,0]-jet_r
+        diff_g = rgb_color[col_idx,1]-jet_g
+        diff_b = rgb_color[col_idx,2]-jet_b
+
+        mag = numpy.sqrt(numpy.multiply(diff_r,diff_r) + numpy.multiply(diff_g,diff_g) + numpy.multiply(diff_b,diff_b) )
+        match_jet.append(numpy.argmin(mag))
+        match_dist.append(numpy.min(mag))
+        # uncomment for testing of worst color matches
+        #if numpy.min(mag) > 0.3:
+        #    print numpy.min(mag), "Color matched:", rgb_color[col_idx,:], "Idx:", match_jet[col_idx], ":", jet_r[match_jet[col_idx]], jet_g[match_jet[col_idx]], jet_b[match_jet[col_idx]], "\n"
+    
+    # Return indices that will sort these colors (centroids) in their match order
+    return(numpy.argsort(numpy.array(match_jet)))
+        
 class RenderPolyData:
 
     """Makes a vtk render window to display polydata tracts"""
