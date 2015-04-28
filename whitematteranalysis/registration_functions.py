@@ -238,7 +238,11 @@ def run_multisubject_registration(input_directory, outdir,
             if midsag_symmetric:
                 transform_list = transform_list[::2]
             # transform input polydata from disk to keep all attributes (tensors etc) in place
-            wma.registration_functions.transform_polydatas_from_disk(input_directory, transform_list, outdir_current)
+            # save these inside a subdirectory to avoid accidental clustering with the "registration_atlas.vtk"
+            outdir_pd = os.path.join(outdir_current, 'registered_subjects')
+            if not os.path.exists(outdir_pd):
+                os.makedirs(outdir_pd)
+            wma.registration_functions.transform_polydatas_from_disk(input_directory, transform_list, outdir_pd)
         # Always save the current transforms and the objective function plot to check progress
         wma.registration_functions.write_transforms_to_itk_format(register.convert_transforms_to_vtk(), outdir_current, subject_ids)
         # Number of objective function computations this big iteration
@@ -416,7 +420,7 @@ def save_atlas(polydata_list, out_dir):
             appender.AddInput(pd)
         idx = idx + 1
     appender.Update()
-    wma.io.write_polydata(appender.GetOutput(), os.path.join(out_dir, 'atlas.vtk'))
+    wma.io.write_polydata(appender.GetOutput(), os.path.join(out_dir, 'registration_atlas.vtk'))
     del appender
 
 def view_polydatas(polydata_list, number_of_fibers=None):
