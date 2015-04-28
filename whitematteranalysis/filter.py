@@ -42,7 +42,7 @@ def preprocess(inpd, min_length_mm,
                return_lengths=False,
                preserve_point_data=False,
                preserve_cell_data=False,
-               verbose=True):
+               verbose=True, max_length_mm=None):
     """Remove low-quality fibers.
 
     Based on fiber length, and optionally on distance between
@@ -91,11 +91,15 @@ def preprocess(inpd, min_length_mm,
         # first figure out whether to keep this line
         keep_curr_fiber = False
         # save length
-        fiber_lengths.append(ptids.GetNumberOfIds() *  step_size)
+        fiber_lengths.append(ptids.GetNumberOfIds() * step_size)
         # test for line being long enough
         if ptids.GetNumberOfIds() > min_length_pts:
             keep_curr_fiber = True
 
+            if max_length_mm is not None:
+                if ptids.GetNumberOfIds() * step_size > max_length_mm:
+                    keep_curr_fiber = False
+                
             if remove_u | remove_brainstem:
                 # find first and last points on the fiber
                 ptid = ptids.GetId(0)
