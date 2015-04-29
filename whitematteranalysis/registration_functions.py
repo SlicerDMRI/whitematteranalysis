@@ -370,25 +370,59 @@ def run_atlas_registration(input_dir,
     return elapsed
 
 def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
-    # use with the slicer module, something like this applies things
-    # and handles the ras lps issues
-    #./ResampleScalarVectorDWIVolume --spaceChange -b -c  -f /Users/odonnell/LinearTransform-2.tfm /Users/odonnell/Dropbox/Data/TBI_FE_PNL/controls_images/01231-dwi-filt-Ed-B0.nhdr test.nhdr
+    # This now outputs an ITK transform that works correctly to transform the tracts (or any volume in the same space) in Slicer.
+    # Also output is a vtk transform, using MNI format to have vtk reading/writing for wma code that does not depend on itk now.
+
+    ## OLD comment. May not work now, as no space change is needed.
+    ## use with the slicer module, something like this applies things
+    ## and handles the ras lps issues
+    ##./ResampleScalarVectorDWIVolume --spaceChange -b -c  -f /Users/odonnell/LinearTransform-2.tfm /Users/odonnell/Dropbox/Data/TBI_FE_PNL/controls_images/01231-dwi-filt-Ed-B0.nhdr test.nhdr
+
     idx = 0
     tx_fnames = list()
     for tx in transform_list:
+
+        # save out the vtk transform to a text file as it is
+        # The MNI transform reader/writer are available in vtk so use those:
+        writer = vtk.vtkMNITransformWriter()
+        writer.AddTransform(tx)
+        if subject_ids is not None:
+            fname = 'txform_vtk_' + str(subject_ids[idx]) + '.xfm'
+        else:
+            fname = 'txform_vtk_{0:05d}.xfm'.format(idx)
+        writer.SetFileName(os.path.join(outdir, fname))
+        writer.Write()
+        
+        # Save the itk transform as the inverse of this transform (resampling transform) and in LPS.
+        # This will show the same transform in the slicer GUI as the vtk transform we internally computed
+        # that is stored in the .xfm text file, above.
+        # To apply our transform to resample a volume in LPS:
+        # convert to RAS, use inverse of transform to resample, convert back to LPS
+        tx_inverse = vtk.vtkTransform()
+        tx_inverse.DeepCopy(tx)
+        tx_inverse.Inverse()
+        ras_2_lps = vtk.vtkTransform()
+        ras_2_lps.Scale(-1, -1, 1)
+        lps_2_ras = vtk.vtkTransform()
+        lps_2_ras.Scale(-1, -1, 1)
+        tx2 = vtk.vtkTransform()
+        tx2.Concatenate(lps_2_ras)
+        tx2.Concatenate(tx_inverse)
+        tx2.Concatenate(ras_2_lps)
+
         three_by_three = list()
         translation = list()
         for i in range(0,3):
             for j in range(0,3):
-                three_by_three.append(tx.GetMatrix().GetElement(i,j))
-        translation.append(tx.GetMatrix().GetElement(0,3))
-        translation.append(tx.GetMatrix().GetElement(1,3))
-        translation.append(tx.GetMatrix().GetElement(2,3))
+                three_by_three.append(tx2.GetMatrix().GetElement(i,j))
+        translation.append(tx2.GetMatrix().GetElement(0,3))
+        translation.append(tx2.GetMatrix().GetElement(1,3))
+        translation.append(tx2.GetMatrix().GetElement(2,3))
         
         if subject_ids is not None:
-            fname = 'txform_' + str(subject_ids[idx]) + '.tfm'
+            fname = 'txform_itk_' + str(subject_ids[idx]) + '.tfm'
         else:
-            fname = 'txform_{0:05d}.tfm'.format(idx)
+            fname = 'txform__itk_{0:05d}.tfm'.format(idx)
         fname = os.path.join(outdir, fname)
         tx_fnames.append(fname)
         f = open(fname, 'w')
