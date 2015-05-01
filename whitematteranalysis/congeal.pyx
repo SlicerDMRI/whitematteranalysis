@@ -16,6 +16,7 @@ except ImportError:
     print "<congeal.py> Please install  scipy.optimize for this functionality."
 
 import numpy
+import sys
 
 import vtk
 try:
@@ -160,8 +161,8 @@ class CongealTractography:
         transform. This code is called each time that the objective
         function is calculated. Mean rotation/translation/scale are removed."""
 
-        if  numpy.isnan(self._x_opt).any():
-            print "<congeal.py> ISNAN (conv vs to trans)", numpy.isnan(self._x_opt)
+        #if  numpy.isnan(self._x_opt).any():
+        #    print "<congeal.py> ISNAN (conv vs to trans)", numpy.isnan(self._x_opt)
 
         incr = len(self._x_opt)/self.number_of_subjects
 
@@ -171,18 +172,18 @@ class CongealTractography:
         
         for subj in self._subjects:
             subj.x = self._x_opt[idx : idx + incr]
+            # This is the output. The subject holds its updated transform now.
             subj.set_transform(self.convert_x_to_transform(subj.x, subj.transform))
             idx = idx + incr
-            transform_list.append(subj.transform)
+            #transform_list.append(subj.transform)
             
-        transforms_array = numpy.array(transform_list)
-
-        if self.verbose:
-            print "<congeal.py> TRANSFORMS"
-            print numpy.round(transforms_array * 100) / 100
-            meantrans = numpy.mean(transforms_array, 0)
-            print "<congeal.py> Mean transform:"
-            print numpy.round(meantrans * 1000) / 1000        
+        #transforms_array = numpy.array(transform_list)
+        #if self.verbose:
+        #    print "<congeal.py> TRANSFORMS"
+        #    print numpy.round(transforms_array * 100) / 100
+        #    meantrans = numpy.mean(transforms_array, 0)
+        #    print "<congeal.py> Mean transform:"
+        #    print numpy.round(meantrans * 1000) / 1000        
 
     def remove_mean_from_transforms(self):
         """ Remove mean rotations and mean scaling and mean
@@ -359,46 +360,37 @@ class CongealTractography:
             subj.apply_transform()
 
         # The Entropy objective was tested and published
-        if self._objective_function_mode == "Entropy":
-            ret = Parallel(
-                n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                    delayed(inner_loop_objective)(idx, self._subjects,
-                                              self.threshold, self._sigmasq,
-                                              self.distance_method)
-                                              for idx in range(self.number_of_subjects))
+        ret = Parallel(
+            n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
+                delayed(inner_loop_objective)(idx, self._subjects,
+                        self.threshold, self._sigmasq,
+                        self.distance_method)
+                        for idx in range(self.number_of_subjects))
 
-            for idx in range(self.number_of_subjects):
-                self.pairwise_subject_similarity[idx,:] = ret[idx][0]
-                self.computed_pairwise_similarity[idx] = ret[idx][1][0]
-        else:
-            print "<congeal.py> Chosen objective function NOT IMPLEMENTED"
+        for idx in range(self.number_of_subjects):
+            self.pairwise_subject_similarity[idx,:] = ret[idx][0]
+            self.computed_pairwise_similarity[idx] = ret[idx][1][0]
 		
-        if self.verbose:
-            print "<congeal.py> Pairwise similarity:"
-            print numpy.round(self.pairwise_subject_similarity * 100) / 100
-            print "<congeal.py> Computed similarity:"
-            print self.computed_pairwise_similarity.astype(int)
+        #if self.verbose:
+        #    print "<congeal.py> Pairwise similarity:"
+        #    print numpy.round(self.pairwise_subject_similarity * 100) / 100
+        #    print "<congeal.py> Computed similarity:"
+        #    print self.computed_pairwise_similarity.astype(int)
 
-        # The Entropy objective was tested and published
-        if self._objective_function_mode == "Entropy":
-            # sum negative log probabilities of all fibers, across all brains.
-            # sum for total probability of each brain, in leave-one-out model
-            #total_similarity = numpy.sum(self.pairwise_subject_similarity, axis=0)
-            #obj = numpy.sum(total_similarity)
-            obj = numpy.sum(self.pairwise_subject_similarity)
-        else:
-            print "<congeal.py> Chosen objective function NOT IMPLEMENTED"
+        # sum negative log probabilities of all fibers, across all brains.
+        # sum for total probability of each brain, in leave-one-out model
+        obj = numpy.sum(self.pairwise_subject_similarity)
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
-        if self.verbose:
-            #print "<congeal.py> S:",  total_similarity
-            print "<congeal.py> O:",  obj
-            print "<congeal.py>             X:", self._x_opt
+        #if self.verbose:
+        #    print "<congeal.py> O:",  obj
+        #    print "<congeal.py>             X:", self._x_opt
             
         return obj
 
+    # Constraint function definitions 
     # rotation about axis 0
     def c0(self, current_x):
         return self.constraint_component(current_x, 0)
@@ -584,13 +576,16 @@ class CongealTractography:
                                                   self._x_opt,
                                                   self.get_constraints(),
                                                   maxfun=self.maxfun, rhobeg=rhobeg,
-                                                  rhoend=rhoend, catol=0.3, disp=2
+                                                  rhoend=rhoend, catol=0.3, disp=1
                                                   )
 
         # remove any mean value from transforms.
         # Prevents all brains translating, rotating, shifting together.
         self.remove_mean_from_transforms()
 
+        # newline for terminal
+        print ""
+        
         # Return output transforms from this iteration
         return self.convert_transforms_to_vtk()
 
@@ -600,6 +595,9 @@ def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
 
+    print ".",
+    sys.stdout.flush()
+    
     subj1 = subjects[idx1]
     
     pairwise_similarity = numpy.zeros((len(subjects), 1))
