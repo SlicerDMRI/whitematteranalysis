@@ -58,7 +58,11 @@ class RegistrationInformation:
         # apply transform to moving fiber data IF the transform is modified
         if self.modified:
             self.transform_fiber_array()
-
+            #else:
+            #print "****NOT MODIFIED. Not applying transform"
+            # note: frequently the transform is not modified when COBYLA is searching elsewhere in the space
+            # so in this case the objective function for unmodified subject pairs should be cached and reused
+            
     def transform_fiber_array_NOT_USED(self, in_array, transform):
         """Transform in_array (of class FiberArray) by transform (9
         components, rotation about R,A,S, translation in R, A, S, and
@@ -140,8 +144,8 @@ class RegistrationInformation:
     def set_transform(self, input_transform):
         input_transform = numpy.array(input_transform)
         # decide whether transform was modified
-        if numpy.sum(self.transform - input_transform):
-            # directly set it. assume it has 9 components 
+        if numpy.count_nonzero(self.transform - input_transform):
+            # directly set it.
             self.transform = numpy.copy(input_transform)
             self.modified = True
         else:
