@@ -311,7 +311,7 @@ for fname in input_polydatas:
     # preprocessing step: fibers to analyze
     if number_of_fibers_per_subject is not None:
         print "<wm_cluster_atlas.py> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, "."
-        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=verbose)
+        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=verbose, random_seed=random_seed)
     else:
         pd3 = pd2
     input_pds.append(pd3)
