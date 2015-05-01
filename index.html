@@ -1,92 +1,68 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Whitematteranalysis by ljod</title>
-
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="javascripts/scale.fix.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <meta charset="UTF-8">
+    <title>whitematteranalysis by ljod</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1 class="header">Whitematteranalysis</h1>
-        <p class="header">White matter tractography clustering, segmentation, registration</p>
+    <section class="page-header">
+      <h1 class="project-name">whitematteranalysis</h1>
+      <h2 class="project-tagline">White matter tractography clustering, segmentation, registration</h2>
+      <a href="https://github.com/ljod/whitematteranalysis" class="btn">View on GitHub</a>
+      <a href="https://github.com/ljod/whitematteranalysis/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/ljod/whitematteranalysis/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-        <ul>
-          <li class="download"><a class="buttons" href="https://github.com/ljod/whitematteranalysis/zipball/master">Download ZIP</a></li>
-          <li class="download"><a class="buttons" href="https://github.com/ljod/whitematteranalysis/tarball/master">Download TAR</a></li>
-          <li><a class="buttons github" href="https://github.com/ljod/whitematteranalysis">View On GitHub</a></li>
-        </ul>
+    <section class="main-content">
+      <h1>
+<a id="synopsis" class="anchor" href="#synopsis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Synopsis</h1>
 
-        <p class="header">This project is maintained by <a class="header name" href="https://github.com/ljod">ljod</a></p>
+<p>whitematteranalysis provides clustering and tractography analysis tools.</p>
 
-
-      </header>
-      <section>
-        <h1>
-<a name="whitematteranalysis" class="anchor" href="#whitematteranalysis"><span class="octicon octicon-link"></span></a>whitematteranalysis</h1>
+<p>It implements algorithms from publications listed here:
+<a href="http://projects.iq.harvard.edu/whitematteranalysis/publications">http://projects.iq.harvard.edu/whitematteranalysis/publications</a></p>
 
 <h1>
-<a name="synopsis" class="anchor" href="#synopsis"><span class="octicon octicon-link"></span></a>Synopsis</h1>
-
-<p>White Matter Analysis provides clustering and tractography analysis tools.</p>
-<p>It implements algorithms from publications listed here: <a href=http://projects.iq.harvard.edu/whitematteranalysis/publications>http://projects.iq.harvard.edu/whitematteranalysis/publications</a><p>
-<h1>
-<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h1>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h1>
 
 <h3>
-<a name="1-install-python" class="anchor" href="#1-install-python"><span class="octicon octicon-link"></span></a>1. Install python.</h3>
+<a id="1-install-python" class="anchor" href="#1-install-python" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. Install python.</h3>
 
-<p>Anaconda is a nice option since it has VTK.</p>
+<p>Anaconda is a nice option since it has VTK and scipy.
+First install anaconda, then run: </p>
+
+<pre><code>  conda install vtk
+</code></pre>
 
 <h3>
-<a name="2-install-the-following-python-packages-dependencies" class="anchor" href="#2-install-the-following-python-packages-dependencies"><span class="octicon octicon-link"></span></a>2. Install the following python packages (dependencies).</h3>
+<a id="2-install-the-following-python-packages-dependencies" class="anchor" href="#2-install-the-following-python-packages-dependencies" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Install the following python packages (dependencies).</h3>
 
-<ul>
-<li>joblib (This can be done with easy_install, for example.)</li>
-<li>scipy
-(scipy is included in anaconda or EPD or other python distributions, possibly)</li>
-<li>vtk (vtk is included in anaconda or other python distributions, possibly)</li>
-</ul><h4>
-<a name="if-your-python-does-not-already-have-vtk-compile-it" class="anchor" href="#if-your-python-does-not-already-have-vtk-compile-it"><span class="octicon octicon-link"></span></a>If your python does not already have VTK, compile it.</h4>
+<p>Once you have anaconda installed, run: </p>
+
+<pre><code>  pip install joblib
+</code></pre>
+
+<p>Note: If you decide to use another python that does not already have VTK, you can compile VTK.</p>
 
 <ul>
 <li>VTK: <a href="http://www.vtk.org/Wiki/VTK/Building">http://www.vtk.org/Wiki/VTK/Building</a>
-</li>
-<li><a href="http://www.vtk.org/Wiki/VTK/Git/Download">http://www.vtk.org/Wiki/VTK/Git/Download</a></li>
-</ul><p>You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
-Make sure it finds the version of python that you want to use for this project, at configure time. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
-     cd VTK-build
-     ccmake ../VTK</p>
-
-<pre><code>   PYTHON_EXECUTABLE                /Users/lauren/anaconda/bin/python            
-   PYTHON_EXTRA_LIBS                                                             
-   PYTHON_INCLUDE_DIR               /Users/lauren/anaconda/pkgs/python-2.7.4-1/in
-   PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
-   PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
-</code></pre>
-
-<p>Note this requires git and cmake. More information is at vtk.org.
-Then install it into your python:
-     cd VTK-build/Wrapping/Python
-     python setup.py install</p>
+You will need to compile it with python wrapping.</li>
+</ul>
 
 <h3>
-<a name="3-install-whitematteranalysis-into-your-python" class="anchor" href="#3-install-whitematteranalysis-into-your-python"><span class="octicon octicon-link"></span></a>3. Install WhiteMatterAnalysis into your python.</h3>
+<a id="3-install-whitematteranalysis-into-your-python-in-the-standard-way" class="anchor" href="#3-install-whitematteranalysis-into-your-python-in-the-standard-way" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Install whitematteranalysis into your python in the standard way.</h3>
 
-<pre><code> cd WhiteMatterAnalysis
+<pre><code> cd whitematteranalysis
  python setup.py install
 </code></pre>
 
 <h3>
-<a name="4-test-the-installation" class="anchor" href="#4-test-the-installation"><span class="octicon octicon-link"></span></a>4. Test the installation.</h3>
+<a id="4-test-the-installation" class="anchor" href="#4-test-the-installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. Test the installation.</h3>
 
 <p>Run python, then:</p>
 
@@ -96,15 +72,22 @@ Then install it into your python:
 <p>This will produce errors if the required packages are not found.</p>
 
 <h3>
-<a name="5-please-see-the-wiki-for-usage-instructions" class="anchor" href="#5-please-see-the-wiki-for-usage-instructions"><span class="octicon octicon-link"></span></a>5. Please see the wiki for usage instructions.</h3>
+<a id="5-scripts-for-performing-data-analyses-are-located-in-whitematteranalysisbin" class="anchor" href="#5-scripts-for-performing-data-analyses-are-located-in-whitematteranalysisbin" aria-hidden="true"><span class="octicon octicon-link"></span></a>5. Scripts for performing data analyses are located in whitematteranalysis/bin.</h3>
+
+<h3>
+<a id="6-please-see-the-wiki-for-usage-instructions" class="anchor" href="#6-please-see-the-wiki-for-usage-instructions" aria-hidden="true"><span class="octicon octicon-link"></span></a>6. Please see the wiki for usage instructions.</h3>
 
 <p><a href="https://github.com/ljod/whitematteranalysis/wiki">https://github.com/ljod/whitematteranalysis/wiki</a></p>
-      </section>
-      <footer>
-        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/ljod/whitematteranalysis">whitematteranalysis</a> is maintained by <a href="https://github.com/ljod">ljod</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-		
+
+    </section>
+
+  
   </body>
 </html>
+
