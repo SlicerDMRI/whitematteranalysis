@@ -64,7 +64,7 @@ parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to analyze. 60mm is default (good for DTI single-tensor tractography which is shorter in general). Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well.')
 parser.add_argument(
-    '-j', action="store", dest="numberOfJobs", type=int,
+    '-j', action="store", dest="numberOfJobs", type=int, default=1,
     help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
@@ -115,10 +115,8 @@ else:
     fiber_length = 75
 print "<register> Minimum length of fibers to analyze (in mm): ", fiber_length
     
-if args.numberOfJobs is not None:
-    parallel_jobs = args.numberOfJobs
-else:
-    parallel_jobs = multiprocessing.cpu_count()
+
+parallel_jobs = args.numberOfJobs
 print "<register> CPUs detected:", multiprocessing.cpu_count(), ". Number of jobs to use:", parallel_jobs
 
 if args.flag_verbose:
