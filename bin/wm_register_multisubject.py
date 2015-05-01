@@ -7,6 +7,8 @@ import argparse
 import os
 import multiprocessing
 
+import numpy
+
 try:
     import whitematteranalysis as wma
 except:
@@ -79,7 +81,9 @@ parser.add_argument(
 parser.add_argument(
     '-midsag_symmetric', action="store_true", dest="flag_midsag_symmetric",
     help='Register all subjects including reflected copies of input subjects, for a symmetric registration.')
-
+parser.add_argument(
+    '-advanced_only_random_seed', action='store', dest="randomSeed", type=int,
+    help='(Advanced parameter for testing only.) Set random seed for reproducible clustering in software tests.')
  
  
 args = parser.parse_args()
@@ -148,6 +152,9 @@ else:
     print "<register> Midsag_Symmetric registration OFF."
 midsag_symmetric = args.flag_midsag_symmetric
 
+if args.randomSeed is not None:
+    print "<register> Setting random seed to: ", args.randomSeed
+random_seed = args.randomSeed
 
 # Test the input files exist
 input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
@@ -158,7 +165,6 @@ if number_of_subjects < 1:
     exit()
     
 print "\n<register> Starting registration...\n"
-
 
 
 ## run the registration ONCE and output result to disk
@@ -175,6 +181,7 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              steps_per_scale=steps_per_scale,
                                                                              no_render=no_render,
                                                                              distance_method=distance_method,
-                                                                             midsag_symmetric=midsag_symmetric)
+                                                                             midsag_symmetric=midsag_symmetric,
+                                                                             random_seed=random_seed)
 
 print "TIME:", elapsed

@@ -73,7 +73,7 @@ def list_vtk_files(input_dir):
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)
     
-def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fibers):
+def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fibers, random_seed=None):
     """ Find and read all .vtk and .vtp files in the given directory
     input_dir. Preprocess with fiber length threshold and downsample
     to desired number of fibers."""
@@ -98,7 +98,7 @@ def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fi
         print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Input number of fibers:", pd.GetNumberOfLines()
         pd2 = filter.preprocess(pd, fiber_length, verbose=False)
         print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Length threshold", fiber_length, "mm. Number of fibers retained:", pd2.GetNumberOfLines()
-        pd3 = filter.downsample(pd2, number_of_fibers, verbose=False)
+        pd3 = filter.downsample(pd2, number_of_fibers, verbose=False, random_seed=random_seed)
         print "<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Downsample to", number_of_fibers, "fibers. Number of fibers retained:", pd3.GetNumberOfLines()        
         input_pds.append(pd3)
         sidx += 1

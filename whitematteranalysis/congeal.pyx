@@ -7,7 +7,6 @@ class CongealTractography
 
 """
 
-
 try:
     import scipy.optimize
     USE_SCIPY = 1
@@ -46,11 +45,11 @@ class CongealTractography:
         self._registration_mode = "RotateOnly"
 
     def scale_only(self):
-        """ Set registration mode to only rotation. """
+        """ Set registration mode to only scale. """
         self._registration_mode = "ScaleOnly"
 
     def shear_only(self):
-        """ Set registration mode to only rotation. """
+        """ Set registration mode to only shear. """
         self._registration_mode = "ShearOnly"
         
     def translate_and_rotate(self):
@@ -83,6 +82,7 @@ class CongealTractography:
         self.fiber_sample_size = 200
         #self.distance_method = 'MeanSquared'
         self.distance_method = 'Hausdorff'
+        self.random_seed = None
         
         # performance options set by user
         self.verbose = 0
@@ -147,8 +147,9 @@ class CongealTractography:
         subj.points_per_fiber = self.points_per_fiber
         subj.fiber_sample_size = self.fiber_sample_size
         subj.initialize(polydata)
+        subj.random_seed = self.random_seed
         self.number_of_subjects = len(self._subjects)
-	
+        
     def initialize_fiber_samples(self):
         for subj in self._subjects:
             subj.fiber_sample_size = self.fiber_sample_size
@@ -398,51 +399,111 @@ class CongealTractography:
             
         return obj
 
+    # rotation about axis 0
     def c0(self, current_x):
         return self.constraint_component(current_x, 0)
-
+    # rotation
     def c1(self, current_x):
         return self.constraint_component(current_x, 1)    
-
+    # rotation
     def c2(self, current_x):
         return self.constraint_component(current_x, 2)    
-
+    # translation
     def c3(self, current_x):
         return self.constraint_component(current_x, 3)    
-
+    # translation
     def c4(self, current_x):
         return self.constraint_component(current_x, 4)    
-
+    # translation
     def c5(self, current_x):
         return self.constraint_component(current_x, 5)    
-
+    # scale
     def c6(self, current_x):
         return self.constraint_component(current_x, 6)    
-
+    # scale
     def c7(self, current_x):
         return self.constraint_component(current_x, 7)    
-
+    # scale
     def c8(self, current_x):
         return self.constraint_component(current_x, 8)    
-
+    # shear
     def c9(self, current_x):
         return self.constraint_component(current_x, 9)
+    # shear
     def c10(self, current_x):
         return self.constraint_component(current_x, 10)
+    # shear
     def c11(self, current_x):
         return self.constraint_component(current_x, 11)
+    # shear
     def c12(self, current_x):
         return self.constraint_component(current_x, 12)
+    # shear
     def c13(self, current_x):
         return self.constraint_component(current_x, 13)
+    # shear
     def c14(self, current_x):
         return self.constraint_component(current_x, 14)
+
+    def get_constraints(self):
+        constraints = list()
+        if self._registration_mode == "TranslateOnly":
+            # transform[3:6]
+            constraints.append(self.c3)
+            constraints.append(self.c4)
+            constraints.append(self.c5)
+        elif self._registration_mode == "RotateOnly":
+            #transform[0:3]
+            constraints.append(self.c0)
+            constraints.append(self.c1)
+            constraints.append(self.c2)
+        elif self._registration_mode == "ScaleOnly":
+            #transform[6:9]
+            constraints.append(self.c6)
+            constraints.append(self.c7)
+            constraints.append(self.c8)
+        elif self._registration_mode == "ShearOnly":
+            #transform[9:15]
+            constraints.append(self.c9)
+            constraints.append(self.c10)
+            constraints.append(self.c11)
+            constraints.append(self.c12)
+            constraints.append(self.c13)
+            constraints.append(self.c14)
+        elif self._registration_mode == "TranslateAndRotate":
+            #transform[0:6]
+            constraints.append(self.c0)
+            constraints.append(self.c1)
+            constraints.append(self.c2)
+            constraints.append(self.c3)
+            constraints.append(self.c4)
+            constraints.append(self.c5)
+        elif self._registration_mode == "TranslateRotateScale":
+            #transform = numpy.multiply(input_x, self._x_scaling)
+            # not tested?
+            constraints.append(self.c0)
+            constraints.append(self.c1)
+            constraints.append(self.c2)
+            constraints.append(self.c3)
+            constraints.append(self.c4)
+            constraints.append(self.c5)
+            constraints.append(self.c6)
+            constraints.append(self.c7)
+            constraints.append(self.c8)
+        return constraints
+
     
     def constraint_component(self, current_x, component):
         """ Return appropriate constraint to keep optimizer searching
         in good region where there is no mean transform added
         meaninglessly to all subjects. """
-	
+
+        # positive return value is "good", negative is bad
+
+        # Note: this function does not use current_x, which
+        # has already been converted to individual subject transforms.
+        # Instead it computes means across all subject transforms for each component of the space.
+        # We want these means to be 0 for no artifactual shrinking brain scenarios
         if (component < 6) | (component > 8):
             # 0-mean: translation, rotation, shear
             r0 = 0
@@ -453,17 +514,24 @@ class CongealTractography:
             # enough to 0 for the param (angle, mm, scale)
             if component< 3:
                 # angle
-                return -10 * numpy.abs(r0)
+                retval = -10 * numpy.abs(r0)
             else:
-                # mm
-                return -numpy.abs(r0)
+                # mm or shear
+                retval = -numpy.abs(r0)
         else:
             # mean of 1.0 (scale)
             r0 = 1
             for subj in self._subjects:
                 r0 = r0 * subj.transform[component]
-            # positive return value is "good", negative is bad
-            return -100 * numpy.abs(1.0 - r0)
+            #retval = -100.0 * numpy.abs(1.0 - r0)
+            # need to incorporate the number of subjects otherwise
+            # the scale of these numbers varies across datasets
+            # so use geometric mean
+            retval = numpy.abs(1.0 - numpy.power(r0, 1.0/self.number_of_subjects))
+
+        #print "component:", component, "constraint:", 
+        #print("{0:.20f}".format(retval))
+        return retval
 
     def compute(self):
 
@@ -514,9 +582,9 @@ class CongealTractography:
         # together, etc.)
         self.x_final = scipy.optimize.fmin_cobyla(self.objective_function,
                                                   self._x_opt,
-                                                  [self.c0, self.c1, self.c2, self.c3, self.c4, self.c5, self.c6, self.c7, self.c8],
+                                                  self.get_constraints(),
                                                   maxfun=self.maxfun, rhobeg=rhobeg,
-                                                  rhoend=rhoend
+                                                  rhoend=rhoend, catol=0.3, disp=2
                                                   )
 
         # remove any mean value from transforms.
@@ -537,6 +605,10 @@ def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
     pairwise_similarity = numpy.zeros((len(subjects), 1))
     computed_similarity = numpy.zeros((len(subjects), 1))
     
+    # loop indices
+    # actually these cdefs don't seem to improve in profiling.
+    #cdef int idx
+    #cdef int idx2
     idx2 = 0
 
     # data structure to hold probability of every fiber in subject 1

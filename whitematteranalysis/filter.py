@@ -139,7 +139,7 @@ def preprocess(inpd, min_length_mm,
         else:
             return outpd
 
-def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None, verbose=True):
+def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None, verbose=True, random_seed=None):
     """ Random (down)sampling of fibers without replacement. """
 
     if initial_indices is None:
@@ -149,6 +149,12 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
 
     if num_lines < output_number_of_lines:
         return inpd
+
+    # use the input random seed every time for code testing experiments
+    if random_seed is not None:
+        if verbose:
+            print "<filter.py> Setting random seed to", random_seed
+        numpy.random.seed(seed=random_seed)
 
     # randomly pick the lines that we will keep
     line_indices = numpy.random.permutation(num_lines - 1)

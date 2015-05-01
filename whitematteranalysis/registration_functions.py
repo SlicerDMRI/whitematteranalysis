@@ -128,7 +128,8 @@ def run_multisubject_registration(input_directory, outdir,
                                   fibers_rendered=100,
                                   steps_per_scale=[5, 3, 2, 1],
                                   no_render=False,
-                                  midsag_symmetric=False):
+                                  midsag_symmetric=False,
+                                  random_seed=None):
 
     # the big gain in objective from the 1st scale is early,
     # and actually after the fine (3rd scale) registration
@@ -142,7 +143,7 @@ def run_multisubject_registration(input_directory, outdir,
 
     elapsed = list()
 
-    input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers)
+    input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers, random_seed)
 
     # If we are registering for symmetry, include reflected copy of each brain
     if midsag_symmetric:
@@ -186,6 +187,7 @@ def run_multisubject_registration(input_directory, outdir,
     register.threshold = 0
     register.points_per_fiber = points_per_fiber
     register.distance_method = distance_method
+    register.random_seed = random_seed
     
     # add inputs to the registration
     for pd in input_pds:
@@ -466,12 +468,12 @@ def view_polydatas(polydata_list, number_of_fibers=None):
         nf0 = pd.GetNumberOfLines()
         if number_of_fibers is not None:
             # downsample if requested
-            pd = wma.filter.downsample(pd, number_of_fibers)
+            pd = wma.filter.downsample(pd, number_of_fibers, verbose=False)
         nf = pd.GetNumberOfLines()
         print "<registration_functions.py> subject:", idx+1, "/" , n_subj, "fibers:", nf,  "/" , nf0    
         mask = numpy.ones(nf)
         colors = numpy.multiply(mask, idx-1)
-        pd2 = wma.filter.mask(pd, mask, colors)
+        pd2 = wma.filter.mask(pd, mask, colors, verbose=False)
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             appender.AddInputData(pd2)
         else:

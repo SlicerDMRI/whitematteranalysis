@@ -13,7 +13,8 @@ class RegistrationInformation:
         self._moving_fiber_sample = []
         self.points_per_fiber = 5
         self.fiber_sample_size = 200
-
+        self.random_seed = None
+        
         # transformation matrices for internal use
         # (vtkTransform is returned by compute) 
         # rot x,y,z trans x,y,z scale x,y,z
@@ -42,6 +43,11 @@ class RegistrationInformation:
         self.apply_transform()
 
     def initialize_fiber_sample(self):
+        # use the input random seed every time for code testing experiments
+        if self.random_seed is not None:
+            #print "<register.py> Setting random seed to", self.random_seed
+            numpy.random.seed(seed=self.random_seed)
+
         # indices of moving fibers to compute the objective function
         self._moving_fiber_sample = numpy.random.random_integers(
             0, self._original_fibers.number_of_fibers - 1,
