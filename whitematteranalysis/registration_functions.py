@@ -481,7 +481,7 @@ def view_polydatas(polydata_list, number_of_fibers=None):
         idx = idx + 1
     appender.Update()
     pd3 = appender.GetOutput()
-    ren = wma.render.render(pd3)
+    ren = wma.render.render(pd3, verbose=False)
     return ren
 
 def transform_polydatas(input_pds, register):
