@@ -39,9 +39,9 @@ Then install it into your python:
      cd VTK-build/Wrapping/Python
      python setup.py install
 
-###3. Install WhiteMatterAnalysis into your python.
+###3. Install WhiteMatterAnalysis into your python in the standard way.
 
-     cd whiteMatterAnalysis
+     cd whitematteranalysis
      python setup.py install
 
 ###4. Test the installation.
