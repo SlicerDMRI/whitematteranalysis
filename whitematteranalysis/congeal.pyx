@@ -402,7 +402,7 @@ class CongealTractography:
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print "<congeal.py> S:",  total_similarity
+            #print "<congeal.py> S:",  total_similarity
             print "<congeal.py> O:",  obj
             print "<congeal.py>             X:", self._x_opt
             
@@ -449,9 +449,9 @@ class CongealTractography:
         return self.constraint_component(current_x, 14)
     
     def constraint_component(self, current_x, component):
-	""" Return appropriate constraint to keep optimizer searching
-	in good region where there is no mean transform added
-	meaninglessly to all subjects. """
+        """ Return appropriate constraint to keep optimizer searching
+        in good region where there is no mean transform added
+        meaninglessly to all subjects. """
 	
         if (component < 6) | (component > 8):
             # 0-mean: translation, rotation, shear
