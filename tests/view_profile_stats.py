@@ -17,7 +17,7 @@ parser.add_argument(
     '-o', action="store", dest="order", type=str, default='time',  
     help='Sort by time (default) or number of calls (calls) or cumulative time (cumulative)')
 parser.add_argument(
-    '-f', action="store", dest="input_file_2", type=str, default='None',  
+    '-f', action="store", dest="input_file_2", type=str,
     help='File to compare times')
 args = parser.parse_args()
 
