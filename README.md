@@ -13,18 +13,22 @@ http://ljod.github.io/whitematteranalysis/
 #Installation
 ###1. Install python. 
 Anaconda is a nice option since it has VTK and scipy.
-First install anaconda, then run: conda install vtk
+First install anaconda, then run: 
+
+      conda install vtk
 
 ###2. Install the following python packages (dependencies).
 
-Once you have anaconda installed, run: pip install joblib
+Once you have anaconda installed, run: 
 
-####If you decide to use another python that does not already have VTK, compile it.
+      pip install joblib
+
+Note: If you decide to use another python that does not already have VTK, you can compile VTK.
 * VTK: http://www.vtk.org/Wiki/VTK/Building
 * http://www.vtk.org/Wiki/VTK/Git/Download
 
 You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
-Make sure it finds the version of python that you want to use for this project, at configure time. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
+Make sure that at configure time it finds the version of python that you want to use for this project. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
      cd VTK-build
      ccmake ../VTK
 
@@ -34,8 +38,8 @@ Make sure it finds the version of python that you want to use for this project, 
        PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
        PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
 
-Note this requires git and cmake. More information is at vtk.org.
-Then install it into your python:
+Note this requires both git and cmake. More information is at vtk.org.
+To install your compiled vtk into your python:
      cd VTK-build/Wrapping/Python
      python setup.py install
 
@@ -51,5 +55,7 @@ Run python, then:
 
 This will produce errors if the required packages are not found.
 
-###5. Please see the wiki for usage instructions.
+###5. Scripts for performing data analyses are located in whitematteranalysis/bin. 
+
+###6. Please see the wiki for usage instructions.
 https://github.com/ljod/whitematteranalysis/wiki
