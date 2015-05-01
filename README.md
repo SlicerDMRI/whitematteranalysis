@@ -12,15 +12,14 @@ http://ljod.github.io/whitematteranalysis/
 
 #Installation
 ###1. Install python. 
-Anaconda is a nice option since it has VTK.
+Anaconda is a nice option since it has VTK and scipy.
+First install anaconda, then run: conda install vtk
+
 ###2. Install the following python packages (dependencies).
 
-* joblib (This can be done with easy_install, for example.)
-* scipy
-(scipy is included in anaconda or EPD or other python distributions, possibly)
-* vtk (vtk is included in anaconda or other python distributions, possibly)
+Once you have anaconda installed, run: pip install joblib
 
-####If your python does not already have VTK, compile it.
+####If you decide to use another python that does not already have VTK, compile it.
 * VTK: http://www.vtk.org/Wiki/VTK/Building
 * http://www.vtk.org/Wiki/VTK/Git/Download
 
@@ -42,7 +41,7 @@ Then install it into your python:
 
 ###3. Install WhiteMatterAnalysis into your python.
 
-     cd WhiteMatterAnalysis
+     cd whiteMatterAnalysis
      python setup.py install
 
 ###4. Test the installation.
