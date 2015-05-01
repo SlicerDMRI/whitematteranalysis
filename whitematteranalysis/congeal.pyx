@@ -357,23 +357,13 @@ class CongealTractography:
             # apply transform to moving fiber data
             subj.apply_transform()
 
-        subj_pairs = list()
-        idx1 = 0
-        for subj1 in self._subjects:
-            idx2 = 0
-            for subj2 in self._subjects:
-                subj_pairs.append([idx1, idx2])
-                idx2 += 1
-            idx1 += 1
-
         # The Entropy objective was tested and published
         if self._objective_function_mode == "Entropy":
             ret = Parallel(
                 n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                    delayed(inner_loop_objective)(self._subjects[idx],
-                                              idx, self._subjects,
+                    delayed(inner_loop_objective)(idx, self._subjects,
                                               self.threshold, self._sigmasq,
-                                              self.pairwise_subject_similarity, self.distance_method)
+                                              self.distance_method)
                                               for idx in range(self.number_of_subjects))
 
             for idx in range(self.number_of_subjects):
@@ -537,11 +527,13 @@ class CongealTractography:
         return self.convert_transforms_to_vtk()
 
 
-def inner_loop_objective(subj1, idx1, subjects, threshold, sigmasq, global_subject_similarity, distance_method):
+def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
     """ The code called within the objective_function to find the
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
 
+    subj1 = subjects[idx1]
+    
     pairwise_similarity = numpy.zeros((len(subjects), 1))
     computed_similarity = numpy.zeros((len(subjects), 1))
     
@@ -560,10 +552,6 @@ def inner_loop_objective(subj1, idx1, subjects, threshold, sigmasq, global_subje
     for subj2 in subjects:
         # leave self out of model
         if subj1 != subj2:
-            ## compute if changed, or first iteration
-            ##if (subj1.modified | subj2.modified)  | (global_subject_similarity[idx1, idx2] == 0):
-            ## caching not implemented yet always compute
-            
             # Loop over fibers in brain 1, find total probability of
             # fiber using all other fibers from other brains.
             for idx in range(len(subj1._moving_fiber_sample)):
