@@ -595,8 +595,8 @@ def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
 
-    print ".",
-    sys.stdout.flush()
+    #print ".",
+    #sys.stdout.flush()
     
     subj1 = subjects[idx1]
     
