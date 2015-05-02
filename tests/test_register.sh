@@ -8,10 +8,10 @@ echo "<test> python -m cProfile -o profile.txt ../bin/wm_register_multisubject.p
 python -m cProfile -o profile.txt ../bin/wm_register_multisubject.py test_data_small output/test_reg_multi  -norender
 
 echo "<test> cProfile run statistics:"
-python view_profile_stats.py
+python view_profile_stats.py profile.txt 
 
 
-echo "<test> REGISTRATION TO ATLAS."
+#echo "<test> REGISTRATION TO ATLAS."
 #python -m cProfile -o profile.txt ../bin/wm_register_multisubject.py test_data_2 output/test_reg_atlas
 
 
