@@ -15,6 +15,15 @@ except:
     print "<wm_register.py> Error importing white matter analysis package\n"
     raise
 
+try:
+    import scipy.optimize
+except ImportError:
+    print ""
+    print "<wm_register_multisubject.py> ERROR: Failed to import scipy.optimize, cannot run registration."
+    print "Please install scipy."
+    print ""
+    exit()
+
 # defaults for multiple subject registration
 # (may be added as parameters later)
 fiber_sample_fractions = [.10, .20, .30, .40]
