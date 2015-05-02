@@ -129,7 +129,8 @@ def run_multisubject_registration(input_directory, outdir,
                                   steps_per_scale=[5, 3, 2, 1],
                                   no_render=False,
                                   midsag_symmetric=False,
-                                  random_seed=None):
+                                  random_seed=None,
+                                  fiber_length_max=None):
 
     # the big gain in objective from the 1st scale is early,
     # and actually after the fine (3rd scale) registration
@@ -143,7 +144,7 @@ def run_multisubject_registration(input_directory, outdir,
 
     elapsed = list()
 
-    input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers, random_seed)
+    input_pds, subject_ids = wma.io.read_and_preprocess_polydata_directory(input_directory, fiber_length, number_of_fibers, random_seed, fiber_length_max)
 
     # If we are registering for symmetry, include reflected copy of each brain
     if midsag_symmetric:

@@ -73,6 +73,9 @@ parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to analyze. 60mm is default (good for DTI single-tensor tractography which is shorter in general). Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well.')
 parser.add_argument(
+    '-lmax', action="store", dest="fiberLengthMax", type=int,
+    help='Maximum length (in mm) of fibers to analyze. This parameter is used to remove extremely long fibers that may have traversed several structures. For example, a value of 150 will avoid sampling the tail end of the length distribution.')
+parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int, default=1,
     help='Number of processors to use.')
 parser.add_argument(
@@ -123,7 +126,12 @@ if args.fiberLength is not None:
 else:
     fiber_length = 75
 print "<register> Minimum length of fibers to analyze (in mm): ", fiber_length
-    
+
+fiber_length_max = args.fiberLengthMax
+if fiber_length_max is not None:
+    print "<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max
+  
+
 
 parallel_jobs = args.numberOfJobs
 print "<register> CPUs detected:", multiprocessing.cpu_count(), ". Number of jobs to use:", parallel_jobs
@@ -189,6 +197,7 @@ register, elapsed = wma.registration_functions.run_multisubject_registration(arg
                                                                              no_render=no_render,
                                                                              distance_method=distance_method,
                                                                              midsag_symmetric=midsag_symmetric,
-                                                                             random_seed=random_seed)
+                                                                             random_seed=random_seed,
+                                                                             fiber_length_max=fiber_length_max)
 
 print "TIME:", elapsed
