@@ -390,9 +390,9 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         writer = vtk.vtkMNITransformWriter()
         writer.AddTransform(tx)
         if subject_ids is not None:
-            fname = 'txform_vtk_' + str(subject_ids[idx]) + '.xfm'
+            fname = 'vtk_txform_' + str(subject_ids[idx]) + '.xfm'
         else:
-            fname = 'txform_vtk_{0:05d}.xfm'.format(idx)
+            fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
         writer.SetFileName(os.path.join(outdir, fname))
         writer.Write()
         
@@ -423,9 +423,9 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         translation.append(tx2.GetMatrix().GetElement(2,3))
         
         if subject_ids is not None:
-            fname = 'txform_itk_' + str(subject_ids[idx]) + '.tfm'
+            fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
         else:
-            fname = 'txform__itk_{0:05d}.tfm'.format(idx)
+            fname = 'itk_txform_{0:05d}.tfm'.format(idx)
         fname = os.path.join(outdir, fname)
         tx_fnames.append(fname)
         f = open(fname, 'w')
