@@ -637,7 +637,7 @@ def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
             computed_similarity[idx2] = 1
 
             # Record how many fiber comparisons were made so far
-            number_comparisons += subj2._moving_fibers.number_of_fibers
+            number_comparisons += subj2._moving_fibers.number_of_fibers*len(subj1._moving_fiber_sample)
             
             # end if subjects are not the same
 
@@ -645,8 +645,11 @@ def inner_loop_objective(idx1, subjects, threshold, sigmasq, distance_method):
 
     # divide total probability by number of fiber comparisons
     # the output must be between 0 and 1
+    #print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
     probability /= number_comparisons
-
+    #print numpy.min(probability), numpy.max(probability)
+    #print "NUMBER COMPARISONS:", number_comparisons, len(subj1._moving_fiber_sample), subj2._moving_fibers.number_of_fibers
+    
     # add negative log probabilities of all fibers in this brain.
     pairwise_similarity = numpy.sum(- numpy.log(probability))
     
