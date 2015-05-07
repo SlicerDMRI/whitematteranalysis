@@ -557,6 +557,9 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
 
     fiber_indices = range(0, current_fiber_array.number_of_fibers)
 
+    # compare squared distances to squared distance threshold
+    upper_thresh = upper_thresh*upper_thresh
+    
     print "<filter.py> Computing pairwise distances..."
     
     # pairwise distance matrix
@@ -591,7 +594,9 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
 
         for idx in indices:
             dist = distances[fidx][idx]
-            weight = numpy.exp(-(dist*dist)/sigmasq)
+            # these are now squared distances
+            weight = numpy.exp(-dist/sigmasq)
+            #weight = numpy.exp(-(dist*dist)/sigmasq)
             local_fibers.append(curr_fibers[idx] * weight)
             local_weights.append(weight)
         # actually perform the weighted average
