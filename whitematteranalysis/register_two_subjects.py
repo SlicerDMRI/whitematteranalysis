@@ -293,11 +293,12 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
 
     distance = dx + dy + dz
 
+    # to test mean distance (had a less steep objective but looks similar)
+    #return numpy.mean(distance, 1)
+
     #elif distance_method == 'Hausdorff':
     # take max along fiber
-    #return numpy.max(distance, 1)
-    # to test mean distance (had a less steep objective)
-    return numpy.mean(distance, 1)
+    return numpy.max(distance, 1)
 
         
 
