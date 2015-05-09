@@ -26,7 +26,10 @@ def view_polydatas(polydata_list):
         mask = numpy.ones(nf)
         colors = numpy.multiply(mask, idx-1)
         pd2 = wma.filter.mask(pd, mask, colors)
-        appender.AddInputData(pd2)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            appender.AddInputData(pd)
+        else:
+            appender.AddInput(pd)
         idx = idx + 1
     appender.Update()
     pd3 = appender.GetOutput()
