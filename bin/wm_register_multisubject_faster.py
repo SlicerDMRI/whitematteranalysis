@@ -6,6 +6,7 @@ import os
 import multiprocessing
 
 import numpy
+import vtk
 
 try:
     import whitematteranalysis as wma
@@ -235,6 +236,13 @@ final_step_per_scale = [10, 5, 2]
 #sigma_per_scale = [30, 10, 7.5, 5]
 #steps_per_scale=[5, 3, 2, 1]
 
+# TEST if more steps per scale are better
+# this is 16-subject reflected dataset. took
+# about an hour to register with 1, 3, 1, but at last
+# step the subjects were still improving.
+# convergence can be if no subject improves or something
+sigma_per_scale = [30, 20, 10]
+iterations_per_scale = [1, 4, 4]
 
 # -------------
 # Done SETTINGS. Below is computation
@@ -267,10 +275,10 @@ for scale in do_scales:
         iteration += 1
         # Intermediate save. For testing only.
         if verbose:
-            register.save_transformed_polydatas(intermediate_save=True)
+            register.save_transformed_polydatas(intermediate_save=True, midsag_symmetric=midsag_symmetric)
 
 # Final save when we are done
-register.save_transformed_polydatas()
+register.save_transformed_polydatas(midsag_symmetric=midsag_symmetric)
 
 print "Done registering."
 
