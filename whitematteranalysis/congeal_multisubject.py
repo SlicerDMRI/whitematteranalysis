@@ -262,8 +262,8 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, sigma, sub
     register.verbose = 0
     register.output_directory = output_directory
     register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%05d" % (subject_idx, iteration_count, sigma) 
-    register.rhobeg = step_size[0]
-    register.rhoend = step_size[1]
+    register.initial_step = step_size[0]
+    register.final_step = step_size[1]
     register.render = render
     
     register.compute()
