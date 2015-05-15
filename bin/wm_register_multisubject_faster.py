@@ -175,74 +175,88 @@ register = wma.congeal_multisubject.MultiSubjectRegistration()
 register.input_directory = args.inputDirectory
 register.output_directory = args.outputDirectory
 
-for (pd, id) in zip(input_pds, subject_ids):
-    register.add_polydata(pd, id)
-
 register.parallel_jobs = parallel_jobs
 register.render = not no_render
 register.points_per_fiber = points_per_fiber
 
-# A record of settings that have been tried
-## iterations_per_scale = [2, 2, 2, 2, 2]
-## sigma_per_scale = [30, 20, 10, 7.5, 5]
-## # this stops computations early at the first scale where converging is pointless
-## # it almost always converges in 35-45 iterations so stop at 40
-## # the only goal is to make the mean brain better at each iteration, so waiting for
-## # slow subjects to converge in order to make the next mean brain does not help.
-## maxfun_per_scale = [30, 40, 40, 120, 120]
-## initial_step_per_scale = [10, 5, 3, 1, 0.5]
-## final_step_per_scale = [5, 3, 1, 0.5, 0.25]
-## #mean_brain_size_per_scale = [1000, 1500, 2000, 3000, 3000]
-## #subject_brain_size_per_scale = [250, 400, 500, 1000, 1000]
-## mean_brain_size_per_scale = [1000, 1500, 2000, 2500, 3000]
-## subject_brain_size_per_scale = [250, 400, 500, 750, 1000]
-# most of the improvement in objective happens when it is sigma 20 and 30.
-# this seems to work just as well as all the effort above
-#sigma_per_scale = [30, 20, 20, 20]
-#iterations_per_scale = [2, 2, 1, 1, 1]
 
 # -------------
 # SETTINGS
 # -------------
-sigma_per_scale = [30, 20, 10]
-iterations_per_scale = [1, 3, 1]
-# faster and slightly worse
-#mean_brain_size_per_scale = [1000, 2000, 3000]
-#subject_brain_size_per_scale = [250, 750, 1000]
-# slower and somewhat better
-# this works:
-#mean_brain_size_per_scale = [1000, 4000, 6000]
-#subject_brain_size_per_scale = [250, 2000, 3000]
+#mode = "E"
+mode = "TEST"
+mode = "nonlinearTEST"
 
-mean_brain_size_per_scale = [1000, 3000, 5000]
-subject_brain_size_per_scale = [250, 1500, 2500]
+if mode == "B":
+    # Settings B were successful at 6-subject baby brain dataset
+    sigma_per_scale = [30, 10, 7.5, 5]
+    iterations_per_scale=[2, 5, 3, 3]
+    maxfun_per_scale = [50, 80, 80, 300]
+    mean_brain_size_per_scale = [1000, 10000, 20000, 30000]
+    subject_brain_size_per_scale = [250, 1500, 2500, 4000]
+    initial_step_per_scale = [5, 5, 5, 5]
+    final_step_per_scale = [2, 2, 2, 2]
+    
+elif mode == "E":
+    # E works well on the adult brain data but not on the baby brain data.
+    sigma_per_scale = [30, 10, 7.5, 5]
+    # 10 iterations at sigma 30 is dangerous with original objective
+    #iterations_per_scale=[10, 10, 10, 10]
+    iterations_per_scale=[2, 10, 10, 10]
+    # when it takes very long to iterate it generally does not decrease the objective.
+    maxfun_per_scale = [60, 80, 100, 200]
+    mean_brain_size_per_scale = [1500, 3000, 6000, 8000]
+    subject_brain_size_per_scale = [100, 500, 1000, 1000]
+    initial_step_per_scale = [5, 5, 5, 5]
+    final_step_per_scale = [2, 2, 2, 2]
+    # E failed for baby brains compared to B. I think this is because their fibers are
+    # quite variable and and you need more, so unstable matrix updates were made:
+    # for example all but one improved objective on iteration 24 for baby brains,
+    # while in adult brains it was less than half.
+    # possibly baby brains could use smaller sigma too.
 
-# TESTING
-# compromise: do more iterations but fewer fibers per iteration
-# the objective function continues decreasing longer, but
-# the result is worse.
-#iterations_per_scale = [1, 6, 4]
-#mean_brain_size_per_scale = [1000, 1500, 2000]
-#subject_brain_size_per_scale = [250, 500, 1000]
+elif mode == "TEST":
+    # very quick test if software is working
+    sigma_per_scale = [30, 10, 7.5]
+    iterations_per_scale=[1, 1, 1]
+    maxfun_per_scale = [60, 80, 100]
+    mean_brain_size_per_scale = [1500, 2000, 3000]
+    subject_brain_size_per_scale = [100, 500, 1000]
+    initial_step_per_scale = [5, 5, 5, 5]
+    final_step_per_scale = [2, 2, 2, 2]
 
-# stop computation early on the first iteration where not needed
-maxfun_per_scale = [30, 80, 80]
+elif mode == "nonlinearTEST":
+    initial_step_per_scale = [5, 3, 1]
+    final_step_per_scale = [2, 1, 0.05]
+    sigma_per_scale = [3, 2, 1]
+    iterations_per_scale = [1, 1, 1]
+    mean_brain_size_per_scale = [1500, 2000, 3000]
+    subject_brain_size_per_scale = [500, 750, 1000]
+    # don't stop computation early: many more are needed for larger search space
+    # stop computation: this is just a quick test the software is working
+    maxfun_per_scale = [10, 10, 10]
+    points_per_fiber = 30
+    register.nonlinear = True
+    
+elif mode == "nonlinear":
+    # this is in mm space. discourage big steps and shrinking
+    initial_step_per_scale = [5, 3, 1]
+    final_step_per_scale = [2, 1, 0.05]
+    # try to use only very local information
+    sigma_per_scale = [3, 2, 1]
+    # test
+    iterations_per_scale = [1, 1, 1]
+    mean_brain_size_per_scale = [3000, 4000, 5000]
+    subject_brain_size_per_scale = [500, 750, 1000]
+    # don't stop computation early: many more are needed for larger search space
+    maxfun_per_scale = [1000, 2000, 3000]
+    points_per_fiber = 30
+    register.nonlinear = True
 
-# These larger steps are much better. larger objective decreases and decreases more often in subjects
-initial_step_per_scale = [20, 20, 5]
-final_step_per_scale = [10, 5, 2]
 
-# NOTE: test if these old parameters work well/better on larger datasets
-#sigma_per_scale = [30, 10, 7.5, 5]
-#steps_per_scale=[5, 3, 2, 1]
-
-# TEST if more steps per scale are better
-# this is 16-subject reflected dataset. took
-# about an hour to register with 1, 3, 1, but at last
-# step the subjects were still improving.
-# convergence can be if no subject improves or something
-sigma_per_scale = [30, 20, 10]
-iterations_per_scale = [1, 4, 4]
+# For now, we have to add polydatas after setting nonlinear in the register object    
+for (pd, id) in zip(input_pds, subject_ids):
+    register.add_polydata(pd, id)
 
 # -------------
 # Done SETTINGS. Below is computation

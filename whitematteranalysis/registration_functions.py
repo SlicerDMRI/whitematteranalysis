@@ -401,43 +401,46 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # that is stored in the .xfm text file, above.
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
-        tx_inverse = vtk.vtkTransform()
-        tx_inverse.DeepCopy(tx)
-        tx_inverse.Inverse()
-        ras_2_lps = vtk.vtkTransform()
-        ras_2_lps.Scale(-1, -1, 1)
-        lps_2_ras = vtk.vtkTransform()
-        lps_2_ras.Scale(-1, -1, 1)
-        tx2 = vtk.vtkTransform()
-        tx2.Concatenate(lps_2_ras)
-        tx2.Concatenate(tx_inverse)
-        tx2.Concatenate(ras_2_lps)
-
-        three_by_three = list()
-        translation = list()
-        for i in range(0,3):
-            for j in range(0,3):
-                three_by_three.append(tx2.GetMatrix().GetElement(i,j))
-        translation.append(tx2.GetMatrix().GetElement(0,3))
-        translation.append(tx2.GetMatrix().GetElement(1,3))
-        translation.append(tx2.GetMatrix().GetElement(2,3))
-        
-        if subject_ids is not None:
-            fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
+        if tx.GetClassName == 'vtkThinPlateSplineTransform':
+            print "Figure out how to save TPS in ITK/slicer format"
         else:
-            fname = 'itk_txform_{0:05d}.tfm'.format(idx)
-        fname = os.path.join(outdir, fname)
-        tx_fnames.append(fname)
-        f = open(fname, 'w')
-        f.write('#Insight Transform File V1.0\n')
-        f.write('# Transform 0\n')
-        f.write('Transform: AffineTransform_double_3_3\n')
-        f.write('Parameters: ')
-        for el in three_by_three:
-            f.write('{0} '.format(el))
-        for el in translation:
-            f.write('{0} '.format(el))
-        f.write('\nFixedParameters: 0 0 0\n')
+            tx_inverse = vtk.vtkTransform()
+            tx_inverse.DeepCopy(tx)
+            tx_inverse.Inverse()
+            ras_2_lps = vtk.vtkTransform()
+            ras_2_lps.Scale(-1, -1, 1)
+            lps_2_ras = vtk.vtkTransform()
+            lps_2_ras.Scale(-1, -1, 1)
+            tx2 = vtk.vtkTransform()
+            tx2.Concatenate(lps_2_ras)
+            tx2.Concatenate(tx_inverse)
+            tx2.Concatenate(ras_2_lps)
+
+            three_by_three = list()
+            translation = list()
+            for i in range(0,3):
+                for j in range(0,3):
+                    three_by_three.append(tx2.GetMatrix().GetElement(i,j))
+            translation.append(tx2.GetMatrix().GetElement(0,3))
+            translation.append(tx2.GetMatrix().GetElement(1,3))
+            translation.append(tx2.GetMatrix().GetElement(2,3))
+
+            if subject_ids is not None:
+                fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
+            else:
+                fname = 'itk_txform_{0:05d}.tfm'.format(idx)
+            fname = os.path.join(outdir, fname)
+            tx_fnames.append(fname)
+            f = open(fname, 'w')
+            f.write('#Insight Transform File V1.0\n')
+            f.write('# Transform 0\n')
+            f.write('Transform: AffineTransform_double_3_3\n')
+            f.write('Parameters: ')
+            for el in three_by_three:
+                f.write('{0} '.format(el))
+            for el in translation:
+                f.write('{0} '.format(el))
+            f.write('\nFixedParameters: 0 0 0\n')
 
         idx +=1
     return(tx_fnames)
