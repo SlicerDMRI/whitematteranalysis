@@ -40,7 +40,9 @@ class MultiSubjectRegistration:
         # see more fibers than this over the course of the registration
         self.subject_brain_size = 1000
         self.smooth_mean_brain = False
-        
+        #self.smooth_mean_brain = True
+        #print "TEST SMOOTHING MEAN BRAIN"
+
         # internal stuff
         self.polydatas = list()
         self.transforms = list()
@@ -81,7 +83,8 @@ class MultiSubjectRegistration:
         self.total_iterations += 1
 
         # make a directory for the current iteration
-        outdir = os.path.join(self.output_directory, 'iteration_'+str(self.total_iterations))
+        dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+        outdir = os.path.join(self.output_directory, dirname)
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         # make a directory for any intermediate rendering by subprocesses
@@ -105,37 +108,70 @@ class MultiSubjectRegistration:
                 
         # register each subject to the current mean
         subj_idx = 0
-        for input_pd in self.polydatas:
-            # compute mean in a leave-one out fashion. Otherwise, the
-            # optimal transform may be identity.
+
+        if self.smooth_mean_brain:
+            print "COMPUTING ONE SMOOTHED MEAN BRAIN"
+            # compute just one mean since this is slow and does not use all fibers in the end
             appender = vtk.vtkAppendPolyData()
-            subj_idx2 = 0
             for (input_pd2, trans) in zip(self.polydatas, self.transforms):
-                if input_pd2 != input_pd:
-                    # apply the current transform to this polydata for computation of mean brain
-                    transformer = vtk.vtkTransformPolyDataFilter()
-                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                        transformer.SetInputData(input_pd2)
-                    else:
-                        transformer.SetInput(input_pd2)
-                    transformer.SetTransform(trans)
-                    transformer.Update()
-                    pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
-                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                        appender.AddInputData(pd)
-                    else:
-                        appender.AddInput(pd)
-                        
+                # apply the current transform to this polydata for computation of mean brain
+                transformer = vtk.vtkTransformPolyDataFilter()
+                if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                    transformer.SetInputData(input_pd2)
+                else:
+                    transformer.SetInput(input_pd2)
+                transformer.SetTransform(trans)
+                transformer.Update()
+                pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
+                if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                    appender.AddInputData(pd)
+                else:
+                    appender.AddInput(pd)
             appender.Update()
             mean_brain = appender.GetOutput()
             # this smoothing does seem to help. need to test more.
-            if self.smooth_mean_brain:
-                (mean_brain, weights) = wma.filter.smooth(mean_brain, fiber_distance_sigma = 20, points_per_fiber=30, n_jobs=self.parallel_jobs, upper_thresh=20)
-                # here we could remove fibers with low weights
-            
+            # also test just one mean brain here
+            ###(mean_brain, weights) = wma.filter.smooth(mean_brain, fiber_distance_sigma = 20, points_per_fiber=30, n_jobs=self.parallel_jobs, upper_thresh=20)
+            # here we could remove fibers with low weights
+            #keep_fibers = numpy.argsort(weights)[0:len(weights)/2]
+            #mask = numpy.zeros(weights.shape)
+            #mask[keep_fibers] = 1
+            # test keep half and see if it is sharper for registration
+            #mean_brain = wma.filter.mask(mean_brain, mask, verbose=False)
             mean_fibers = wma.fibers.FiberArray()
             mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
             mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+            print "DONE COMPUTING ONE SMOOTHED MEAN BRAIN NOT SMOOTHED JUST ONE MEAN"
+
+        # Loop over all subjects and prepare lists of inputs for subprocesses
+        for input_pd in self.polydatas:
+            if not self.smooth_mean_brain:
+                # compute mean in a leave-one out fashion. Otherwise, the
+                # optimal transform may be identity.
+                appender = vtk.vtkAppendPolyData()
+                subj_idx2 = 0
+                for (input_pd2, trans) in zip(self.polydatas, self.transforms):
+                    if input_pd2 != input_pd:
+                        # apply the current transform to this polydata for computation of mean brain
+                        transformer = vtk.vtkTransformPolyDataFilter()
+                        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                            transformer.SetInputData(input_pd2)
+                        else:
+                            transformer.SetInput(input_pd2)
+                        transformer.SetTransform(trans)
+                        transformer.Update()
+                        pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
+                        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                            appender.AddInputData(pd)
+                        else:
+                            appender.AddInput(pd)
+                        
+                appender.Update()
+                mean_brain = appender.GetOutput()
+                mean_fibers = wma.fibers.FiberArray()
+                mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
+                mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+
             #  R,A,S is the first index
             # then fiber number
             # then points along fiber
@@ -194,7 +230,8 @@ class MultiSubjectRegistration:
 
         if intermediate_save:
             # make a directory for the current iteration
-            outdir = os.path.join(self.output_directory, 'iteration_'+str(self.total_iterations))
+            dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+            outdir = os.path.join(self.output_directory, dirname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             
@@ -271,7 +308,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, sigma, sub
     # only update the transform if the objective function improved.
     # sometimes it falls into a different minimum that is worse
     obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
-    print "ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
+    print "ITERATION", iteration_count, "sigma:", sigma, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
     if obj_diff < 0:
         print "UPDATING MATRIX"
         return register.final_transform
