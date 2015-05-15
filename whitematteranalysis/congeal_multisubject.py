@@ -97,7 +97,6 @@ class MultiSubjectRegistration:
 
         mean_list = list()
         subject_list = list()
-        reg_list = list()
         sigma_list = list()
         subj_idx_list = list()
         iteration_list = list()
