@@ -401,7 +401,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # that is stored in the .xfm text file, above.
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
-        if tx.GetClassName == 'vtkThinPlateSplineTransform':
+        if tx.GetClassName() == 'vtkThinPlateSplineTransform':
             print "Figure out how to save TPS in ITK/slicer format"
         else:
             tx_inverse = vtk.vtkTransform()
