@@ -172,7 +172,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         moving = self.transform_fiber_array_numpy(self.moving, current_x)
 
         # compute objective
-        obj = inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
+        obj = inner_loop_objective(self.fixed, self.step_length_fixed, moving, self.sigma * self.sigma)
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
@@ -269,7 +269,17 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         if self.verbose:
             print "<congeal.py> Initial value for X:", self.initial_transform
 
-
+        # Find step length of all fibers in the fixed brain
+        (dims, number_of_fibers_fixed, points_per_fiber) = self.fixed.shape
+        ddx = self.fixed[0,:,0:-2] - self.fixed[0,:,1:-1]
+        ddy = self.fixed[1,:,0:-2] - self.fixed[1,:,1:-1]
+        ddz = self.fixed[2,:,0:-2] - self.fixed[2,:,1:-1]
+        dx = numpy.square(ddx)
+        dy = numpy.square(ddy)
+        dz = numpy.square(ddz)
+        distance = numpy.sqrt(dx + dy + dz)
+        self.step_length_fixed = numpy.divide(numpy.sum(distance, 1), points_per_fiber)
+        
         # These optimizers were tested, less successfully than cobyla.
         # This code is left here as documentation.
         #scipy.optimize.fmin(self.objective_function,
@@ -299,7 +309,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         return self.final_transform
 
 
-def inner_loop_objective(fixed, moving, sigmasq):
+def inner_loop_objective(fixed, step_length_fixed, moving, sigmasq):
     """ The code called within the objective_function to find the
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
@@ -314,7 +324,7 @@ def inner_loop_objective(fixed, moving, sigmasq):
     # fiber using all fibers from fixed.
     for idx in range(number_of_fibers_moving):
         probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
-                sigmasq)
+                sigmasq, step_length_fixed)
 
     # divide total probability by number of fiber comparisons
     # the output must be between 0 and 1
@@ -338,13 +348,14 @@ def total_probability_numpyOLD(moving_fiber, fixed_fibers, sigmasq):
     #distance = numpy.minimum(distance, distance_flex)
     return numpy.sum(numpy.exp(-distance / (sigmasq)))
 
-def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
+def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq, step_length_fixed):
     distance = fiber_distance_numpy(moving_fiber, fixed_fibers)
 
     probability1 = numpy.exp(-distance / (sigmasq))
     
     # test to reduce shrinkage: compare step size between points of fixed vs moving brain
-    (dims, number_of_fibers_fixed, points_per_fiber) = fixed_fibers.shape
+    #(dims, number_of_fibers_fixed, points_per_fiber) = fixed_fibers.shape
+    (dims, points_per_fiber) = moving_fiber.shape
     ddx = moving_fiber[0,0:-2] - moving_fiber[0,1:-1]
     ddy = moving_fiber[1,0:-2] - moving_fiber[1,1:-1]
     ddz = moving_fiber[2,0:-2] - moving_fiber[2,1:-1]
@@ -353,14 +364,7 @@ def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
     dz = numpy.square(ddz)
     distance = numpy.sqrt(dx + dy + dz)
     step_length_moving = numpy.divide(numpy.sum(distance), points_per_fiber)
-    ddx = fixed_fibers[0,:,0:-2] - fixed_fibers[0,:,1:-1]
-    ddy = fixed_fibers[1,:,0:-2] - fixed_fibers[1,:,1:-1]
-    ddz = fixed_fibers[2,:,0:-2] - fixed_fibers[2,:,1:-1]
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
-    distance = numpy.sqrt(dx + dy + dz)
-    step_length_fixed = numpy.divide(numpy.sum(distance, 1), points_per_fiber)
+
     sigma2 = 0.1
     probability2 = numpy.exp(-numpy.divide(numpy.square(step_length_moving - step_length_fixed), sigma2*sigma2))
 
@@ -438,9 +442,8 @@ def convert_transform_to_vtk(source_landmarks, target_points):
     landmarks and a vtkPoints object of target (fixed) landmarks.
     """
 
-    number_of_points = len(source_landmarks)/3
-
     source_points = convert_numpy_array_to_vtk_points(source_landmarks)
+    #number_of_points = len(source_landmarks)/3
     #print "CONVERT:", len(source_landmarks), number_of_points, target_points.GetNumberOfPoints(), source_points.GetNumberOfPoints()
 
     return compute_thin_plate_spline_transform(source_points, target_points)
