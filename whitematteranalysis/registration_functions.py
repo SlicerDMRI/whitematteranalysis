@@ -394,7 +394,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         else:
             fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
         writer.SetFileName(os.path.join(outdir, fname))
-        writer.Write()
+        #writer.Write()
 
         # file name for itk transform written below
         if subject_ids is not None:
@@ -410,7 +410,111 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
         if tx.GetClassName() == 'vtkThinPlateSplineTransform':
-            print "Figure out how to save TPS in ITK/slicer format"
+            print 'Saving nonlinear transform displacements in ITK format'
+
+            # Find the affine part of the transform determined by
+            # these points and remove it from the spline transform;
+            # save for later
+            print 'Separating affine part from the transform'
+            affine_part = vtk.vtkLandmarkTransform()
+            affine_part.SetSourceLandmarks(tx.GetSourceLandmarks())
+            affine_part.SetTargetLandmarks(tx.GetTargetLandmarks())
+            affine_part.SetModeToAffine()
+            affine_part.Update()
+           
+            source_landmarks_2 = vtk.vtkPoints()
+            target_landmarks_2 = vtk.vtkPoints()
+            affine_part.TransformPoints(tx.GetSourceLandmarks(), source_landmarks_2)
+            affine_part.TransformPoints(tx.GetTargetLandmarks(), target_landmarks_2)
+            # create TPS that does not include the affine part
+            tps = vtk.vtkThinPlateSplineTransform()
+            tps.SetSourceLandmarks(source_landmarks_2)
+            tps.SetTargetLandmarks(target_landmarks_2)
+            tps.Update()
+            tps.Inverse()
+
+            # convert the inverse affine transform from RAS to LPS 
+            affine_part_inverse = vtk.vtkLandmarkTransform()
+            affine_part_inverse.DeepCopy(affine_part)
+            affine_part_inverse.Inverse()
+            ras_2_lps = vtk.vtkTransform()
+            ras_2_lps.Scale(-1, -1, 1)
+            lps_2_ras = vtk.vtkTransform()
+            lps_2_ras.Scale(-1, -1, 1)
+            affine_lps = vtk.vtkTransform()
+            affine_lps.Concatenate(lps_2_ras)
+            affine_lps.Concatenate(affine_part_inverse)
+            affine_lps.Concatenate(ras_2_lps)
+
+            # convert the inverse spline transform from RAS to LPS 
+            # Now, loop through LPS space. Convert each point to
+            # RAS. Find the effect of the inverse transform on this
+            # point. Then convert this displacement vector to
+            # LPS. This is essentially what vtk.vtkTransformToGrid()
+            # does, but this puts things into LPS.
+            #sz = 2
+            #sp = 40
+            # Use more grid points than for the TPS grid we calculated here.
+            # This is needed so the b spline approximation to the inverse TPS is accurate.
+            sz = 8
+            sp = 10
+            grid_points_LPS = list()
+            grid_points_RAS = list()
+            for l in range(-sz*sp, sz*sp+1, sp):
+                for p in range(-sz*sp, sz*sp+1, sp):
+                    for s in range(-sz*sp, sz*sp+1, sp):
+                        print "LPS:", l, p, s
+                        grid_points_LPS.append([l, p, s])
+                        grid_points_RAS.append([-l, -p, s])
+
+            displacements_LPS = list()
+            for gp_ras in grid_points_RAS:
+                pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
+                diff = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
+                diff_LPS = [-diff[0], -diff[1], diff[2]]
+                displacements_LPS.append(diff_LPS)
+
+            # save the points and displacement vectors in ITK format.
+            print 'Saving in ITK transform format.'
+            f = open(fname, 'w')
+            f.write('#Insight Transform File V1.0\n')
+            f.write('# Transform 0\n')
+            f.write('Transform: BSplineDeformableTransform_double_3_3\n')
+            f.write('Parameters: ')
+            # Here the data are: The bulk of the BSpline part are 3D
+            # displacement vectors for each of the BSpline grid-nodes
+            # in physical space, i.e. for each grid-node, there will
+            # be three blocks of displacements defining dx,dy,dz for
+            # all grid nodes.
+            for diff in displacements_LPS:
+                for d in diff:
+                    f.write('{0} '.format(d))
+                    
+            #FixedParameters: size size size origin origin origin origin spacing spacing spacing (then direction cosines: 1 0 0 0 1 0 0 0 1)            
+            f.write('\nFixedParameters:')
+            f.write(' {0} {0} {0}'.format(2*sz+1))
+            f.write(' 0 0 0')
+            f.write(' {0} {0} {0}'.format(sp))
+            f.write(' 1 0 0 0 1 0 0 0 1\n')
+            
+            # Now write the affine part of the transform in LPS
+            three_by_three = list()
+            translation = list()
+            for i in range(0,3):
+                for j in range(0,3):
+                    three_by_three.append(affine_lps.GetMatrix().GetElement(i,j))
+            translation.append(affine_lps.GetMatrix().GetElement(0,3))
+            translation.append(affine_lps.GetMatrix().GetElement(1,3))
+            translation.append(affine_lps.GetMatrix().GetElement(2,3))
+            f.write('# Transform 1\n')
+            f.write('Transform: AffineTransform_double_3_3\n')
+            f.write('Parameters: ')
+            for el in three_by_three:
+                f.write('{0} '.format(el))
+            for el in translation:
+                f.write('{0} '.format(el))
+            f.write('\nFixedParameters: 0 0 0\n')
+            f.close()
         else:
             tx_inverse = vtk.vtkTransform()
             tx_inverse.DeepCopy(tx)
@@ -443,7 +547,8 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             for el in translation:
                 f.write('{0} '.format(el))
             f.write('\nFixedParameters: 0 0 0\n')
-
+            f.close()
+            
         idx +=1
     return(tx_fnames)
 
