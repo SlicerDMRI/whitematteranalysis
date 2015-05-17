@@ -395,6 +395,14 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
         writer.SetFileName(os.path.join(outdir, fname))
         writer.Write()
+
+        # file name for itk transform written below
+        if subject_ids is not None:
+            fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
+        else:
+            fname = 'itk_txform_{0:05d}.tfm'.format(idx)
+        fname = os.path.join(outdir, fname)
+        tx_fnames.append(fname)
         
         # Save the itk transform as the inverse of this transform (resampling transform) and in LPS.
         # This will show the same transform in the slicer GUI as the vtk transform we internally computed
@@ -425,12 +433,6 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             translation.append(tx2.GetMatrix().GetElement(1,3))
             translation.append(tx2.GetMatrix().GetElement(2,3))
 
-            if subject_ids is not None:
-                fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
-            else:
-                fname = 'itk_txform_{0:05d}.tfm'.format(idx)
-            fname = os.path.join(outdir, fname)
-            tx_fnames.append(fname)
             f = open(fname, 'w')
             f.write('#Insight Transform File V1.0\n')
             f.write('# Transform 0\n')
