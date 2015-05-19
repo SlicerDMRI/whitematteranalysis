@@ -394,7 +394,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         else:
             fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
         writer.SetFileName(os.path.join(outdir, fname))
-        #writer.Write()
+        writer.Write()
 
         # file name for itk transform written below
         if subject_ids is not None:
@@ -446,33 +446,72 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             affine_lps.Concatenate(affine_part_inverse)
             affine_lps.Concatenate(ras_2_lps)
 
-            # convert the inverse spline transform from RAS to LPS 
-            # Now, loop through LPS space. Convert each point to
-            # RAS. Find the effect of the inverse transform on this
-            # point. Then convert this displacement vector to
-            # LPS. This is essentially what vtk.vtkTransformToGrid()
-            # does, but this puts things into LPS.
-            #sz = 2
-            #sp = 40
-            # Use more grid points than for the TPS grid we calculated here.
-            # This is needed so the b spline approximation to the inverse TPS is accurate.
-            sz = 8
-            sp = 10
+            # convert the inverse spline transform from RAS to LPS
+            ras_2_lps2 = vtk.vtkTransform()
+            ras_2_lps2.Scale(-1, -1, 1)
+            lps_2_ras2 = vtk.vtkTransform()
+            lps_2_ras2.Scale(-1, -1, 1)
+            spline_inverse_lps = vtk.vtkGeneralTransform()
+            spline_inverse_lps.Concatenate(lps_2_ras2)
+            spline_inverse_lps.Concatenate(tps)
+            spline_inverse_lps.Concatenate(ras_2_lps2)
+
+            # Now, loop through LPS space. Find the effect of the
+            # inverse transform on each point. This is essentially what
+            # vtk.vtkTransformToGrid() does, but this puts things into
+            # LPS.
+
+            # make sure to use an odd number for grid size
+            #grid_size = [5, 5, 5]
+            #grid_spacing = 60
+
+            # avoid edge effects with a large grid to approximate the thin plate spline
+            grid_size = [9, 9, 9]
+            grid_spacing = 50
+
+            #grid_size = [11, 11, 11]
+            #grid_spacing = 20
+
+            #grid_size = [3, 3, 3]
+            #grid_spacing = 80
+
+            extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
+            extent_1 = [ (grid_size[0] - 1)/2,  (grid_size[1] - 1)/2,  (grid_size[2] - 1)/2]
+
+            origin = -grid_spacing * (numpy.array(extent_1) - numpy.array(extent_0))/2.0
+
+            print "EXTENT", extent_0
+            print "EXTENT", extent_1
+            print "ORIGIN", origin
+
             grid_points_LPS = list()
             grid_points_RAS = list()
-            for l in range(-sz*sp, sz*sp+1, sp):
-                for p in range(-sz*sp, sz*sp+1, sp):
-                    for s in range(-sz*sp, sz*sp+1, sp):
-                        print "LPS:", l, p, s
-                        grid_points_LPS.append([l, p, s])
-                        grid_points_RAS.append([-l, -p, s])
+
+            for l in range(extent_0[0], extent_1[0]+1):
+                for p in range(extent_0[1], extent_1[1]+1):
+                    for s in range(extent_0[2], extent_1[2]+1):
+                        grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
+                        grid_points_RAS.append([-l*grid_spacing, -p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
-            for gp_ras in grid_points_RAS:
+            displacements_RAS = list()
+            for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
                 pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
-                diff = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
-                diff_LPS = [-diff[0], -diff[1], diff[2]]
-                displacements_LPS.append(diff_LPS)
+                diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
+                displacements_RAS.append(diff_ras)
+
+                pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+                diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
+                #diff_lps = [gp_lps[0] - pt[0], gp_lps[1] - pt[1], gp_lps[2] - pt[2]]
+                # testing grid definition and origin are okay.
+                #diff_lps = [20,30,40]
+
+                displacements_LPS.append(diff_lps)
+                # they are the same, passing this test.
+                print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
+
+            for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
+                print "POINT:", pt, "DISPLACEMENT:", disp
 
             # save the points and displacement vectors in ITK format.
             print 'Saving in ITK transform format.'
@@ -481,20 +520,26 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             f.write('# Transform 0\n')
             f.write('Transform: BSplineDeformableTransform_double_3_3\n')
             f.write('Parameters: ')
-            # Here the data are: The bulk of the BSpline part are 3D
+            # "Here the data are: The bulk of the BSpline part are 3D
             # displacement vectors for each of the BSpline grid-nodes
             # in physical space, i.e. for each grid-node, there will
             # be three blocks of displacements defining dx,dy,dz for
-            # all grid nodes.
-            for diff in displacements_LPS:
-                for d in diff:
-                    f.write('{0} '.format(d))
+            # all grid nodes."
+            for block in [0, 1, 2]:
+                for diff in displacements_LPS:
+                    f.write('{0} '.format(diff[block]))
                     
             #FixedParameters: size size size origin origin origin origin spacing spacing spacing (then direction cosines: 1 0 0 0 1 0 0 0 1)            
             f.write('\nFixedParameters:')
-            f.write(' {0} {0} {0}'.format(2*sz+1))
-            f.write(' 0 0 0')
-            f.write(' {0} {0} {0}'.format(sp))
+            #f.write(' {0} {0} {0}'.format(2*sz+1))
+            f.write(' {0}'.format(grid_size[0]))
+            f.write(' {0}'.format(grid_size[1]))
+            f.write(' {0}'.format(grid_size[2]))
+
+            f.write(' {0}'.format(origin[0]))
+            f.write(' {0}'.format(origin[1]))
+            f.write(' {0}'.format(origin[2]))
+            f.write(' {0} {0} {0}'.format(grid_spacing))
             f.write(' 1 0 0 0 1 0 0 0 1\n')
             
             # Now write the affine part of the transform in LPS
