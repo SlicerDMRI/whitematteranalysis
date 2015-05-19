@@ -54,9 +54,15 @@ class MultiSubjectRegistration:
 
         self.target_landmarks = list()
         landmarks = list()
-        for r in [-80, -40, 0, 40, 80]:
-            for a in [80, 40, 0, 40, 80]:
-                for s in [-80, -40, 0, 40, 80]:     
+        ## for r in [-80, -40, 0, 40, 80]:
+        ##     for a in [-80, -40, 0, 40, 80]:
+        ##         for s in [-80, -40, 0, 40, 80]:
+        ## for r in [-100, -50, 0, 50, 100]:
+        ##     for a in [-100, -50, 0, 50, 100]:
+        ##         for s in [-100, -50, 0, 50, 100]:
+        for r in [-120, -60, 0, 60, 120]:
+            for a in [-120, -60, 0, 60, 120]:
+                for s in [-120, -60, 0, 60, 120]:
                     #self.target_landmarks.extend([r, a, s])
                     landmarks.append([r, a, s])
         # now shuffle the order of these points so that the optimizer doesn't
@@ -412,7 +418,7 @@ class MultiSubjectRegistration:
             del appender
 
             # save the transforms to text files
-            wma.registration_functions.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
+            wma.registration_functions.write_transforms_to_itk_format(transform_list, outdir, self.subject_ids)
             
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render):
 

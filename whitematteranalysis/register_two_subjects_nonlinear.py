@@ -118,9 +118,18 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         #self.target_landmarks = [0,0,0, 0,0,-10, 0,0,-50, 0,-20,-20, -30,50,20, 30,50,20, 0,0,20, -40,-50,10, 40,-50,10]
         self.target_landmarks = list()
         landmarks = list()
-        for r in [-80, -40, 0, 40, 80]:
-            for a in [80, 40, 0, 40, 80]:
-                for s in [-80, -40, 0, 40, 80]:     
+        ## for r in [-80, -40, 0, 40, 80]:
+        ##     for a in [-80, -40, 0, 40, 80]:
+        ##         for s in [-80, -40, 0, 40, 80]:
+
+        ## for r in [-100, -50, 0, 50, 100]:
+        ##     for a in [-100, -50, 0, 50, 100]:
+        ##         for s in [-100, -50, 0, 50, 100]:
+
+
+        for r in [-120, -60, 0, 60, 120]:
+            for a in [-120, -60, 0, 60, 120]:
+                for s in [-120, -60, 0, 60, 120]:
                     #self.target_landmarks.extend([r, a, s])
                     landmarks.append([r, a, s])
         # now shuffle the order of these points so that the optimizer doesn't
@@ -135,20 +144,6 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         order = [ 75,  18,  54,  61,  64,  73,  95,  13, 111, 118,  43,   7,  46, 56,   4, 124,  77,  98,  72,  60,  38,  80,  36,  27, 120, 119, 51,  81,   0,  93,  11,  41,  69,  83, 107,  12, 106,  30,  53, 105,  33,  91,  28,  17,  58,  90,  45,  94,  14,  26,  84,   1, 92,  21,  47,  59, 100,   2,   3,  87,  65, 102,  68,  20,  85, 79,  82,  15,  32,  88, 115,  74,   6,  19,  35,  99, 104, 109, 70, 101,  96,  66,  52,  48,  49,  31,  97, 122,  78, 113,  55, 112,  76,  44,  23, 103,  16,  10, 123,  86,  39,   8,  62, 110, 42, 114,  40, 117,  63,   9,  25,  67,  71,  37,  24, 116,  57, 89, 121,  34,   5,  29, 108,  50,  22]
         for idx in order:
             self.target_landmarks.extend(landmarks[idx])
-
-        ## self.target_landmarks = list()
-
-        ## ## for r in [-50, 0, 50]:
-        ## ##     for a in [-100, 0, 100]:
-        ## ##         for s in [-50, 0, 50]:
-        ## ##             self.target_landmarks.extend([r, a, s])
-        ## ## for r in [-50, -25, 0, 25, 50]:
-        ## ##     for a in [80, 40, 0, 40, 80]:
-        ## ##         for s in [-50, -25, 0, 25, 50]:
-        ## for r in [-80, -40, 0, 40, 80]:
-        ##     for a in [80, 40, 0, 40, 80]:
-        ##         for s in [-80, -40, 0, 40, 80]:                    
-        ##             self.target_landmarks.extend([r, a, s])
         
         self.target_points = convert_numpy_array_to_vtk_points(self.target_landmarks)
 
