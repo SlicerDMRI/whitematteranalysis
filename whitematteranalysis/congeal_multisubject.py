@@ -349,10 +349,7 @@ class MultiSubjectRegistration:
         # if requested, render all (future)
 
         # save the current transforms to disk
-        if self.nonlinear:
-            print "Figure out how to save txforms.", len(self.transforms)
-        else:
-            wma.registration_functions.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
+        wma.registration_functions.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
 
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
@@ -360,8 +357,10 @@ class MultiSubjectRegistration:
         print "SAVING POLYDATAS"
         
         transform_list = self.transforms
+        subject_id_list = self.subject_ids
         if midsag_symmetric:
             transform_list = transform_list[::2]
+            subject_id_list = subject_id_list[::2]
 
         if intermediate_save:
             # make a directory for the current iteration
@@ -418,7 +417,7 @@ class MultiSubjectRegistration:
             del appender
 
             # save the transforms to text files
-            wma.registration_functions.write_transforms_to_itk_format(transform_list, outdir, self.subject_ids)
+            wma.registration_functions.write_transforms_to_itk_format(transform_list, outdir, subject_id_list)
             
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render):
 
