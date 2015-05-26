@@ -466,11 +466,11 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             #grid_spacing = 60
 
             # avoid edge effects with a large grid to approximate the thin plate spline
-            grid_size = [9, 9, 9]
-            grid_spacing = 50
+            #grid_size = [9, 9, 9]
+            #grid_spacing = 50
 
-            #grid_size = [11, 11, 11]
-            #grid_spacing = 20
+            grid_size = [11, 11, 11]
+            grid_spacing = 20
 
             #grid_size = [3, 3, 3]
             #grid_spacing = 80
@@ -480,18 +480,15 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
 
             origin = -grid_spacing * (numpy.array(extent_1) - numpy.array(extent_0))/2.0
 
-            print "EXTENT", extent_0
-            print "EXTENT", extent_1
-            print "ORIGIN", origin
-
             grid_points_LPS = list()
             grid_points_RAS = list()
 
-            for l in range(extent_0[0], extent_1[0]+1):
+            # ordering of grid points must match itk-style array order for images
+            for s in range(extent_0[0], extent_1[0]+1):
                 for p in range(extent_0[1], extent_1[1]+1):
-                    for s in range(extent_0[2], extent_1[2]+1):
-                        grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
+                    for l in range(extent_0[2], extent_1[2]+1):
                         grid_points_RAS.append([-l*grid_spacing, -p*grid_spacing, s*grid_spacing])
+                        grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
             displacements_RAS = list()
@@ -503,15 +500,28 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                 pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
                 diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
                 #diff_lps = [gp_lps[0] - pt[0], gp_lps[1] - pt[1], gp_lps[2] - pt[2]]
-                # testing grid definition and origin are okay.
-                #diff_lps = [20,30,40]
+
+                ## # this tested grid definition and origin were okay.
+                ## diff_lps = [20,30,40]
+
+                ## # this tested that the ordering of L,P,S is correct:
+                ## diff_lps = [0, gp_lps[1], 0]
+                ## diff_lps = [gp_lps[0], 0, 0]
+                ## diff_lps = [0, 0, gp_lps[2]]
+
+                ## # this tested that the ordering of grid points is correct
+                ## # only the R>0, A>0, S<0 region shows a transform.
+                ## if gp_lps[0] < 0 and gp_lps[1] < 0 and gp_lps[2] < 0:
+                ##     diff_lps = [gp_lps[0]/2.0, 0, 0]
+                ## else:
+                ##     diff_lps = [0, 0, 0]
 
                 displacements_LPS.append(diff_lps)
                 # they are the same, passing this test.
-                print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
+                #print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
 
-            for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
-                print "POINT:", pt, "DISPLACEMENT:", disp
+            #for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
+            #    print "POINT:", pt, "DISPLACEMENT:", disp
 
             # save the points and displacement vectors in ITK format.
             print 'Saving in ITK transform format.'
