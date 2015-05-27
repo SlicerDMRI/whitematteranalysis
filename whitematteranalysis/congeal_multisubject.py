@@ -103,6 +103,22 @@ class MultiSubjectRegistration:
          higher. Definitely not the desired effect."""
 
         if self.nonlinear:
+            # remove any average displacement of each source point.
+            transforms_array = numpy.array(self.transforms_as_array)
+            meansource = numpy.mean(transforms_array, 0)
+            landmarks = numpy.array(self.target_landmarks)
+            meandisp = meansource - landmarks
+            print "MEAN DISPLACEMENT:", meandisp
+
+            if self.verbose:
+                print "<congeal.py> TRANSFORMS"
+                print numpy.round(transforms_array * 100) / 100
+                print "<congeal.py> Removing current (accumulated) mean transform before computing objective:"
+                print meandisp
+
+            for transform in self.transforms_as_array:
+                transform = transform - meandisp
+
             print "Zero-mean based on affine part"
             matrix_average = numpy.zeros((3,4))
             target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
@@ -155,6 +171,7 @@ class MultiSubjectRegistration:
             self.transforms_as_array = new_source_pts
 
             # TEST ONLY
+            target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
             matrix_average = numpy.zeros((3,4))
             for trans in self.transforms_as_array:
                 affine_part = vtk.vtkLandmarkTransform()
