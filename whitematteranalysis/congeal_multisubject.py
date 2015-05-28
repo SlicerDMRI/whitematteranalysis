@@ -104,6 +104,7 @@ class MultiSubjectRegistration:
 
         if self.nonlinear:
             # remove any average displacement of each source point.
+            # this means the mean of the source points must equal the target point
             transforms_array = numpy.array(self.transforms_as_array)
             meansource = numpy.mean(transforms_array, 0)
             landmarks = numpy.array(self.target_landmarks)
@@ -117,7 +118,13 @@ class MultiSubjectRegistration:
                 print meandisp
 
             for transform in self.transforms_as_array:
-                transform = transform - meandisp
+                transform[:] = transform - meandisp
+
+            transforms_array = numpy.array(self.transforms_as_array)
+            meansource = numpy.mean(transforms_array, 0)
+            landmarks = numpy.array(self.target_landmarks)
+            meandisp = meansource - landmarks
+            print "MEAN DISPLACEMENT 2:", meandisp
 
             print "Zero-mean based on affine part"
             matrix_average = numpy.zeros((3,4))
