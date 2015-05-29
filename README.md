@@ -11,13 +11,17 @@ Also see the github.io page here:
 http://ljod.github.io/whitematteranalysis/
 
 #Installation
-###1. Install python. 
+###1. Download whitematteranalysis from github. 
+
+      git clone git://github.com/ljod/whitematteranalysis.git
+      
+###2. Install python. 
 Anaconda is a nice option since it has VTK and scipy.
-First install anaconda, then run: 
+First install anaconda from http://continuum.io/downloads, then run: 
 
       conda install vtk
 
-###2. Install the following python packages (dependencies).
+###3. Install the following python packages (dependencies).
 
 Once you have anaconda installed, run: 
 
@@ -43,19 +47,19 @@ To install your compiled vtk into your python:
      cd VTK-build/Wrapping/Python
      python setup.py install
 
-###3. Install WhiteMatterAnalysis into your python in the standard way.
+###4. Install WhiteMatterAnalysis into your python in the standard way.
 
      cd whitematteranalysis
      python setup.py install
 
-###4. Test the installation.
-Run python, then:
+###5. Test the installation.
+Change to another directory (outside of whitematteranalysis). Run python, then:
 
     >>> import whitematteranalysis as wma
 
 This will produce errors if the required packages are not found.
 
-###5. Scripts for performing data analyses are located in whitematteranalysis/bin. 
+###6. Scripts for performing data analyses are located in whitematteranalysis/bin. 
 
-###6. Please see the wiki for usage instructions.
+###7. Please see the wiki for usage instructions.
 https://github.com/ljod/whitematteranalysis/wiki
