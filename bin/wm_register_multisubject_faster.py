@@ -39,23 +39,26 @@ parser.add_argument(
     'outputDirectory',
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
-    '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each dataset. 300-2000 or more is reasonable. Depends on total number of datasets and desired run time/memory use. Default setting is for a fast test run: 300 fibers per subject. A good setting for a paper is 1000-2000 per subject, if greater than 10 subjects.')
+    '-mode', action="store", dest="mode", type=str, default="affine",
+    help='The mode can be affine or nonlinear. Affine is the default. It should be run first before nonlinear.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int,
-    help='Minimum length (in mm) of fibers to analyze. 60mm is default (good for DTI single-tensor tractography which is shorter in general). Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well.')
+    '-f', action="store", dest="numberOfFibers", type=int, default=20000,
+    help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
 parser.add_argument(
-    '-lmax', action="store", dest="fiberLengthMax", type=int,
-    help='Maximum length (in mm) of fibers to analyze. This parameter is used to remove extremely long fibers that may have traversed several structures. For example, a value of 150 will avoid sampling the tail end of the length distribution.')
+    '-l', action="store", dest="fiberLength", type=int, default=80,
+    help='Minimum length (in mm) of fibers to analyze. 60mm is reasonable for DTI single-tensor tractography which is shorter in general. Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well. For neonate data, a value of 40mm is suggested. The default is 80mm.')
+parser.add_argument(
+    '-lmax', action="store", dest="fiberLengthMax", type=int, default=150,
+    help='Maximum length (in mm) of fibers to analyze. This parameter can be used to remove extremely long fibers that may have traversed several structures. For example, a value of 150 will avoid sampling the tail end of the fiber length distribution. The default is 150 mm.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
     help='Verbose. Run with -verbose to store more files and images of intermediate and final polydatas.')
-parser.add_argument(
-    '-pf', action="store", dest="pointsPerFiber", type=int, default=15,
-    help='Number of points for fiber representation during registration. The default of 15 is reasonable.')
+#parser.add_argument(
+#    '-pf', action="store", dest="pointsPerFiber", type=int, default=15,
+#    help='Number of points for fiber representation during registration. The default of 15 is reasonable.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
@@ -75,6 +78,9 @@ print "<register> Input  directory: ", args.inputDirectory
 print "<register> Output directory: ", args.outputDirectory
 print "\n<register> ============PARAMETERS================="
 
+mode = args.mode
+print "<register> Registration mode:", mode
+
 if not os.path.isdir(args.inputDirectory):
     print "<register> Error: Input directory", args.inputDirectory, "does not exist."
     exit()
@@ -84,22 +90,15 @@ if not os.path.exists(outdir):
     print "<register> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
-if args.numberOfFibers is not None:
-    number_of_fibers = args.numberOfFibers
-else:
-    number_of_fibers = 2000
+number_of_fibers = args.numberOfFibers
 print "<register> Number of fibers to analyze per subject: ", number_of_fibers
 
-if args.fiberLength is not None:
-    fiber_length = args.fiberLength
-else:
-    fiber_length = 75
+fiber_length = args.fiberLength
 print "<register> Minimum length of fibers to analyze (in mm): ", fiber_length
 
 fiber_length_max = args.fiberLengthMax
-if fiber_length_max is not None:
-    print "<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max
-  
+print "<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max
+
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
     print "<register> Number of jobs to use:", parallel_jobs
@@ -114,8 +113,8 @@ else:
 verbose = args.flag_verbose
 
 
-points_per_fiber = args.pointsPerFiber
-print "<register> Number of points for fiber representation: ", points_per_fiber
+#points_per_fiber = args.pointsPerFiber
+#print "<register> Number of points for fiber representation: ", points_per_fiber
 
 if args.flag_norender:
     print "<register> No rendering (for compute servers without X connection)."
@@ -177,45 +176,68 @@ register.output_directory = args.outputDirectory
 
 register.parallel_jobs = parallel_jobs
 register.render = not no_render
-register.points_per_fiber = points_per_fiber
-
 
 # -------------
 # SETTINGS
 # -------------
-#mode = "E"
-mode = "TEST"
-mode = "nonlinearTEST"
 
-if mode == "B":
-    # Settings B were successful at 6-subject baby brain dataset
+points_per_fiber = 10
+
+if mode == "affine":
+    # default affine for adults with fewer fibers than neonate brains (lower variability)
     sigma_per_scale = [30, 10, 7.5, 5]
-    iterations_per_scale=[2, 5, 3, 3]
-    maxfun_per_scale = [50, 80, 80, 300]
-    mean_brain_size_per_scale = [1000, 10000, 20000, 30000]
-    subject_brain_size_per_scale = [250, 1500, 2500, 4000]
-    initial_step_per_scale = [5, 5, 5, 5]
-    final_step_per_scale = [2, 2, 2, 2]
+    iterations_per_scale=[2, 3, 3, 3]
+    maxfun_per_scale = [45, 60, 75, 90]
+    mean_brain_size_per_scale = [1000, 3000, 4000, 5000]
+    subject_brain_size_per_scale = [250, 1500, 1750, 2000]
+    initial_step_per_scale = [10, 5, 5, 5]
+    final_step_per_scale = [5, 2, 2, 2]
+    register.nonlinear = False
     
-elif mode == "E":
-    # E works well on the adult brain data but not on the baby brain data.
-    sigma_per_scale = [30, 10, 7.5, 5]
-    # 10 iterations at sigma 30 is dangerous with original objective
-    #iterations_per_scale=[10, 10, 10, 10]
-    iterations_per_scale=[2, 10, 10, 10]
-    # when it takes very long to iterate it generally does not decrease the objective.
-    maxfun_per_scale = [60, 80, 100, 200]
-    mean_brain_size_per_scale = [1500, 3000, 6000, 8000]
-    subject_brain_size_per_scale = [100, 500, 1000, 1000]
-    initial_step_per_scale = [5, 5, 5, 5]
-    final_step_per_scale = [2, 2, 2, 2]
-    # E failed for baby brains compared to B. I think this is because their fibers are
-    # quite variable and and you need more, so unstable matrix updates were made:
-    # for example all but one improved objective on iteration 24 for baby brains,
-    # while in adult brains it was less than half.
-    # possibly baby brains could use smaller sigma too.
+elif mode == "affine_neonate":
+    # Try to improve previous affine registration using more subjects
+    # Try smaller sigma for neonates
+    sigma_per_scale = [20, 10, 7.5, 5]
+    iterations_per_scale=[2, 3, 3, 3]
+    maxfun_per_scale = [50, 80, 80, 200]
+    mean_brain_size_per_scale = [1000, 3000, 5000, 7500]
+    subject_brain_size_per_scale = [250, 1500, 2000, 2500]
+    initial_step_per_scale = [10, 5, 5, 5]
+    final_step_per_scale = [5, 2, 2, 2]
+    register.nonlinear = False
 
-elif mode == "TEST":
+elif mode == "affine_fast_iters":
+    # quicker test mode to see if more iterations help.
+    sigma_per_scale = [30, 10, 7.5, 5]
+    iterations_per_scale=[6, 4, 4, 4]
+    maxfun_per_scale = [20, 30, 40, 50]
+    mean_brain_size_per_scale = [1000, 1000, 1000, 1500]
+    subject_brain_size_per_scale = [250, 500, 600, 800]
+    initial_step_per_scale = [10, 5, 5, 5]
+    final_step_per_scale = [5, 2, 2, 2]
+    register.nonlinear = False
+    
+elif mode == "nonlinear":
+    # this is in mm space.
+    initial_step_per_scale = [5, 3, 2]
+    final_step_per_scale = [2, 1, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [3, 2, 1]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [2, 2, 2]
+    # this takes twice as long--still testing what is optimal for this parameter
+    #iterations_per_scale = [4, 4, 4]
+    # these are small samples to go (relatively) quickly: the goal is just to improve the mean brain each time
+    mean_brain_size_per_scale = [2500, 2750, 3000]
+    subject_brain_size_per_scale = [500, 750, 900]
+    # stop computation early. no need to ever converge, just improve objective as quickly as possible
+    # These settings are for a 5x5x5 grid, 125*3 = 375 parameter space.
+    maxfun_per_scale = [500, 500, 750]
+    # fiber representation for computation.
+    points_per_fiber = 15
+    register.nonlinear = True
+
+elif mode == "affineTEST":
     # very quick test if software is working
     sigma_per_scale = [30, 10, 7.5]
     iterations_per_scale=[1, 1, 1]
@@ -224,39 +246,30 @@ elif mode == "TEST":
     subject_brain_size_per_scale = [100, 500, 1000]
     initial_step_per_scale = [5, 5, 5, 5]
     final_step_per_scale = [2, 2, 2, 2]
-
+    register.nonlinear = False
+    
 elif mode == "nonlinearTEST":
+    # very quick test if software is working
     initial_step_per_scale = [5, 3, 1]
     final_step_per_scale = [2, 1, 0.05]
     sigma_per_scale = [3, 2, 1]
     iterations_per_scale = [1, 1, 1]
     mean_brain_size_per_scale = [1500, 2000, 3000]
     subject_brain_size_per_scale = [500, 750, 1000]
-    # don't stop computation early: many more are needed for larger search space
     # stop computation: this is just a quick test the software is working
     maxfun_per_scale = [10, 10, 10]
-    points_per_fiber = 30
-    register.nonlinear = True
-    
-elif mode == "nonlinear":
-    # this is in mm space. discourage big steps and shrinking
-    initial_step_per_scale = [5, 3, 1]
-    final_step_per_scale = [2, 1, 0.05]
-    # try to use only very local information
-    sigma_per_scale = [3, 2, 1]
-    # test
-    iterations_per_scale = [1, 1, 1]
-    mean_brain_size_per_scale = [3000, 4000, 5000]
-    subject_brain_size_per_scale = [500, 750, 1000]
-    # don't stop computation early: many more are needed for larger search space
-    maxfun_per_scale = [1000, 2000, 3000]
-    points_per_fiber = 30
+    points_per_fiber = 15
     register.nonlinear = True
 
+else:
+    print "\n<register> Error: Unknown registration mode:", mode
+    exit()
 
-# For now, we have to add polydatas after setting nonlinear in the register object    
+# We have to add polydatas after setting nonlinear in the register object
 for (pd, id) in zip(input_pds, subject_ids):
     register.add_polydata(pd, id)
+
+register.points_per_fiber = points_per_fiber
 
 # -------------
 # Done SETTINGS. Below is computation
