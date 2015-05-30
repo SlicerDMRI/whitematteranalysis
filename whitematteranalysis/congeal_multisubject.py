@@ -73,10 +73,10 @@ class MultiSubjectRegistration:
         order = [ 75,  18,  54,  61,  64,  73,  95,  13, 111, 118,  43,   7,  46, 56,   4, 124,  77,  98,  72,  60,  38,  80,  36,  27, 120, 119, 51,  81,   0,  93,  11,  41,  69,  83, 107,  12, 106,  30,  53, 105,  33,  91,  28,  17,  58,  90,  45,  94,  14,  26,  84,   1, 92,  21,  47,  59, 100,   2,   3,  87,  65, 102,  68,  20,  85, 79,  82,  15,  32,  88, 115,  74,   6,  19,  35,  99, 104, 109, 70, 101,  96,  66,  52,  48,  49,  31,  97, 122,  78, 113,  55, 112,  76,  44,  23, 103,  16,  10, 123,  86,  39,   8,  62, 110, 42, 114,  40, 117,  63,   9,  25,  67,  71,  37,  24, 116,  57, 89, 121,  34,   5,  29, 108,  50,  22]
         for idx in order:
             self.target_landmarks.extend(landmarks[idx])
-            print landmarks[idx]
+            #print landmarks[idx]
 
-        print "LANDMARKS FINAL"
-        print self.target_landmarks
+        #print "LANDMARKS FINAL"
+        #print self.target_landmarks
         
         self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
                     
