@@ -43,7 +43,7 @@ def preprocess(inpd, min_length_mm,
                preserve_point_data=False,
                preserve_cell_data=False,
                verbose=True, max_length_mm=None):
-    """Remove low-quality fibers.
+    """Remove fibers below a length threshold and using other criteria (optional).
 
     Based on fiber length, and optionally on distance between
     endpoints (u-shape has low distance), and inferior location
@@ -56,23 +56,30 @@ def preprocess(inpd, min_length_mm,
     inpoints = inpd.GetPoints()
     
     # min_length_mm is in mm. Convert to minimum points per fiber
-    # by measuring step size (using first two points on first line that has >2 points)
+    # by measuring step size (using first two points on first line that has >=15 points)
     cell_idx = 0
-    # loop over lines until we find one that has more than 2 points
     inpd.GetLines().InitTraversal()
-    while (ptids.GetNumberOfIds() < 2) & (cell_idx < inpd.GetNumberOfLines()):
+    while (ptids.GetNumberOfIds() < 15) & (cell_idx < inpd.GetNumberOfLines()):
         inpd.GetLines().GetNextCell(ptids)
         ##    inpd.GetLines().GetCell(cell_idx, ptids)
         ## the GetCell function is not wrapped in Canopy python-vtk
         cell_idx += 1
         
-    # make sure we have some trajectories
-    assert ptids.GetNumberOfIds() >= 2
+    # make sure we have some points along this fiber
+    assert ptids.GetNumberOfIds() >= 15
 
-    point0 = inpoints.GetPoint(ptids.GetId(0))
-    point1 = inpoints.GetPoint(ptids.GetId(1))
-    step_size = numpy.sqrt(numpy.sum(numpy.power(
-                numpy.subtract(point0, point1), 2)))
+    # Use points from the middle of the fiber to estimate step length.
+    # This is because the step size may vary near endpoints (in order to include
+    # endpoints when downsampling the fiber to reduce file size).
+    step_size = 0.0
+    count = 0.0
+    for ptidx in range(2, ptids.GetNumberOfIds()-3):
+        point0 = inpoints.GetPoint(ptids.GetId(ptidx))
+        point1 = inpoints.GetPoint(ptids.GetId(ptidx + 1))
+        step_size += numpy.sqrt(numpy.sum(numpy.power(numpy.subtract(point0, point1), 2)))
+        count += 1
+    step_size = step_size / count
+
     min_length_pts = round(min_length_mm / step_size)
     fiber_lengths = []
     if verbose:
