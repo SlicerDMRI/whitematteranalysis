@@ -166,7 +166,7 @@ for fname in input_polydatas:
     # numbers of fibers at different possible threshold lengths
     pd2, lengths, step_size = wma.filter.preprocess(pd, 100, return_lengths=True, verbose=False)
     lengths = numpy.array(lengths)
-    outstr = outstr + str(step_size) + '\t'
+    outstr = outstr + '{0:.4f}'.format(step_size) + '\t'
     # total points in the dataset
     outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
     # total numbers of fibers
