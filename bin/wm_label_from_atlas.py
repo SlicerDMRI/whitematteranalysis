@@ -74,6 +74,17 @@ if not os.path.exists(outdir):
     print "<wm_label_from_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
+fname = args.inputFile
+subject_id = os.path.splitext(os.path.basename(fname))[0]
+outdir = args.outputDirectory
+if not os.path.exists(outdir):
+    print "<register> Output directory", outdir, "does not exist, creating it."
+    os.makedirs(outdir)
+outdir = os.path.join(outdir, subject_id)
+if not os.path.exists(outdir):
+    print "<register> Output directory", outdir, "does not exist, creating it."
+    os.makedirs(outdir)
+
 print "\n=========================="
 print "input file:", args.inputFile
 print "atlas directory:", args.atlasDirectory
