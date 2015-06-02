@@ -10,21 +10,21 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_label_from_atlas.py> Error importing white matter analysis package\n"
+    print "<wm_cluster_from_atlas.py> Error importing white matter analysis package\n"
     raise
 
 HAVE_PLT = 1
 try:
     import matplotlib.pyplot as plt
 except:
-    print "<wm_label_from_atlas.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
+    print "<wm_cluster_from_atlas.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
     HAVE_PLT = 0    
 
 #-----------------
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Labels tractography (propagates clusters) from a cluster atlas (a multi-subject/multi-atlas cluster representation).",
+    description="Clusters tractography (propagates clusters) from a cluster atlas (a multi-subject/multi-atlas cluster representation).",
     epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
 parser.add_argument("-v", "--version",
     action="version", default=argparse.SUPPRESS,
@@ -56,22 +56,22 @@ parser.add_argument(
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
 parser.add_argument(
     '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
-    help='To label in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
+    help='To cluster in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
 
 args = parser.parse_args()
 
 
 if not os.path.exists(args.inputFile):
-    print "<wm_label_from_atlas.py> Error: Input file", args.inputFile, "does not exist."
+    print "<wm_cluster_from_atlas.py> Error: Input file", args.inputFile, "does not exist."
     exit()
 
 if not os.path.isdir(args.atlasDirectory):
-    print "<wm_label_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist."
+    print "<wm_cluster_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist."
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<wm_label_from_atlas.py> Output directory", outdir, "does not exist, creating it."
+    print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
 fname = args.inputFile
@@ -105,8 +105,7 @@ print "minimum length of fibers to analyze (in mm): ", args.fiberLength
 if args.numberOfJobs is not None:
     number_of_jobs = args.numberOfJobs
 else:
-    print 'CPUs detected:', multiprocessing.cpu_count()
-    number_of_jobs = multiprocessing.cpu_count()
+    number_of_jobs = 1
 print 'Using N jobs:', number_of_jobs
 
 if args.flag_verbose:
@@ -123,6 +122,8 @@ print "Maximum total number of fibers to display in MRML/Slicer: ", show_fibers
 
 if args.registerAtlasToSubjectSpace:
     print "Registration of atlas fibers to subject fibers is ON."
+    print "Warning: the registration pipeline is under improvements--the registration implemented here is not currently supported. Please register to atlas first, then call this script without the -reg option."
+    exit()
 else:
     print "Registration of atlas fibers to subject fibers is OFF. Subject must be in atlas space before calling this script."
 
@@ -133,20 +134,20 @@ print "==========================\n"
 # =======================================================================
 
 # read atlas
-print "<wm_label_from_atlas.py> Loading input atlas:", args.atlasDirectory
+print "<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory
 atlas = wma.cluster.load_atlas(args.atlasDirectory, 'atlas')
 
 # read data
-print "<wm_label_from_atlas.py> Reading input file:", args.inputFile
+print "<wm_cluster_from_atlas.py> Reading input file:", args.inputFile
 pd = wma.io.read_polydata(args.inputFile)
     
 # preprocessing step: minimum length
-print "<wm_label_from_atlas.py> Preprocessing by length:", fiber_length, "mm."
+print "<wm_cluster_from_atlas.py> Preprocessing by length:", fiber_length, "mm."
 pd2 = wma.filter.preprocess(pd, fiber_length, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
 
 # preprocessing step: fibers to analyze
 if number_of_fibers is not None:
-    print "<wm_label_from_atlas.py> Downsampling to ", number_of_fibers, "fibers."
+    print "<wm_cluster_from_atlas.py> Downsampling to ", number_of_fibers, "fibers."
     input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
 else:
     input_data = pd2
@@ -226,7 +227,7 @@ if args.registerAtlasToSubjectSpace:
     atlas.nystrom_polydata = pd
 
 #-----------------
-# Label the data using clusters from the atlas
+# Cluster the data using clusters from the atlas
 #-----------------
 output_polydata_s, cluster_numbers_s, color, embed = \
     wma.cluster.spectral_atlas_label(input_data, atlas, number_of_jobs=number_of_jobs)
@@ -241,7 +242,7 @@ fnames = list()
 cluster_colors = list()
 number_of_clusters = numpy.max(cluster_numbers_s)
 first_cluster = numpy.min(cluster_numbers_s)
-print "<wm_label_from_atlas.py> Cluster indices range from:", first_cluster, "to", number_of_clusters
+print "<wm_cluster_from_atlas.py> Cluster indices range from:", first_cluster, "to", number_of_clusters
 
 print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
 cluster_sizes = list()
@@ -273,7 +274,7 @@ for sz, fname in zip(cluster_sizes,cluster_fnames):
         print sz, ":", fname
     
 cluster_sizes = numpy.array(cluster_sizes)
-print "<wm_label_from_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
+print "<wm_cluster_from_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes)
 
 # Estimate subsampling ratio to display approx. show_fibers total fibers
 number_fibers = len(cluster_numbers_s)
@@ -292,11 +293,11 @@ fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
 
 # View the whole thing in png format for quality control
-print '<wm_label_from_atlas.py> Rendering and saving images of clustered subject.'
+print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
 ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
 ren.save_views(outdir)
 del ren
 
 print "\n=========================="
-print '<wm_label_from_atlas.py> Done labeling subject.  See output in directory:\n ', outdir, '\n'
+print '<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n'
 
