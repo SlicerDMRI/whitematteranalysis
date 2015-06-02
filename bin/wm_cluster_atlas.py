@@ -115,8 +115,10 @@ print "minimum length of fibers to analyze (in mm): ", args.fiberLength
 if args.numberOfJobs is not None:
     number_of_jobs = args.numberOfJobs
 else:
-    print 'CPUs detected:', multiprocessing.cpu_count()
-    number_of_jobs = multiprocessing.cpu_count()
+    # default to 1 job for usage on compute clusters. Also, the
+    # multiprocessing is not used efficiently in our code and should
+    # be avoided for large clustering problems, for now.
+    number_of_jobs = 1
 print 'Using N jobs:', number_of_jobs
 
 if args.flag_verbose:
