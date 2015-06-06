@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import numpy
 import argparse
 import os
@@ -54,7 +55,7 @@ parser.add_argument(
     help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Reduce for stricter clustering with ample data, or for physically smaller problems like a subset of the brain.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100%% of fibers.')
 #parser.add_argument(
 #    '-remove_outliers', action='store_true', dest="flag_remove_outliers",
 #    help='Define outlier clusters (default, ones with less than 90 percent of subjects present). These will be segmented separately.')
