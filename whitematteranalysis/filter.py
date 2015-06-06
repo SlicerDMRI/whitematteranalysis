@@ -33,6 +33,48 @@ import similarity
 
 verbose = 0
 
+def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, num_bins=10, fibers_per_bin=1000, verbose=True):
+    """In order to cluster all structures without removing more
+    prevalent shorter ones, sample equal numbers across length ranges.
+
+    This should enable clustering of smaller u-fibers than previously
+    possible, while incorporating information about longer fibers they are
+    near for stability.
+    """
+
+    # try to get N fibers in each length range ("bin")
+    # First calculate the ranges using input or measured max/min lengths
+    if (max_length_mm is None) or (min_length_mm is None):
+        # call preprocess just to get the lengths measured
+        inpd2, lengths, step_size = preprocess(inpd, 0.0, max_length_mm=max_length_mm, verbose=False, return_lengths=True)
+        if max_length_mm is None:
+            max_length_mm = numpy.max(lengths)
+        if min_length_mm is None:
+            min_length_mm = numpy.min(lengths)
+
+    increment = (max_length_mm - min_length_mm) / (num_bins - 1)
+    bin_ends = list()
+    max_l = min_length_mm
+    while max_l < max_length_mm:
+        bin_ends.append(max_l)
+        max_l += increment
+    if verbose:
+        print "Bins/length ranges:", bin_ends
+
+    # append the sampled fibers together into a new polydata
+    appender = vtk.vtkAppendPolyData()
+    for (bin_low, bin_hi) in zip (bin_ends[0:-2], bin_ends[1:-1]):
+        pd = preprocess(inpd, bin_low, max_length_mm=bin_hi, verbose=False)
+        pd2 = downsample(pd, fibers_per_bin,verbose=False)
+        if verbose:
+            print pd2.GetNumberOfLines(), "fibers in length range:", [bin_low, bin_hi]
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            appender.AddInputData(pd2)
+        else:
+            appender.AddInput(pd2)
+    appender.Update()
+    return(appender.GetOutput())
+
 
 def preprocess(inpd, min_length_mm,
                remove_u=False,
