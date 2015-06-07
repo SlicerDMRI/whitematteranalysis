@@ -887,7 +887,7 @@ def _embed_to_rgb(embed):
     return color
 
 
-def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=False, verbose=False):
+def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=False, verbose=False, render_images=True):
 
     """Save the output in our atlas format for automatic labeling of clusters.
 
@@ -1055,8 +1055,9 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
     mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
     
-    # View the whole thing in png format for quality control
-    print '<cluster.py> Rendering and saving images of cluster atlas.'
-    ren = render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=verbose)
-    ren.save_views(outdir, verbose=verbose)
-    del ren
+    # View the whole thing in jpg format for quality control
+    if render_images:
+        print '<cluster.py> Rendering and saving images of cluster atlas.'
+        ren = render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor', verbose=verbose)
+        ren.save_views(outdir, verbose=verbose)
+        del ren

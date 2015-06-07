@@ -69,6 +69,9 @@ parser.add_argument(
     '-outlier_std', action='store', dest="outlierStandardDeviation",type=float,
     help='Reject fiber outliers whose total fiber similarity is more than this number of standard deviations below the mean. Default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100.')
 parser.add_argument(
+    '-norender', action='store_true', dest="flag_norender",
+    help='No Render. Prevents rendering of images that would require an X connection.')
+parser.add_argument(
     '-advanced_only_testing_distance', action="store", dest="distanceMethod", type=str,
     help='(Advanced parameter for testing only.) Distance method for pairwise fiber comparison. Default is Mean, which is the average distance between points on the fibers. Other options are Hausdorff (the worst-case distance), StrictSimilarity (multiplies all pointwise similarities along fiber).')
 parser.add_argument(
@@ -127,6 +130,13 @@ if args.flag_verbose:
 else:
     print "Verbose OFF."
 verbose = args.flag_verbose
+
+if args.flag_norender:
+    print "No rendering (for compute servers without X connection)."
+else:
+    print "Rendering. After clustering, will create colorful jpg images of the group."
+render = not args.flag_norender
+
 if args.numberOfClusters is not None:
     number_of_clusters = args.numberOfClusters
 else:
@@ -285,7 +295,7 @@ outstr += 'cluster_quality_control.txt: Measures from each cluster including mea
 outstr += 'input_subjects.txt:  List of subject index, ID, and full path to input file.\n'
 outstr += 'README.txt:  This summary file.\n'
 outstr += 'subjects_per_cluster_hist.pdf:  Histogram showing the number of subjects present in each cluster. Ideally, most clusters should contain all subjects.\n'
-outstr += 'view_*.png: Images of the clustered brains for visual quality control. Colors should be bright and look related to the anatomy.\n'
+outstr += 'view_*.jpg: Images of the clustered brains for visual quality control. Colors should be bright and look related to the anatomy.\n'
 outstr += '\n'
 outstr += '\n'
 outstr += "Command Line Arguments\n"
@@ -375,7 +385,6 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_id
                              pos_def_approx=pos_def_approx, \
                              bilateral=bilateral)
 
-
 # If any fibers were rejected, delete the corresponding entry in this list
 subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
 
@@ -386,7 +395,7 @@ subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
 # set up a mrml hierarchy file and to visualize the output in Slicer. This data is not used to label
 # a new subject.
 print '<wm_cluster_atlas.py> Saving output files in directory:', outdir
-wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose)
+wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
 
 print "==========================\n"
 print '<wm_cluster_atlas.py> Done clustering atlas. See output in directory:\n ', outdir, '\n'
