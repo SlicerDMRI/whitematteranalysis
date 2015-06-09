@@ -40,9 +40,6 @@ class MultiSubjectRegistration:
         # A different sample of 1000 is taken every iteration, so we really
         # see more fibers than this over the course of the registration
         self.subject_brain_size = 1000
-        self.smooth_mean_brain = False
-        #self.smooth_mean_brain = True
-        #print "TEST SMOOTHING MEAN BRAIN"
         
         # internal stuff
         self.polydatas = list()
@@ -251,68 +248,33 @@ class MultiSubjectRegistration:
         # register each subject to the current mean
         subj_idx = 0
 
-        if self.smooth_mean_brain:
-            print "COMPUTING ONE SMOOTHED MEAN BRAIN"
-            # compute just one mean since this is slow and does not use all fibers in the end
+        # Loop over all subjects and prepare lists of inputs for subprocesses
+        for input_pd in self.polydatas:
+            # compute mean in a leave-one out fashion. Otherwise, the
+            # optimal transform may be identity.
             appender = vtk.vtkAppendPolyData()
+            subj_idx2 = 0
             for (input_pd2, trans) in zip(self.polydatas, self.transforms):
-                # apply the current transform to this polydata for computation of mean brain
-                transformer = vtk.vtkTransformPolyDataFilter()
-                if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                    transformer.SetInputData(input_pd2)
-                else:
-                    transformer.SetInput(input_pd2)
-                transformer.SetTransform(trans)
-                transformer.Update()
-                pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
-                if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                    appender.AddInputData(pd)
-                else:
-                    appender.AddInput(pd)
+                if input_pd2 != input_pd:
+                    # apply the current transform to this polydata for computation of mean brain
+                    transformer = vtk.vtkTransformPolyDataFilter()
+                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                        transformer.SetInputData(input_pd2)
+                    else:
+                        transformer.SetInput(input_pd2)
+                    transformer.SetTransform(trans)
+                    transformer.Update()
+                    pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
+                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                        appender.AddInputData(pd)
+                    else:
+                        appender.AddInput(pd)
+
             appender.Update()
             mean_brain = appender.GetOutput()
-            # this smoothing does seem to help. need to test more.
-            # also test just one mean brain here
-            ###(mean_brain, weights) = wma.filter.smooth(mean_brain, fiber_distance_sigma = 20, points_per_fiber=30, n_jobs=self.parallel_jobs, upper_thresh=20)
-            # here we could remove fibers with low weights
-            #keep_fibers = numpy.argsort(weights)[0:len(weights)/2]
-            #mask = numpy.zeros(weights.shape)
-            #mask[keep_fibers] = 1
-            # test keep half and see if it is sharper for registration
-            #mean_brain = wma.filter.mask(mean_brain, mask, verbose=False)
             mean_fibers = wma.fibers.FiberArray()
             mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
             mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
-            print "DONE COMPUTING ONE SMOOTHED MEAN BRAIN NOT SMOOTHED JUST ONE MEAN"
-
-        # Loop over all subjects and prepare lists of inputs for subprocesses
-        for input_pd in self.polydatas:
-            if not self.smooth_mean_brain:
-                # compute mean in a leave-one out fashion. Otherwise, the
-                # optimal transform may be identity.
-                appender = vtk.vtkAppendPolyData()
-                subj_idx2 = 0
-                for (input_pd2, trans) in zip(self.polydatas, self.transforms):
-                    if input_pd2 != input_pd:
-                        # apply the current transform to this polydata for computation of mean brain
-                        transformer = vtk.vtkTransformPolyDataFilter()
-                        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                            transformer.SetInputData(input_pd2)
-                        else:
-                            transformer.SetInput(input_pd2)
-                        transformer.SetTransform(trans)
-                        transformer.Update()
-                        pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
-                        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                            appender.AddInputData(pd)
-                        else:
-                            appender.AddInput(pd)
-                        
-                appender.Update()
-                mean_brain = appender.GetOutput()
-                mean_fibers = wma.fibers.FiberArray()
-                mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
-                mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
 
             #  R,A,S is the first index
             # then fiber number
@@ -482,39 +444,4 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
         return register.final_transform
     else:
         return initial_transform
-    
 
-
-
-
-## def transform_fiber_array(in_array, transform):
-##     """Transform in_array (of class FiberArray) by transform (9
-##     components, rotation about R,A,S, translation in R, A, S, and
-##     scale along R, A, S. Fibers are assumed to be in RAS.
-##     Transformed fibers are returned. """
-
-##     out_array = whitematteranalysis.fibers.FiberArray()
-##     out_array.number_of_fibers = in_array.number_of_fibers
-##     out_array.points_per_fiber = in_array.points_per_fiber
-##     # allocate array number of lines by line length
-##     out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
-##                                             in_array.points_per_fiber))
-##     out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
-##                                             in_array.points_per_fiber))
-##     out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
-##                                             in_array.points_per_fiber))
-
-##     vtktrans = convert_transform_to_vtk(transform)
-
-##     # Transform moving fiber array by applying transform to original fibers
-##     for lidx in range(0, in_array.number_of_fibers):
-##         for pidx in range(0, in_array.points_per_fiber):
-##             pt = vtktrans.TransformPoint(in_array.fiber_array_r[lidx, pidx],
-##                                          in_array.fiber_array_a[lidx, pidx], 
-##                                          in_array.fiber_array_s[lidx, pidx])
-##             out_array.fiber_array_r[lidx, pidx] = pt[0]
-##             out_array.fiber_array_a[lidx, pidx] = pt[1]
-##             out_array.fiber_array_s[lidx, pidx] = pt[2]
-
-##     del vtktrans
-##     return out_array
