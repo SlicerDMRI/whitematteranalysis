@@ -205,17 +205,6 @@ elif mode == "affine_neonate":
     initial_step_per_scale = [10, 5, 5, 5]
     final_step_per_scale = [5, 2, 2, 2]
     register.nonlinear = False
-
-elif mode == "affine_fast_iters":
-    # quicker test mode to see if more iterations help.
-    sigma_per_scale = [30, 10, 7.5, 5]
-    iterations_per_scale=[6, 4, 4, 4]
-    maxfun_per_scale = [20, 30, 40, 50]
-    mean_brain_size_per_scale = [1000, 1000, 1000, 1500]
-    subject_brain_size_per_scale = [250, 500, 600, 800]
-    initial_step_per_scale = [10, 5, 5, 5]
-    final_step_per_scale = [5, 2, 2, 2]
-    register.nonlinear = False
     
 elif mode == "nonlinear":
     # this is in mm space.
@@ -236,7 +225,30 @@ elif mode == "nonlinear":
     # fiber representation for computation.
     points_per_fiber = 15
     register.nonlinear = True
-
+    register.nonlinear_grid_resolution = 5
+    
+elif mode == "nonlinear_fine":
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 2]
+    final_step_per_scale = [1, 1, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [3, 2, 1]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [2, 2, 2]
+    # this takes twice as long--still testing what is optimal for this parameter
+    #iterations_per_scale = [4, 4, 4]
+    # these are small samples to go (relatively) quickly: the goal is just to improve the mean brain each time
+    mean_brain_size_per_scale = [2500, 2750, 3000]
+    subject_brain_size_per_scale = [500, 750, 900]
+    # stop computation early. no need to ever converge, just improve objective as quickly as possible
+    # These settings are for a 6x6x6 grid, 216*3 = 648 parameter space.
+    maxfun_per_scale = [700, 1300, 2000]
+    # fiber representation for computation.
+    points_per_fiber = 15
+    register.nonlinear = True
+    register.nonlinear_grid_resolution = 6
+    register.initialize_nonlinear_grid()
+    
 elif mode == "affineTEST":
     # very quick test if software is working
     sigma_per_scale = [30, 10, 7.5]

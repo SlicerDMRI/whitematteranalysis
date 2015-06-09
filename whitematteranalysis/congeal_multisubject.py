@@ -50,33 +50,37 @@ class MultiSubjectRegistration:
         self.subject_ids = list()
 
         self.target_landmarks = list()
-        landmarks = list()
-        ## for r in [-80, -40, 0, 40, 80]:
-        ##     for a in [-80, -40, 0, 40, 80]:
-        ##         for s in [-80, -40, 0, 40, 80]:
-        ## for r in [-100, -50, 0, 50, 100]:
-        ##     for a in [-100, -50, 0, 50, 100]:
-        ##         for s in [-100, -50, 0, 50, 100]:
-        for r in [-120, -60, 0, 60, 120]:
-            for a in [-120, -60, 0, 60, 120]:
-                for s in [-120, -60, 0, 60, 120]:
-                    #self.target_landmarks.extend([r, a, s])
-                    landmarks.append([r, a, s])
-        # now shuffle the order of these points so that the optimizer doesn't
-        # start working in one corner only every time
+        self.nonlinear_grid_resolution = 5
+        self.nonlinear_grid_5 = [-120, -60, 0, 60, 120]
+        self.nonlinear_grid_6 = [-120, -60, -20, 20, 60, 120]
+        # random order so that optimizer does not start in one corner every time
         # the order was computed as
-        # order = numpy.random.permutation(range(0,125))
-        # hold it constant for now so we don't have to pass it to the subprocesses.
-        order = [ 75,  18,  54,  61,  64,  73,  95,  13, 111, 118,  43,   7,  46, 56,   4, 124,  77,  98,  72,  60,  38,  80,  36,  27, 120, 119, 51,  81,   0,  93,  11,  41,  69,  83, 107,  12, 106,  30,  53, 105,  33,  91,  28,  17,  58,  90,  45,  94,  14,  26,  84,   1, 92,  21,  47,  59, 100,   2,   3,  87,  65, 102,  68,  20,  85, 79,  82,  15,  32,  88, 115,  74,   6,  19,  35,  99, 104, 109, 70, 101,  96,  66,  52,  48,  49,  31,  97, 122,  78, 113,  55, 112,  76,  44,  23, 103,  16,  10, 123,  86,  39,   8,  62, 110, 42, 114,  40, 117,  63,   9,  25,  67,  71,  37,  24, 116,  57, 89, 121,  34,   5,  29, 108,  50,  22]
-        for idx in order:
-            self.target_landmarks.extend(landmarks[idx])
-            #print landmarks[idx]
+        # numpy.random.permutation(range(0,125))
+        # numpy.random.permutation(range(0,216))     
+        self.grid_order_5 = [ 75,  18,  54,  61,  64,  73,  95,  13, 111, 118,  43,   7,  46, 56,   4, 124,  77,  98,  72,  60,  38,  80,  36,  27, 120, 119, 51,  81,   0,  93,  11,  41,  69,  83, 107,  12, 106,  30,  53, 105,  33,  91,  28,  17,  58,  90,  45,  94,  14,  26,  84,   1, 92,  21,  47,  59, 100,   2,   3,  87,  65, 102,  68,  20,  85, 79,  82,  15,  32,  88, 115,  74,   6,  19,  35,  99, 104, 109, 70, 101,  96,  66,  52,  48,  49,  31,  97, 122,  78, 113,  55, 112,  76,  44,  23, 103,  16,  10, 123,  86,  39,   8,  62, 110, 42, 114,  40, 117,  63,   9,  25,  67,  71,  37,  24, 116,  57, 89, 121,  34,   5,  29, 108,  50,  22]
+        self.grid_order_6 = [165,  63, 129, 170, 148, 131,   1, 205, 181,  69,  35, 100,   6, 13,  82, 193, 159, 130,  54, 164, 174,  62, 108, 101, 169,  93, 112,  42, 110, 213, 107,  47,  45, 140, 138, 199, 125, 117,   8, 41, 215,  74, 143, 155, 144, 187,  26,  60, 139,  58,  97,  10, 113,  34, 116,  33, 202, 210,  27, 135, 152, 206, 128,  16, 177, 25,  67, 192, 147, 132, 160, 158, 161,  90, 102,  49,  21, 191, 32,  18,  81, 157, 114, 175,  94, 172, 207, 186, 167, 163, 196, 118,  28,  43, 133, 171, 211,  77,  56, 195, 173,  57,  96,  29, 64, 180,  89, 190, 115,  20,  52,  50,   4, 141,  98, 134, 109, 149, 176, 212,  11,   0, 146,  65,  91,  23,  53,  44, 123,  87, 24, 178, 184,  68, 124,  46,  76, 151, 127, 204, 154, 150, 106, 70,  37,  84,  17,  12, 189,   2,  92,  36,  71,  39,  30,  75, 179, 168,  73, 121,  86, 214, 188,  59, 209,  22,  19, 153, 162, 99, 182,  14,  48, 119, 203,  66,  61, 103, 208, 145,  79,  85, 142,  72, 126, 194, 104, 122, 198, 120, 200, 183, 201,   3,  78, 40,  83, 137,  31, 111,  15,  51,   9, 185,  55,  38, 156, 136, 7,  95,  80, 105, 166,  88, 197,   5]
+        self.initialize_nonlinear_grid()
 
-        #print "LANDMARKS FINAL"
-        #print self.target_landmarks
-        
+    def initialize_nonlinear_grid(self):
+        self.target_landmarks = list()
+        if self.nonlinear_grid_resolution == 5:
+            grid = self.nonlinear_grid_5
+            grid_order = self.grid_order_5
+        elif self.nonlinear_grid_resolution == 6:
+            grid = self.nonlinear_grid_6
+            grid_order = self.grid_order_6
+        else:
+            print "<congeal_multisubject.py> Error: Unknown nonlinear grid mode:", self.nonlinear_grid_resolution
+        tmp = list()
+        for r in grid:
+            for a in grid:
+                for s in grid:
+                    tmp.append([r, a, s])
+        # now shuffle the order of these points to avoid biases
+        for idx in grid_order:
+            self.target_landmarks.extend(tmp[idx])
         self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
-                    
+
     def add_polydata(self, polydata, subject_id):
         self.polydatas.append(polydata)
         if self.nonlinear:
@@ -244,7 +248,8 @@ class MultiSubjectRegistration:
         stepsize_list = list()
         maxfun_list = list()
         render_list = list()
-                
+        grid_resolution_list = list()
+        
         # register each subject to the current mean
 
         # Sample fibers from each subject for use in the "mean brain"
@@ -303,14 +308,15 @@ class MultiSubjectRegistration:
             stepsize_list.append(numpy.array([self.initial_step, self.final_step]))
             maxfun_list.append(self.maxfun)
             render_list.append(self.render)
+            grid_resolution_list.append(self.nonlinear_grid_resolution)
             
         # multiprocess over subjects
         print "STARTING MULTIPROCESSING. NUMBER OF JOBS:", self.parallel_jobs
         # note we can't pass vtk objects to subprocesses since they can't be pickled.
         ret = Parallel(
             n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
-                delayed(congeal_multisubject_inner_loop)(fixed, moving, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render)
-                for (fixed, moving, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render) in zip(mean_list, subject_list, self.transforms_as_array, mode_list, sigma_list, subj_idx_list, iteration_list, outdir_list, stepsize_list, maxfun_list, render_list))
+                delayed(congeal_multisubject_inner_loop)(fixed, moving, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution)
+                for (fixed, moving, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution) in zip(mean_list, subject_list, self.transforms_as_array, mode_list, sigma_list, subj_idx_list, iteration_list, outdir_list, stepsize_list, maxfun_list, render_list, grid_resolution_list))
 
             
         #print "RETURNED VALUES", ret
@@ -410,9 +416,9 @@ class MultiSubjectRegistration:
             # save the transforms to text files
             wma.registration_functions.write_transforms_to_itk_format(transform_list, outdir, subject_id_list)
             
-def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render):
+def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution):
 
-    print "ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform:", initial_transform, "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform) 
+    print "\n BEGIN ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform length:", len(initial_transform), "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform), "Grid:", grid_resolution, "Mode:", mode, "initial transform:", initial_transform,
     
     
     if mode == 'Linear':
@@ -437,13 +443,15 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     register.initial_step = step_size[0]
     register.final_step = step_size[1]
     register.render = render
+    register.nonlinear_grid_resolution = grid_resolution
+    register.initialize_nonlinear_grid()
     
     register.compute()
 
     # only update the transform if the objective function improved.
     # sometimes it falls into a different minimum that is worse
     obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
-    print "ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
+    print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
     if obj_diff < 0:
         print "UPDATING MATRIX"
         return register.final_transform
