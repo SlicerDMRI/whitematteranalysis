@@ -246,25 +246,31 @@ class MultiSubjectRegistration:
         render_list = list()
                 
         # register each subject to the current mean
-        subj_idx = 0
 
+        # Sample fibers from each subject for use in the "mean brain"
+        subject_sampled_fibers = list()
+        for (input_pd, trans) in zip(self.polydatas, self.transforms):
+            # apply the current transform to this polydata for computation of mean brain
+            transformer = vtk.vtkTransformPolyDataFilter()
+            if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                transformer.SetInputData(input_pd)
+            else:
+                transformer.SetInput(input_pd)
+            transformer.SetTransform(trans)
+            transformer.Update()
+            pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
+            subject_sampled_fibers.append(pd)
+            del transformer
+            
         # Loop over all subjects and prepare lists of inputs for subprocesses
+        subj_idx = 0
         for input_pd in self.polydatas:
             # compute mean in a leave-one out fashion. Otherwise, the
             # optimal transform may be identity.
             appender = vtk.vtkAppendPolyData()
-            subj_idx2 = 0
-            for (input_pd2, trans) in zip(self.polydatas, self.transforms):
-                if input_pd2 != input_pd:
-                    # apply the current transform to this polydata for computation of mean brain
-                    transformer = vtk.vtkTransformPolyDataFilter()
-                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                        transformer.SetInputData(input_pd2)
-                    else:
-                        transformer.SetInput(input_pd2)
-                    transformer.SetTransform(trans)
-                    transformer.Update()
-                    pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
+            for subj_idx2 in range(len(subject_sampled_fibers)):
+                if subj_idx2 != subj_idx:
+                    pd = subject_sampled_fibers[subj_idx2]
                     if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
                         appender.AddInputData(pd)
                     else:
@@ -275,7 +281,6 @@ class MultiSubjectRegistration:
             mean_fibers = wma.fibers.FiberArray()
             mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
             mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
-
             #  R,A,S is the first index
             # then fiber number
             # then points along fiber
