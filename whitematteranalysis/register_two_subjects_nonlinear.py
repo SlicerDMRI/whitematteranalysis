@@ -46,45 +46,31 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         return penalty
     
     def __init__(self):
-        # parameters that can be set by user
-        #self.sigma = 10
-        #self.process_id_string = ""
-        #self.output_directory = None
+        # parameters that should be set by user
+        self.sigma = 5
+        self.process_id_string = ""
+        self.output_directory = None
         
-        # performance options set by user
-        #self.verbose = 0
-        #self.render = False
+        # performance options that should be set by user
+        self.verbose = False
+        self.render = False
         
-        # optimizer parameters set by user
-        #self.maxfun = 300
+        # optimizer parameters that should be set by user
+        self.maxfun = 300
 
         # output of registration
         self.objective_function_values = list()
         self.final_transform = None
         
-        # subject data to be input
+        # subject data that must be input
         #self.fixed = None
         #self.moving = None
         #self.initial_step = 5
         #self.final_step = 2
 
-        # translate then rotate so optimizer will translate first
-        # trans, rot, scale, shear:
-        #self.initial_transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
 
-        # initial test with 7 points
-        #self.target_landmarks = [0,0,0,  0,0,-50, -30,50,30, 30,50,30, 0,0,50, -40,-50,0, 40,-50,0]
-        #self.target_landmarks = [0,0,0, 0,0,-10, 0,0,-50, 0,-20,-20, -30,50,20, 30,50,20, 0,0,20, -40,-50,10, 40,-50,10]
         self.target_landmarks = list()
         landmarks = list()
-        ## for r in [-80, -40, 0, 40, 80]:
-        ##     for a in [-80, -40, 0, 40, 80]:
-        ##         for s in [-80, -40, 0, 40, 80]:
-
-        ## for r in [-100, -50, 0, 50, 100]:
-        ##     for a in [-100, -50, 0, 50, 100]:
-        ##         for s in [-100, -50, 0, 50, 100]:
-
 
         for r in [-120, -60, 0, 60, 120]:
             for a in [-120, -60, 0, 60, 120]:
