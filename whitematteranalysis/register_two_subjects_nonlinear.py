@@ -32,46 +32,8 @@ import whitematteranalysis as wma
 class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractography):
 
     def constraint(self, x_current):
-        #penalty = 0
-        
-        # The values should be a registration matrix.
         # Make sure the optimizer is searching in a reasonable region.
-        
-        # want translation reasonable, say -100 to 100 range
-        # want rotation reasonable, say +/- 90 degrees is the max we could reasonably handle
-        # want scaling between 0.9 and 1.2. In practice, only shrinking is an issue.
-        # Don't let it shrink by more than 0.75
-        # want shear angles reasonable like rotation
-
-        # test hack to avoid all brains shrinking which will happen otherwise
-        # this penalizes the magnitude of the transformation in some sense
-        #penalty -= numpy.sum(numpy.abs(numpy.array(self.target_landmarks) - numpy.array(x_current)))
-
-        # this penalizes it getting smaller
-        ## length_decrease = 0.0
-        ## average_length = 0.0
-        ## count = 0
-        ## for (fix, mov) in zip(zip(x_current[::3], x_current[1::3], x_current[2::3]),  zip(self.target_landmarks[::3], self.target_landmarks[1::3], self.target_landmarks[2::3])):
-        ##     diff = numpy.sqrt(numpy.sum(numpy.square(fix))) - numpy.sqrt(numpy.sum(numpy.square(mov)))
-        ##     if diff > 0:
-        ##         length_decrease -= diff
-        ##     average_length += numpy.sqrt(numpy.sum(numpy.square(fix)))
-        ##     count += 1
-
-        ## average_length_decrease = numpy.divide(length_decrease,average_length)
-        
-        #penalty -= length_change
-
-        ## # we don't want a length decrease of more than 5 %
-        ## #if length_change > 0.05:
-        ## #penalty = 100.0 * average_length_decrease
-        ## # a percentage will allow points farther from 0 to move closer than the nearer points. not desired behavior
-        ## penalty = length_decrease
-        ## # try more severe penalty
-        ## # strangely, this seems to encourage worse behavior. penalties near 0 seem best.
-        ## #penalty = penalty*penalty*penalty
-
-
+        # aim to preserve volume using the determinant of the overall affine transform
         affine_part = vtk.vtkLandmarkTransform()
         source_landmarks = convert_numpy_array_to_vtk_points(x_current)
         target_landmarks = convert_numpy_array_to_vtk_points(self.target_landmarks)
@@ -81,9 +43,6 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         affine_part.Update()
         det = affine_part.GetMatrix().Determinant()
         penalty = -100 * (1 - det)
-
-        #print "PENALTY:", penalty, det, length_decrease, numpy.divide(average_length, count), average_length_decrease, length_decrease        
-        # probably want to preserve volume using the determinant of the overall affine transform
         return penalty
     
     def __init__(self):
