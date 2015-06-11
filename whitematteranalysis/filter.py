@@ -206,7 +206,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
         numpy.random.seed(seed=random_seed)
 
     # randomly pick the lines that we will keep
-    line_indices = numpy.random.permutation(num_lines - 1)
+    line_indices = numpy.random.permutation(num_lines)
     if initial_indices is None:
         line_indices = line_indices[0:output_number_of_lines]
         fiber_mask = numpy.zeros(num_lines)
