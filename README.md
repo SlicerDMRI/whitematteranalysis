@@ -52,14 +52,5 @@ To install your compiled vtk into your python:
      cd whitematteranalysis
      python setup.py install
 
-###5. Test the installation.
-Change to another directory (outside of whitematteranalysis). Run python, then:
-
-    >>> import whitematteranalysis as wma
-
-This will produce errors if the required packages are not found.
-
-###6. Scripts for performing data analyses are located in whitematteranalysis/bin. 
-
 ###7. Please see the wiki for usage instructions.
 https://github.com/ljod/whitematteranalysis/wiki
