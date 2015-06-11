@@ -1024,8 +1024,11 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         #print fname_c
         io.write_polydata(pd_c, fname_c)
         cluster_fnames.append(fname_c)
-        color_c = color[mask,:]
-        cluster_colors.append(numpy.mean(color_c,0))
+        if cluster_size > 0:
+            color_c = color[mask,:]
+            cluster_colors.append(numpy.mean(color_c,0))
+        else:
+            cluster_colors.append([0,0,0])
 
     # Notify user if some clusters empty
     empty_count = 0
