@@ -324,7 +324,7 @@ for fname in input_polydatas:
     # preprocessing step: fibers to analyze
     if number_of_fibers_per_subject is not None:
         print "<wm_cluster_atlas.py> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, "."
-        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=verbose, random_seed=random_seed)
+        pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject, verbose=verbose, random_seed=random_seed)
         if pd3.GetNumberOfLines() != number_of_fibers_per_subject:
             print "<wm_cluster_atlas.py> Fibers found:", pd3.GetNumberOfLines(), "Fibers requested:", number_of_fibers_per_subject
             print "\n<wm_cluster_atlas.py> ERROR: too few fibers over length threshold in subject:", fname
@@ -373,33 +373,143 @@ if random_seed is not None:
     print "<wm_cluster_atlas.py> Setting random seed to", random_seed
     numpy.random.seed(seed=random_seed)
 
-# Calculate indices of random sample for Nystrom method
-nystrom_mask = numpy.random.permutation(input_data.GetNumberOfLines()) < number_of_sampled_fibers
+# Run clustering several times, removing outliers each time.
+#cluster_iterations = 5
+cluster_iterations = 10
+# almost no effect
+#cluster_std_threshold = 2.0
+cluster_std_threshold = outlier_std_threshold
+# too much?
+#cluster_std_threshold = 0.5
+#cluster_std_threshold = 1.0
+# compute pairwise distances and affinities with local sigma for outlier removal
+#cluster_local_sigma = 15
+cluster_local_sigma = 30
+        
+for iter in range(cluster_iterations):
+    # make a directory for the current iteration
+    dirname = "iteration_%05d" % (iter)
+    outdir_current = os.path.join(outdir, dirname)
 
-# Run clustering on the polydata
-print '<wm_cluster_atlas.py> Starting clustering.'
-output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_idx = \
-    wma.cluster.spectral(input_data, number_of_clusters=number_of_clusters, \
-                             number_of_jobs=number_of_jobs, use_nystrom=use_nystrom, \
-                             nystrom_mask = nystrom_mask, \
-                             number_of_eigenvectors=number_of_eigenvectors, \
-                             sigma=sigma, distance_method=distance_method, \
-                             normalized_cuts=use_normalized_cuts, threshold=threshold, \
-                             outlier_std_threshold=outlier_std_threshold, \
-                             pos_def_approx=pos_def_approx, \
-                             bilateral=bilateral)
+    # Calculate indices of random sample for Nystrom method
+    nystrom_mask = numpy.random.permutation(input_data.GetNumberOfLines()) < number_of_sampled_fibers
 
-# If any fibers were rejected, delete the corresponding entry in this list
-subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
+    print "BEFORE cluster: Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
 
-# Save the output in our atlas format for automatic labeling of full brain datasets.
-# This is the data used to label a new subject.
-# Also write the polydata with cluster indices saved as cell data. This is a one-file output option for clusters.
-# Finally, save some quality control metrics and save the atlas clusters as individual polydatas. This is used to 
-# set up a mrml hierarchy file and to visualize the output in Slicer. This data is not used to label
-# a new subject.
-print '<wm_cluster_atlas.py> Saving output files in directory:', outdir
-wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
+    # Run clustering on the polydata
+    print '<wm_cluster_atlas.py> Starting clustering.'
+    output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_idx = \
+        wma.cluster.spectral(input_data, number_of_clusters=number_of_clusters, \
+                                 number_of_jobs=number_of_jobs, use_nystrom=use_nystrom, \
+                                 nystrom_mask = nystrom_mask, \
+                                 number_of_eigenvectors=number_of_eigenvectors, \
+                                 sigma=sigma, distance_method=distance_method, \
+                                 normalized_cuts=use_normalized_cuts, threshold=threshold, \
+                                 outlier_std_threshold=outlier_std_threshold, \
+                                 pos_def_approx=pos_def_approx, \
+                                 bilateral=bilateral)
+
+    # If any fibers were rejected, delete the corresponding entry in this list
+    subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
+    print "After cluster: Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
+    
+    # Save the output in our atlas format for automatic labeling of full brain datasets.
+    # This is the data used to label a new subject.
+    # Also write the polydata with cluster indices saved as cell data. This is a one-file output option for clusters.
+    # Finally, save some quality control metrics and save the atlas clusters as individual polydatas. This is used to 
+    # set up a mrml hierarchy file and to visualize the output in Slicer. This data is not used to label
+    # a new subject.
+    
+    outdir1 = os.path.join(outdir_current, 'initial_clusters')
+    if not os.path.exists(outdir1):
+        print "<wm_cluster_atlas.py> Output directory", outdir1, "does not exist, creating it."
+        os.makedirs(outdir1)    
+    print '<wm_cluster_atlas.py> Saving output files in directory:', outdir1
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
+
+    # Remove outliers from this iteration and save atlas again                                                 
+    print "Starting local cluster outlier removal"
+
+    # outlier cluster index is going to be -1                                                     
+    reject_idx = list() 
+    cluster_indices = range(atlas.centroids.shape[0])
+    fiber_mean_sim = numpy.zeros(cluster_numbers_s.shape)
+
+    for c in cluster_indices:
+        mask = cluster_numbers_s == c
+        # grab the cluster as polydata
+        pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
+        cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
+        cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
+
+        tmp = numpy.sqrt(cluster_distances)
+        if verbose:
+            print "cluster", c, "dist:", numpy.min(tmp), numpy.mean(tmp), numpy.max(tmp)
+            print "cluster", c, "sim :", numpy.min(cluster_similarity), numpy.mean(cluster_similarity), numpy.max(cluster_similarity)
+
+        # get total similarity for each fiber
+        total_similarity = numpy.sum(cluster_similarity, axis=1) - 1.0
+        if verbose:
+            print "cluster", c, "tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "num fibers:", numpy.sum(mask)
+
+        # remove outliers with low similarity to their cluster
+        number_fibers_in_cluster = numpy.sum(mask)
+        mean_sim = numpy.mean(total_similarity)
+        cluster_std = numpy.std(total_similarity)
+        count = 0
+        for fidx in range(len(cluster_numbers_s)):
+            if cluster_numbers_s[fidx] == c:
+                fiber_mean_sim[fidx] = total_similarity[count] / number_fibers_in_cluster
+                if total_similarity[count] < mean_sim - cluster_std_threshold*cluster_std:
+                    #print fidx, cluster_numbers_s[fidx], dists[count]
+                    cluster_numbers_s[fidx] = -1
+                    reject_idx.append(fidx)
+                count += 1
+    print "Rejecting cluster outlier fibers:", len(reject_idx)
+
+    # in a second pass, also remove outliers whose average fiber
+    # similarity to their cluster is too low compared to the whole brain.
+    # This can prune fibers from variable clusters that might be missed above
+    brain_mean_sim = numpy.mean(fiber_mean_sim)
+    brain_std_sim = numpy.std(fiber_mean_sim)
+
+    for fidx in range(len(cluster_numbers_s)):
+        if fiber_mean_sim[fidx] < brain_mean_sim - cluster_std_threshold*brain_std_sim:
+            #print fidx, cluster_numbers_s[fidx], fiber_mean_sim[count]
+            if cluster_numbers_s[fidx] >= 0:
+                cluster_numbers_s[fidx] = -1
+                reject_idx.append(fidx)
+
+    reject_idx = numpy.array(reject_idx)
+
+    print "Rejecting whole-brain cluster outlier fibers:", len(reject_idx)
+
+    outdir2 = os.path.join(outdir_current, 'remove_outliers')
+    if not os.path.exists(outdir2):
+        print "<wm_cluster_atlas.py> Output directory", outdir2, "does not exist, creating it."
+        os.makedirs(outdir2)
+    print '<wm_cluster_atlas.py> Saving output files in directory:', outdir2
+
+    mask = cluster_numbers_s == -1
+    fname_c = os.path.join(outdir2, 'outlier.vtp')
+    pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
+    wma.io.write_polydata(pd_c, fname_c)
+
+    print "Before save Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
+
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose)
+
+    test = subject_fiber_list[numpy.nonzero(mask)]
+
+    # Remove outliers for the next iteration
+    # If any fibers were rejected, delete the corresponding entry in this list
+    subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
+    # Also delete the fiber in the polydata
+    mask = cluster_numbers_s >= 0
+
+    input_data = wma.filter.mask(output_polydata_s, mask, verbose=verbose)
+
+    print "End iter Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape, "TEST:", test.shape
 
 print "==========================\n"
 print '<wm_cluster_atlas.py> Done clustering atlas. See output in directory:\n ', outdir, '\n'
