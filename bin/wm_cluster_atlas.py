@@ -325,6 +325,10 @@ for fname in input_polydatas:
     if number_of_fibers_per_subject is not None:
         print "<wm_cluster_atlas.py> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, "."
         pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject,verbose=verbose, random_seed=random_seed)
+        if pd3.GetNumberOfLines() != number_of_fibers_per_subject:
+            print "<wm_cluster_atlas.py> Fibers found:", pd3.GetNumberOfLines(), "Fibers requested:", number_of_fibers_per_subject
+            print "\n<wm_cluster_atlas.py> ERROR: too few fibers over length threshold in subject:", fname
+            exit()
     else:
         pd3 = pd2
     input_pds.append(pd3)
