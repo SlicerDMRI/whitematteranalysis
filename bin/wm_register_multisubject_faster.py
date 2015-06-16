@@ -237,12 +237,12 @@ elif mode == "nonlinear_fine":
     iterations_per_scale = [2, 2, 2]
     # this takes twice as long--still testing what is optimal for this parameter
     #iterations_per_scale = [4, 4, 4]
-    # these are small samples to go (relatively) quickly: the goal is just to improve the mean brain each time
-    mean_brain_size_per_scale = [2500, 2750, 3000]
-    subject_brain_size_per_scale = [500, 750, 900]
-    # stop computation early. no need to ever converge, just improve objective as quickly as possible
+    # We need more samples than for the 5x5x5 grid. These parameters run slowly but perform well.
+    # The lower sample sizes  [2500, 2750, 3000] [500, 750, 900] were not effective here.
+    mean_brain_size_per_scale = [3000, 4000, 5000]
+    subject_brain_size_per_scale = [1000, 1500, 2000]
     # These settings are for a 6x6x6 grid, 216*3 = 648 parameter space.
-    maxfun_per_scale = [700, 1300, 2000]
+    maxfun_per_scale = [1296, 1944, 2592]
     # fiber representation for computation.
     points_per_fiber = 15
     register.nonlinear = True
