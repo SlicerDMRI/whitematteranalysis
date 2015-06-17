@@ -425,6 +425,9 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
         register = wma.register_two_subjects.RegisterTractography()
     elif mode == "Nonlinear":
         register = wma.register_two_subjects_nonlinear.RegisterTractographyNonlinear()
+        register.nonlinear_grid_resolution = grid_resolution
+        register.initialize_nonlinear_grid()
+
     else:
         print "ERROR: Unknown registration mode"
         
@@ -443,8 +446,6 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     register.initial_step = step_size[0]
     register.final_step = step_size[1]
     register.render = render
-    register.nonlinear_grid_resolution = grid_resolution
-    register.initialize_nonlinear_grid()
     
     register.compute()
 
