@@ -255,16 +255,16 @@ class MultiSubjectRegistration:
         # Sample fibers from each subject for use in the "mean brain"
         subject_sampled_fibers = list()
         for (input_pd, trans) in zip(self.polydatas, self.transforms):
+            pd = wma.filter.downsample(input_pd, fibers_per_subject, verbose=False, random_seed=self.random_seed)
             # apply the current transform to this polydata for computation of mean brain
             transformer = vtk.vtkTransformPolyDataFilter()
             if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                transformer.SetInputData(input_pd)
+                transformer.SetInputData(pd)
             else:
-                transformer.SetInput(input_pd)
+                transformer.SetInput(pd)
             transformer.SetTransform(trans)
             transformer.Update()
-            pd = wma.filter.downsample(transformer.GetOutput(), fibers_per_subject, verbose=False, random_seed=self.random_seed)
-            subject_sampled_fibers.append(pd)
+            subject_sampled_fibers.append(transformer.GetOutput())
             del transformer
             
         # Loop over all subjects and prepare lists of inputs for subprocesses
