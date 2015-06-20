@@ -137,6 +137,7 @@ else:
     print "Rendering. After clustering, will create colorful jpg images of the group."
 render = not args.flag_norender
 
+print "RENDER:", render
 if args.numberOfClusters is not None:
     number_of_clusters = args.numberOfClusters
 else:
@@ -378,15 +379,19 @@ if random_seed is not None:
 cluster_iterations = 10
 # almost no effect
 #cluster_std_threshold = 2.0
-cluster_std_threshold = outlier_std_threshold
+#cluster_std_threshold = outlier_std_threshold
 # too much?
 #cluster_std_threshold = 0.5
 #cluster_std_threshold = 1.0
 # compute pairwise distances and affinities with local sigma for outlier removal
 #cluster_local_sigma = 15
-cluster_local_sigma = 30
+#cluster_local_sigma = 30
+cluster_local_sigmas = [30, 20, 15, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+#cluster_std_thresholds = [2.0, 2.0, 2.5, 2.5, 3.0, ]
+cluster_std_threshold = 2.0
         
 for iter in range(cluster_iterations):
+    cluster_local_sigma = cluster_local_sigmas[iter]
     # make a directory for the current iteration
     dirname = "iteration_%05d" % (iter)
     outdir_current = os.path.join(outdir, dirname)
@@ -437,6 +442,11 @@ for iter in range(cluster_iterations):
 
     for c in cluster_indices:
         mask = cluster_numbers_s == c
+
+        # reject the whole cluster if there are few subjects (tractography error)
+        subjects_threshold = 5
+        subjects_per_cluster = len(set(subject_fiber_list[mask]))
+
         # grab the cluster as polydata
         pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
         cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
@@ -450,7 +460,7 @@ for iter in range(cluster_iterations):
         # get total similarity for each fiber
         total_similarity = numpy.sum(cluster_similarity, axis=1) - 1.0
         if verbose:
-            print "cluster", c, "tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "num fibers:", numpy.sum(mask)
+            print "cluster", c, "tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "num fibers:", numpy.sum(mask), "num subjects:", subjects_per_cluster
 
         # remove outliers with low similarity to their cluster
         number_fibers_in_cluster = numpy.sum(mask)
@@ -462,6 +472,9 @@ for iter in range(cluster_iterations):
                 fiber_mean_sim[fidx] = total_similarity[count] / number_fibers_in_cluster
                 if total_similarity[count] < mean_sim - cluster_std_threshold*cluster_std:
                     #print fidx, cluster_numbers_s[fidx], dists[count]
+                    cluster_numbers_s[fidx] = -1
+                    reject_idx.append(fidx)
+                elif subjects_per_cluster < subjects_threshold:
                     cluster_numbers_s[fidx] = -1
                     reject_idx.append(fidx)
                 count += 1
@@ -497,7 +510,7 @@ for iter in range(cluster_iterations):
 
     print "Before save Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
 
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
 
     test = subject_fiber_list[numpy.nonzero(mask)]
 
