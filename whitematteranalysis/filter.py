@@ -55,15 +55,17 @@ def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, nu
     increment = (max_length_mm - min_length_mm) / (num_bins - 1)
     bin_ends = list()
     max_l = min_length_mm
-    while max_l < max_length_mm:
+    while max_l <= max_length_mm:
         bin_ends.append(max_l)
         max_l += increment
     if verbose:
         print "Bins/length ranges:", bin_ends
 
+    print bin_ends[0:-1], bin_ends[1:]
+
     # append the sampled fibers together into a new polydata
     appender = vtk.vtkAppendPolyData()
-    for (bin_low, bin_hi) in zip (bin_ends[0:-2], bin_ends[1:-1]):
+    for (bin_low, bin_hi) in zip (bin_ends[0:-1], bin_ends[1:]):
         pd = preprocess(inpd, bin_low, max_length_mm=bin_hi, verbose=False)
         pd2 = downsample(pd, fibers_per_bin,verbose=False)
         if verbose:
