@@ -48,6 +48,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
     def __init__(self):
         # parameters that should be set by user
         self.sigma = 5
+        self.sigma2 = 1.5
         self.process_id_string = ""
         self.output_directory = None
         
@@ -121,7 +122,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         moving = self.transform_fiber_array_numpy(self.moving, current_x)
 
         # compute objective
-        obj = inner_loop_objective(self.fixed, self.step_length_fixed, moving, self.sigma * self.sigma)
+        obj = inner_loop_objective(self.fixed, self.length_fixed, moving, [self.sigma * self.sigma, self.sigma2 * self.sigma2])
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
@@ -227,7 +228,8 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         dy = numpy.square(ddy)
         dz = numpy.square(ddz)
         distance = numpy.sqrt(dx + dy + dz)
-        self.step_length_fixed = numpy.divide(numpy.sum(distance, 1), points_per_fiber)
+        #self.length_fixed = numpy.divide(numpy.sum(distance, 1), points_per_fiber)
+        self.length_fixed = numpy.sum(distance, 1)
         
         # These optimizers were tested, less successfully than cobyla.
         # This code is left here as documentation.
@@ -248,7 +250,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
                                                   self.initial_transform, self.constraint,
                                                   maxfun=self.maxfun, rhobeg=self.initial_step,
-                                                  rhoend=self.final_step, disp=1)
+                                                  rhoend=self.final_step, disp=0)
 
         #self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
 
@@ -258,7 +260,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         return self.final_transform
 
 
-def inner_loop_objective(fixed, step_length_fixed, moving, sigmasq):
+def inner_loop_objective(fixed, length_fixed, moving, sigmasq):
     """ The code called within the objective_function to find the
     negative log probability of one brain given all other brains. Used
     with Entropy objective function."""
@@ -273,17 +275,15 @@ def inner_loop_objective(fixed, step_length_fixed, moving, sigmasq):
     # fiber using all fibers from fixed.
     for idx in range(number_of_fibers_moving):
         probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
-                sigmasq, step_length_fixed)
+                sigmasq, length_fixed)
 
-    # divide total probability by number of fiber comparisons
-    # the output must be between 0 and 1
-    number_comparisons = numpy.multiply(number_of_fibers_moving, number_of_fibers_fixed)
-    #print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
-    probability /= number_comparisons
-    #print numpy.min(probability), numpy.max(probability)
+    # divide total probability by number of fibers in the atlas ("mean
+    # brain").  this neglects Z, the normalization constant for the
+    # pdf, which would not affect the optimization.
+    probability /= number_of_fibers_fixed
+    print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
     # add negative log probabilities of all fibers in this brain.
     entropy = numpy.sum(- numpy.log(probability))
-    #print "NUMBER COMPARISONS:", number_comparisons, number_of_fibers_moving, number_of_fibers_fixed
     return entropy
 
 def total_probability_numpyOLD(moving_fiber, fixed_fibers, sigmasq):
@@ -297,10 +297,10 @@ def total_probability_numpyOLD(moving_fiber, fixed_fibers, sigmasq):
     #distance = numpy.minimum(distance, distance_flex)
     return numpy.sum(numpy.exp(-distance / (sigmasq)))
 
-def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq, step_length_fixed):
+def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq, length_fixed):
     distance = fiber_distance_numpy(moving_fiber, fixed_fibers)
 
-    probability1 = numpy.exp(-distance / (sigmasq))
+    probability1 = numpy.exp(numpy.divide(-distance, (sigmasq[0])))
     
     # test to reduce shrinkage: compare step size between points of fixed vs moving brain
     #(dims, number_of_fibers_fixed, points_per_fiber) = fixed_fibers.shape
@@ -311,14 +311,15 @@ def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq, step_length_fix
     dx = numpy.square(ddx)
     dy = numpy.square(ddy)
     dz = numpy.square(ddz)
-    distance = numpy.sqrt(dx + dy + dz)
-    step_length_moving = numpy.divide(numpy.sum(distance), points_per_fiber)
+    dists = numpy.sqrt(dx + dy + dz)
+    #step_length_moving = numpy.divide(numpy.sum(dists), points_per_fiber)
+    length_moving = numpy.sum(dists)
 
-    sigma2 = 0.1
-    probability2 = numpy.exp(-numpy.divide(numpy.square(step_length_moving - step_length_fixed), sigma2*sigma2))
+    diffs = length_moving - length_fixed
+    probability2 = numpy.exp(-numpy.divide(numpy.square(length_moving - length_fixed), sigmasq[1]))
 
     probability = numpy.multiply(probability1, probability2)
-    #print "PROBABILITY 2:", numpy.sqrt(sigmasq), numpy.min(step_length_fixed), numpy.max(step_length_fixed), numpy.min(step_length_moving), numpy.max(step_length_moving), numpy.min(probability2), numpy.max(probability2), points_per_fiber, numpy.min(probability1), numpy.max(probability1), numpy.min(probability), numpy.max(probability)
+    #print "SIGMAS:", numpy.sqrt(sigmasq), "LENGTHS:", numpy.min(length_fixed), numpy.max(length_fixed), length_moving, "DIFFS:", numpy.min(diffs), numpy.max(diffs), "PROBABILITY 2:", numpy.min(probability2), numpy.max(probability2), probability2.shape, "DISTANCES:", numpy.min(numpy.sqrt(distance)), numpy.max(numpy.sqrt(distance)), distance.shape, "PROBABILITY 1:", numpy.min(probability1), numpy.max(probability1), probability1.shape, "PROBABILITY:", numpy.min(probability), numpy.max(probability), probability.shape, "FIBERS:", moving_fiber.shape, fixed_fibers.shape, length_fixed.shape
 
     return numpy.sum(probability)
 
@@ -367,11 +368,11 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     distance = dx + dy + dz
 
     # to test mean distance (had a less steep objective but looks similar)
-    #return numpy.mean(distance, 1)
+    return numpy.mean(distance, 1)
 
     #elif distance_method == 'Hausdorff':
     # take max along fiber
-    return numpy.max(distance, 1)
+    #return numpy.max(distance, 1)
 
 def convert_numpy_array_to_vtk_points(inarray):
     number_of_points = len(inarray)/3
