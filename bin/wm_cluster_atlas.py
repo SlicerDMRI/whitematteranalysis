@@ -12,6 +12,7 @@ except:
     print "<wm_cluster_atlas.py> Error importing white matter analysis package\n"
     raise
 
+import matplotlib.pyplot as plt
 
 #-----------------
 # Parse arguments
@@ -67,7 +68,10 @@ parser.add_argument(
     help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters, so that is the default. The bilateral clusters can be split at the midline later for analyses.')
 parser.add_argument(
     '-outlier_std', action='store', dest="outlierStandardDeviation",type=float,
-    help='Reject fiber outliers whose total fiber similarity is more than this number of standard deviations below the mean. Default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100.')
+    help='Reject fiber outliers whose total fiber similarity is more than this number of standard deviations below the mean. Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100.')
+parser.add_argument(
+    '-subject_percent', action='store', dest="subjectPercentToKeepCluster",type=float, default=0.4,
+    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then, on the next iteration, the clustering will be run without being affected by the outlier fibers.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
@@ -149,6 +153,9 @@ if args.outlierStandardDeviation is not None:
 else:
     outlier_std_threshold = 2.0
 print "Standard deviation for fiber outlier removal: ", outlier_std_threshold
+
+subject_percent_threshold = args.subjectPercentToKeepCluster
+print "Percent of subjects needed in a cluster to retain that cluster on the next iteration:", subject_percent_threshold
 
 if args.sizeOfNystromSample is not None:
     number_of_sampled_fibers = args.sizeOfNystromSample
@@ -386,12 +393,15 @@ cluster_iterations = 10
 # compute pairwise distances and affinities with local sigma for outlier removal
 #cluster_local_sigma = 15
 #cluster_local_sigma = 30
-cluster_local_sigmas = [30, 20, 15, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+# with 10 the distribution is almost flat; with 5 it is mostly 0. these are not useful for rejecting outliers as std is big.
+#cluster_local_sigmas = [30, 20, 20, 15, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5]
+#cluster_local_sigmas = [30, 30, 30, 20, 20, 20, 20, 20, 20, 20, 20, 15, 15, 15]
 #cluster_std_thresholds = [2.0, 2.0, 2.5, 2.5, 3.0, ]
 cluster_std_threshold = 2.0
         
 for iter in range(cluster_iterations):
-    cluster_local_sigma = cluster_local_sigmas[iter]
+    #cluster_local_sigma = cluster_local_sigmas[iter]
+    cluster_local_sigma = 20.0
     # make a directory for the current iteration
     dirname = "iteration_%05d" % (iter)
     outdir_current = os.path.join(outdir, dirname)
@@ -430,7 +440,7 @@ for iter in range(cluster_iterations):
         print "<wm_cluster_atlas.py> Output directory", outdir1, "does not exist, creating it."
         os.makedirs(outdir1)    
     print '<wm_cluster_atlas.py> Saving output files in directory:', outdir1
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
 
     # Remove outliers from this iteration and save atlas again                                                 
     print "Starting local cluster outlier removal"
@@ -440,44 +450,81 @@ for iter in range(cluster_iterations):
     cluster_indices = range(atlas.centroids.shape[0])
     fiber_mean_sim = numpy.zeros(cluster_numbers_s.shape)
 
+    
+    plt.figure(0)
+    plt.title('Histogram of per-cluster fiber distances')
+    plt.xlabel('distance in mm')
+    plt.ylabel('number of fibers')
+    plt.grid(True)
+    plt.figure(1)
+    plt.title('Histogram of per-cluster fiber probabilities')
+    plt.xlabel('probability')
+    plt.ylabel('number of fibers')
+    plt.grid(True)
+            
     for c in cluster_indices:
         mask = cluster_numbers_s == c
+        fiber_indices = numpy.nonzero(mask)[0]
+        number_fibers_in_cluster = numpy.sum(mask)
 
-        # reject the whole cluster if there are few subjects (tractography error)
-        subjects_threshold = 5
-        subjects_per_cluster = len(set(subject_fiber_list[mask]))
+        # get the subject ID for each fiber in the cluster
+        subject_ID_per_fiber = subject_fiber_list[mask]
+        subjects_threshold = subject_percent_threshold*number_of_subjects
+        subjects_list = set(subject_ID_per_fiber)
+        subjects_per_cluster = len(subjects_list)
 
         # grab the cluster as polydata
         pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
         cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
         cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
 
-        tmp = numpy.sqrt(cluster_distances)
-        if verbose:
-            print "cluster", c, "dist:", numpy.min(tmp), numpy.mean(tmp), numpy.max(tmp)
-            print "cluster", c, "sim :", numpy.min(cluster_similarity), numpy.mean(cluster_similarity), numpy.max(cluster_similarity)
-
-        # get total similarity for each fiber
-        total_similarity = numpy.sum(cluster_similarity, axis=1) - 1.0
+        #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
+        # by using sample we estimate expected value of the above
+        # get total similarity for each fiber (-1 to neglect self comparison)
+        total_similarity_OLD = (numpy.sum(cluster_similarity, axis=1) - 1.0) / number_fibers_in_cluster
+        # get leave-one-out total similarity (probability) where only fibers from other subjects are considered
+        total_similarity = list()
+        for (fidx, sidx) in zip(range(len(subject_ID_per_fiber)), subject_ID_per_fiber):
+            mask = subject_ID_per_fiber != sidx
+            #print sidx, "!=", set(subject_ID_per_fiber[mask])
+            number_fibers_in_LOO_cluster = numpy.sum(mask)
+            total_similarity.append(numpy.sum(cluster_similarity[fidx,mask]) / number_fibers_in_LOO_cluster)
+            mask2 = subject_ID_per_fiber == sidx
+            if verbose:
+                tmp = numpy.sum(cluster_similarity[fidx, mask2]) / numpy.sum(mask2)
+                print "LOO:", total_similarity[-1], "all:", total_similarity_OLD[fidx], "subj:", tmp, "f:", number_fibers_in_cluster, "LOO f:", number_fibers_in_LOO_cluster, "subj f:", numpy.sum(mask2)
+        total_similarity = numpy.array(total_similarity)
+        
         if verbose:
             print "cluster", c, "tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "num fibers:", numpy.sum(mask), "num subjects:", subjects_per_cluster
 
         # remove outliers with low similarity to their cluster
-        number_fibers_in_cluster = numpy.sum(mask)
         mean_sim = numpy.mean(total_similarity)
         cluster_std = numpy.std(total_similarity)
-        count = 0
-        for fidx in range(len(cluster_numbers_s)):
-            if cluster_numbers_s[fidx] == c:
-                fiber_mean_sim[fidx] = total_similarity[count] / number_fibers_in_cluster
-                if total_similarity[count] < mean_sim - cluster_std_threshold*cluster_std:
-                    #print fidx, cluster_numbers_s[fidx], dists[count]
-                    cluster_numbers_s[fidx] = -1
-                    reject_idx.append(fidx)
-                elif subjects_per_cluster < subjects_threshold:
-                    cluster_numbers_s[fidx] = -1
-                    reject_idx.append(fidx)
-                count += 1
+        cutoff = mean_sim - cluster_std_threshold*cluster_std
+        for (fidx, sim) in zip(fiber_indices, total_similarity):
+            fiber_mean_sim[fidx] = sim 
+            if sim < cutoff:
+                #print fidx, cluster_numbers_s[fidx], dists[count]
+                cluster_numbers_s[fidx] = -1
+                reject_idx.append(fidx)
+            elif subjects_per_cluster < subjects_threshold:
+                # reject the whole cluster if there are few subjects (tractography error)
+                cluster_numbers_s[fidx] = -1
+                reject_idx.append(fidx)
+
+        dist_mm = numpy.sqrt(cluster_distances)
+        print "CLUSTER:", c, "/", numpy.max(cluster_indices), "| fibers:", number_fibers_in_cluster, "| subjects:", subjects_per_cluster, "| dist:", numpy.min(dist_mm), numpy.mean(dist_mm), numpy.max(dist_mm), "| sim :", numpy.min(cluster_similarity), numpy.mean(cluster_similarity), numpy.max(cluster_similarity),  "| tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "| local reject total:", len(reject_idx)
+
+        plt.figure(0)
+        n, bins, patches = plt.hist(dist_mm, histtype='barstacked', range=[0,100], bins=100, alpha=0.75)
+        plt.setp(patches,'lw', 0.01)
+        plt.figure(1)
+        # this can become nan if there are no other subjects in cluster; those are rejected anyway
+        plot_data = total_similarity[~numpy.isnan(total_similarity)]
+        if len(plot_data) > 0:
+            n, bins, patches = plt.hist(plot_data, histtype='barstacked', range=[0.0,1.0], bins=30, alpha=0.75)
+            plt.setp(patches,'lw', 0.1)
     print "Rejecting cluster outlier fibers:", len(reject_idx)
 
     # in a second pass, also remove outliers whose average fiber
@@ -503,6 +550,13 @@ for iter in range(cluster_iterations):
         os.makedirs(outdir2)
     print '<wm_cluster_atlas.py> Saving output files in directory:', outdir2
 
+    plt.figure(0)
+    plt.savefig( os.path.join(outdir2, 'fiber_distances_per_cluster_histogram.pdf'))
+    plt.close()
+    plt.figure(1)
+    plt.savefig( os.path.join(outdir2, 'fiber_probabilities_per_cluster_histogram.pdf'))
+    plt.close()
+
     mask = cluster_numbers_s == -1
     fname_c = os.path.join(outdir2, 'outlier.vtp')
     pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
@@ -510,7 +564,7 @@ for iter in range(cluster_iterations):
 
     print "Before save Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
 
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=verbose, render_images=render)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
 
     test = subject_fiber_list[numpy.nonzero(mask)]
 
@@ -520,7 +574,7 @@ for iter in range(cluster_iterations):
     # Also delete the fiber in the polydata
     mask = cluster_numbers_s >= 0
 
-    input_data = wma.filter.mask(output_polydata_s, mask, verbose=verbose)
+    input_data = wma.filter.mask(output_polydata_s, mask, verbose=False)
 
     print "End iter Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape, "TEST:", test.shape
 
