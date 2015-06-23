@@ -475,8 +475,12 @@ for iter in range(cluster_iterations):
 
         # grab the cluster as polydata
         pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
-        cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
-        cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
+        if distance_method == 'StrictSimilarity':
+            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
+            cluster_similarity = cluster_distances
+        else:
+            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
+            cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
 
         #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
         # by using sample we estimate expected value of the above
@@ -517,7 +521,9 @@ for iter in range(cluster_iterations):
         print "CLUSTER:", c, "/", numpy.max(cluster_indices), "| fibers:", number_fibers_in_cluster, "| subjects:", subjects_per_cluster, "| dist:", numpy.min(dist_mm), numpy.mean(dist_mm), numpy.max(dist_mm), "| sim :", numpy.min(cluster_similarity), numpy.mean(cluster_similarity), numpy.max(cluster_similarity),  "| tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "| local reject total:", len(reject_idx)
 
         plt.figure(0)
-        n, bins, patches = plt.hist(dist_mm, histtype='barstacked', range=[0,100], bins=100, alpha=0.75)
+        # plot the mean per-fiber distance because plotting all distances allocated 20GB
+        plot_data = numpy.mean(dist_mm, axis=1)
+        n, bins, patches = plt.hist(plot_data, histtype='barstacked', range=[0,60], bins=30, alpha=0.75)
         plt.setp(patches,'lw', 0.01)
         plt.figure(1)
         # this can become nan if there are no other subjects in cluster; those are rejected anyway
