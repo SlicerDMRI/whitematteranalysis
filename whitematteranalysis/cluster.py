@@ -343,7 +343,7 @@ def spectral(input_polydata, number_of_clusters=200,
             # this matrix is A^-1 * b_r, where b_r are the row sums of B
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
             atlas.row_sum_matrix = numpy.dot(numpy.sum(B.T, axis=0), atlas.pinv_A)
-            test = numpy.sum(B.T, axis=0)
+            #test = numpy.sum(B.T, axis=0)
             #print "<cluster.py> B column sums range (should be > 0):", numpy.min(test), numpy.max(test)
             print "<cluster.py> Range of row sum weights:", numpy.min(atlas.row_sum_matrix), numpy.max(atlas.row_sum_matrix)
             #print "<cluster.py> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
@@ -354,9 +354,7 @@ def spectral(input_polydata, number_of_clusters=200,
             # row sum estimate for current B part of the matrix
             row_sum_2 = numpy.sum(B, axis=0) + \
                 numpy.dot(atlas.row_sum_matrix, B)
-            print "<cluster.py> Row sum check (min/max, should be > 0) A:", numpy.min(atlas.row_sum_1), \
-                numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), \
-                numpy.max(row_sum_2)
+            print "<cluster.py> Row sum check (min/max, should be > 0) A:", numpy.min(atlas.row_sum_1), numpy.median(atlas.row_sum_1), numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), numpy.median(row_sum_2), numpy.max(row_sum_2)
 
             # reject outliers in B
             bad_idx = numpy.nonzero(row_sum_2 < atlas.row_sum_threshold_for_rejection)[0]
@@ -366,6 +364,7 @@ def spectral(input_polydata, number_of_clusters=200,
             B = numpy.delete(B,reject_B,1)
 
             print "<cluster.py> After outlier rejection A:", A.shape, "B:", B.shape
+            print "<cluster.py> Row sum check (min/max, should be > 0) A:", numpy.min(atlas.row_sum_1), numpy.median(atlas.row_sum_1), numpy.max(atlas.row_sum_1),  "B:", numpy.min(row_sum_2), numpy.median(row_sum_2), numpy.max(row_sum_2)
 
             # Separate the Nystrom sample and the rest of the data after removing outliers
             nystrom_mask_2 = nystrom_mask
@@ -485,7 +484,7 @@ def spectral(input_polydata, number_of_clusters=200,
     cluster_metric = None
     if centroid_finder == 'K-means':
         print '<cluster.py> K-means clustering in embedding space.'
-        centroids, cluster_metric = scipy.cluster.vq.kmeans(embed, number_of_clusters)
+        centroids, cluster_metric = scipy.cluster.vq.kmeans2(embed, number_of_clusters, minit='points')
         # sort centroids by first eigenvector order
         # centroid_order = numpy.argsort(centroids[:,0])
         # sort centroids according to colormap and save them in this order in atlas
@@ -701,7 +700,7 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
 
 def _pairwise_distance_matrix(input_polydata, threshold,
                               number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
-                              bilateral=False):
+                              bilateral=False, sigmasq=6400):
 
     """ Internal convenience function available to clustering
     routines.
@@ -736,7 +735,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
                 fiber_array,
                 threshold, distance_method=distance_method, 
                 fiber_landmarks=landmarks2[lidx,:], 
-                landmarks=landmarks, bilateral=bilateral)
+                landmarks=landmarks, bilateral=bilateral, sigmasq=sigmasq)
             for lidx in all_fibers)
 
         distances = numpy.array(distances)

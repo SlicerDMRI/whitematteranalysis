@@ -32,6 +32,7 @@ setup(
         'bin/wm_register_to_atlas_new.py',
         'bin/wm_register_to_atlas.py',
         'bin/wm_separate_clusters_by_hemisphere.py',
+        'bin/wm_flatten_length_distribution.py'
     ],
     include_dirs=[numpy.get_include()]
 )
