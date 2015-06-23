@@ -700,7 +700,7 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
 
 def _pairwise_distance_matrix(input_polydata, threshold,
                               number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
-                              bilateral=False):
+                              bilateral=False, sigmasq=6400):
 
     """ Internal convenience function available to clustering
     routines.
@@ -735,7 +735,7 @@ def _pairwise_distance_matrix(input_polydata, threshold,
                 fiber_array,
                 threshold, distance_method=distance_method, 
                 fiber_landmarks=landmarks2[lidx,:], 
-                landmarks=landmarks, bilateral=bilateral)
+                landmarks=landmarks, bilateral=bilateral, sigmasq=sigmasq)
             for lidx in all_fibers)
 
         distances = numpy.array(distances)
