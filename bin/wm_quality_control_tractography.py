@@ -95,11 +95,12 @@ outstr += "Description of Outputs\n"
 outstr += '---------------------\n'
 outstr += 'fiber_length_histograms.pdf: Distribution of fiber lengths for all subjects.\n'
 outstr += 'quality_control_data.txt: Data (e.g. FA, tensors) should match for all subjects.\n'
-outstr += 'quality_control_fibers.txt:  Step size and numbers of fibers per subject.\n'
-outstr += 'quality_control_spatial_locations.txt:  Spatial bounds (min/max) of fiber x,y,z.\n'
+outstr += 'quality_control_fibers.txt:  Step size and numbers of fibers over various lengths (in mm).\n'
+outstr += 'quality_control_spatial_locations.txt:  Bounding box (min/max coordinates of fibers).\n'
 outstr += 'view_*.png: All subjects (colors) should overlap if coordinate system origins are ok.\n'
-outstr += 'subject directories: Subject-specific histograms and views for visual inspection.'
+outstr += 'subject directories: Subject-specific histograms and views for visual inspection.\n'
 outstr += '\n'
+outstr += 'Open the output text files as tab-delimited files in Excel or other spreadsheet program. \n'
 outstr += '\n'
 outstr += "Command Line Arguments\n"
 outstr += '----------------------\n'
@@ -243,7 +244,7 @@ if HAVE_PLT:
     plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
 
-print "<quality_control> Final step: rendering all vtk files together to see if any have a different origin (if far apart registration may fail)."
+print "<quality_control> Final step: rendering all vtk files together."
 appender.Update()
 pd_all = appender.GetOutput()
 ren = wma.render.render(pd_all, verbose=False)
