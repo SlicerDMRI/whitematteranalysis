@@ -146,16 +146,41 @@ elif mode == "nonlinear":
     # use only very local information (small sigma)
     sigma_per_scale = [3, 2, 1]
     # how many times to repeat the process at each scale
-    iterations_per_scale = [1, 1, 1]
-    # the mean brain is set already so we just want to sample a good amount here
-    mean_brain_size_per_scale = [2000, 2000, 2000]
+    iterations_per_scale = [2, 2, 2]
+    # this takes twice as long--still testing what is optimal for this parameter
+    #iterations_per_scale = [4, 4, 4]
+    # these are small samples to go (relatively) quickly: the goal is just to improve the mean brain each time
+    mean_brain_size_per_scale = [2500, 2750, 3000]
     subject_brain_size_per_scale = [500, 750, 900]
-    # stop computation early. no need to converge at first iteration, just improve objective as quickly as possible
+    # stop computation early. no need to ever converge, just improve objective as quickly as possible
     # These settings are for a 5x5x5 grid, 125*3 = 375 parameter space.
-    maxfun_per_scale = [375, 500, 750]
+    maxfun_per_scale = [500, 500, 750]
     # fiber representation for computation.
     points_per_fiber = 15
     register.nonlinear = True
+    register.nonlinear_grid_resolution = 5
+    
+elif mode == "nonlinear_fine":
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 2]
+    final_step_per_scale = [1, 1, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [3, 2, 1]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [2, 2, 2]
+    # this takes twice as long--still testing what is optimal for this parameter
+    #iterations_per_scale = [4, 4, 4]
+    # We need more samples than for the 5x5x5 grid. These parameters run slowly but perform well.
+    # The lower sample sizes  [2500, 2750, 3000] [500, 750, 900] were not effective here.
+    mean_brain_size_per_scale = [3000, 4000, 5000]
+    subject_brain_size_per_scale = [1000, 1500, 2000]
+    # These settings are for a 6x6x6 grid, 216*3 = 648 parameter space.
+    maxfun_per_scale = [1296, 1944, 2592]
+    # fiber representation for computation.
+    points_per_fiber = 15
+    register.nonlinear = True
+    register.nonlinear_grid_resolution = 6
+    register.initialize_nonlinear_grid()
 
 elif mode == "affineTEST":
     # very quick test if software is working
