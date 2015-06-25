@@ -86,10 +86,7 @@ print "=========================="
 # =======================================================================
 
 # Loop over input DWIs
-inputMask1 = "{0}/*.vtk".format(args.inputDirectory)
-inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
-
-inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
+inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
 print "<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)
 
