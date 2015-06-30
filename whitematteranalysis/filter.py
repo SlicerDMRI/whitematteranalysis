@@ -33,6 +33,26 @@ import similarity
 
 verbose = 0
 
+
+def add_point_data_array(inpd, data, array_name):
+    """Make a vtk point data array from input data array and add to inpd.
+
+    Input data must have dimensions of the number of lines in the
+    input polydata. The output array will be added to the polydata and
+    will be point data, so the per-line values will be duplicated to
+    become per-point values (each point on the line) for visualization.
+    """
+
+    ptids = vtk.vtkIdList()
+    inpd.GetLines().InitTraversal()
+    outarray = vtk.vtkFloatArray()
+    outarray.SetName(array_name)
+    for lidx in range(0, inpd.GetNumberOfLines()):
+        inpd.GetLines().GetNextCell(ptids)
+        for pidx in range(0, ptids.GetNumberOfIds()):
+            outarray.InsertNextTuple1(data[lidx])
+    inpd.GetPointData().AddArray(outarray)
+
 def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, num_bins=10, fibers_per_bin=1000, verbose=True):
     """In order to cluster all structures without removing more
     prevalent shorter ones, sample equal numbers across length ranges.
