@@ -32,7 +32,7 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each subject. Default is 2000 (this assumes 10 or more subjects; for fewer subjects, more fibers are needed per subject).')
+    help='Number of fibers to analyze from each subject. Default is 2000 (this assumes 10 or more subjects; for fewer subjects, more fibers are needed per subject). Note: 10000-20000 fibers per subject is good when outlier removal is used.')
 parser.add_argument(
     '-l', action="store", dest="fiberLength", type=int,
     help='Minimum length (in mm) of fibers to analyze. 25mm is default. This default is reasonable for single-tensor DTI tractography. For two-tensor UKF, 80mm is more reasonable (as tracts are longer in general). Run the quality control script on your data first and inspect the fiber length distribution in your dataset. Note that with too low a threshold, the clustering will be dominated by the more prevalent short fibers, such as u-fibers, instead of longer association fibers.')
@@ -44,16 +44,16 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output in the terminal window.')
 parser.add_argument(
     '-k', action="store", dest="numberOfClusters", type=int,
-    help='Number of clusters to find. Default is 250, which is reasonable for single-tensor DTI tractography. Useful range is from 200 to 600+. For two-tensor UKF, 400 or more is a reasonable number.')
+    help='Number of clusters to find. Default is 250, which is reasonable for single-tensor DTI tractography. Useful range is from 200 to 600+. For two-tensor UKF, 500-800 or more is a reasonable number.')
 parser.add_argument(
     '-thresh', action="store", dest="distanceThreshold", type=float,
     help='Threshold (in mm) below which fiber points are considered in the same position. Default is 2mm for cross-subject atlas clustering. This helps find correspondences across subjects by ignoring very small differences.')
 parser.add_argument(
     '-nystrom_sample', action="store", dest="sizeOfNystromSample", type=int,
-    help='Number of fibers to use in the Nystrom sample. This is the random sample of fibers to which every input fiber is compared, to structure the clustering problem. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use. One rule of thumb is that this number should be similar to the number of fibers used per subject.')
+    help='Number of fibers to use in the Nystrom sample. This is the random sample of fibers to which every input fiber is compared, to structure the clustering problem. 2000 is default. Must be >1500. Increase for larger datasets. Reduce to limit memory use. For practical purposes, increasing this number over 3000 or 4000 is unlikely to improve results.')
 parser.add_argument(
     '-sigma', action="store", dest="sigma", type=float,
-    help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Reduce for stricter clustering with ample data, or for physically smaller problems like a subset of the brain.')
+    help='Sigma for kernel. Controls distance over which fibers are considered similar. 60mm is default. Most likely this value should not be changed.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
     help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer. Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100%% of fibers.')
@@ -67,11 +67,14 @@ parser.add_argument(
     '-bilateral_off', action='store_true', dest="flag_bilateral_off",
     help='Turn off bilateral clustering. In general, anatomy is better and more stably represented with bilateral clusters, so that is the default. The bilateral clusters can be split at the midline later for analyses.')
 parser.add_argument(
-    '-outlier_std', action='store', dest="outlierStandardDeviation",type=float,
-    help='Reject fiber outliers whose total fiber similarity is more than this number of standard deviations below the mean. Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100.')
+    '-cluster_outlier_std', action='store', dest="clusterOutlierStandardDeviation", type=float, default=2.0,
+    help='After clustering, reject fiber outliers whose fiber probability (within their cluster) is more than this number of standard deviations below the mean (either within-cluster mean or across-clusters mean). Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100 (and set the number of iterations to 1). This probability is measured in an accurate way using pairwise comparison of all fibers in each cluster, in a leave-one-out fashion with regards to subjects. The purpose of this is to remove outlier fibers accurately within each cluster. This parameter can be tuned by the user depending on the amount of outlier fibers present in the tractography.')
+parser.add_argument(
+    '-iter', action='store', dest="iterations", type=int, default=10,
+    help='The number of iterations to repeat the clustering and outlier removal process. The default is ten iterations.')
 parser.add_argument(
     '-subject_percent', action='store', dest="subjectPercentToKeepCluster",type=float, default=0.4,
-    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then, on the next iteration, the clustering will be run without being affected by the outlier fibers.')
+    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then on the next iteration, the clustering will be run without being affected by the outlier fibers.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
@@ -90,8 +93,11 @@ parser.add_argument(
 parser.add_argument(
     '-advanced_only_force_pos_def_off', action='store_true', dest="flag_pos_def_off",
     help='(Advanced parameter for testing only.) Turn off replacing A matrix by a close positive definite matrix.')
-args = parser.parse_args()
+parser.add_argument(
+    '-advanced_only_outlier_std', action='store', dest="outlierStandardDeviation", type=float, default=4.0,
+    help='(Advanced parameter that probably should not be changed.) Before clustering, reject any fiber outliers whose total fiber probability is more than this number of standard deviations below the mean. Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 4.0 standard deviations. For more strict rejection, enter a smaller number such as 3.0. To turn off outlier rejection, enter a large number such as 100. This total probability is estimated in an approximate way by estimating the row sum of the affinity matrix using the Nystrom method, so its function is to remove any extreme outliers such as fibers outside the brain. Probably it is not necessary to change this value.')
 
+args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
     print "<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."
@@ -148,14 +154,17 @@ else:
     number_of_clusters = 250
 print "Number of clusters to find: ", number_of_clusters
 
-if args.outlierStandardDeviation is not None:
-    outlier_std_threshold = args.outlierStandardDeviation 
-else:
-    outlier_std_threshold = 2.0
-print "Standard deviation for fiber outlier removal: ", outlier_std_threshold
+cluster_outlier_std_threshold = args.clusterOutlierStandardDeviation
+print "Standard deviation for fiber outlier removal after clustering (accurate local probability): ", cluster_outlier_std_threshold
+
+outlier_std_threshold = args.outlierStandardDeviation
+print "Standard deviation for fiber outlier removal before clustering (approximated total probability): ", outlier_std_threshold
 
 subject_percent_threshold = args.subjectPercentToKeepCluster
 print "Percent of subjects needed in a cluster to retain that cluster on the next iteration:", subject_percent_threshold
+
+cluster_iterations = args.iterations
+print "Iterations of clustering and outlier removal:", cluster_iterations
 
 if args.sizeOfNystromSample is not None:
     number_of_sampled_fibers = args.sizeOfNystromSample
@@ -381,27 +390,12 @@ if random_seed is not None:
     print "<wm_cluster_atlas.py> Setting random seed to", random_seed
     numpy.random.seed(seed=random_seed)
 
+
+# 20mm works well for cluster-specific outlier removal in conjunction with the mean distance.
+cluster_local_sigma = 20.0
+
 # Run clustering several times, removing outliers each time.
-#cluster_iterations = 5
-cluster_iterations = 10
-# almost no effect
-#cluster_std_threshold = 2.0
-#cluster_std_threshold = outlier_std_threshold
-# too much?
-#cluster_std_threshold = 0.5
-#cluster_std_threshold = 1.0
-# compute pairwise distances and affinities with local sigma for outlier removal
-#cluster_local_sigma = 15
-#cluster_local_sigma = 30
-# with 10 the distribution is almost flat; with 5 it is mostly 0. these are not useful for rejecting outliers as std is big.
-#cluster_local_sigmas = [30, 20, 20, 15, 10, 5, 5, 5, 5, 5, 5, 5, 5, 5]
-#cluster_local_sigmas = [30, 30, 30, 20, 20, 20, 20, 20, 20, 20, 20, 15, 15, 15]
-#cluster_std_thresholds = [2.0, 2.0, 2.5, 2.5, 3.0, ]
-cluster_std_threshold = 2.0
-        
 for iter in range(cluster_iterations):
-    #cluster_local_sigma = cluster_local_sigmas[iter]
-    cluster_local_sigma = 20.0
     # make a directory for the current iteration
     dirname = "iteration_%05d" % (iter)
     outdir_current = os.path.join(outdir, dirname)
@@ -445,11 +439,12 @@ for iter in range(cluster_iterations):
     # Remove outliers from this iteration and save atlas again                                                 
     print "Starting local cluster outlier removal"
 
-    # outlier cluster index is going to be -1                                                     
+    # outlier cluster index is going to be minus the cluster index, minus 1 to avoid issues with 0
+    # Negative cluster indices are skipped in the save function wma.cluster.output_and_quality_control_cluster_atlas
+
     reject_idx = list() 
     cluster_indices = range(atlas.centroids.shape[0])
     fiber_mean_sim = numpy.zeros(cluster_numbers_s.shape)
-
     
     plt.figure(0)
     plt.title('Histogram of per-cluster fiber distances')
@@ -516,7 +511,7 @@ for iter in range(cluster_iterations):
         # remove outliers with low similarity to their cluster
         mean_sim = numpy.mean(total_similarity)
         cluster_std = numpy.std(total_similarity)
-        cutoff = mean_sim - cluster_std_threshold*cluster_std
+        cutoff = mean_sim - cluster_outlier_std_threshold*cluster_std
         for (fidx, sim) in zip(fiber_indices, total_similarity):
             fiber_mean_sim[fidx] = sim 
             if sim < cutoff:
@@ -557,7 +552,7 @@ for iter in range(cluster_iterations):
     brain_std_sim = numpy.std(fiber_mean_sim)
 
     for fidx in range(len(cluster_numbers_s)):
-        if fiber_mean_sim[fidx] < brain_mean_sim - cluster_std_threshold*brain_std_sim:
+        if fiber_mean_sim[fidx] < brain_mean_sim - cluster_outlier_std_threshold*brain_std_sim:
             #print fidx, cluster_numbers_s[fidx], fiber_mean_sim[count]
             if cluster_numbers_s[fidx] >= 0:
                 cluster_numbers_s[fidx] = -cluster_numbers_s[fidx] - 1
@@ -624,7 +619,7 @@ for iter in range(cluster_iterations):
     print '<wm_cluster_atlas.py> Saving outlier fiber files in directory:', outdir3
     mask = cluster_numbers_s < 0
     cluster_numbers_outliers = -numpy.multiply(cluster_numbers_s, mask) - 1
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=False)
 
     test = subject_fiber_list[numpy.nonzero(mask)]
 
