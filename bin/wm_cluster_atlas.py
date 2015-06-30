@@ -452,6 +452,7 @@ for iteration in range(cluster_iterations):
     reject_idx = list() 
     cluster_indices = range(atlas.centroids.shape[0])
     fiber_mean_sim = numpy.zeros(cluster_numbers_s.shape)
+    fiber_hemisphere = numpy.zeros(cluster_numbers_s.shape)
     
     plt.figure(0)
     plt.title('Histogram of per-cluster fiber distances')
@@ -474,6 +475,9 @@ for iteration in range(cluster_iterations):
     cluster_subjects_outlier = list()
     cluster_std_similarity = list()
     cluster_mean_similarity = list()
+    cluster_left_hem = list()
+    cluster_right_hem = list()
+    cluster_commissure = list()
 
     for c in cluster_indices:
         mask = cluster_numbers_s == c
@@ -490,6 +494,18 @@ for iteration in range(cluster_iterations):
 
         # grab the cluster as polydata
         pd_c = wma.filter.mask(output_polydata_s, mask,verbose=False)
+
+        # figure out hemisphere labels for this cluster
+        farray = wma.fibers.FiberArray()
+        farray.hemispheres = True
+        farray.hemisphere_percent_threshold = 0.90
+        farray.convert_from_polydata(pd_c, points_per_fiber=50)
+        fiber_hemisphere[fiber_indices] = farray.fiber_hemisphere
+        cluster_left_hem.append(farray.number_left_hem)
+        cluster_right_hem.append(farray.number_right_hem)
+        cluster_commissure.append(farray.number_commissure)
+
+        # Compute distances and fiber probabilities
         if distance_method == 'StrictSimilarity':
             cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
             cluster_similarity = cluster_distances
@@ -603,7 +619,7 @@ for iteration in range(cluster_iterations):
     # Save output quality control information
     clusters_qc_fname = os.path.join(outdir2, 'outlier_removal_information.txt')
     clusters_qc_file = open(clusters_qc_fname, 'w')
-    print >> clusters_qc_file, 'cluster_idx','\t', 'mean_distance','\t', 'mean_probability','\t', 'fibers_before','\t', 'fibers_after', '\t', 'subjects_before','\t','subjects_after', '\t','subjects_with_outliers', '\t','local_outliers', '\t','global_outliers', '\t','total_outliers'
+    print >> clusters_qc_file, 'cluster_idx','\t', 'mean_distance','\t', 'mean_probability','\t', 'fibers_before','\t', 'fibers_after', '\t', 'subjects_before','\t','subjects_after', '\t','subjects_with_outliers', '\t','local_outliers', '\t','global_outliers', '\t','total_outliers','\t','left_hem_fibers','\t','right_hem_fibers','\t','commissural_fibers'
     cluster_size_after = numpy.array(cluster_size_before) - numpy.array(cluster_removed_total)
     for cidx in cluster_indices:
         print >> clusters_qc_file, cidx + 1,'\t', \
@@ -616,7 +632,10 @@ for iteration in range(cluster_iterations):
             cluster_subjects_outlier[cidx],'\t', \
             cluster_removed_local[cidx],'\t', \
             cluster_removed_total[cidx] - cluster_removed_local[cidx],'\t', \
-            cluster_removed_total[cidx]
+            cluster_removed_total[cidx],'\t', \
+            cluster_left_hem[cidx],'\t', \
+            cluster_right_hem[cidx],'\t', \
+            cluster_commissure[cidx]
     clusters_qc_file.close()
 
     print "Before save Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
@@ -627,6 +646,10 @@ for iteration in range(cluster_iterations):
     atlas.cluster_std_similarity = cluster_std_similarity
     atlas.brain_mean_similarity = brain_mean_sim
     atlas.brain_std_similarity = brain_std_sim
+
+    # NOTE: need to update cluster centroids after removing outliers.
+
+    # NOTE: compute and save mean fibers per cluster (add these into the atlas as another polydata)
 
     # Save the current atlas
     wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
