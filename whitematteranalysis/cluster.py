@@ -998,10 +998,15 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         mask = cluster_numbers_s == c
         cluster_size = numpy.sum(mask)
         cluster_sizes.append(cluster_size)
-        # color by subject so in theory we can see which one it came from
-        # but this is cell data and may not be correctly shown in Slicer.
-        #colors = subject_fiber_list
         pd_c = filter.mask(output_polydata_s, mask,verbose=verbose)
+        # color by subject so we can see which one it came from
+        filter.add_point_data_array(pd_c, subject_fiber_list[mask], "Subject_ID")
+        # Save hemisphere information into the polydata
+        farray = fibers.FiberArray()
+        farray.hemispheres = True
+        farray.hemisphere_percent_threshold = 0.90
+        farray.convert_from_polydata(pd_c, points_per_fiber=50)
+        filter.add_point_data_array(pd_c, farray.fiber_hemisphere, "Hemisphere")
         # The clusters are stored starting with 1, not 0, for user friendliness.
         fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
         # save the filename for writing into the MRML file
