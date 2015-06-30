@@ -77,6 +77,47 @@ def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, nu
     appender.Update()
     return(appender.GetOutput())
 
+def compute_lengths(inpd):
+    """Compute length of each fiber in polydata. Returns lengths and step size.
+
+    Step size is estimated using points in the middle of a fiber with over 15 points.
+
+    """
+    # measure step size (using first two points on first line that has >=15 points)
+    cell_idx = 0
+    ptids = vtk.vtkIdList()
+    inpoints = inpd.GetPoints()
+    inpd.GetLines().InitTraversal()
+    while (ptids.GetNumberOfIds() < 15) & (cell_idx < inpd.GetNumberOfLines()):
+        inpd.GetLines().GetNextCell(ptids)
+        ##    inpd.GetLines().GetCell(cell_idx, ptids)
+        ## the GetCell function is not wrapped in Canopy python-vtk
+        cell_idx += 1
+    # make sure we have some points along this fiber
+    assert ptids.GetNumberOfIds() >= 15
+
+    # Use points from the middle of the fiber to estimate step length.
+    # This is because the step size may vary near endpoints (in order to include
+    # endpoints when downsampling the fiber to reduce file size).
+    step_size = 0.0
+    count = 0.0
+    for ptidx in range(2, ptids.GetNumberOfIds()-3):
+        point0 = inpoints.GetPoint(ptids.GetId(ptidx))
+        point1 = inpoints.GetPoint(ptids.GetId(ptidx + 1))
+        step_size += numpy.sqrt(numpy.sum(numpy.power(numpy.subtract(point0, point1), 2)))
+        count += 1
+    step_size = step_size / count
+
+    fiber_lengths = list()
+    # loop over lines
+    inpd.GetLines().InitTraversal()
+    num_lines = inpd.GetNumberOfLines()
+    for lidx in range(0, num_lines):
+        inpd.GetLines().GetNextCell(ptids)
+        # save length
+        fiber_lengths.append(ptids.GetNumberOfIds() * step_size)
+
+    return numpy.array(fiber_lengths), step_size
 
 def preprocess(inpd, min_length_mm,
                remove_u=False,
@@ -95,40 +136,16 @@ def preprocess(inpd, min_length_mm,
 
     """
 
-    # set up processing and output objects
-    ptids = vtk.vtkIdList()
-    inpoints = inpd.GetPoints()
-    
-    # min_length_mm is in mm. Convert to minimum points per fiber
-    # by measuring step size (using first two points on first line that has >=15 points)
-    cell_idx = 0
-    inpd.GetLines().InitTraversal()
-    while (ptids.GetNumberOfIds() < 15) & (cell_idx < inpd.GetNumberOfLines()):
-        inpd.GetLines().GetNextCell(ptids)
-        ##    inpd.GetLines().GetCell(cell_idx, ptids)
-        ## the GetCell function is not wrapped in Canopy python-vtk
-        cell_idx += 1
-        
-    # make sure we have some points along this fiber
-    assert ptids.GetNumberOfIds() >= 15
+    fiber_lengths, step_size = compute_lengths(inpd)
 
-    # Use points from the middle of the fiber to estimate step length.
-    # This is because the step size may vary near endpoints (in order to include
-    # endpoints when downsampling the fiber to reduce file size).
-    step_size = 0.0
-    count = 0.0
-    for ptidx in range(2, ptids.GetNumberOfIds()-3):
-        point0 = inpoints.GetPoint(ptids.GetId(ptidx))
-        point1 = inpoints.GetPoint(ptids.GetId(ptidx + 1))
-        step_size += numpy.sqrt(numpy.sum(numpy.power(numpy.subtract(point0, point1), 2)))
-        count += 1
-    step_size = step_size / count
-
-    min_length_pts = round(min_length_mm / step_size)
-    fiber_lengths = []
+    min_length_pts = round(min_length_mm / float(step_size))
     if verbose:
         print "<filter.py> Minimum length", min_length_mm, \
             "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")"
+
+    # set up processing and output objects
+    ptids = vtk.vtkIdList()
+    inpoints = inpd.GetPoints()
 
     # loop over lines
     inpd.GetLines().InitTraversal()
@@ -141,8 +158,7 @@ def preprocess(inpd, min_length_mm,
 
         # first figure out whether to keep this line
         keep_curr_fiber = False
-        # save length
-        fiber_lengths.append(ptids.GetNumberOfIds() * step_size)
+
         # test for line being long enough
         if ptids.GetNumberOfIds() > min_length_pts:
             keep_curr_fiber = True

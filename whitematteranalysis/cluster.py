@@ -492,7 +492,7 @@ def spectral(input_polydata, number_of_clusters=200,
         centroid_order = render.argsort_by_jet_lookup_table(color)
         atlas.centroids = centroids[centroid_order,:]
         cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
-        print "<cluster.py> Distortion metric:", cluster_metric
+        #print "<cluster.py> Distortion metric:", cluster_metric
         if 0:
             # This is extremely slow, but leave code here if ever wanted for testing
             cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
@@ -943,25 +943,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     std_fibers_per_subject_per_cluster = list()
 
     # find out length of each fiber
-    fiber_length = list()
-    cell_idx = 0
-    ptids = vtk.vtkIdList()
-    inpoints = output_polydata_s.GetPoints()
-    # loop over lines
-    output_polydata_s.GetLines().InitTraversal()
-    num_lines = output_polydata_s.GetNumberOfLines()
-    for lidx in range(0, num_lines):
-        output_polydata_s.GetLines().GetNextCell(ptids)
-        # compute step size (assume it's fixed along line length)
-        if ptids.GetNumberOfIds() >= 2:
-            point0 = inpoints.GetPoint(ptids.GetId(0))
-            point1 = inpoints.GetPoint(ptids.GetId(1))
-            step_size = numpy.sqrt(numpy.sum(numpy.power(
-                        numpy.subtract(point0, point1), 2)))
-        else:
-            step_size = 0.0
-        fiber_length.append(ptids.GetNumberOfIds() * step_size)
-    fiber_length = numpy.array(fiber_length)
+    fiber_length, step_size = filter.compute_lengths(output_polydata_s)
 
     # loop over each cluster and compute quality control metrics
     cluster_indices = range(atlas.centroids.shape[0])
