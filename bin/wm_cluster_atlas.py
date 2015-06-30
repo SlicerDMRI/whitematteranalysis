@@ -428,7 +428,7 @@ for iteration in range(cluster_iterations):
     # If any fibers were rejected, delete the corresponding entry in this list
     subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
     print "After cluster: Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
-    
+
     # Save the output in our atlas format for automatic labeling of full brain datasets.
     # This is the data used to label a new subject.
     # Also write the polydata with cluster indices saved as cell data. This is a one-file output option for clusters.
@@ -472,6 +472,8 @@ for iteration in range(cluster_iterations):
     cluster_removed_total = list()
     cluster_subjects_after = list()
     cluster_subjects_outlier = list()
+    cluster_std_similarity = list()
+    cluster_mean_similarity = list()
 
     for c in cluster_indices:
         mask = cluster_numbers_s == c
@@ -518,6 +520,9 @@ for iteration in range(cluster_iterations):
         # remove outliers with low similarity to their cluster
         mean_sim = numpy.mean(total_similarity)
         cluster_std = numpy.std(total_similarity)
+        cluster_std_similarity.append(cluster_std)
+        cluster_mean_similarity.append(mean_sim)
+
         cutoff = mean_sim - cluster_outlier_std_threshold*cluster_std
         for (fidx, sim) in zip(fiber_indices, total_similarity):
             fiber_mean_sim[fidx] = sim 
@@ -615,6 +620,13 @@ for iteration in range(cluster_iterations):
     clusters_qc_file.close()
 
     print "Before save Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape
+
+    # Add outlier information to the atlas
+    atlas.cluster_outlier_std_threshold = cluster_outlier_std_threshold
+    atlas.cluster_mean_similarity = cluster_mean_similarity
+    atlas.cluster_std_similarity = cluster_std_similarity
+    atlas.brain_mean_similarity = brain_mean_sim
+    atlas.brain_std_similarity = brain_std_sim
 
     # Save the current atlas
     wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)

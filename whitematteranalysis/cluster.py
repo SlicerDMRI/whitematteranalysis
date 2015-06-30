@@ -70,6 +70,12 @@ class ClusterAtlas:
         self.distance_method = None
         self.version = 1.0
         self.polydata_filename = None
+        # Outlier removal
+        self.cluster_outlier_std_threshold = None
+        self.cluster_mean_similarity = None
+        self.cluster_std_similarity = None
+        self.brain_mean_similarity = None
+        self.brain_std_similarity = None
         
     def save(self, directory, atlas_name):
         # temporarily remove polydata object to enable pickling
