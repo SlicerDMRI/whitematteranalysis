@@ -96,7 +96,9 @@ parser.add_argument(
 parser.add_argument(
     '-advanced_only_outlier_std', action='store', dest="outlierStandardDeviation", type=float, default=4.0,
     help='(Advanced parameter that probably should not be changed.) Before clustering, reject any fiber outliers whose total fiber probability is more than this number of standard deviations below the mean. Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 4.0 standard deviations. For more strict rejection, enter a smaller number such as 3.0. To turn off outlier rejection, enter a large number such as 100. This total probability is estimated in an approximate way by estimating the row sum of the affinity matrix using the Nystrom method, so its function is to remove any extreme outliers such as fibers outside the brain. Probably it is not necessary to change this value.')
-
+parser.add_argument(
+    '-advanced_only_outlier_sigma', action='store', dest="outlierSigma", type=float, default=20.0,
+    help='(Advanced parameter that probably should not be changed.) Local sigma used to compute fiber probability in cluster-based outlier removal. The default is 20mm. For stricter clustering, this may be reduced to 15mm.')
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
@@ -162,6 +164,10 @@ print "Standard deviation for fiber outlier removal before clustering (approxima
 
 subject_percent_threshold = args.subjectPercentToKeepCluster
 print "Percent of subjects needed in a cluster to retain that cluster on the next iteration:", subject_percent_threshold
+
+# 20mm works well for cluster-specific outlier removal in conjunction with the mean distance.
+cluster_local_sigma = args.outlierSigma
+print "Local sigma for cluster outlier removal:", cluster_local_sigma
 
 cluster_iterations = args.iterations
 print "Iterations of clustering and outlier removal:", cluster_iterations
@@ -389,10 +395,6 @@ if number_of_sampled_fibers >= input_data.GetNumberOfLines():
 if random_seed is not None:
     print "<wm_cluster_atlas.py> Setting random seed to", random_seed
     numpy.random.seed(seed=random_seed)
-
-
-# 20mm works well for cluster-specific outlier removal in conjunction with the mean distance.
-cluster_local_sigma = 20.0
 
 # Overall progress/outlier removal info file
 fname_progress = os.path.join(outdir, 'cluster_log.txt')
