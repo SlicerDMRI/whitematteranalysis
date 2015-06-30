@@ -394,10 +394,17 @@ if random_seed is not None:
 # 20mm works well for cluster-specific outlier removal in conjunction with the mean distance.
 cluster_local_sigma = 20.0
 
+# Overall progress/outlier removal info file
+fname_progress = os.path.join(outdir, 'cluster_log.txt')
+log_file = open(fname_progress, 'w')
+print >> log_file, 'iteration','\t', 'input_fibers','\t', 'output_fibers','\t', 'number_removed','\t', 'percentage_removed','\t', 'mean_distance','\t', 'mean_probability','\t', 'mean_subjects_before','\t', 'mean_subjects_after','\t', 'mean_fibers_before','\t', 'mean_fibers_after'
+original_total_fibers = input_data.GetNumberOfLines()
+log_file.close()
+
 # Run clustering several times, removing outliers each time.
-for iter in range(cluster_iterations):
+for iteration in range(cluster_iterations):
     # make a directory for the current iteration
-    dirname = "iteration_%05d" % (iter)
+    dirname = "iteration_%05d" % (iteration)
     outdir_current = os.path.join(outdir, dirname)
 
     # Calculate indices of random sample for Nystrom method
@@ -592,12 +599,13 @@ for iter in range(cluster_iterations):
     clusters_qc_fname = os.path.join(outdir2, 'outlier_removal_information.txt')
     clusters_qc_file = open(clusters_qc_fname, 'w')
     print >> clusters_qc_file, 'cluster_idx','\t', 'mean_distance','\t', 'mean_probability','\t', 'fibers_before','\t', 'fibers_after', '\t', 'subjects_before','\t','subjects_after', '\t','subjects_with_outliers', '\t','local_outliers', '\t','global_outliers', '\t','total_outliers'
+    cluster_size_after = numpy.array(cluster_size_before) - numpy.array(cluster_removed_total)
     for cidx in cluster_indices:
         print >> clusters_qc_file, cidx + 1,'\t', \
             cluster_mean_distances[cidx], '\t', \
             cluster_mean_probabilities[cidx],'\t',\
             cluster_size_before[cidx],'\t', \
-            cluster_size_before[cidx] - cluster_removed_total[cidx],'\t', \
+            cluster_size_after[cidx],'\t', \
             cluster_subjects_before[cidx],'\t', \
             cluster_subjects_after[cidx],'\t', \
             cluster_subjects_outlier[cidx],'\t', \
@@ -628,10 +636,16 @@ for iter in range(cluster_iterations):
     subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
     # Also delete the fiber in the polydata
     mask = cluster_numbers_s >= 0
-
+    input_number_of_fibers = input_data.GetNumberOfLines()
     input_data = wma.filter.mask(output_polydata_s, mask, verbose=False)
+    output_number_of_fibers = input_data.GetNumberOfLines()
+    removed_fibers = input_number_of_fibers - output_number_of_fibers
 
-    print "End iter Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape, "TEST:", test.shape
+    print "End iteration Polydata size:", output_number_of_fibers, "Subject list for fibers:", subject_fiber_list.shape, "TEST:", test.shape
+    log_file = open(fname_progress, 'a')
+    print >> log_file, iteration,'\t', input_number_of_fibers,'\t', output_number_of_fibers,'\t', removed_fibers, '\t', float(removed_fibers)/original_total_fibers, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_probabilities), '\t', numpy.mean(cluster_subjects_before), '\t', numpy.mean(cluster_subjects_after), '\t', numpy.mean(cluster_size_before), '\t', numpy.mean(cluster_size_after)
+    log_file.close()
+
 
 print "==========================\n"
 print '<wm_cluster_atlas.py> Done clustering atlas. See output in directory:\n ', outdir, '\n'
