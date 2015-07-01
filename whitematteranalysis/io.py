@@ -24,14 +24,6 @@ import glob
 
 import numpy
 import vtk
-try:
-    import matplotlib.pyplot
-    USE_MATPLOTLIB = 1
-except ImportError:
-    USE_MATPLOTLIB = 0
-    print "<io.py> Failed to import matplotlib, cannot save histograms."
-    print "<io.py> Please install matplotlib for this functionality."
-
 
 import render
 import filter
