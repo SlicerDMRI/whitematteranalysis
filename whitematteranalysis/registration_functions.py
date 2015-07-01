@@ -376,11 +376,6 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
     # This now outputs an ITK transform that works correctly to transform the tracts (or any volume in the same space) in Slicer.
     # Also output is a vtk transform, using MNI format to have vtk reading/writing for wma code that does not depend on itk now.
 
-    ## OLD comment. May not work now, as no space change is needed.
-    ## use with the slicer module, something like this applies things
-    ## and handles the ras lps issues
-    ##./ResampleScalarVectorDWIVolume --spaceChange -b -c  -f /Users/odonnell/LinearTransform-2.tfm /Users/odonnell/Dropbox/Data/TBI_FE_PNL/controls_images/01231-dwi-filt-Ed-B0.nhdr test.nhdr
-
     idx = 0
     tx_fnames = list()
     for tx in transform_list:
@@ -461,19 +456,8 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             # vtk.vtkTransformToGrid() does, but this puts things into
             # LPS.
 
-            # make sure to use an odd number for grid size
-            #grid_size = [5, 5, 5]
-            #grid_spacing = 60
-
-            # avoid edge effects with a large grid to approximate the thin plate spline
-            #grid_size = [9, 9, 9]
-            #grid_spacing = 50
-
             grid_size = [11, 11, 11]
             grid_spacing = 20
-
-            #grid_size = [3, 3, 3]
-            #grid_spacing = 80
 
             extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
             extent_1 = [ (grid_size[0] - 1)/2,  (grid_size[1] - 1)/2,  (grid_size[2] - 1)/2]
@@ -491,15 +475,14 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                         grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
-            displacements_RAS = list()
+            #displacements_RAS = list()
             for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
                 pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
-                diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
-                displacements_RAS.append(diff_ras)
+                #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
+                #displacements_RAS.append(diff_ras)
 
                 pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
                 diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
-                #diff_lps = [gp_lps[0] - pt[0], gp_lps[1] - pt[1], gp_lps[2] - pt[2]]
 
                 ## # this tested grid definition and origin were okay.
                 ## diff_lps = [20,30,40]
