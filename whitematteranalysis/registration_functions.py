@@ -407,49 +407,18 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         if tx.GetClassName() == 'vtkThinPlateSplineTransform':
             print 'Saving nonlinear transform displacements in ITK format'
 
-            # Find the affine part of the transform determined by
-            # these points and remove it from the spline transform;
-            # save for later
-            print 'Separating affine part from the transform'
-            affine_part = vtk.vtkLandmarkTransform()
-            affine_part.SetSourceLandmarks(tx.GetSourceLandmarks())
-            affine_part.SetTargetLandmarks(tx.GetTargetLandmarks())
-            affine_part.SetModeToAffine()
-            affine_part.Update()
-           
-            source_landmarks_2 = vtk.vtkPoints()
-            target_landmarks_2 = vtk.vtkPoints()
-            affine_part.TransformPoints(tx.GetSourceLandmarks(), source_landmarks_2)
-            affine_part.TransformPoints(tx.GetTargetLandmarks(), target_landmarks_2)
-            # create TPS that does not include the affine part
-            tps = vtk.vtkThinPlateSplineTransform()
-            tps.SetSourceLandmarks(source_landmarks_2)
-            tps.SetTargetLandmarks(target_landmarks_2)
-            tps.Update()
-            tps.Inverse()
+            # invert to get the transform suitable for resampling an image
+            tx.Inverse()
 
-            # convert the inverse affine transform from RAS to LPS 
-            affine_part_inverse = vtk.vtkLandmarkTransform()
-            affine_part_inverse.DeepCopy(affine_part)
-            affine_part_inverse.Inverse()
+            # convert the inverse spline transform from RAS to LPS
             ras_2_lps = vtk.vtkTransform()
             ras_2_lps.Scale(-1, -1, 1)
             lps_2_ras = vtk.vtkTransform()
             lps_2_ras.Scale(-1, -1, 1)
-            affine_lps = vtk.vtkTransform()
-            affine_lps.Concatenate(lps_2_ras)
-            affine_lps.Concatenate(affine_part_inverse)
-            affine_lps.Concatenate(ras_2_lps)
-
-            # convert the inverse spline transform from RAS to LPS
-            ras_2_lps2 = vtk.vtkTransform()
-            ras_2_lps2.Scale(-1, -1, 1)
-            lps_2_ras2 = vtk.vtkTransform()
-            lps_2_ras2.Scale(-1, -1, 1)
             spline_inverse_lps = vtk.vtkGeneralTransform()
-            spline_inverse_lps.Concatenate(lps_2_ras2)
-            spline_inverse_lps.Concatenate(tps)
-            spline_inverse_lps.Concatenate(ras_2_lps2)
+            spline_inverse_lps.Concatenate(lps_2_ras)
+            spline_inverse_lps.Concatenate(tx)
+            spline_inverse_lps.Concatenate(ras_2_lps)
 
             # Now, loop through LPS space. Find the effect of the
             # inverse transform on each point. This is essentially what
@@ -475,9 +444,10 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                         grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
+            # RAS displacements can be uncommented and calculated for testing.
             #displacements_RAS = list()
             for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
-                pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
+                #pt = tx.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
                 #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
                 #displacements_RAS.append(diff_ras)
 
@@ -511,7 +481,10 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             f = open(fname, 'w')
             f.write('#Insight Transform File V1.0\n')
             f.write('# Transform 0\n')
-            f.write('Transform: BSplineDeformableTransform_double_3_3\n')
+            # ITK version 3 that included an additive (!) affine transform
+            #f.write('Transform: BSplineDeformableTransform_double_3_3\n')
+            # ITK version 4 that does not include a second transform in the file
+            f.write('Transform: BSplineTransform_double_3_3\n')
             f.write('Parameters: ')
             # "Here the data are: The bulk of the BSpline part are 3D
             # displacement vectors for each of the BSpline grid-nodes
@@ -535,23 +508,6 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             f.write(' {0} {0} {0}'.format(grid_spacing))
             f.write(' 1 0 0 0 1 0 0 0 1\n')
             
-            # Now write the affine part of the transform in LPS
-            three_by_three = list()
-            translation = list()
-            for i in range(0,3):
-                for j in range(0,3):
-                    three_by_three.append(affine_lps.GetMatrix().GetElement(i,j))
-            translation.append(affine_lps.GetMatrix().GetElement(0,3))
-            translation.append(affine_lps.GetMatrix().GetElement(1,3))
-            translation.append(affine_lps.GetMatrix().GetElement(2,3))
-            f.write('# Transform 1\n')
-            f.write('Transform: AffineTransform_double_3_3\n')
-            f.write('Parameters: ')
-            for el in three_by_three:
-                f.write('{0} '.format(el))
-            for el in translation:
-                f.write('{0} '.format(el))
-            f.write('\nFixedParameters: 0 0 0\n')
             f.close()
         else:
             tx_inverse = vtk.vtkTransform()
