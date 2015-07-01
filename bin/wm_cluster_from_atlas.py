@@ -13,13 +13,6 @@ except:
     print "<wm_cluster_from_atlas.py> Error importing white matter analysis package\n"
     raise
 
-HAVE_PLT = 1
-try:
-    import matplotlib.pyplot as plt
-except:
-    print "<wm_cluster_from_atlas.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
-    HAVE_PLT = 0    
-
 #-----------------
 # Parse arguments
 #-----------------
