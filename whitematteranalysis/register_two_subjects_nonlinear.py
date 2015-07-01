@@ -302,26 +302,28 @@ def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq, length_fixed):
 
     probability1 = numpy.exp(numpy.divide(-distance, (sigmasq[0])))
     
-    # test to reduce shrinkage: compare step size between points of fixed vs moving brain
-    #(dims, number_of_fibers_fixed, points_per_fiber) = fixed_fibers.shape
-    (dims, points_per_fiber) = moving_fiber.shape
-    ddx = moving_fiber[0,0:-2] - moving_fiber[0,1:-1]
-    ddy = moving_fiber[1,0:-2] - moving_fiber[1,1:-1]
-    ddz = moving_fiber[2,0:-2] - moving_fiber[2,1:-1]
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
-    dists = numpy.sqrt(dx + dy + dz)
-    #step_length_moving = numpy.divide(numpy.sum(dists), points_per_fiber)
-    length_moving = numpy.sum(dists)
+    ## # test to reduce shrinkage: compare step size between points of fixed vs moving brain
+    ## #(dims, number_of_fibers_fixed, points_per_fiber) = fixed_fibers.shape
+    ## (dims, points_per_fiber) = moving_fiber.shape
+    ## ddx = moving_fiber[0,0:-2] - moving_fiber[0,1:-1]
+    ## ddy = moving_fiber[1,0:-2] - moving_fiber[1,1:-1]
+    ## ddz = moving_fiber[2,0:-2] - moving_fiber[2,1:-1]
+    ## dx = numpy.square(ddx)
+    ## dy = numpy.square(ddy)
+    ## dz = numpy.square(ddz)
+    ## dists = numpy.sqrt(dx + dy + dz)
+    ## #step_length_moving = numpy.divide(numpy.sum(dists), points_per_fiber)
+    ## length_moving = numpy.sum(dists)
 
-    diffs = length_moving - length_fixed
-    probability2 = numpy.exp(-numpy.divide(numpy.square(length_moving - length_fixed), sigmasq[1]))
+    ## diffs = length_moving - length_fixed
+    ## probability2 = numpy.exp(-numpy.divide(numpy.square(length_moving - length_fixed), sigmasq[1]))
 
-    probability = numpy.multiply(probability1, probability2)
-    #print "SIGMAS:", numpy.sqrt(sigmasq), "LENGTHS:", numpy.min(length_fixed), numpy.max(length_fixed), length_moving, "DIFFS:", numpy.min(diffs), numpy.max(diffs), "PROBABILITY 2:", numpy.min(probability2), numpy.max(probability2), probability2.shape, "DISTANCES:", numpy.min(numpy.sqrt(distance)), numpy.max(numpy.sqrt(distance)), distance.shape, "PROBABILITY 1:", numpy.min(probability1), numpy.max(probability1), probability1.shape, "PROBABILITY:", numpy.min(probability), numpy.max(probability), probability.shape, "FIBERS:", moving_fiber.shape, fixed_fibers.shape, length_fixed.shape
+    ## probability = numpy.multiply(probability1, probability2)
+    ## #print "SIGMAS:", numpy.sqrt(sigmasq), "LENGTHS:", numpy.min(length_fixed), numpy.max(length_fixed), length_moving, "DIFFS:", numpy.min(diffs), numpy.max(diffs), "PROBABILITY 2:", numpy.min(probability2), numpy.max(probability2), probability2.shape, "DISTANCES:", numpy.min(numpy.sqrt(distance)), numpy.max(numpy.sqrt(distance)), distance.shape, "PROBABILITY 1:", numpy.min(probability1), numpy.max(probability1), probability1.shape, "PROBABILITY:", numpy.min(probability), numpy.max(probability), probability.shape, "FIBERS:", moving_fiber.shape, fixed_fibers.shape, length_fixed.shape
 
-    return numpy.sum(probability)
+    ## return numpy.sum(probability)
+
+    return numpy.sum(probability1)
 
 def fiber_distance_numpy(moving_fiber, fixed_fibers):
     """
