@@ -36,6 +36,9 @@ from pprint import pprint
 
 HAVE_PLT = 1
 try:
+    import matplotlib
+    # Force matplotlib to not use any Xwindows backend.
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 except:
     print "<wm_cluster.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
@@ -967,6 +970,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     percent_subjects_per_cluster = numpy.divide(numpy.array(subjects_per_cluster),float(number_of_subjects))
 
     # Save output quality control information
+    print "<cluster.py> Saving cluster quality control information file."
     clusters_qc_file = open(clusters_qc_fname, 'w')
     print >> clusters_qc_file, 'cluster_idx','\t', 'number_subjects','\t', 'percent_subjects','\t', 'mean_length','\t', 'std_length','\t', 'mean_fibers_per_subject','\t', 'std_fibers_per_subject'
     for cidx in cluster_indices:
@@ -977,6 +981,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     clusters_qc_file.close()
 
     if HAVE_PLT:
+        print "<cluster.py> Saving subjects per cluster histogram."
         plt.figure()
         plt.hist(subjects_per_cluster, number_of_subjects)
         plt.title('Histogram of Subjects per Cluster')
@@ -990,11 +995,13 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     # that was clustered to make the atlas.
 
     # Figure out file name and mean color for each cluster, and write the individual polydatas
+    print "<cluster.py> Beginning to save individual clusters as polydata files. TOTAL CLUSTERS:", len(cluster_indices),
     fnames = list()
     cluster_colors = list()
     cluster_sizes = list()
     cluster_fnames = list()
     for c in cluster_indices:
+        print c,
         mask = cluster_numbers_s == c
         cluster_size = numpy.sum(mask)
         cluster_sizes.append(cluster_size)
@@ -1021,6 +1028,8 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
             cluster_colors.append(numpy.mean(color_c,0))
         else:
             cluster_colors.append([0,0,0])
+        del pd_c
+    print "\n<cluster.py> Finishes saving individual clusters as polydata files."
 
     # Notify user if some clusters empty
     empty_count = 0
