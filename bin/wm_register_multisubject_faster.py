@@ -248,6 +248,29 @@ elif mode == "nonlinear_fine":
     register.nonlinear = True
     register.nonlinear_grid_resolution = 6
     register.initialize_nonlinear_grid()
+
+elif mode == "nonlinear_fine2":
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 2]
+    final_step_per_scale = [1, 1, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [3, 2, 1]
+    # how many times to repeat the process at each scale
+    # 2nd iteration at scale 3mm changes less, but 2nd iteration at 2mm is similar to first, so repeat 2mm scale for longer.
+    iterations_per_scale = [2, 4, 2]
+    # this takes twice as long--still testing what is optimal for this parameter
+    #iterations_per_scale = [4, 4, 4]
+    # We need more samples than for the 5x5x5 grid. These parameters run slowly but perform well.
+    # The lower sample sizes  [2500, 2750, 3000] [500, 750, 900] were not effective here.
+    mean_brain_size_per_scale = [3000, 4000, 5000]
+    subject_brain_size_per_scale = [1000, 1500, 2000]
+    # These settings are for a 6x6x6 grid, 216*3 = 648 parameter space.
+    maxfun_per_scale = [1296, 1944, 2592]
+    # fiber representation for computation.
+    points_per_fiber = 15
+    register.nonlinear = True
+    register.nonlinear_grid_resolution = 6
+    register.initialize_nonlinear_grid()
     
 elif mode == "affineTEST":
     # very quick test if software is working
