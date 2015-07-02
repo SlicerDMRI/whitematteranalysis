@@ -222,34 +222,35 @@ class FiberArray:
         fibers.fiber_array_a = self.fiber_array_a[fiber_indices]
         fibers.fiber_array_s = self.fiber_array_s[fiber_indices]
 
-        # output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
-        fibers.fiber_hemisphere = self.fiber_hemisphere[fiber_indices]
+        if self.fiber_hemisphere is not None:
+            # Output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
+            fibers.fiber_hemisphere = self.fiber_hemisphere[fiber_indices]
 
-        # output boolean arrays for each hemisphere and callosal fibers
-        fibers.is_left_hem = self.is_left_hem[fiber_indices]
-        fibers.is_right_hem = self.is_right_hem[fiber_indices]
-        fibers.is_commissure = self.is_commissure[fiber_indices]
+            # output boolean arrays for each hemisphere and callosal fibers
+            fibers.is_left_hem = self.is_left_hem[fiber_indices]
+            fibers.is_right_hem = self.is_right_hem[fiber_indices]
+            fibers.is_commissure = self.is_commissure[fiber_indices]
 
-        # calculate indices of each type above
-        fibers.index_left_hem = numpy.nonzero(fibers.is_left_hem)[0]
-        fibers.index_right_hem = numpy.nonzero(fibers.is_right_hem)[0]
-        fibers.index_commissure = numpy.nonzero(fibers.is_commissure)[0]
-        fibers.index_hem = \
-            numpy.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
+            # calculate indices of each type above
+            fibers.index_left_hem = numpy.nonzero(fibers.is_left_hem)[0]
+            fibers.index_right_hem = numpy.nonzero(fibers.is_right_hem)[0]
+            fibers.index_commissure = numpy.nonzero(fibers.is_commissure)[0]
+            fibers.index_hem = \
+                numpy.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
 
-        # output totals of each type also
-        fibers.number_left_hem = len(fibers.index_left_hem)
-        fibers.number_right_hem = len(fibers.index_right_hem)
-        fibers.number_commissure = len(fibers.index_commissure)
+            # output totals of each type also
+            fibers.number_left_hem = len(fibers.index_left_hem)
+            fibers.number_right_hem = len(fibers.index_right_hem)
+            fibers.number_commissure = len(fibers.index_commissure)
 
-        # test
-        if __debug__:
-            test = fibers.number_of_fibers == \
-                (fibers.number_left_hem + fibers.number_right_hem \
-                     + fibers.number_commissure)
-            if not test:
-                print "<fibers.py> ERROR: fiber numbers don't add up."
-                raise AssertionError
+            # test
+            if __debug__:
+                test = fibers.number_of_fibers == \
+                    (fibers.number_left_hem + fibers.number_right_hem \
+                         + fibers.number_commissure)
+                if not test:
+                    print "<fibers.py> ERROR: fiber numbers don't add up."
+                    raise AssertionError
 
         return fibers
 
