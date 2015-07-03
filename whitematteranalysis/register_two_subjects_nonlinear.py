@@ -281,7 +281,7 @@ def inner_loop_objective(fixed, length_fixed, moving, sigmasq):
     # brain").  this neglects Z, the normalization constant for the
     # pdf, which would not affect the optimization.
     probability /= number_of_fibers_fixed
-    print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
+    #print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
     # add negative log probabilities of all fibers in this brain.
     entropy = numpy.sum(- numpy.log(probability))
     return entropy

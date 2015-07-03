@@ -88,7 +88,7 @@ class MultiSubjectRegistration:
             trans = wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(self.target_points,self.target_points)
             self.transforms.append(trans)
             self.transforms_as_array.append(self.target_landmarks)
-            print "ADD PD:", trans
+            #print "ADD PD:", trans
         else:
             trans = vtk.vtkTransform()
             self.transforms.append(trans)
