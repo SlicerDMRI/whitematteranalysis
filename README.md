@@ -10,6 +10,10 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 Also see the github.io page here:
 http://ljod.github.io/whitematteranalysis/
 
+Please reference O'Donnell, LJ., and Westin, CF. Automatic
+tractography segmentation using a high-dimensional white matter
+atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.
+
 #Installation
 ###1. Download whitematteranalysis from github. 
 
