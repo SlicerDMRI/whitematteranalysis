@@ -407,8 +407,12 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         if tx.GetClassName() == 'vtkThinPlateSplineTransform':
             print 'Saving nonlinear transform displacements in ITK format'
 
+            # Deep copy to avoid modifying input transform that will be applied to polydata
+            tps = vtk.vtkThinPlateSplineTransform()
+            tps.DeepCopy(tx)
+
             # invert to get the transform suitable for resampling an image
-            tx.Inverse()
+            tps.Inverse()
 
             # convert the inverse spline transform from RAS to LPS
             ras_2_lps = vtk.vtkTransform()
@@ -417,7 +421,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             lps_2_ras.Scale(-1, -1, 1)
             spline_inverse_lps = vtk.vtkGeneralTransform()
             spline_inverse_lps.Concatenate(lps_2_ras)
-            spline_inverse_lps.Concatenate(tx)
+            spline_inverse_lps.Concatenate(tps)
             spline_inverse_lps.Concatenate(ras_2_lps)
 
             # Now, loop through LPS space. Find the effect of the
@@ -447,7 +451,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             # RAS displacements can be uncommented and calculated for testing.
             #displacements_RAS = list()
             for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
-                #pt = tx.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
+                #pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
                 #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
                 #displacements_RAS.append(diff_ras)
 
