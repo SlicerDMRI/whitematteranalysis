@@ -4,6 +4,7 @@
 import argparse
 import os
 import multiprocessing
+import time
 
 import numpy
 import vtk
@@ -306,6 +307,93 @@ for (pd, id) in zip(input_pds, subject_ids):
 
 register.points_per_fiber = points_per_fiber
 
+# output summary file to save information about what was run
+readme_fname = os.path.join(args.outputDirectory, 'README.txt')
+readme_file = open(readme_fname, 'w')
+outstr = "Groupwise Registration Summary\n"
+outstr += '----------------------\n'
+outstr += '\n'
+outstr += "Input Directory: "
+outstr += args.inputDirectory
+outstr += '\n'
+outstr += "Output Directory: "
+outstr += args.outputDirectory
+outstr += '\n'
+outstr += "Number of Subjects: "
+outstr += str(number_of_subjects)
+outstr += '\n'
+outstr += '\n'
+outstr +=  "Current date: "  + time.strftime("%x")
+outstr += '\n'
+outstr +=  "Current time: " + time.strftime("%X")
+outstr += '\n'
+outstr += '\n'
+outstr += "Path to Script: " + os.path.realpath(__file__)
+outstr += '\n'
+outstr += "Working Directory: " + os.getcwd()
+outstr += '\n'
+outstr += '\n'
+outstr += "Description of Outputs\n"
+outstr += '---------------------\n'
+outstr += 'registration_atlas.vtk: This is the template created from groupwise registration.\n'
+outstr += 'registration_performance.txt: Parameters and objective values from each iteration.\n'
+outstr += 'progress.txt: Update of how far registration has progressed.\n'
+outstr += 'input_subjects.txt:  List of subject index, ID, and full path to input file.\n'
+outstr += 'README.txt:  This summary file.\n'
+outstr += 'output_tractography/\n'
+outstr += '\tThe output directory with registered tractography and corresponding transforms.\n'
+outstr += 'The files inside each iteration directory are for testing purposes:\n'
+outstr += '\titk_txform files output from that iteration.\n'
+outstr += '\tpdf files plot objective function changes for all subjects.\n'
+outstr += '\n'
+outstr += '\n'
+outstr += "Command Line Arguments\n"
+outstr += '----------------------\n'
+outstr += str(args)
+outstr += '\n'
+outstr += '\n'
+outstr += "Parameters\n"
+outstr += '----------------------\n'
+outstr += "Registration mode: " + mode
+outstr += '\n'
+outstr += "Number of fibers to analyze per subject: " + str(number_of_fibers)
+outstr += '\n'
+outstr += "Minimum length of fibers to analyze (in mm): " + str(fiber_length)
+outstr += '\n'
+outstr += "Maximum  length of fibers to analyze (in mm): " + str(fiber_length_max)
+outstr += '\n'
+outstr += "Number of jobs to use: " + str(parallel_jobs)
+outstr += '\n'
+outstr += "verbose: " + str(verbose)
+outstr += '\n'
+outstr += "render: " + str(not no_render)
+outstr += '\n'
+outstr += "midsag_symmetric: " + str(midsag_symmetric)
+outstr += '\n'
+outstr += "random seed: " + str(random_seed)
+outstr += '\n'
+outstr += '\n'
+outstr += "Input Fiber Files\n"
+outstr += '-----------------\n'
+for pd in input_polydatas:
+    outstr += pd
+    outstr += '\n'
+readme_file.write(outstr)
+readme_file.close()
+
+# output summary file to save information about all subjects
+subjects_qc_fname = os.path.join(args.outputDirectory, 'input_subjects.txt')
+subjects_qc_file = open(subjects_qc_fname, 'w')
+outstr = "Subject_idx\tSubject_ID\tinputfilename\n"
+subjects_qc_file.write(outstr)
+idx = 1
+for fname in input_polydatas:
+    subject_id = os.path.splitext(os.path.basename(fname))[0]
+    outstr =  str(idx) + '\t' + str(subject_id) + '\t' + str(fname) + '\n'
+    subjects_qc_file.write(outstr)
+    idx += 1
+subjects_qc_file.close()
+
 # -------------
 # Done SETTINGS. Below is computation
 # -------------
@@ -317,6 +405,12 @@ iteration = 1
 total_comparisons = numpy.multiply(iterations_per_scale,numpy.multiply(numpy.array(mean_brain_size_per_scale), numpy.array(subject_brain_size_per_scale)))
 total_comparisons = numpy.sum(total_comparisons)
 comparisons_so_far = 0
+progress_filename = os.path.join(args.outputDirectory, 'progress.txt')
+progress_file = open(progress_filename, 'w')
+print >> progress_file, "Beginning registration. Total iterations will be:", total_iterations
+print >> progress_file,"\nCurrent date: "  + time.strftime("%x")
+print >> progress_file, "Current time: " + time.strftime("%X") + '\n'
+progress_file.close()
 
 do_scales = range(len(sigma_per_scale))
 
@@ -334,6 +428,11 @@ for scale in do_scales:
         comparisons_so_far += comparisons_this_scale
         percent = 100*(float(comparisons_so_far)/total_comparisons)
         print "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
+        progress_file = open(progress_filename, 'a')
+        print >> progress_file, "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
+        progress_file.close()
+
+
         iteration += 1
         # Intermediate save. For testing only.
         if verbose:
@@ -342,5 +441,10 @@ for scale in do_scales:
 # Final save when we are done
 register.save_transformed_polydatas(midsag_symmetric=midsag_symmetric)
 
-print "Done registering."
+print "\nDone registering. For more information on the output, please read:", readme_fname, "\n"
 
+progress_file = open(progress_filename, 'a')
+print >> progress_file, "\nFinished registration."
+print >> progress_file,"Current date: "  + time.strftime("%x")
+print >> progress_file, "Current time: " + time.strftime("%X")
+progress_file.close()
