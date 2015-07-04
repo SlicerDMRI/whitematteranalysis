@@ -254,7 +254,8 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
 
         #self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
 
-        print "O:", self.objective_function_values
+        if self.verbose:
+            print "O:", self.objective_function_values
 
         # Return output transforms from this iteration
         return self.final_transform
