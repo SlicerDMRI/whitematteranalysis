@@ -395,7 +395,7 @@ readme_file.close()
 # output summary file to save information about all subjects
 subjects_qc_fname = os.path.join(args.outputDirectory, 'input_subjects.txt')
 subjects_qc_file = open(subjects_qc_fname, 'w')
-outstr = "Subject_idx\tSubject_ID\tinputfilename\n"
+outstr = "Subject_idx\tSubject_ID\tInput Filename\n"
 subjects_qc_file.write(outstr)
 idx = 1
 for fname in input_polydatas:
