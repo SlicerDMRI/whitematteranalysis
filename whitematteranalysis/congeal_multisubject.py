@@ -11,6 +11,17 @@ import os
 import numpy
 import vtk
 from joblib import Parallel, delayed
+
+HAVE_PLT = 1
+try:
+    import matplotlib
+    # Force matplotlib to not use any Xwindows backend.
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+except:
+    print "<wm_congeal_multisubject.py> Error importing matplotlib.pyplot package, can't plot objectives.\n"
+    HAVE_PLT = 0
+
 import whitematteranalysis as wma
 
 class MultiSubjectRegistration:
@@ -45,7 +56,8 @@ class MultiSubjectRegistration:
         self.polydatas = list()
         self.transforms = list()
         self.transforms_as_array = list()
-        self.objectives = list()
+        self.objectives_before = list()
+        self.objectives_after = list()
         self.total_iterations = 0
         self.subject_ids = list()
 
@@ -225,6 +237,13 @@ class MultiSubjectRegistration:
     def iterate(self):
         self.total_iterations += 1
 
+        # set up progress information saving if this is the first iteration
+        if self.total_iterations == 1:
+            self.progress_filename = os.path.join(self.output_directory, 'registration_performance.txt')
+            progress_file = open(self.progress_filename, 'w')
+            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'fibers_per_subject','\t', 'mean_brain_size','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased'
+            progress_file.close()
+
         # make a directory for the current iteration
         dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
         outdir = os.path.join(self.output_directory, dirname)
@@ -321,12 +340,97 @@ class MultiSubjectRegistration:
             
         #print "RETURNED VALUES", ret
         
-        # get the current transform for each subject
+        # Loop over all registration outputs:
+        # get the current transform for each subject,
+        # and report the objective values to the user by printing, saving, and plotting.
         self.transforms_as_array = list()
-        for trans in ret:
+        objective_total_before = 0.0
+        objective_total_after = 0.0
+        mean_functions_per_subject = 0.0
+        subjects_decreased = 0
+        mean_decrease = 0.0
+        mean_change = 0.0
+        if HAVE_PLT:
+            plt.figure(0)
+            plt.title('Iteration '+str(self.total_iterations)+' Objective Values for All Subjects')
+            plt.xlabel('objective function computations')
+            plt.ylabel('objective value')
+
+        sidx = 0
+        for (trans, objectives, diff) in ret:
             self.transforms_as_array.append(trans)
-            #print "APPEND TRANS OUTPUT:", trans
+            print "Iteration:", self.total_iterations, "Subject:", sidx, "Objectives computed:", len(objectives), "change", diff
+            mean_functions_per_subject += len(objectives)
+            # Compute total objective for progress reporting.
+            objective_total_before += objectives[0]
+            if diff < 0:
+                objective_total_after += objectives[-1]
+                subjects_decreased += 1
+                mean_decrease += diff
+            else:
+                objective_total_after += objectives[0]
+            mean_change += diff
+            sidx += 1
+            # Plot all objectives for software development/testing
+            if HAVE_PLT:
+                plt.figure(0)
+                plt.plot(objectives, 'o-', label=sidx)
+
+        number_of_subjects = sidx
+        mean_functions_per_subject /= float(number_of_subjects)
+        mean_change /= float(number_of_subjects)
+        if subjects_decreased > 0:
+            mean_decrease /= float(subjects_decreased)
+
+        self.objectives_before.append(objective_total_before)
+        self.objectives_after.append(objective_total_after)
+        total_change =  self.objectives_after[-1] - self.objectives_before[-1]
+        percent_change = total_change / self.objectives_before[-1]
+        print "Iteration:", self.total_iterations, "total objective change:",  total_change, "percent objective change:",  percent_change
+
+        if HAVE_PLT:
+            plt.figure(0)
+            # Place the legend below the plot so it does not overlap it when there are many subjects
+            lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
+            fname_fig = 'objectives_per_subject'+str(self.total_iterations)+'.pdf'
+            # save everything even if the legend is long and goes off the plot
+            plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
+            plt.close(0)
+
+            plt.figure()
+            plt.title('Objective Values for All Iterations')
+            plt.xlabel('iteration')
+            plt.ylabel('total objective value')
+            plt.plot(self.objectives_before, 'o-', label='before')
+            plt.plot(self.objectives_after, 'o-', label='after')
+            lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
+            fname_fig = 'objectives_overall_'+str(self.total_iterations)+'.pdf'
+            plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
+            plt.close()
             
+            changes = numpy.array(self.objectives_after) - numpy.array(self.objectives_before)
+            percent_changes = numpy.divide(changes, numpy.array(self.objectives_before) )
+            plt.figure()
+            plt.title('Objective Value Changes for All Iterations')
+            plt.xlabel('iteration')
+            plt.ylabel('objective value change')
+            plt.plot(changes, 'o-')
+            fname_fig = 'objective_changes_'+str(self.total_iterations)+'.pdf'
+            plt.savefig(os.path.join(outdir, fname_fig))
+            plt.close()
+            plt.figure()
+            plt.title('Objective Value Percent Changes for All Iterations')
+            plt.xlabel('iteration')
+            plt.ylabel('objective value percent change')
+            plt.plot(percent_changes, 'o-')
+            fname_fig = 'objective_percent_changes_'+str(self.total_iterations)+'.pdf'
+            plt.savefig(os.path.join(outdir, fname_fig))
+            plt.close()
+
+        progress_file = open(self.progress_filename, 'a')
+        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', mean_functions_per_subject,'\t', number_of_subjects,'\t', subjects_decreased,'\t', mean_change, '\t', mean_decrease
+        progress_file.close()
+
         # remove_mean_from_transforms
         self.remove_mean_from_transforms()
 
@@ -340,10 +444,6 @@ class MultiSubjectRegistration:
                 vtktrans = wma.register_two_subjects.convert_transform_to_vtk(trans)
                 print vtktrans.GetMatrix()
             self.transforms.append(vtktrans)
-
-        # get the subject's objectives as computed so far
-        # also get the total objective right now (future. now just printed to screen)
-        # if requested, render all (future)
 
         # save the current transforms to disk
         wma.registration_functions.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
@@ -455,7 +555,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
     if obj_diff < 0:
         print "UPDATING MATRIX"
-        return register.final_transform
+        return register.final_transform, register.objective_function_values, obj_diff
     else:
-        return initial_transform
+        return initial_transform, register.objective_function_values, obj_diff
 
