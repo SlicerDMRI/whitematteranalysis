@@ -192,9 +192,11 @@ for fname in input_polydatas:
         plt.hist(lengths, bins=100, histtype='step', label=subject_id)
         plt.figure(2)
         plt.title('Histogram of fiber lengths')
+        plt.xlabel('fiber length (mm)')
+        plt.ylabel('number of fibers')
         plt.hist(lengths, bins=100, histtype='step', label=subject_id)
         # Place the legend below the plot so it does not overlap it when there are many subjects
-        lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=False, shadow=False, ncol=1)
+        lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
         # save everything even if the legend is long and goes off the plot
         plt.savefig(os.path.join(output_dir_subdir, 'fiber_length_histogram.pdf'), bbox_extra_artists=(lgd,), bbox_inches='tight')
         plt.close()
@@ -237,9 +239,11 @@ for fname in input_polydatas:
 
 if HAVE_PLT:
     plt.figure(1)
-    plt.title('Histogram of fiber lengths')
+    plt.title('Histogram of fiber lengths for all subjects')
+    plt.xlabel('fiber length (mm)')
+    plt.ylabel('number of fibers')
     # Place the legend below the plot so it does not overlap it when there are many subjects
-    lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), fancybox=False, shadow=False, ncol=1)
+    lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
     # save everything even if the legend is long and goes off the plot
     plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
