@@ -405,7 +405,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
         if tx.GetClassName() == 'vtkThinPlateSplineTransform':
-            print 'Saving nonlinear transform displacements in ITK format'
+            #print 'Saving nonlinear transform displacements in ITK format'
 
             # Deep copy to avoid modifying input transform that will be applied to polydata
             tps = vtk.vtkThinPlateSplineTransform()
@@ -481,7 +481,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             #    print "POINT:", pt, "DISPLACEMENT:", disp
 
             # save the points and displacement vectors in ITK format.
-            print 'Saving in ITK transform format.'
+            #print 'Saving in ITK transform format.'
             f = open(fname, 'w')
             f.write('#Insight Transform File V1.0\n')
             f.write('# Transform 0\n')
