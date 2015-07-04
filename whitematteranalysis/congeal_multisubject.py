@@ -244,7 +244,7 @@ class MultiSubjectRegistration:
         if self.total_iterations == 1:
             self.progress_filename = os.path.join(self.output_directory, 'registration_performance.txt')
             progress_file = open(self.progress_filename, 'w')
-            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'fibers_per_subject','\t', 'mean_brain_size','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased'
+            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'subject_brain_fibers', '\t', 'fibers_per_subject_in_mean_brain','\t', 'mean_brain_fibers','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased'
             progress_file.close()
 
         # make a directory for the current iteration
@@ -435,7 +435,7 @@ class MultiSubjectRegistration:
             plt.close()
 
         progress_file = open(self.progress_filename, 'a')
-        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', mean_functions_per_subject,'\t', number_of_subjects,'\t', subjects_decreased,'\t', mean_change, '\t', mean_decrease
+        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', mean_functions_per_subject,'\t', number_of_subjects,'\t', subjects_decreased,'\t', mean_change, '\t', mean_decrease
         progress_file.close()
 
         # remove_mean_from_transforms
