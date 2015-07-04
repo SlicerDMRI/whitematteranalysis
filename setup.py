@@ -6,7 +6,7 @@ import numpy
 
 setup(
     name='WhiteMatterAnalysis',
-    version='0.1.0',
+    version='0.2.0',
     author='Lauren O\'Donnell',
     author_email='odonnell@bwh.harvard.edu',
     packages=['whitematteranalysis'],
@@ -28,9 +28,7 @@ setup(
         'bin/wm_preprocess_all.py',
         'bin/wm_quality_control_tractography.py',
         'bin/wm_register_multisubject_faster.py',
-        'bin/wm_register_multisubject.py',
         'bin/wm_register_to_atlas_new.py',
-        'bin/wm_register_to_atlas.py',
         'bin/wm_separate_clusters_by_hemisphere.py',
         'bin/wm_flatten_length_distribution.py',
         'bin/wm_create_mrml_file.py'
