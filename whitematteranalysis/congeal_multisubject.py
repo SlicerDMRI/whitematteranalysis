@@ -122,7 +122,8 @@ class MultiSubjectRegistration:
             meansource = numpy.mean(transforms_array, 0)
             landmarks = numpy.array(self.target_landmarks)
             meandisp = meansource - landmarks
-            print "MEAN DISPLACEMENT:", meandisp
+            if self.verbose:
+                print "MEAN DISPLACEMENT:", meandisp
 
             if self.verbose:
                 print "<congeal.py> TRANSFORMS"
@@ -137,9 +138,9 @@ class MultiSubjectRegistration:
             meansource = numpy.mean(transforms_array, 0)
             landmarks = numpy.array(self.target_landmarks)
             meandisp = meansource - landmarks
-            print "MEAN DISPLACEMENT 2:", meandisp
+            if self.verbose:
+                print "MEAN DISPLACEMENT 2:", meandisp
 
-            print "Zero-mean based on affine part"
             matrix_average = numpy.zeros((3,4))
             target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
             for trans in self.transforms_as_array:
@@ -166,7 +167,7 @@ class MultiSubjectRegistration:
                     # the fourth row must be 0, 0, 0, 1 for homogeneous transform so don't need to average it
                     for col in [0,1,2,3]:
                         matrix.SetElement(row,col, matrix_average[row,col])
-            print "MEAN TRANS", matrix
+            #print "MEAN TRANS", matrix
             mean_trans = vtk.vtkMatrixToLinearTransform()
             mean_trans.SetInput(matrix)
             
@@ -186,11 +187,12 @@ class MultiSubjectRegistration:
 
             for (trans, newtrans) in zip(self.transforms_as_array, new_source_pts):
                 #print "REMOVE MEAN FROM TXFORMS:", trans, "NEW:", newtrans
-                print "Mean removed. Source points changed by:", numpy.min(trans-newtrans), numpy.max(trans-newtrans)
+                if self.verbose:
+                    print "Mean removed. Source points changed by:", numpy.min(trans-newtrans), numpy.max(trans-newtrans)
 
             self.transforms_as_array = new_source_pts
 
-            # TEST ONLY
+            # TEST ONLY (to ensure the above was correct)
             target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
             matrix_average = numpy.zeros((3,4))
             for trans in self.transforms_as_array:
@@ -213,13 +215,14 @@ class MultiSubjectRegistration:
             # txform'*sourcept' = targetpt
             # sourcept' = meantxform^-1 * sourcept 
             
-            matrix = vtk.vtkMatrix4x4()
-            for row in [0,1,2]:
-                    # the fourth row must be 0, 0, 0, 1 for homogeneous transform so don't need to average it
-                    for col in [0,1,2,3]:
-                        matrix.SetElement(row,col, matrix_average[row,col])
-            print "MEAN TRANS AFTER CORRECTION:", matrix
-            
+            ## matrix = vtk.vtkMatrix4x4()
+            ## for row in [0,1,2]:
+            ##         # the fourth row must be 0, 0, 0, 1 for homogeneous transform so don't need to average it
+            ##         for col in [0,1,2,3]:
+            ##             matrix.SetElement(row,col, matrix_average[row,col])
+            ##print "MEAN TRANS AFTER CORRECTION:", matrix_average
+            # this print tests the affine part averages to identity
+            print "Mean transform should be 0 after removing it from the group:", numpy.mean(numpy.abs(matrix_average[0:3,0:3] - numpy.identity(3)))
         else:
             transforms_array = numpy.array(self.transforms_as_array)
             meantrans = numpy.mean(transforms_array, 0)
@@ -255,7 +258,8 @@ class MultiSubjectRegistration:
             os.makedirs(outdir_render)
 
         fibers_per_subject = self.mean_brain_size / (len(self.polydatas) - 1)
-        print "Fibers per subject for computing mean brain:", fibers_per_subject, "=", self.mean_brain_size, "/",  len(self.polydatas) -1
+        if self.verbose:
+            print "Fibers per subject for computing mean brain:", fibers_per_subject, "=", self.mean_brain_size, "/",  len(self.polydatas) -1
 
         mean_list = list()
         subject_list = list()
@@ -330,7 +334,8 @@ class MultiSubjectRegistration:
             grid_resolution_list.append(self.nonlinear_grid_resolution)
             
         # multiprocess over subjects
-        print "STARTING MULTIPROCESSING. NUMBER OF JOBS:", self.parallel_jobs
+        print "\nITERATION", self.total_iterations, "STARTING MULTIPROCESSING. NUMBER OF JOBS:", self.parallel_jobs, "\n"
+
         # note we can't pass vtk objects to subprocesses since they can't be pickled.
         ret = Parallel(
             n_jobs=self.parallel_jobs, verbose=self.parallel_verbose)(
@@ -359,7 +364,7 @@ class MultiSubjectRegistration:
         sidx = 0
         for (trans, objectives, diff) in ret:
             self.transforms_as_array.append(trans)
-            print "Iteration:", self.total_iterations, "Subject:", sidx, "Objectives computed:", len(objectives), "change", diff
+            print "Iteration:", self.total_iterations, "Subject:", sidx, "Objective function computations:", len(objectives), "change", diff
             mean_functions_per_subject += len(objectives)
             # Compute total objective for progress reporting.
             objective_total_before += objectives[0]
@@ -386,13 +391,15 @@ class MultiSubjectRegistration:
         self.objectives_after.append(objective_total_after)
         total_change =  self.objectives_after[-1] - self.objectives_before[-1]
         percent_change = total_change / self.objectives_before[-1]
-        print "Iteration:", self.total_iterations, "total objective change:",  total_change, "percent objective change:",  percent_change
+        print "Iteration:", self.total_iterations, "TOTAL objective change:",  total_change
+        print "Iteration:", self.total_iterations, "PERCENT objective change:",  percent_change
 
         if HAVE_PLT:
+            fname_fig_base = "iteration_%05d_sigma_%05d_" % (self.total_iterations, self.sigma)
             plt.figure(0)
             # Place the legend below the plot so it does not overlap it when there are many subjects
             lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
-            fname_fig = 'objectives_per_subject'+str(self.total_iterations)+'.pdf'
+            fname_fig = fname_fig_base + 'objectives_per_subject.pdf'
             # save everything even if the legend is long and goes off the plot
             plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
             plt.close(0)
@@ -404,7 +411,7 @@ class MultiSubjectRegistration:
             plt.plot(self.objectives_before, 'o-', label='before')
             plt.plot(self.objectives_after, 'o-', label='after')
             lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
-            fname_fig = 'objectives_overall_'+str(self.total_iterations)+'.pdf'
+            fname_fig = fname_fig_base + 'objectives_overall.pdf'
             plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
             plt.close()
             
@@ -415,7 +422,7 @@ class MultiSubjectRegistration:
             plt.xlabel('iteration')
             plt.ylabel('objective value change')
             plt.plot(changes, 'o-')
-            fname_fig = 'objective_changes_'+str(self.total_iterations)+'.pdf'
+            fname_fig = fname_fig_base + 'objective_changes.pdf'
             plt.savefig(os.path.join(outdir, fname_fig))
             plt.close()
             plt.figure()
@@ -423,7 +430,7 @@ class MultiSubjectRegistration:
             plt.xlabel('iteration')
             plt.ylabel('objective value percent change')
             plt.plot(percent_changes, 'o-')
-            fname_fig = 'objective_percent_changes_'+str(self.total_iterations)+'.pdf'
+            fname_fig = fname_fig_base + 'objective_percent_changes.pdf'
             plt.savefig(os.path.join(outdir, fname_fig))
             plt.close()
 
@@ -439,10 +446,10 @@ class MultiSubjectRegistration:
         for trans in self.transforms_as_array:
             if self.nonlinear:
                 vtktrans = wma.register_two_subjects_nonlinear.convert_transform_to_vtk(trans, self.target_points)
-                print vtktrans
+                #print vtktrans
             else:
                 vtktrans = wma.register_two_subjects.convert_transform_to_vtk(trans)
-                print vtktrans.GetMatrix()
+                #print vtktrans.GetMatrix()
             self.transforms.append(vtktrans)
 
         # save the current transforms to disk
@@ -451,7 +458,8 @@ class MultiSubjectRegistration:
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
 
-        print "SAVING POLYDATAS"
+        # this can be slow so notify the user what is happening
+        print "\nSAVING TRANSFORMED TRACTOGRAPHY FROM ITERATION", self.total_iterations, "\n"
         
         transform_list = self.transforms
         subject_id_list = self.subject_ids
@@ -479,12 +487,12 @@ class MultiSubjectRegistration:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
 
-            print "______________ FINAL__________________"
-            for trans in  self.transforms:
-                if self.nonlinear:
-                    print trans
-                else:
-                    print trans.GetMatrix()
+            if self.verbose:
+                for trans in  self.transforms:
+                    if self.nonlinear:
+                        print trans
+                    else:
+                        print trans.GetMatrix()
 
             output_pds = wma.registration_functions.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
         
@@ -518,7 +526,7 @@ class MultiSubjectRegistration:
             
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution):
 
-    print "\n BEGIN ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform length:", len(initial_transform), "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform), "Grid:", grid_resolution, "Mode:", mode, "initial transform:", initial_transform,
+    #print "\n BEGIN ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform length:", len(initial_transform), "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform), "Grid:", grid_resolution, "Mode:", mode, "initial transform:", initial_transform,
     
     
     if mode == 'Linear':
@@ -539,7 +547,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     register.fixed = mean
     register.moving = subject
     register.initial_transform = initial_transform
-    register.verbose = 0
+    register.verbose = False
     #register.verbose = 1
     register.output_directory = output_directory
     register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%05d" % (subject_idx, iteration_count, sigma) 
@@ -552,9 +560,9 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     # only update the transform if the objective function improved.
     # sometimes it falls into a different minimum that is worse
     obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
-    print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
+    #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
     if obj_diff < 0:
-        print "UPDATING MATRIX"
+        #print "UPDATING MATRIX"
         return register.final_transform, register.objective_function_values, obj_diff
     else:
         return initial_transform, register.objective_function_values, obj_diff
