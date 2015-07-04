@@ -195,6 +195,17 @@ if mode == "affine":
     final_step_per_scale = [5, 2, 2, 2]
     register.nonlinear = False
     
+elif mode == "affine_fine":
+    # second round of fine affine registration
+    sigma_per_scale = [5, 3, 2, 1]
+    iterations_per_scale=[2, 3, 3, 5]
+    maxfun_per_scale = [120, 150, 150, 150]
+    mean_brain_size_per_scale = [5000, 6000, 6000, 7000]
+    subject_brain_size_per_scale = [2000, 2500, 3000, 3500]
+    initial_step_per_scale = [2, 1, 0.5, 0.2]
+    final_step_per_scale = [1, 0.5, 0.2, 0.1]
+    register.nonlinear = False
+    
 elif mode == "affine_neonate":
     # Try to improve previous affine registration using more subjects
     # Try smaller sigma for neonates
