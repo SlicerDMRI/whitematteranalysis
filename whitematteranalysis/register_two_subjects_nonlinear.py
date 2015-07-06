@@ -72,12 +72,18 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         # set up default landmarks
         self.target_landmarks = list()
         self.nonlinear_grid_resolution = 5
+        self.nonlinear_grid_3 = [-120, 0, 120]
+        self.nonlinear_grid_4 = [-120, -60, 60, 120]
         self.nonlinear_grid_5 = [-120, -60, 0, 60, 120]
         self.nonlinear_grid_6 = [-120, -60, -20, 20, 60, 120]
         # random order so that optimizer does not start in one corner every time
         # the order was computed as
+        # numpy.random.permutation(range(0,27))
+        # numpy.random.permutation(range(0,64))
         # numpy.random.permutation(range(0,125))
-        # numpy.random.permutation(range(0,216))     
+        # numpy.random.permutation(range(0,216))
+        self.grid_order_3 = [22,  8,  0, 14,  5, 19, 20,  9, 17, 15,  2, 11,  1, 12, 21,  6, 25, 7,  3, 24, 13, 18, 26, 16, 23,  4, 10]
+        self.grid_order_4 = [58, 54,  4, 62, 51, 41, 52, 45, 59,  8, 29, 17, 61, 46, 18, 22, 34, 42, 21,  0,  3, 39, 27, 13, 60, 12,  2, 15,  5, 28,  7, 43, 31, 38, 33, 55,  1, 37, 47, 30, 24, 35, 14, 50, 20, 36, 44, 53, 16, 57, 56, 10, 48, 26,  6, 25,  9, 32, 19, 11, 63, 23, 49, 40]
         self.grid_order_5 = [ 75,  18,  54,  61,  64,  73,  95,  13, 111, 118,  43,   7,  46, 56,   4, 124,  77,  98,  72,  60,  38,  80,  36,  27, 120, 119, 51,  81,   0,  93,  11,  41,  69,  83, 107,  12, 106,  30,  53, 105,  33,  91,  28,  17,  58,  90,  45,  94,  14,  26,  84,   1, 92,  21,  47,  59, 100,   2,   3,  87,  65, 102,  68,  20,  85, 79,  82,  15,  32,  88, 115,  74,   6,  19,  35,  99, 104, 109, 70, 101,  96,  66,  52,  48,  49,  31,  97, 122,  78, 113,  55, 112,  76,  44,  23, 103,  16,  10, 123,  86,  39,   8,  62, 110, 42, 114,  40, 117,  63,   9,  25,  67,  71,  37,  24, 116,  57, 89, 121,  34,   5,  29, 108,  50,  22]
         self.grid_order_6 = [165,  63, 129, 170, 148, 131,   1, 205, 181,  69,  35, 100,   6, 13,  82, 193, 159, 130,  54, 164, 174,  62, 108, 101, 169,  93, 112,  42, 110, 213, 107,  47,  45, 140, 138, 199, 125, 117,   8, 41, 215,  74, 143, 155, 144, 187,  26,  60, 139,  58,  97,  10, 113,  34, 116,  33, 202, 210,  27, 135, 152, 206, 128,  16, 177, 25,  67, 192, 147, 132, 160, 158, 161,  90, 102,  49,  21, 191, 32,  18,  81, 157, 114, 175,  94, 172, 207, 186, 167, 163, 196, 118,  28,  43, 133, 171, 211,  77,  56, 195, 173,  57,  96,  29, 64, 180,  89, 190, 115,  20,  52,  50,   4, 141,  98, 134, 109, 149, 176, 212,  11,   0, 146,  65,  91,  23,  53,  44, 123,  87, 24, 178, 184,  68, 124,  46,  76, 151, 127, 204, 154, 150, 106, 70,  37,  84,  17,  12, 189,   2,  92,  36,  71,  39,  30,  75, 179, 168,  73, 121,  86, 214, 188,  59, 209,  22,  19, 153, 162, 99, 182,  14,  48, 119, 203,  66,  61, 103, 208, 145,  79,  85, 142,  72, 126, 194, 104, 122, 198, 120, 200, 183, 201,   3,  78, 40,  83, 137,  31, 111,  15,  51,   9, 185,  55,  38, 156, 136, 7,  95,  80, 105, 166,  88, 197,   5]
         self.initialize_nonlinear_grid()
@@ -88,12 +94,18 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         # internal recordkeeping
         self._x_opt = None
         self.iterations = 0
-        
+
     def initialize_nonlinear_grid(self):
         self.target_landmarks = list()
-        if self.nonlinear_grid_resolution == 5:
+        if self.nonlinear_grid_resolution == 3:
+            grid = self.nonlinear_grid_3
+            grid_order = self.grid_order_3
+        elif self.nonlinear_grid_resolution == 4:
+            grid = self.nonlinear_grid_4
+            grid_order = self.grid_order_4
+        elif self.nonlinear_grid_resolution == 5:
             grid = self.nonlinear_grid_5
-            grid_order = self.grid_order_5
+            grid_order = self.grid_order_5                        
         elif self.nonlinear_grid_resolution == 6:
             grid = self.nonlinear_grid_6
             grid_order = self.grid_order_6
@@ -108,7 +120,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         for idx in grid_order:
             self.target_landmarks.extend(tmp[idx])
         self.target_points = convert_numpy_array_to_vtk_points(self.target_landmarks)
-
+        
     def objective_function(self, current_x):
         """ The actual objective used in registration.  Function of
         the current x in search space, as well as parameters of the
