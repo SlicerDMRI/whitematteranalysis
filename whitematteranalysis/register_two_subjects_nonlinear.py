@@ -223,6 +223,8 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
             fiber_array.number_of_fibers = number_of_fibers_fixed
             pd2 = fiber_array.convert_to_polydata()
             ren = wma.render.render(pd2, number_of_fibers_fixed, verbose=False)
+            # save low-res images for speed
+            ren.magnification = 3
             ren.save_views(self.output_directory, 'fixed_brain_' + self.process_id_string)
             del ren
                 
