@@ -258,9 +258,9 @@ class MultiSubjectRegistration:
         if self.total_iterations == 1:
             self.progress_filename = os.path.join(self.output_directory, 'registration_performance.txt')
             progress_file = open(self.progress_filename, 'w')
-            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'subject_brain_fibers', '\t', 'fibers_per_subject_in_mean_brain','\t', 'mean_brain_fibers','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased', '\t', 'time'
+            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'subject_brain_fibers', '\t', 'fibers_per_subject_in_mean_brain','\t', 'mean_brain_fibers','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'min_function_calls_per_subject','\t', 'max_function_calls_per_subject','\t', 'subjects_hitting_maxfun','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased', '\t', 'time'
             progress_file.close()
-
+            
         # make a directory for the current iteration
         dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
         outdir = os.path.join(self.output_directory, dirname)
@@ -359,47 +359,44 @@ class MultiSubjectRegistration:
             
         #print "RETURNED VALUES", ret
         
+        # Progress reporting
         # Loop over all registration outputs:
         # get the current transform for each subject,
         # and report the objective values to the user by printing, saving, and plotting.
         self.transforms_as_array = list()
         objective_total_before = 0.0
         objective_total_after = 0.0
-        mean_functions_per_subject = 0.0
-        subjects_decreased = 0
-        mean_decrease = 0.0
-        mean_change = 0.0
+        sidx = 0
+        functions_per_subject = list()
+        objective_changes_per_subject = list()
+        decreases = list()
         if HAVE_PLT:
             plt.figure(0)
             plt.title('Iteration '+str(self.total_iterations)+' Objective Values for All Subjects')
             plt.xlabel('objective function computations')
             plt.ylabel('objective value')
-
-        sidx = 0
+            
         for (trans, objectives, diff) in ret:
             self.transforms_as_array.append(trans)
             print "Iteration:", self.total_iterations, "Subject:", sidx, "Objective function computations:", len(objectives), "change", diff
-            mean_functions_per_subject += len(objectives)
+            functions_per_subject.append(len(objectives))
             # Compute total objective for progress reporting.
             objective_total_before += objectives[0]
             if diff < 0:
                 objective_total_after += objectives[-1]
-                subjects_decreased += 1
-                mean_decrease += diff
+                decreases.append(diff)
             else:
                 objective_total_after += objectives[0]
-            mean_change += diff
+            objective_changes_per_subject.append(diff)
             sidx += 1
-            # Plot all objectives for software development/testing
             if HAVE_PLT:
                 plt.figure(0)
                 plt.plot(objectives, 'o-', label=sidx)
 
         number_of_subjects = sidx
-        mean_functions_per_subject /= float(number_of_subjects)
-        mean_change /= float(number_of_subjects)
-        if subjects_decreased > 0:
-            mean_decrease /= float(subjects_decreased)
+        functions_per_subject = numpy.array(functions_per_subject)
+        objective_changes_per_subject = numpy.array(objective_changes_per_subject)
+        decreases = numpy.array(decreases)
 
         self.objectives_before.append(objective_total_before)
         self.objectives_after.append(objective_total_after)
@@ -409,48 +406,19 @@ class MultiSubjectRegistration:
         print "Iteration:", self.total_iterations, "PERCENT objective change:",  percent_change
 
         if HAVE_PLT:
-            fname_fig_base = "iteration_%05d_sigma_%05d_" % (self.total_iterations, self.sigma)
             plt.figure(0)
+            fname_fig_base = "iteration_%05d_sigma_%05d_" % (self.total_iterations, self.sigma)
             # Place the legend below the plot so it does not overlap it when there are many subjects
-            lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
-            fname_fig = fname_fig_base + 'objectives_per_subject.pdf'
+            #lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
+            fname_fig = 'objectives_per_subject_' + fname_fig_base + '.pdf'
             # save everything even if the legend is long and goes off the plot
-            plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
+            #plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
+            plt.savefig(os.path.join(outdir, fname_fig))
             plt.close(0)
-
-            plt.figure()
-            plt.title('Objective Values for All Iterations')
-            plt.xlabel('iteration')
-            plt.ylabel('total objective value')
-            plt.plot(self.objectives_before, 'o-', label='before')
-            plt.plot(self.objectives_after, 'o-', label='after')
-            lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
-            fname_fig = fname_fig_base + 'objectives_overall.pdf'
-            plt.savefig(os.path.join(outdir, fname_fig), bbox_extra_artists=(lgd,), bbox_inches='tight')
-            plt.close()
-            
-            changes = numpy.array(self.objectives_after) - numpy.array(self.objectives_before)
-            percent_changes = numpy.divide(changes, numpy.array(self.objectives_before) )
-            plt.figure()
-            plt.title('Objective Value Changes for All Iterations')
-            plt.xlabel('iteration')
-            plt.ylabel('objective value change')
-            plt.plot(changes, 'o-')
-            fname_fig = fname_fig_base + 'objective_changes.pdf'
-            plt.savefig(os.path.join(outdir, fname_fig))
-            plt.close()
-            plt.figure()
-            plt.title('Objective Value Percent Changes for All Iterations')
-            plt.xlabel('iteration')
-            plt.ylabel('objective value percent change')
-            plt.plot(percent_changes, 'o-')
-            fname_fig = fname_fig_base + 'objective_percent_changes.pdf'
-            plt.savefig(os.path.join(outdir, fname_fig))
-            plt.close()
 
         progress_file = open(self.progress_filename, 'a')
         elapsed_time = time.time() - start_time
-        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', mean_functions_per_subject,'\t', number_of_subjects,'\t', subjects_decreased,'\t', mean_change, '\t', mean_decrease, '\t', elapsed_time
+        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', numpy.mean(decreases), '\t', elapsed_time
         progress_file.close()
 
         # remove_mean_from_transforms
