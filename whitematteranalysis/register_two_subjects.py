@@ -180,6 +180,8 @@ class RegisterTractography:
             fiber_array.number_of_fibers = number_of_fibers_fixed
             pd2 = fiber_array.convert_to_polydata()
             ren = wma.render.render(pd2, number_of_fibers_fixed, verbose=False)
+            # save low-res images for speed
+            ren.magnification = 3
             ren.save_views(self.output_directory, 'fixed_brain_' + self.process_id_string)
             del ren
                 
@@ -208,10 +210,10 @@ class RegisterTractography:
         self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
                                                   numpy.multiply(self.initial_transform,self.transform_scaling), self.constraint,
                                                   maxfun=self.maxfun, rhobeg=self.initial_step,
-                                                  rhoend=self.final_step, disp=1)
+                                                  rhoend=self.final_step, disp=0)
         self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
 
-        print "O:", self.objective_function_values
+        #print "O:", self.objective_function_values
 
         # Return output transforms from this iteration
         return self.final_transform
