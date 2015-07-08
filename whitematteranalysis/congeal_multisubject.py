@@ -418,7 +418,11 @@ class MultiSubjectRegistration:
 
         progress_file = open(self.progress_filename, 'a')
         elapsed_time = time.time() - start_time
-        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', numpy.mean(decreases), '\t', elapsed_time
+        if len(decreases) == 0:
+            mean_decreases = 0.0
+        else:
+            mean_decreases = numpy.mean(decreases)
+        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', mean_decreases, '\t', elapsed_time
         progress_file.close()
 
         # remove_mean_from_transforms
