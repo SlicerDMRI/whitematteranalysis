@@ -53,6 +53,35 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
         
     return distance
 
+def fiber_distance_oriented(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400, bilateral=False):
+    """Find pairwise fiber distance from fiber to all fibers in fiber_array, without testing both fiber orders.
+    This is to be used if the fibers are ordered purposely, such as
+
+    according to the endpoint nearest a cortical point.  The Mean and
+    MeanSquared distances are the average distance per fiber point, to
+    remove scaling effects (dependence on number of points chosen for
+    fiber parameterization). The Hausdorff distance is the maximum
+    distance between corresponding points.  input fiber should be class
+    Fiber. fibers should be class FiberArray
+    """
+
+    # compute pairwise fiber distances along fibers
+    distance = _fiber_distance_internal_use(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
+
+    if bilateral:
+        fiber_reflect = fiber.get_reflected_fiber()
+        # call this function again with the reflected fiber. Do NOT reflect again (bilateral=False) to avoid infinite loop.
+        distance_reflect = fiber_distance_oriented(fiber_reflect, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq, bilateral=False)
+        # choose the best distance, corresponding to the optimal fiber
+        # representation (either reflected or not)
+        if distance_method == 'StrictSimilarity':
+            # this is the product of all similarity values along the fiber
+            distance = numpy.maximum(distance, distance_reflect)
+        else:
+            distance = numpy.minimum(distance, distance_reflect)
+        
+    return distance
+
 def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=None):
     """ Compute the total fiber distance from one fiber to an array of
     many fibers.

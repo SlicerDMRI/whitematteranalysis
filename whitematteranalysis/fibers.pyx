@@ -254,6 +254,68 @@ class FiberArray:
 
         return fibers
 
+    def get_oriented_fibers(self, fiber_indices, order):
+        """Return FiberArray containing subset of data corresponding to
+        fiber_indices. Order fibers according to the array (where 0 is no
+
+        change, and 1 means to reverse the order and return the
+        equivalent fiber)
+        """
+
+        fibers = FiberArray()
+
+        fibers.number_of_fibers = len(fiber_indices)
+
+        # parameters
+        fibers.points_per_fiber = self.points_per_fiber
+        fibers.verbose = self.verbose
+
+        # fiber data
+        fibers.fiber_array_r = self.fiber_array_r[fiber_indices]
+        fibers.fiber_array_a = self.fiber_array_a[fiber_indices]
+        fibers.fiber_array_s = self.fiber_array_s[fiber_indices]
+
+        # swap orientation as requested
+        for (ord, fidx) in zip(order, range(fibers.number_of_fibers)):
+            if ord == 1:
+                f2 = fibers.get_equivalent_fiber(fidx)
+                # replace it in the array
+                fibers.fiber_array_r[fidx,:] = f2.r
+                fibers.fiber_array_a[fidx,:] = f2.a
+                fibers.fiber_array_s[fidx,:] = f2.s
+
+        if self.fiber_hemisphere is not None:
+            # Output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
+            fibers.fiber_hemisphere = self.fiber_hemisphere[fiber_indices]
+
+            # output boolean arrays for each hemisphere and callosal fibers
+            fibers.is_left_hem = self.is_left_hem[fiber_indices]
+            fibers.is_right_hem = self.is_right_hem[fiber_indices]
+            fibers.is_commissure = self.is_commissure[fiber_indices]
+
+            # calculate indices of each type above
+            fibers.index_left_hem = numpy.nonzero(fibers.is_left_hem)[0]
+            fibers.index_right_hem = numpy.nonzero(fibers.is_right_hem)[0]
+            fibers.index_commissure = numpy.nonzero(fibers.is_commissure)[0]
+            fibers.index_hem = \
+                numpy.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
+
+            # output totals of each type also
+            fibers.number_left_hem = len(fibers.index_left_hem)
+            fibers.number_right_hem = len(fibers.index_right_hem)
+            fibers.number_commissure = len(fibers.index_commissure)
+
+            # test
+            if __debug__:
+                test = fibers.number_of_fibers == \
+                    (fibers.number_left_hem + fibers.number_right_hem \
+                         + fibers.number_commissure)
+                if not test:
+                    print "<fibers.py> ERROR: fiber numbers don't add up."
+                    raise AssertionError
+
+        return fibers
+
     def convert_from_polydata(self, input_vtk_polydata, points_per_fiber=None):
 
         """Convert input vtkPolyData to the fixed length fiber
