@@ -81,6 +81,11 @@ class MultiSubjectRegistration:
         self.initialize_nonlinear_grid()
 
     def initialize_nonlinear_grid(self):
+        """This initializes the nonlinear grid. This should be called before adding
+
+        subjects' polydata. Calling it in init handles this.
+        """
+        
         self.target_landmarks = list()
         if self.nonlinear_grid_resolution == 3:
             grid = self.nonlinear_grid_3
@@ -107,6 +112,11 @@ class MultiSubjectRegistration:
         self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
 
     def update_nonlinear_grid(self):
+        """This updates the nonlinear grid. Subjects must be added first using
+
+        add_polydata.
+        """
+        
         # Compute the new grid
         new_target_landmarks = list()
         if self.nonlinear_grid_resolution == 3:
@@ -151,13 +161,20 @@ class MultiSubjectRegistration:
         self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
 
     def add_polydata(self, polydata, subject_id):
+        """Add a subject's data to the groupwise registration. self.nonlinear
+
+        must be set before calling this, if nonlinear registration is desired.
+        """
+        
         self.polydatas.append(polydata)
         if self.nonlinear:
-            # set source and target points equal for initial identity transform
+            # This sets up identity transform to initialize. This will
+            # be re-calculated with current grid resolution in
+            # update_nonlinear_grid.
+            # Set source and target points equal for initial identity transform:
             trans = wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(self.target_points,self.target_points)
             self.transforms.append(trans)
             self.transforms_as_array.append(self.target_landmarks)
-            #print "ADD PD:", trans
         else:
             trans = vtk.vtkTransform()
             self.transforms.append(trans)
@@ -166,11 +183,11 @@ class MultiSubjectRegistration:
         
     def remove_mean_from_transforms(self):
         """ Remove mean rotations and mean scaling and mean
-         translations from transforms.  the mean rotation and
+         translations from transforms.  The mean rotation and
          translation should not affect the objective function anyway.
          A mean scaling will affect the objective, i.e. if the brain
          shrinks all distances become smaller and the similarity is
-         higher. Definitely not the desired effect."""
+         higher. This is not the desired effect."""
 
         if self.nonlinear:
             # remove any average displacement of each source point.
@@ -231,13 +248,9 @@ class MultiSubjectRegistration:
             # modify all the source points using the tps inverse and the mean transform we will remove
             new_source_pts = list()
             for trans in self.transforms_as_array:
-                #source_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(trans)
-                #tps =  wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(source_landmarks,target_landmarks)
-                #tps.Inverse()
                 trans2 = list()
+                # loop over all points defining this transform
                 for pt in zip(trans[::3], trans[1::3], trans[2::3]):
-                        #pt2 = tps.TransformPoint(pt[0], pt[1], pt[2])
-                        #pt3 = mean_trans.TransformPoint(pt2[0], pt2[1], pt2[2])
                         pt2 = mean_trans.TransformPoint(pt[0], pt[1], pt[2])
                         trans2.extend(pt2)
                 new_source_pts.append(numpy.array(trans2))
@@ -265,22 +278,11 @@ class MultiSubjectRegistration:
                     for col in [0,1,2,3]:
                         matrix_average[row,col] += affine_part.GetMatrix().GetElement(row,col)
             matrix_average = numpy.divide(matrix_average, len(self.transforms_as_array))
-
-            # remove this average from the transforms
-            # want: txform'*meantxform^-1 * sourcept = targetpt
-            # new source points:
-            # txform'*sourcept' = targetpt
-            # sourcept' = meantxform^-1 * sourcept 
-            
-            ## matrix = vtk.vtkMatrix4x4()
-            ## for row in [0,1,2]:
-            ##         # the fourth row must be 0, 0, 0, 1 for homogeneous transform so don't need to average it
-            ##         for col in [0,1,2,3]:
-            ##             matrix.SetElement(row,col, matrix_average[row,col])
-            ##print "MEAN TRANS AFTER CORRECTION:", matrix_average
             # this print tests the affine part averages to identity
             print "Mean transform should be 0 after removing it from the group:", numpy.mean(numpy.abs(matrix_average[0:3,0:3] - numpy.identity(3)))
+
         else:
+            # Here we are in the affine case, which is simpler.
             transforms_array = numpy.array(self.transforms_as_array)
             meantrans = numpy.mean(transforms_array, 0)
             if self.verbose:
@@ -295,6 +297,8 @@ class MultiSubjectRegistration:
                 transform[9:15] = transform[9:15] - meantrans[9:15]
 
     def iterate(self):
+        """ Run a single iteration of optimization, multiprocessing over input subjects."""
+        
         self.total_iterations += 1
         start_time = time.time()
 
@@ -319,10 +323,12 @@ class MultiSubjectRegistration:
         if not os.path.exists(outdir_render):
             os.makedirs(outdir_render)
 
+        # Calculate how many fibers are needed to sample from each subject to compute the mean brain at the requested size
         fibers_per_subject = self.mean_brain_size / (len(self.polydatas) - 1)
         if self.verbose:
             print "Fibers per subject for computing mean brain:", fibers_per_subject, "=", self.mean_brain_size, "/",  len(self.polydatas) -1
 
+        # Set up lists of data to pass to the per-subject processes
         mean_list = list()
         subject_list = list()
         mode_list = list()
@@ -335,8 +341,7 @@ class MultiSubjectRegistration:
         render_list = list()
         grid_resolution_list = list()
         
-        # register each subject to the current mean
-
+        # Each subject will be registered to the current model or "mean brain"
         # Sample fibers from each subject for use in the "mean brain"
         subject_sampled_fibers = list()
         for (input_pd, trans) in zip(self.polydatas, self.transforms):
@@ -355,8 +360,8 @@ class MultiSubjectRegistration:
         # Loop over all subjects and prepare lists of inputs for subprocesses
         subj_idx = 0
         for input_pd in self.polydatas:
-            # compute mean in a leave-one out fashion. Otherwise, the
-            # optimal transform may be identity.
+            # Compute current atlas model "mean brain" in a leave-one out fashion.
+            # Otherwise, the optimal transform may be identity.
             appender = vtk.vtkAppendPolyData()
             for subj_idx2 in range(len(subject_sampled_fibers)):
                 if subj_idx2 != subj_idx:
@@ -366,6 +371,7 @@ class MultiSubjectRegistration:
                     else:
                         appender.AddInput(pd)
 
+            # Convert "mean brain" from vtk to numpy format
             appender.Update()
             mean_brain = appender.GetOutput()
             mean_fibers = wma.fibers.FiberArray()
@@ -376,11 +382,14 @@ class MultiSubjectRegistration:
             # then points along fiber
             mean_list.append(mean_fibers)
 
+            # Now get the current sample of fibers from the subject for registration to the "mean brain"
             pd = wma.filter.downsample(input_pd, self.subject_brain_size, verbose=False, random_seed=self.random_seed)
             fibers = wma.fibers.FiberArray()
             fibers.convert_from_polydata(pd, self.points_per_fiber)
             fibers_array = numpy.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
             subject_list.append(fibers_array)
+
+            # Append parameter information to lists of parameters for subprocesses
             sigma_list.append(self.sigma)
             if self.nonlinear:
                 mode_list.append('Nonlinear')
@@ -395,7 +404,7 @@ class MultiSubjectRegistration:
             render_list.append(self.render)
             grid_resolution_list.append(self.nonlinear_grid_resolution)
             
-        # multiprocess over subjects
+        # Multiprocess over subjects
         print "\nITERATION", self.total_iterations, "STARTING MULTIPROCESSING. NUMBER OF JOBS:", self.parallel_jobs, "\n"
 
         # note we can't pass vtk objects to subprocesses since they can't be pickled.
@@ -407,10 +416,9 @@ class MultiSubjectRegistration:
             
         #print "RETURNED VALUES", ret
         
-        # Progress reporting
-        # Loop over all registration outputs:
-        # get the current transform for each subject,
-        # and report the objective values to the user by printing, saving, and plotting.
+        # Progress reporting: loop over all registration outputs.
+        # Get the current transform for each subject and report the
+        # objective values to the user by printing, saving, and plotting.
         self.transforms_as_array = list()
         objective_total_before = 0.0
         objective_total_after = 0.0
@@ -495,7 +503,8 @@ class MultiSubjectRegistration:
 
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
-
+        """ Output polydatas for final or intermediate iterations. """
+        
         # this can be slow so notify the user what is happening
         print "\nSAVING TRANSFORMED TRACTOGRAPHY FROM ITERATION", self.total_iterations, "\n"
         
@@ -506,7 +515,8 @@ class MultiSubjectRegistration:
             subject_id_list = subject_id_list[::2]
 
         if intermediate_save:
-            # make a directory for the current iteration
+            # Make a directory for the current iteration.
+            # This directory name must match the one created above in the iteration.
             if self.nonlinear:
                 dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
             else:
@@ -515,7 +525,7 @@ class MultiSubjectRegistration:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
             
-            # make a directory for output
+            # make a directory for output polydatas
             outdir_pds = os.path.join(outdir, 'transformed_output')
             if not os.path.exists(outdir_pds):
                 os.makedirs(outdir_pds)
@@ -537,10 +547,8 @@ class MultiSubjectRegistration:
 
             output_pds = wma.registration_functions.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
         
-            # save the current atlas representation to disk
-            # right now this is all the input fibers from all subjects
-            # we could downsample to mean brain size here.
-            #wma.registration_functions.save_atlas(output_pds, outdir_current)
+            # Save the current atlas representation to disk.
+            # Right now this is all the input fibers from all subjects.
             output_pds = list()
             for (pd, trans) in zip (self.polydatas, self.transforms):
                 transformer = vtk.vtkTransformPolyDataFilter()
@@ -567,9 +575,14 @@ class MultiSubjectRegistration:
             
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution):
 
+    """This is the code executed by each subprocess that launches the
+
+    registration of one subject to the current atlas model or mean brain.
+    """
+    
     #print "\n BEGIN ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform length:", len(initial_transform), "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform), "Grid:", grid_resolution, "Mode:", mode, "initial transform:", initial_transform,
     
-    
+    # Set up registration objects and parameters that are specific to affine vs nonlinear
     if mode == 'Linear':
         register = wma.register_two_subjects.RegisterTractography()
         register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma) 
@@ -582,26 +595,26 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
 
     else:
         print "ERROR: Unknown registration mode"
-        
+
+    # Set up parameters that are used for both affine and nonlinear
     register.maxfun = maxfun
     register.sigma = sigma        
     register.parallel_jobs = 1
     register.threshold = 0
-    #register.distance_method = "Hausdorff"
     register.fixed = mean
     register.moving = subject
     register.initial_transform = initial_transform
     register.verbose = False
-    #register.verbose = 1
     register.output_directory = output_directory
     register.initial_step = step_size[0]
     register.final_step = step_size[1]
     register.render = render
-    
+
+    # Run the current iteration of optimization.    
     register.compute()
 
-    # only update the transform if the objective function improved.
-    # sometimes it falls into a different minimum that is worse
+    # Only update the transform if the objective function improved.
+    # With affine registration, some subjects may have converged already to the current model.
     obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
     #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
     if obj_diff < 0:
