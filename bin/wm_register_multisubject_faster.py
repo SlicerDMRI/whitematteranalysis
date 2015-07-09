@@ -184,7 +184,7 @@ register.render = not no_render
 
 points_per_fiber = 10
 
-if mode == "affine_fast":
+if mode == "affine":
     # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
     # Note: sigma 1mm is too small for affine: it makes the anterior commissure register worse
     sigma_per_scale = [20, 10, 5, 3, 2]
@@ -194,6 +194,7 @@ if mode == "affine_fast":
     subject_brain_size_per_scale = [500, 1500, 2000, 2500, 3000]
     initial_step_per_scale = [10, 5, 2, 1, 0.5]
     final_step_per_scale = [5, 2, 1, 0.5, 0.4]
+    points_per_fiber = 10
     register.nonlinear = False
     # tested these parameters and sigma 1 is too small for affine: it makes the anterior commissure register worse
     #sigma_per_scale = [30, 10, 5, 3, 2, 1]
@@ -202,22 +203,25 @@ if mode == "affine_fast":
     
 elif mode == "nonlinear_fast":
     # testing a fast nonlinear mode to follow after improved affine registration.
-    register.nonlinear_grid_resolution = 3
+    grid_resolution_per_scale = [3, 4, 5, 6]
     # this is in mm space.
-    initial_step_per_scale = [2, 2, 1]
-    final_step_per_scale = [1.5, 1, 0.5]
+    initial_step_per_scale = [2, 2, 1, 0.75]
+    final_step_per_scale = [1.5, 1, 0.75, 0.5]
     # use only very local information (small sigma)
-    sigma_per_scale = [2, 1, 0.5]
+    sigma_per_scale = [2, 2, 1, 1]
     # how many times to repeat the process at each scale
-    iterations_per_scale = [2, 2, 2]
+    iterations_per_scale = [3, 2, 2, 2]
     # These are a bit lower than the totals in the affine because
     # this computation is expensive
-    mean_brain_size_per_scale = [5000, 5000, 5000]
-    subject_brain_size_per_scale = [2000, 2000, 2000]
-    # These settings are for a 3x3x3 grid, 27*3 = 81 parameter space.
+    mean_brain_size_per_scale = [5000, 5000, 5000, 5000]
+    subject_brain_size_per_scale = [1000, 2000, 2000, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
     # Inspection of output pdfs shows that objective decreases steadily for all subjects,
     # so stop the optimizer early and create a better current model.
-    maxfun_per_scale = [100, 100, 100]
+    maxfun_per_scale = [100, 210, 390, 700]
     # fiber representation for computation.
     points_per_fiber = 15
     register.nonlinear = True
@@ -246,7 +250,7 @@ elif mode == "nonlinear_fastOLD":
     register.nonlinear = True
     register.initialize_nonlinear_grid()
 
-elif mode == "affine":
+elif mode == "affineOLD":
     # default affine for adults with fewer fibers than neonate brains (lower variability)
     sigma_per_scale = [30, 10, 7.5, 5]
     iterations_per_scale=[2, 3, 3, 3]
@@ -401,6 +405,7 @@ elif mode == "affineTEST":
     
 elif mode == "nonlinearTEST":
     # very quick test if software is working
+    grid_resolution_per_scale = [3, 5, 6]
     initial_step_per_scale = [5, 3, 1]
     final_step_per_scale = [2, 1, 0.05]
     sigma_per_scale = [3, 2, 1]
@@ -536,6 +541,9 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
+    if register.nonlinear:
+        register.nonlinear_grid_resolution = grid_resolution_per_scale[scale]
+        register.update_nonlinear_grid()
     
     for idx in range(0,iterations_per_scale[scale]):
         register.iterate()

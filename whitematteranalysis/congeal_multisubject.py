@@ -63,7 +63,7 @@ class MultiSubjectRegistration:
         self.subject_ids = list()
 
         self.target_landmarks = list()
-        self.nonlinear_grid_resolution = 5
+        self.nonlinear_grid_resolution = 3
         self.nonlinear_grid_3 = [-120, 0, 120]
         self.nonlinear_grid_4 = [-120, -60, 60, 120]
         self.nonlinear_grid_5 = [-120, -60, 0, 60, 120]
@@ -104,6 +104,50 @@ class MultiSubjectRegistration:
         # now shuffle the order of these points to avoid biases
         for idx in grid_order:
             self.target_landmarks.extend(tmp[idx])
+        self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
+
+    def update_nonlinear_grid(self):
+        # Compute the new grid
+        new_target_landmarks = list()
+        if self.nonlinear_grid_resolution == 3:
+            grid = self.nonlinear_grid_3
+            grid_order = self.grid_order_3
+        elif self.nonlinear_grid_resolution == 4:
+            grid = self.nonlinear_grid_4
+            grid_order = self.grid_order_4
+        elif self.nonlinear_grid_resolution == 5:
+            grid = self.nonlinear_grid_5
+            grid_order = self.grid_order_5                        
+        elif self.nonlinear_grid_resolution == 6:
+            grid = self.nonlinear_grid_6
+            grid_order = self.grid_order_6
+        else:
+            print "<congeal_multisubject.py> Error: Unknown nonlinear grid mode:", self.nonlinear_grid_resolution
+        tmp = list()
+        for r in grid:
+            for a in grid:
+                for s in grid:
+                    tmp.append([r, a, s])
+        # now shuffle the order of these points to avoid biases
+        for idx in grid_order:
+            new_target_landmarks.append(tmp[idx])
+
+        # Apply the existing transform to the target landmarks to compute new source landmarks
+        new_transforms = list()
+        for trans in self.transforms_as_array:
+                source_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(trans)
+                tps =  wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(source_landmarks,self.target_points)
+                tps.Inverse()
+                new_source_landmarks = list()
+                for pt in new_target_landmarks:
+                        pt2 = tps.TransformPoint(pt[0], pt[1], pt[2])
+                        new_source_landmarks.append(pt2)
+                new_transforms.append(numpy.array(new_source_landmarks).flatten())
+        new_target_landmarks = numpy.array(new_target_landmarks).flatten()
+        # Update all the relevant variables (the spline transform does not change but all source and target points do)
+        print "UPDATE NONLINEAR GRID: ", len(self.target_landmarks), len(trans), "==>", len(new_target_landmarks), len(new_transforms[-1]),
+        self.transforms_as_array = new_transforms
+        self.target_landmarks = new_target_landmarks
         self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
 
     def add_polydata(self, polydata, subject_id):
@@ -262,7 +306,11 @@ class MultiSubjectRegistration:
             progress_file.close()
             
         # make a directory for the current iteration
-        dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+        if self.nonlinear:
+            dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+        else:
+            dirname = "iteration_%05d_sigma_%03d" % (self.total_iterations, self.sigma)
+
         outdir = os.path.join(self.output_directory, dirname)
         if not os.path.exists(outdir):
             os.makedirs(outdir)
@@ -407,7 +455,10 @@ class MultiSubjectRegistration:
 
         if HAVE_PLT:
             plt.figure(0)
-            fname_fig_base = "iteration_%05d_sigma_%05d_" % (self.total_iterations, self.sigma)
+            if self.nonlinear:
+                fname_fig_base = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+            else:
+                fname_fig_base = "iteration_%05d_sigma_%03d_" % (self.total_iterations, self.sigma)
             # Place the legend below the plot so it does not overlap it when there are many subjects
             #lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
             fname_fig = 'objectives_per_subject_' + fname_fig_base + '.pdf'
@@ -456,7 +507,10 @@ class MultiSubjectRegistration:
 
         if intermediate_save:
             # make a directory for the current iteration
-            dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+            if self.nonlinear:
+                dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+            else:
+                dirname = "iteration_%05d_sigma_%03d" % (self.total_iterations, self.sigma)
             outdir = os.path.join(self.output_directory, dirname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
@@ -518,10 +572,13 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     
     if mode == 'Linear':
         register = wma.register_two_subjects.RegisterTractography()
+        register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma) 
+
     elif mode == "Nonlinear":
         register = wma.register_two_subjects_nonlinear.RegisterTractographyNonlinear()
         register.nonlinear_grid_resolution = grid_resolution
         register.initialize_nonlinear_grid()
+        register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d_grid_%03d" % (subject_idx, iteration_count, sigma, grid_resolution) 
 
     else:
         print "ERROR: Unknown registration mode"
@@ -537,7 +594,6 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     register.verbose = False
     #register.verbose = 1
     register.output_directory = output_directory
-    register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%05d" % (subject_idx, iteration_count, sigma) 
     register.initial_step = step_size[0]
     register.final_step = step_size[1]
     register.render = render
