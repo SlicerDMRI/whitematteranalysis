@@ -133,7 +133,8 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         moving = self.transform_fiber_array_numpy(self.moving, current_x)
 
         # compute objective
-        obj = inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
+        # find the negative log probability of one brain given all other brains
+        obj = wma.register_two_subjects.inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
@@ -261,93 +262,6 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         # Return output transforms from this iteration
         return self.final_transform
 
-
-def inner_loop_objective(fixed, moving, sigmasq):
-    """ The code called within the objective_function to find the
-    negative log probability of one brain given all other brains. Used
-    with Entropy objective function."""
-
-    (dims, number_of_fibers_moving, points_per_fiber) = moving.shape
-    # number of compared fibers (normalization factor)
-    (dims, number_of_fibers_fixed, points_per_fiber) = fixed.shape
-
-    probability = numpy.zeros(number_of_fibers_moving) + 1e-20
-    
-    # Loop over fibers in moving, find total probability of
-    # fiber using all fibers from fixed.
-    for idx in range(number_of_fibers_moving):
-        probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
-                sigmasq)
-
-    # divide total probability by number of fibers in the atlas ("mean
-    # brain").  this neglects Z, the normalization constant for the
-    # pdf, which would not affect the optimization.
-    probability /= number_of_fibers_fixed
-    #print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
-    # add negative log probabilities of all fibers in this brain.
-    entropy = numpy.sum(- numpy.log(probability))
-    return entropy
-
-def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
-    """Compute total probability for moving fiber when compared to all fixed
-
-    fibers.
-    """
-    distance = fiber_distance_numpy(moving_fiber, fixed_fibers)
-    probability = numpy.exp(numpy.divide(-distance, sigmasq))
-    ## #print "SIGMAS:", numpy.sqrt(sigmasq), "DIFFS:", numpy.min(diffs), numpy.max(diffs), "PROBABILITY :", numpy.min(probability), numpy.max(probability), probability.shape, "PROBABILITY:", numpy.min(probability), numpy.max(probability), probability.shape, "FIBERS:", moving_fiber.shape, fixed_fibers.shape
-    return numpy.sum(probability)
-
-def fiber_distance_numpy(moving_fiber, fixed_fibers):
-    """
-    Find pairwise fiber distance from fiber to all fibers in fiber_array.
-    The Mean and MeanSquared distances are the average distance per
-    fiber point, to remove scaling effects (dependence on number of
-    points chosen for fiber parameterization). The Hausdorff distance
-    is the maximum distance between corresponding points.
-    input fiber should be class Fiber. fibers should be class FiberArray
-    """
-    # compute pairwise fiber distances along fibers
-    distance_1 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers)
-    distance_2 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers,reverse_fiber_order=True)
-    
-    # choose the lowest distance, corresponding to the optimal fiber
-    # representation (either forward or reverse order)
-    return numpy.minimum(distance_1, distance_2)
-
-def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber_order=False):
-    """ Compute the total fiber distance from one fiber to an array of
-    many fibers.
-    This function does not handle equivalent fiber representations,
-    for that use fiber_distance, above.
-    """
-    #print "SHAPE:", fixed_fibers[0,:,:].shape, moving_fiber[0,::-1].shape
-    
-    # compute the distance from this fiber to the array of other fibers
-    if reverse_fiber_order:
-        ddx = fixed_fibers[0,:,:] - moving_fiber[0,::-1]
-        ddy = fixed_fibers[1,:,:] - moving_fiber[1,::-1]
-        ddz = fixed_fibers[2,:,:] - moving_fiber[2,::-1]
-    else:
-        ddx = fixed_fibers[0,:,:] - moving_fiber[0,:]
-        ddy = fixed_fibers[1,:,:] - moving_fiber[1,:]
-        ddz = fixed_fibers[2,:,:] - moving_fiber[2,:]
-
-    #print "MAX abs ddx:", numpy.max(numpy.abs(ddx)), "MAX ddy:", numpy.max(numpy.abs(ddy)), "MAX ddz:", numpy.max(numpy.abs(ddz))
-    #print "MIN abs ddx:", numpy.min(numpy.abs(ddx)), "MIN ddy:", numpy.min(numpy.abs(ddy)), "MIN ddz:", numpy.min(numpy.abs(ddz))
-    
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
-
-    distance = dx + dy + dz
-
-    # Use the mean distance as it works better than Hausdorff-like distance
-    return numpy.mean(distance, 1)
-
-    # Hausdorff
-    # take max along fiber
-    #return numpy.max(distance, 1)
 
 def convert_numpy_array_to_vtk_points(inarray):
     """ Convert numpy array or flat list of points to vtkPoints."""
