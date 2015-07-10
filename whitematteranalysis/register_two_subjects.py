@@ -64,7 +64,6 @@ class RegisterTractography:
         if transform[8] < min_scale:
             penalty -= 1
         # want shear angles reasonable like rotation
-        #max_shear_angle = 45
         max_shear_angle = 90
         if numpy.abs(transform[9]) > max_shear_angle:
             penalty -= 1
@@ -104,15 +103,11 @@ class RegisterTractography:
         self.initial_step = 5
         self.final_step = 2
 
-        # translate then rotate so optimizer will translate first
+        # Order the components as translate then rotate so optimizer will translate first.
         # trans, rot, scale, shear:
         self.initial_transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
 
         # the scaling components should have much smaller changes than the others, so scale them accordingly in optimizer search space
-        #self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 500, 500, 500, 2, 2, 2, 2, 2, 2])
-        # try more flexible shear
-        #self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 500, 500, 500,1, 1, 1, 1, 1, 1])
-        # try more flexible scaling
         self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
 
         # internal recordkeeping
@@ -122,7 +117,7 @@ class RegisterTractography:
     def objective_function(self, current_x):
         """ The actual objective used in registration.  Function of
         the current x in search space, as well as parameters of the
-        class: threshold, sigma. Compares sampled fibers from moving
+        class: sigma. Compares sampled fibers from moving
         input, to all fibers of fixed input."""
 
         # keep track of current x value
@@ -139,15 +134,14 @@ class RegisterTractography:
 
         if self.verbose:
             print "O:",  obj, "X:", self._x_opt
-       #print "X:", self._x_opt
+
         return obj
 
     def compute(self):
 
         """ Run the registration.  Add subjects first (before calling
         compute). Then call compute several times, using different
-        parameters for the class, for example first just for
-        translation."""
+        sigma, to perform multiscale registration."""
 
         # subject data must be input first. No check here for speed
         #self.fixed = None
@@ -220,9 +214,10 @@ class RegisterTractography:
 
 
 def inner_loop_objective(fixed, moving, sigmasq):
-    """ The code called within the objective_function to find the
-    negative log probability of one brain given all other brains. Used
-    with Entropy objective function."""
+    """The code called within the objective_function to find the negative log
+
+    probability of one brain given all other brains.
+    """
 
     (dims, number_of_fibers_moving, points_per_fiber) = moving.shape
     # number of compared fibers (normalization factor)
@@ -230,49 +225,47 @@ def inner_loop_objective(fixed, moving, sigmasq):
 
     probability = numpy.zeros(number_of_fibers_moving) + 1e-20
     
-    # Loop over fibers in moving, find total probability of
-    # fiber using all fibers from fixed.
+    # Loop over fibers in moving. Find total probability of
+    # each fiber using all fibers from fixed.
     for idx in range(number_of_fibers_moving):
         probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
                 sigmasq)
 
-    # divide total probability by number of fiber comparisons
-    # the output must be between 0 and 1
-    number_comparisons = numpy.multiply(number_of_fibers_moving, number_of_fibers_fixed)
-    #print "PROBABILITY:", numpy.min(probability), numpy.max(probability),
-    probability /= number_comparisons
+    # Divide total probability by number of fibers in the atlas ("mean
+    # brain").  This neglects Z, the normalization constant for the
+    # pdf, which would not affect the optimization.
+    probability /= number_of_fibers_fixed
     #print numpy.min(probability), numpy.max(probability)
     # add negative log probabilities of all fibers in this brain.
     entropy = numpy.sum(- numpy.log(probability))
-    #print "NUMBER COMPARISONS:", number_comparisons, number_of_fibers_moving, number_of_fibers_fixed
     return entropy
 
 def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
+    """Compute total probability for moving fiber when compared to all fixed
+
+    fibers.
+    """
     distance = fiber_distance_numpy(moving_fiber, fixed_fibers)
-    return numpy.sum(numpy.exp(-distance / (sigmasq)))
+    probability = numpy.exp(numpy.divide(-distance, sigmasq))
+    return numpy.sum(probability)
 
 def fiber_distance_numpy(moving_fiber, fixed_fibers):
     """
-    Find pairwise fiber distance from fiber to all fibers in fiber_array.
-    The Mean and MeanSquared distances are the average distance per
-    fiber point, to remove scaling effects (dependence on number of
-    points chosen for fiber parameterization). The Hausdorff distance
-    is the maximum distance between corresponding points.
-    input fiber should be class Fiber. fibers should be class FiberArray
+    Find pairwise fiber distance from fixed fiber to all moving fibers.
     """
     # compute pairwise fiber distances along fibers
     distance_1 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers)
     distance_2 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers,reverse_fiber_order=True)
-        
+    
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
     return numpy.minimum(distance_1, distance_2)
 
 def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber_order=False):
-    """ Compute the total fiber distance from one fiber to an array of
-    many fibers.
-    This function does not handle equivalent fiber representations,
-    for that use fiber_distance, above.
+    """Compute the total fiber distance from one fiber to an array of many
+
+    fibers.  This function does not handle equivalent fiber
+    representations. For that use fiber_distance, above.
     """
     #print "SHAPE:", fixed_fibers[0,:,:].shape, moving_fiber[0,::-1].shape
     
@@ -295,17 +288,15 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
 
     distance = dx + dy + dz
 
-    # to test mean distance (had a less steep objective but looks similar)
+    # Use the mean distance as it works better than Hausdorff-like distance
     return numpy.mean(distance, 1)
 
-    #elif distance_method == 'Hausdorff':
+    # This is how to test Hausdorff-like distance. Left here for documentation.
+    # Hausdorff
     # take max along fiber
     #return numpy.max(distance, 1)
 
-        
-
-##__render_count = 0
-
+    
 def transform_fiber_array_numpy(in_array, transform):
     """Transform in_array of R,A,S by transform (15 components, rotation about
     R,A,S, translation in R, A, S,  scale along R, A, S, and
@@ -316,8 +307,6 @@ def transform_fiber_array_numpy(in_array, transform):
     out_array = numpy.zeros(in_array.shape)
 
     vtktrans = convert_transform_to_vtk(transform, scaled=True)
-    #print "2:", vtktrans
-    #vtktrans = vtk.vtkTransform()
     
     # Transform moving fiber array by applying transform to original fibers
     for lidx in range(0, number_of_fibers):
