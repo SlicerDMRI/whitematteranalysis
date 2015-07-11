@@ -456,6 +456,8 @@ class MultiSubjectRegistration:
             self.transforms_as_array.append(trans)
             print "Iteration:", self.total_iterations, "Subject:", sidx, "Objective function computations:", len(objectives), "change", diff
             functions_per_subject.append(len(objectives))
+            # Normalize by the number of fibers so this is comparable across iterations if sigma does not change
+            objectives = numpy.divide(objectives, self.subject_brain_size)
             # Compute total objective for progress reporting.
             objective_total_before += objectives[0]
             if diff < 0:
