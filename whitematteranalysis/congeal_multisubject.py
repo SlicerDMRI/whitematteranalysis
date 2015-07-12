@@ -278,7 +278,7 @@ class MultiSubjectRegistration:
             for (trans, newtrans) in zip(self.transforms_as_array, new_source_pts):
                 #print "REMOVE MEAN FROM TXFORMS:", trans, "NEW:", newtrans
                 if self.verbose:
-                    print "Mean removed. Source points changed by:", numpy.min(trans-newtrans), numpy.max(trans-newtrans)
+                    print "Mean removed. Source points changed by (min, max):", numpy.min(trans-newtrans), numpy.max(trans-newtrans)
 
             self.transforms_as_array = new_source_pts
 
@@ -637,8 +637,11 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
 
     # Only update the transform if the objective function improved.
     # With affine registration, some subjects may have converged already to the current model.
-    obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
-    #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff
+    if mode == 'Linear':
+        obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
+    elif mode == "Nonlinear":
+        obj_diff = numpy.min(register.objective_function_values) - register.objective_function_values[0]
+    #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff, register.objective_function_values[-1] - register.objective_function_values[0], register.final_transform
     if obj_diff < 0:
         #print "UPDATING MATRIX"
         return register.final_transform, register.objective_function_values, obj_diff
