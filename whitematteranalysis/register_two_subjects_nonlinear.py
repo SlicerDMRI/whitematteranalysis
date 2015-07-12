@@ -19,6 +19,7 @@ import numpy
 import sys
 import time
 import vtk
+from vtk.util import numpy_support
 try:
     from joblib import Parallel, delayed
     USE_PARALLEL = 1
@@ -70,11 +71,12 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
 
         # set up default landmarks
         self.target_landmarks = list()
-        self.nonlinear_grid_resolution = 5
+        self.nonlinear_grid_resolution = 3
         self.nonlinear_grid_3 = [-120, 0, 120]
         self.nonlinear_grid_4 = [-120, -60, 60, 120]
         self.nonlinear_grid_5 = [-120, -60, 0, 60, 120]
         self.nonlinear_grid_6 = [-120, -60, -20, 20, 60, 120]
+        # The above take < 1 second to apply, while the below take 15 seconds then over a minute (impractical)
         self.nonlinear_grid_8 = [-120, -85, -51, -17, 17, 51, 85, 120]
         self.nonlinear_grid_10 = [-120, -91, -65, -39, -13, 13, 39, 65, 91, 120]
         # random order so that optimizer does not start in one corner every time
@@ -143,12 +145,29 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         self._x_opt = current_x
 
         # get and apply transforms from current_x
+        ## t0 = time.time()
+        ## moving_old = self.transform_fiber_array_numpyOLD(self.moving, current_x)
+        ## t1 = time.time()
+        ## total = t1-t0
+        ## t0 = time.time()
         moving = self.transform_fiber_array_numpy(self.moving, current_x)
+        ## t1 = time.time()
+        ## total2 = t1-t0
 
         # compute objective
         # find the negative log probability of one brain given all other brains
+        ## t0 = time.time()
         obj = wma.register_two_subjects.inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
+        ## t1 = time.time()
+        ## totalobj2 = t1-t0
+        ## ## t0 = time.time()
+        ## ## obj_old = wma.register_two_subjects.inner_loop_objective(self.fixed, moving_old, self.sigma * self.sigma)
+        ## ## t1 = time.time()
+        ## ## totalobj = t1-t0
+        ## ## print "DIFF:", numpy.max(numpy.abs(moving_old - moving)), "SIZE:", moving_old.nbytes, moving.nbytes, "TIMES:", total, total2, "OBJECTIVES:",  obj_old, obj, "TIMES O:", totalobj, totalobj2
 
+        #print "TIME TXFORM:", total2, "TIME OBJECTIVE:", totalobj2
+        
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
@@ -158,6 +177,29 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         return obj
 
     def transform_fiber_array_numpy(self, in_array, source_landmarks):
+        """Transform in_array of R,A,S by transform (a list of source points).  Transformed fibers are returned.
+        """
+        vtktrans = convert_transform_to_vtk(source_landmarks, self.target_points)
+
+        # Create vtkFloatArray object. Deep copy because otherwise it is unsafe.
+        vtk_data = numpy_support.numpy_to_vtk(num_array=in_array.ravel(), deep=True, array_type=vtk.VTK_DOUBLE)
+        # Tell it to interpret this data as 3 components so it can be used as points
+        vtk_data.SetNumberOfComponents(3)
+        # Put data into to vtk points object that can be transformed
+        points = vtk.vtkPoints()
+        points.SetData(vtk_data)
+        # Transform moving fiber array
+        points2 = vtk.vtkPoints()
+        vtktrans.TransformPoints(points, points2)
+        # Convert back to numpy format
+        # keep it the default double, the same as the input array, to avoid slow conversions when comparing to mean brain
+        out_array = numpy_support.vtk_to_numpy(points2.GetData()).astype(numpy.float64)
+
+        del vtktrans
+        #print "SIZES TXFORM:", in_array.nbytes, out_array.nbytes
+        return out_array.reshape(in_array.shape)
+
+    def transform_fiber_array_numpyOLD(self, in_array, source_landmarks):
         """Transform in_array of R,A,S by transform (a list of source points).  Transformed fibers are returned.
         """
         (dims, number_of_fibers, points_per_fiber) = in_array.shape
