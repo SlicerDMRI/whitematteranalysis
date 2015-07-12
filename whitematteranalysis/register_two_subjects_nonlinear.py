@@ -100,9 +100,11 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         self.initial_transform = self.target_landmarks
 
         # internal recordkeeping
-        self._x_opt = None
         self.iterations = 0
 
+        # keep track of the best objective we have seen so far to return that when computation stops.
+        self.minimum_objective = numpy.inf
+        
     def initialize_nonlinear_grid(self):
         self.target_landmarks = list()
         if self.nonlinear_grid_resolution == 3:
@@ -141,9 +143,6 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         class: threshold, sigma. Compares sampled fibers from moving
         input, to all fibers of fixed input."""
 
-        # keep track of current x value
-        self._x_opt = current_x
-
         # get and apply transforms from current_x
         ## t0 = time.time()
         ## moving_old = self.transform_fiber_array_numpyOLD(self.moving, current_x)
@@ -171,8 +170,15 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
+        # keep track of minimum objective so far and its matching transform
+        if obj < self.minimum_objective:
+            #print "OBJECTIVE:", obj, "PREV MIN",  self.minimum_objective
+            self.minimum_objective = obj
+            # must copy current_x into allocated memory space to keep the value
+            self.final_transform[:] = current_x
+            
         if self.verbose:
-            print "O:",  obj, "X:", self._x_opt
+            print "O:",  obj, "X:", current_x
         #print "X:", self._x_opt
         return obj
 
@@ -284,6 +290,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
             del ren
                 
         self.iterations += 1
+        self.final_transform = numpy.zeros(self.initial_transform.shape)
 
         if self.verbose:
             print "<congeal.py> Initial value for X:", self.initial_transform
@@ -304,12 +311,11 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         # final step size scales (rhos), as well as constraints.  Here
         # we use the constraints to encourage that the transform stays a transform.
         # note disp 0 turns off all display
-        self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
+        not_used = scipy.optimize.fmin_cobyla(self.objective_function,
                                                   self.initial_transform, self.constraint,
                                                   maxfun=self.maxfun, rhobeg=self.initial_step,
                                                   rhoend=self.final_step, disp=0)
 
-        #self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
 
         if self.verbose:
             print "O:", self.objective_function_values
