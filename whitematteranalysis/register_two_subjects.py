@@ -227,7 +227,7 @@ def inner_loop_objective(fixed, moving, sigmasq):
     
     # Loop over fibers in moving. Find total probability of
     # each fiber using all fibers from fixed.
-    for idx in range(number_of_fibers_moving):
+    for idx in xrange(number_of_fibers_moving):
         probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
                 sigmasq)
 
@@ -255,7 +255,7 @@ def fiber_distance_numpy(moving_fiber, fixed_fibers):
     """
     # compute pairwise fiber distances along fibers
     distance_1 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers)
-    distance_2 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers,reverse_fiber_order=True)
+    distance_2 = _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber_order=True)
     
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
@@ -267,7 +267,6 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     fibers.  This function does not handle equivalent fiber
     representations. For that use fiber_distance, above.
     """
-    #print "SHAPE:", fixed_fibers[0,:,:].shape, moving_fiber[0,::-1].shape
     
     # compute the distance from this fiber to the array of other fibers
     if reverse_fiber_order:
@@ -282,11 +281,9 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     #print "MAX abs ddx:", numpy.max(numpy.abs(ddx)), "MAX ddy:", numpy.max(numpy.abs(ddy)), "MAX ddz:", numpy.max(numpy.abs(ddz))
     #print "MIN abs ddx:", numpy.min(numpy.abs(ddx)), "MIN ddy:", numpy.min(numpy.abs(ddy)), "MIN ddz:", numpy.min(numpy.abs(ddz))
     
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
-
-    distance = dx + dy + dz
+    distance = numpy.square(ddx)
+    distance += numpy.square(ddy)
+    distance += numpy.square(ddz)
 
     # Use the mean distance as it works better than Hausdorff-like distance
     return numpy.mean(distance, 1)
