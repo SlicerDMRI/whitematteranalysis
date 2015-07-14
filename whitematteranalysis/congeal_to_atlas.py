@@ -145,7 +145,7 @@ class SubjectToAtlasRegistration:
         tx_list.append(self.transform)
         id_list = list()
         id_list.append(self.subject_id)
-        wma.registration_functions.write_transforms_to_itk_format(tx_list, outdir, id_list)
+        wma.io.write_transforms_to_itk_format(tx_list, outdir, id_list)
 
         
     def save_transformed_polydata(self, intermediate_save=False):
@@ -184,7 +184,7 @@ class SubjectToAtlasRegistration:
             tx_list.append(self.transform)
             id_list = list()
             id_list.append(self.subject_id)
-            wma.registration_functions.write_transforms_to_itk_format(tx_list, outdir, id_list)
+            wma.io.write_transforms_to_itk_format(tx_list, outdir, id_list)
  
     def save_transformed_polydata_to_disk(self, outdir):
         out_fname = os.path.join(outdir, self.subject_id + '_reg.vtk')
