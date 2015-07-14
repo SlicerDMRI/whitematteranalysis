@@ -521,7 +521,7 @@ class MultiSubjectRegistration:
             self.transforms.append(vtktrans)
 
         # save the current transforms to disk
-        wma.registration_functions.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
+        wma.io.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
 
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
@@ -552,7 +552,7 @@ class MultiSubjectRegistration:
             if not os.path.exists(outdir_pds):
                 os.makedirs(outdir_pds)
                 
-            output_pds = wma.registration_functions.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds)
+            output_pds = wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds)
 
         else:
             # make a directory for the final output
@@ -567,7 +567,7 @@ class MultiSubjectRegistration:
                     else:
                         print trans.GetMatrix()
 
-            output_pds = wma.registration_functions.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
+            output_pds = wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
         
             # Save the current atlas representation to disk.
             # Right now this is all the input fibers from all subjects.
@@ -593,7 +593,7 @@ class MultiSubjectRegistration:
             del appender
 
             # save the transforms to text files
-            wma.registration_functions.write_transforms_to_itk_format(transform_list, outdir, subject_id_list)
+            wma.io.write_transforms_to_itk_format(transform_list, outdir, subject_id_list)
             
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution):
 
