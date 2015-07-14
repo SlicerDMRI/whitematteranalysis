@@ -270,15 +270,18 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                         grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
-            # RAS displacements can be uncommented and calculated for testing.
-            #displacements_RAS = list()
-            for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
-                #pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
-                #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
-                #displacements_RAS.append(diff_ras)
 
-                pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+            lps_points = vtk.vtkPoints()
+            lps_points2 = vtk.vtkPoints()
+            for gp_lps in grid_points_LPS:
+                lps_points.InsertNextPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+
+            spline_inverse_lps.TransformPoints(lps_points, lps_points2)
+            pidx = 0
+            for gp_lps in grid_points_LPS:
+                pt = lps_points2.GetPoint(pidx)
                 diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
+                pidx += 1
 
                 ## # this tested grid definition and origin were okay.
                 ## diff_lps = [20,30,40]
@@ -296,11 +299,6 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                 ##     diff_lps = [0, 0, 0]
 
                 displacements_LPS.append(diff_lps)
-                # they are the same, passing this test.
-                #print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
-
-            #for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
-            #    print "POINT:", pt, "DISPLACEMENT:", disp
 
             # save the points and displacement vectors in ITK format.
             #print 'Saving in ITK transform format.'
