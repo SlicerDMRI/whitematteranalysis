@@ -21,9 +21,10 @@ This function reads in the laterality data for further analysis.
 import os
 import pickle
 import glob
-
+import time
 import numpy
 import vtk
+from joblib import Parallel, delayed
 
 import render
 import filter
@@ -136,6 +137,128 @@ def write_polydata(polydata, filename):
         print "Done writing ", filename
         print "Number of lines found:", outpd.GetNumberOfLines()
 
+def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
+    # Read it in.
+    print "<io.py> Transforming ", in_filename, "->", out_filename, "..."
+
+    # Read the transform from disk because we cannot pickle it
+    (root, ext) = os.path.splitext(transform_filename)
+    print root, ext
+    if ext == '.xfm':
+        reader = vtk.vtkMNITransformReader()
+        reader.SetFileName(transform_filename)
+        reader.Update()
+        transform = reader.GetTransform()
+    else:
+        f = open(transform_filename, 'r')
+        transform = vtk.vtkTransform()
+        matrix = vtk.vtkMatrix4x4()
+        for i in range(0,4):
+            for j in range(0,4):
+                matrix_val = float(f.readline())
+                matrix.SetElement(i,j, matrix_val)
+        transform.SetMatrix(matrix)
+        del matrix
+
+    start_time = time.time()
+    pd = read_polydata(in_filename)
+    elapsed_time = time.time() - start_time
+    print "READ:", elapsed_time
+    # Transform it.
+    start_time = time.time()
+    transformer = vtk.vtkTransformPolyDataFilter()
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        transformer.SetInputData(pd)
+    else:
+        transformer.SetInput(pd)
+    transformer.SetTransform(transform)
+    transformer.Update()
+    elapsed_time = time.time() - start_time
+    print "TXFORM:", elapsed_time
+
+    # Write it out.
+    start_time = time.time()
+    pd2 = transformer.GetOutput()
+    write_polydata(pd2, out_filename)
+    elapsed_time = time.time() - start_time
+    print "WRITE:", elapsed_time
+
+    # Clean up.
+    start_time = time.time()
+    del transformer
+    del pd2
+    del pd
+    del transform
+    elapsed_time = time.time() - start_time
+    print "DEL:", elapsed_time
+
+def transform_polydatas_from_diskNEW(input_dir, transforms, output_dir, parallel_jobs = 3):
+    """Loop over all input polydata files and apply the vtk transforms from the
+
+    input transforms list. Save transformed polydata files in the output
+    directory. As long as files were read in using list_vtk_files
+    originally, they will be in the same order as the transforms now.
+    """
+
+    # Find input files
+    input_pd_fnames = list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames)
+    print "<io.py> ======================================="
+    print "<io.py> Transforming vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files found: ", num_pd
+    print "<io.py> Writing output to directory: ", output_dir
+    print "<io.py> ======================================="
+
+    if not os.path.exists(output_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+    if not os.path.exists(input_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+
+    # Set up inputs for subprocesses
+    fname_list = list()
+    out_fname_list = list()
+    message_list = list()
+    transform_list = list()
+    for idx in range(0, len(input_pd_fnames)):
+        fname = input_pd_fnames[idx]
+        tx = transforms[idx]
+        subject_id = os.path.splitext(os.path.basename(fname))[0] + 'NEW'
+        out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
+        fname_list.append(fname)
+        out_fname_list.append(out_fname)
+        # save the transform to disk because we cannot pickle it
+        if tx.GetClassName() == 'vtkThinPlateSplineTransform':
+            writer = vtk.vtkMNITransformWriter()
+            writer.AddTransform(tx)
+            fname = '.tmp_vtk_txform_' + str(subject_id) + '.xfm'
+            fname = os.path.join(output_dir, fname)
+            writer.SetFileName(fname)
+            writer.Write()
+            del writer
+        else:
+            fname = '.tmp_vtk_txform_' + str(subject_id) + '.txt'
+            f = open(fname, 'w')
+            for i in range(0,4):
+                for j in range(0,4):
+                    f.write(str(tx.GetMatrix().GetElement(i,j))+'\n')
+            f.close()
+        transform_list.append(fname)
+
+    # Run this in parallel
+    ret = Parallel(
+            n_jobs=parallel_jobs, verbose=0)(
+                delayed(transform_polydata_from_disk)(in_filename, transform_filename, out_filename)
+                for (in_filename, transform_filename, out_filename) in zip(fname_list, transform_list, out_fname_list))
+
+    # remove the temporary transform files
+    for fname in transform_list:
+        os.remove(fname)
+
+    #for idx in range(0, len(input_pd_fnames)):
+        #print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
+        #transform_polydata_from_disk(in_filename, transform, out_filename)
 
 def transform_polydatas_from_disk(input_dir, transforms, output_dir):
     """Loop over all input polydata files and apply the vtk transforms from the
