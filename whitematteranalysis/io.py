@@ -184,15 +184,13 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     print "WRITE:", elapsed_time
 
     # Clean up.
-    start_time = time.time()
     del transformer
     del pd2
     del pd
     del transform
-    elapsed_time = time.time() - start_time
-    print "DEL:", elapsed_time
 
-def transform_polydatas_from_diskNEW(input_dir, transforms, output_dir, parallel_jobs = 3):
+
+def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jobs=3):
     """Loop over all input polydata files and apply the vtk transforms from the
 
     input transforms list. Save transformed polydata files in the output
@@ -260,7 +258,7 @@ def transform_polydatas_from_diskNEW(input_dir, transforms, output_dir, parallel
         #print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
         #transform_polydata_from_disk(in_filename, transform, out_filename)
 
-def transform_polydatas_from_disk(input_dir, transforms, output_dir):
+def transform_polydatas_from_diskOLD(input_dir, transforms, output_dir):
     """Loop over all input polydata files and apply the vtk transforms from the
 
     input transforms list. Save transformed polydata files in the output

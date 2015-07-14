@@ -525,14 +525,7 @@ class MultiSubjectRegistration:
         start_time = time.time()
         wma.io.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
         elapsed_time = time.time() - start_time
-        print "WRITE 1:", elapsed_time
-        idlist2=list()
-        for sidx in self.subject_ids:
-            idlist2.append(sidx+'NEW')
-        start_time = time.time()
-        #wma.io.write_transforms_to_itk_formatNEW(self.transforms, outdir, idlist2)
-        elapsed_time = time.time() - start_time
-        print "WRITE 2:", elapsed_time
+        print "WRITE TXFORMS:", elapsed_time
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
         """ Output polydatas for final or intermediate iterations. """
@@ -562,9 +555,7 @@ class MultiSubjectRegistration:
             if not os.path.exists(outdir_pds):
                 os.makedirs(outdir_pds)
 
-            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds)
-
-            wma.io.transform_polydatas_from_diskNEW(self.input_directory, transform_list, outdir_pds)
+            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds, parallel_jobs=self.parallel_jobs)
 
         else:
             # make a directory for the final output
@@ -579,8 +570,7 @@ class MultiSubjectRegistration:
                     else:
                         print trans.GetMatrix()
 
-            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
-            wma.io.transform_polydatas_from_diskNEW(self.input_directory, transform_list, outdir)
+            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir, parallel_jobs=self.parallel_jobs)
 
             # Save the current atlas representation to disk.
             # Right now this is all the input fibers from all subjects.
@@ -609,14 +599,8 @@ class MultiSubjectRegistration:
             start_time = time.time()
             wma.io.write_transforms_to_itk_format(transform_list, outdir, subject_id_list)
             elapsed_time = time.time() - start_time
-            print "WRITE 1:", elapsed_time
-            idlist2=list()
-            for sidx in subject_id_list:
-                idlist2.append(sidx+'NEW')
-            start_time = time.time()
-            #wma.io.write_transforms_to_itk_formatNEW(transform_list, outdir, idlist2)
-            elapsed_time = time.time() - start_time
-            print "WRITE 2:", elapsed_time
+            print "WRITE TXFORMS:", elapsed_time
+
 
 def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigma, subject_idx, iteration_count, output_directory, step_size, maxfun, render, grid_resolution):
 
