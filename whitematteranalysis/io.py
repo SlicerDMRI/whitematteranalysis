@@ -137,6 +137,242 @@ def write_polydata(polydata, filename):
         print "Number of lines found:", outpd.GetNumberOfLines()
 
 
+def transform_polydatas_from_disk(input_dir, transforms, output_dir):
+    """Loop over all input polydata files and apply the vtk transforms from the
+
+    input transforms list. Save transformed polydata files in the output
+    directory. As long as files were read in using list_vtk_files
+    originally, they will be in the same order as the transforms now.
+    """
+
+    # Find input files
+    input_pd_fnames = list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames)
+    print "<io.py> ======================================="
+    print "<io.py> Transforming vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files found: ", num_pd
+    print "<io.py> Writing output to directory: ", output_dir
+    print "<io.py> ======================================="
+
+    if not os.path.exists(output_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+    if not os.path.exists(input_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+
+    for idx in range(0, len(input_pd_fnames)):
+        # Read it in.
+        fname = input_pd_fnames[idx]
+        subject_id = os.path.splitext(os.path.basename(fname))[0]
+        out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
+        print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", fname, "->", out_fname, "..."
+        pd = read_polydata(fname)
+        # Transform it.
+        transformer = vtk.vtkTransformPolyDataFilter()
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            transformer.SetInputData(pd)
+        else:
+            transformer.SetInput(pd)
+        transformer.SetTransform(transforms[idx])
+        transformer.Update()
+        # Write it out.
+        pd2 = transformer.GetOutput()
+        write_polydata(pd2, out_fname)
+        # Clean up.
+        del transformer
+        del pd2
+        del pd
+
+def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
+    """Write VTK affine or spline transforms to ITK 4 text file formats.
+
+    Input transforms are in VTK RAS space and are forward transforms. Output
+    transforms are in LPS space and are the corresponsing inverse
+    transforms, according to the conventions for these file formats and for
+    resampling images. The affine transform is straightforward. The spline
+    transform file format is just a list of displacements that have to be in
+    the same order as they are stored in ITK C code. This now outputs an ITK
+    transform that works correctly to transform the tracts (or any volume in
+    the same space) in Slicer. In the nonlinear case, we also output a vtk
+    native spline transform file using MNI format.
+    """
+
+    idx = 0
+    tx_fnames = list()
+    for tx in transform_list:
+
+        # save out the vtk transform to a text file as it is
+        # The MNI transform reader/writer are available in vtk so use those:
+        writer = vtk.vtkMNITransformWriter()
+        writer.AddTransform(tx)
+        if subject_ids is not None:
+            fname = 'vtk_txform_' + str(subject_ids[idx]) + '.xfm'
+        else:
+            fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
+        writer.SetFileName(os.path.join(outdir, fname))
+        writer.Write()
+
+        # file name for itk transform written below
+        if subject_ids is not None:
+            fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
+        else:
+            fname = 'itk_txform_{0:05d}.tfm'.format(idx)
+        fname = os.path.join(outdir, fname)
+        tx_fnames.append(fname)
+
+        # Save the itk transform as the inverse of this transform (resampling transform) and in LPS.
+        # This will show the same transform in the slicer GUI as the vtk transform we internally computed
+        # that is stored in the .xfm text file, above.
+        # To apply our transform to resample a volume in LPS:
+        # convert to RAS, use inverse of transform to resample, convert back to LPS
+        if tx.GetClassName() == 'vtkThinPlateSplineTransform':
+            #print 'Saving nonlinear transform displacements in ITK format'
+
+            # Deep copy to avoid modifying input transform that will be applied to polydata
+            tps = vtk.vtkThinPlateSplineTransform()
+            tps.DeepCopy(tx)
+
+            # invert to get the transform suitable for resampling an image
+            tps.Inverse()
+
+            # convert the inverse spline transform from RAS to LPS
+            ras_2_lps = vtk.vtkTransform()
+            ras_2_lps.Scale(-1, -1, 1)
+            lps_2_ras = vtk.vtkTransform()
+            lps_2_ras.Scale(-1, -1, 1)
+            spline_inverse_lps = vtk.vtkGeneralTransform()
+            spline_inverse_lps.Concatenate(lps_2_ras)
+            spline_inverse_lps.Concatenate(tps)
+            spline_inverse_lps.Concatenate(ras_2_lps)
+
+            # Now, loop through LPS space. Find the effect of the
+            # inverse transform on each point. This is essentially what
+            # vtk.vtkTransformToGrid() does, but this puts things into
+            # LPS.
+
+            grid_size = [11, 11, 11]
+            grid_spacing = 20
+
+            extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
+            extent_1 = [ (grid_size[0] - 1)/2,  (grid_size[1] - 1)/2,  (grid_size[2] - 1)/2]
+
+            origin = -grid_spacing * (numpy.array(extent_1) - numpy.array(extent_0))/2.0
+
+            grid_points_LPS = list()
+            grid_points_RAS = list()
+
+            # ordering of grid points must match itk-style array order for images
+            for s in range(extent_0[0], extent_1[0]+1):
+                for p in range(extent_0[1], extent_1[1]+1):
+                    for l in range(extent_0[2], extent_1[2]+1):
+                        grid_points_RAS.append([-l*grid_spacing, -p*grid_spacing, s*grid_spacing])
+                        grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
+
+            displacements_LPS = list()
+            # RAS displacements can be uncommented and calculated for testing.
+            #displacements_RAS = list()
+            for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
+                #pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
+                #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
+                #displacements_RAS.append(diff_ras)
+
+                pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+                diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
+
+                ## # this tested grid definition and origin were okay.
+                ## diff_lps = [20,30,40]
+
+                ## # this tested that the ordering of L,P,S is correct:
+                ## diff_lps = [0, gp_lps[1], 0]
+                ## diff_lps = [gp_lps[0], 0, 0]
+                ## diff_lps = [0, 0, gp_lps[2]]
+
+                ## # this tested that the ordering of grid points is correct
+                ## # only the R>0, A>0, S<0 region shows a transform.
+                ## if gp_lps[0] < 0 and gp_lps[1] < 0 and gp_lps[2] < 0:
+                ##     diff_lps = [gp_lps[0]/2.0, 0, 0]
+                ## else:
+                ##     diff_lps = [0, 0, 0]
+
+                displacements_LPS.append(diff_lps)
+                # they are the same, passing this test.
+                #print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
+
+            #for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
+            #    print "POINT:", pt, "DISPLACEMENT:", disp
+
+            # save the points and displacement vectors in ITK format.
+            #print 'Saving in ITK transform format.'
+            f = open(fname, 'w')
+            f.write('#Insight Transform File V1.0\n')
+            f.write('# Transform 0\n')
+            # ITK version 3 that included an additive (!) affine transform
+            #f.write('Transform: BSplineDeformableTransform_double_3_3\n')
+            # ITK version 4 that does not include a second transform in the file
+            f.write('Transform: BSplineTransform_double_3_3\n')
+            f.write('Parameters: ')
+            # "Here the data are: The bulk of the BSpline part are 3D
+            # displacement vectors for each of the BSpline grid-nodes
+            # in physical space, i.e. for each grid-node, there will
+            # be three blocks of displacements defining dx,dy,dz for
+            # all grid nodes."
+            for block in [0, 1, 2]:
+                for diff in displacements_LPS:
+                    f.write('{0} '.format(diff[block]))
+
+            #FixedParameters: size size size origin origin origin origin spacing spacing spacing (then direction cosines: 1 0 0 0 1 0 0 0 1)
+            f.write('\nFixedParameters:')
+            #f.write(' {0} {0} {0}'.format(2*sz+1))
+            f.write(' {0}'.format(grid_size[0]))
+            f.write(' {0}'.format(grid_size[1]))
+            f.write(' {0}'.format(grid_size[2]))
+
+            f.write(' {0}'.format(origin[0]))
+            f.write(' {0}'.format(origin[1]))
+            f.write(' {0}'.format(origin[2]))
+            f.write(' {0} {0} {0}'.format(grid_spacing))
+            f.write(' 1 0 0 0 1 0 0 0 1\n')
+
+            f.close()
+        else:
+            tx_inverse = vtk.vtkTransform()
+            tx_inverse.DeepCopy(tx)
+            tx_inverse.Inverse()
+            ras_2_lps = vtk.vtkTransform()
+            ras_2_lps.Scale(-1, -1, 1)
+            lps_2_ras = vtk.vtkTransform()
+            lps_2_ras.Scale(-1, -1, 1)
+            tx2 = vtk.vtkTransform()
+            tx2.Concatenate(lps_2_ras)
+            tx2.Concatenate(tx_inverse)
+            tx2.Concatenate(ras_2_lps)
+
+            three_by_three = list()
+            translation = list()
+            for i in range(0,3):
+                for j in range(0,3):
+                    three_by_three.append(tx2.GetMatrix().GetElement(i,j))
+            translation.append(tx2.GetMatrix().GetElement(0,3))
+            translation.append(tx2.GetMatrix().GetElement(1,3))
+            translation.append(tx2.GetMatrix().GetElement(2,3))
+
+            f = open(fname, 'w')
+            f.write('#Insight Transform File V1.0\n')
+            f.write('# Transform 0\n')
+            f.write('Transform: AffineTransform_double_3_3\n')
+            f.write('Parameters: ')
+            for el in three_by_three:
+                f.write('{0} '.format(el))
+            for el in translation:
+                f.write('{0} '.format(el))
+            f.write('\nFixedParameters: 0 0 0\n')
+            f.close()
+
+        idx +=1
+    return(tx_fnames)
+
+
 class LateralityResults:
 
     """Results of laterality computation for a subject.
