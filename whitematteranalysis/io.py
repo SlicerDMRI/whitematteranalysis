@@ -21,9 +21,10 @@ This function reads in the laterality data for further analysis.
 import os
 import pickle
 import glob
-
+import time
 import numpy
 import vtk
+from joblib import Parallel, delayed
 
 import render
 import filter
@@ -136,8 +137,128 @@ def write_polydata(polydata, filename):
         print "Done writing ", filename
         print "Number of lines found:", outpd.GetNumberOfLines()
 
+def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
+    # Read it in.
+    print "<io.py> Transforming ", in_filename, "->", out_filename, "..."
 
-def transform_polydatas_from_disk(input_dir, transforms, output_dir):
+    # Read the transform from disk because we cannot pickle it
+    (root, ext) = os.path.splitext(transform_filename)
+    print root, ext
+    if ext == '.xfm':
+        reader = vtk.vtkMNITransformReader()
+        reader.SetFileName(transform_filename)
+        reader.Update()
+        transform = reader.GetTransform()
+    else:
+        f = open(transform_filename, 'r')
+        transform = vtk.vtkTransform()
+        matrix = vtk.vtkMatrix4x4()
+        for i in range(0,4):
+            for j in range(0,4):
+                matrix_val = float(f.readline())
+                matrix.SetElement(i,j, matrix_val)
+        transform.SetMatrix(matrix)
+        del matrix
+
+    start_time = time.time()
+    pd = read_polydata(in_filename)
+    elapsed_time = time.time() - start_time
+    print "READ:", elapsed_time
+    # Transform it.
+    start_time = time.time()
+    transformer = vtk.vtkTransformPolyDataFilter()
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        transformer.SetInputData(pd)
+    else:
+        transformer.SetInput(pd)
+    transformer.SetTransform(transform)
+    transformer.Update()
+    elapsed_time = time.time() - start_time
+    print "TXFORM:", elapsed_time
+
+    # Write it out.
+    start_time = time.time()
+    pd2 = transformer.GetOutput()
+    write_polydata(pd2, out_filename)
+    elapsed_time = time.time() - start_time
+    print "WRITE:", elapsed_time
+
+    # Clean up.
+    del transformer
+    del pd2
+    del pd
+    del transform
+
+
+def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jobs=3):
+    """Loop over all input polydata files and apply the vtk transforms from the
+
+    input transforms list. Save transformed polydata files in the output
+    directory. As long as files were read in using list_vtk_files
+    originally, they will be in the same order as the transforms now.
+    """
+
+    # Find input files
+    input_pd_fnames = list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames)
+    print "<io.py> ======================================="
+    print "<io.py> Transforming vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files found: ", num_pd
+    print "<io.py> Writing output to directory: ", output_dir
+    print "<io.py> ======================================="
+
+    if not os.path.exists(output_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+    if not os.path.exists(input_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+
+    # Set up inputs for subprocesses
+    fname_list = list()
+    out_fname_list = list()
+    message_list = list()
+    transform_list = list()
+    for idx in range(0, len(input_pd_fnames)):
+        fname = input_pd_fnames[idx]
+        tx = transforms[idx]
+        subject_id = os.path.splitext(os.path.basename(fname))[0] + 'NEW'
+        out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
+        fname_list.append(fname)
+        out_fname_list.append(out_fname)
+        # save the transform to disk because we cannot pickle it
+        if tx.GetClassName() == 'vtkThinPlateSplineTransform':
+            writer = vtk.vtkMNITransformWriter()
+            writer.AddTransform(tx)
+            fname = '.tmp_vtk_txform_' + str(subject_id) + '.xfm'
+            fname = os.path.join(output_dir, fname)
+            writer.SetFileName(fname)
+            writer.Write()
+            del writer
+        else:
+            fname = '.tmp_vtk_txform_' + str(subject_id) + '.txt'
+            f = open(fname, 'w')
+            for i in range(0,4):
+                for j in range(0,4):
+                    f.write(str(tx.GetMatrix().GetElement(i,j))+'\n')
+            f.close()
+        transform_list.append(fname)
+
+    # Run this in parallel
+    ret = Parallel(
+            n_jobs=parallel_jobs, verbose=0)(
+                delayed(transform_polydata_from_disk)(in_filename, transform_filename, out_filename)
+                for (in_filename, transform_filename, out_filename) in zip(fname_list, transform_list, out_fname_list))
+
+    # remove the temporary transform files
+    for fname in transform_list:
+        os.remove(fname)
+
+    #for idx in range(0, len(input_pd_fnames)):
+        #print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
+        #transform_polydata_from_disk(in_filename, transform, out_filename)
+
+def transform_polydatas_from_diskOLD(input_dir, transforms, output_dir):
     """Loop over all input polydata files and apply the vtk transforms from the
 
     input transforms list. Save transformed polydata files in the output
@@ -270,15 +391,18 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                         grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
-            # RAS displacements can be uncommented and calculated for testing.
-            #displacements_RAS = list()
-            for (gp_lps, gp_ras) in zip(grid_points_LPS, grid_points_RAS):
-                #pt = tps.TransformPoint(gp_ras[0], gp_ras[1], gp_ras[2])
-                #diff_ras = [pt[0] - gp_ras[0], pt[1] - gp_ras[1], pt[2] - gp_ras[2]]
-                #displacements_RAS.append(diff_ras)
 
-                pt = spline_inverse_lps.TransformPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+            lps_points = vtk.vtkPoints()
+            lps_points2 = vtk.vtkPoints()
+            for gp_lps in grid_points_LPS:
+                lps_points.InsertNextPoint(gp_lps[0], gp_lps[1], gp_lps[2])
+
+            spline_inverse_lps.TransformPoints(lps_points, lps_points2)
+            pidx = 0
+            for gp_lps in grid_points_LPS:
+                pt = lps_points2.GetPoint(pidx)
                 diff_lps = [pt[0] - gp_lps[0], pt[1] - gp_lps[1], pt[2] - gp_lps[2]]
+                pidx += 1
 
                 ## # this tested grid definition and origin were okay.
                 ## diff_lps = [20,30,40]
@@ -296,11 +420,6 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                 ##     diff_lps = [0, 0, 0]
 
                 displacements_LPS.append(diff_lps)
-                # they are the same, passing this test.
-                #print "DIFF RAS:", diff_ras, "DIFF LPS:", diff_lps
-
-            #for (pt, disp) in zip(grid_points_LPS, displacements_LPS):
-            #    print "POINT:", pt, "DISPLACEMENT:", disp
 
             # save the points and displacement vectors in ITK format.
             #print 'Saving in ITK transform format.'
