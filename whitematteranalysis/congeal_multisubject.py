@@ -376,30 +376,59 @@ class MultiSubjectRegistration:
             transformer.Update()
             subject_sampled_fibers.append(transformer.GetOutput())
             del transformer
+
+        # Compute current atlas model "mean brain" 
+        appender = vtk.vtkAppendPolyData()
+        for subj_idx2 in range(len(subject_sampled_fibers)):
+            pd = subject_sampled_fibers[subj_idx2]
+            if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+                appender.AddInputData(pd)
+            else:
+                appender.AddInput(pd)
+        # Convert "mean brain" from vtk to numpy format
+        appender.Update()
+        mean_brain = appender.GetOutput()
+        mean_fibers = wma.fibers.FiberArray()
+        mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
+        mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+        #  R,A,S is the first index
+        # then fiber number
+        # then points along fiber
             
+        # Convert "mean brain" from vtk to numpy format
+        appender.Update()
+        mean_brain = appender.GetOutput()
+        mean_fibers = wma.fibers.FiberArray()
+        mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
+        mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+        #  R,A,S is the first index
+        # then fiber number
+        # then points along fiber
+
         # Loop over all subjects and prepare lists of inputs for subprocesses
         subj_idx = 0
+            
         for input_pd in self.polydatas:
-            # Compute current atlas model "mean brain" in a leave-one out fashion.
-            # Otherwise, the optimal transform may be identity.
-            appender = vtk.vtkAppendPolyData()
-            for subj_idx2 in range(len(subject_sampled_fibers)):
-                if subj_idx2 != subj_idx:
-                    pd = subject_sampled_fibers[subj_idx2]
-                    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
-                        appender.AddInputData(pd)
-                    else:
-                        appender.AddInput(pd)
+            ## # Compute current atlas model "mean brain" in a leave-one out fashion.
+            ## # Otherwise, the optimal transform may be identity.
+            ## appender = vtk.vtkAppendPolyData()
+            ## for subj_idx2 in range(len(subject_sampled_fibers)):
+            ##     if subj_idx2 != subj_idx:
+            ##         pd = subject_sampled_fibers[subj_idx2]
+            ##         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+            ##             appender.AddInputData(pd)
+            ##         else:
+            ##             appender.AddInput(pd)
 
-            # Convert "mean brain" from vtk to numpy format
-            appender.Update()
-            mean_brain = appender.GetOutput()
-            mean_fibers = wma.fibers.FiberArray()
-            mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
-            mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
-            #  R,A,S is the first index
-            # then fiber number
-            # then points along fiber
+            ## # Convert "mean brain" from vtk to numpy format
+            ## appender.Update()
+            ## mean_brain = appender.GetOutput()
+            ## mean_fibers = wma.fibers.FiberArray()
+            ## mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
+            ## mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+            ## #  R,A,S is the first index
+            ## # then fiber number
+            ## # then points along fiber
             mean_list.append(mean_fibers)
 
             # Now get the current sample of fibers from the subject for registration to the "mean brain"
