@@ -113,6 +113,10 @@ class RegisterTractography:
         # internal recordkeeping
         self._x_opt = None
         self.iterations = 0
+
+        # choice of optimization method
+        self.optimizer = "Powell"
+        #self.optimizer = "Cobyla"
         
     def objective_function(self, current_x):
         """ The actual objective used in registration.  Function of
@@ -185,29 +189,55 @@ class RegisterTractography:
             print "<congeal.py> Initial value for X:", self.initial_transform
 
 
-        # These optimizers were tested, less successfully than cobyla.
-        # This code is left here as documentation.
-        #scipy.optimize.fmin(self.objective_function,
-        #                    self._x_opt, params, maxiter=self.maxiter,
-        #                    ftol=self.ftol, maxfun=self.maxfun)
-        #self.final_transform = scipy.optimize.fmin_powell(self.objective_function,
-        #                                            numpy.multiply(self.initial_transform,self.transform_scaling),
-        #                                            xtol=self.rhobeg,
-        #                                            ftol = 0.05,
-        #                                            maxfun=self.maxfun)
-        #maxiter=5)
+        if self.optimizer == "Cobyla":
 
-        # Optimize using cobyla. Allows definition of initial and
-        # final step size scales (rhos), as well as constraints.  Here
-        # we use the constraints to encourage that the transform stays a transform.
-        # note disp 0 turns off all display
-        self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
-                                                  numpy.multiply(self.initial_transform,self.transform_scaling), self.constraint,
-                                                  maxfun=self.maxfun, rhobeg=self.initial_step,
-                                                  rhoend=self.final_step, disp=0)
+            # Optimize using cobyla. Allows definition of initial and
+            # final step size scales (rhos), as well as constraints.  Here
+            # we use the constraints to encourage that the transform stays a transform.
+            # note disp 0 turns off all display
+            self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
+                                                      numpy.multiply(self.initial_transform,self.transform_scaling), self.constraint,
+                                                      maxfun=self.maxfun, rhobeg=self.initial_step,
+                                                      rhoend=self.final_step, disp=0)
+        elif self.optimizer == "BFGS":
+            # Test optimization with BFGS
+            # (Broyden-Fletcher-Goldfarb-Shanno algorithm) refines at each
+            # step an approximation of the Hessian.  L-BFGS:
+            # Limited-memory BFGS Sits between BFGS and conjugate
+            # gradient: in very high dimensions (> 250) the Hessian matrix
+            # is too costly to compute and invert. L-BFGS keeps a low-rank
+            # version. In addition, the scipy version,
+            # scipy.optimize.fmin_l_bfgs_b(), includes box bounds.
+            # Note If you do not specify the gradient to the L-BFGS
+            # solver, you need to add approx_grad=1
+            (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
+                                                                           numpy.multiply(self.initial_transform,self.transform_scaling),
+                                                                           approx_grad = True,
+                                                                           maxfun=self.maxfun,
+                                                                           maxiter=self.maxfun,
+                                                                           factr=1e12,
+                                                                           epsilon=self.final_step,
+                                                                           iprint=0)
+            print f, dict
+
+        elif self.optimizer == "Powell":
+            # Test optimization with Powell's method
+            # Powell’s method is a conjugate direction method.
+            #(self.final_transform, fopt, direc, iters, funcalls, warnflag, allvecs)
+            (self.final_transform, fopt, direc, iters, funcalls, warnflag) = scipy.optimize.fmin_powell(self.objective_function,
+                                                                            numpy.multiply(self.initial_transform,self.transform_scaling),
+                                                                            xtol=self.initial_step,
+                                                                            ftol=self.final_step,
+                                                                            maxfun=self.maxfun,
+                                                                            maxiter=self.maxfun,
+                                                                            disp=1, full_output=True)
+
+            print "TRANS:", self.final_transform, "FLAG:", warnflag
+
+        else:
+            print "Unknown optimizer."
+
         self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
-
-        #print "O:", self.objective_function_values
 
         # Return output transforms from this iteration
         return self.final_transform
