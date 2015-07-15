@@ -41,7 +41,7 @@ class MultiSubjectRegistration:
         #self.points_per_fiber = 9
         self.points_per_fiber = 15
         self.render = True
-        self.nonlinear = False
+        self.nonrigid = False
         
         # optimizer parameters set by user
         self.maxfun = 300
@@ -63,13 +63,13 @@ class MultiSubjectRegistration:
         self.subject_ids = list()
 
         self.target_landmarks = list()
-        self.nonlinear_grid_resolution = 3
-        self.nonlinear_grid_3 = [-120, 0, 120]
-        self.nonlinear_grid_4 = [-120, -60, 60, 120]
-        self.nonlinear_grid_5 = [-120, -60, 0, 60, 120]
-        self.nonlinear_grid_6 = [-120, -60, -20, 20, 60, 120]
-        self.nonlinear_grid_8 = [-120, -85, -51, -17, 17, 51, 85, 120]
-        self.nonlinear_grid_10 = [-120, -91, -65, -39, -13, 13, 39, 65, 91, 120]
+        self.nonrigid_grid_resolution = 3
+        self.nonrigid_grid_3 = [-120, 0, 120]
+        self.nonrigid_grid_4 = [-120, -60, 60, 120]
+        self.nonrigid_grid_5 = [-120, -60, 0, 60, 120]
+        self.nonrigid_grid_6 = [-120, -60, -20, 20, 60, 120]
+        self.nonrigid_grid_8 = [-120, -85, -51, -17, 17, 51, 85, 120]
+        self.nonrigid_grid_10 = [-120, -91, -65, -39, -13, 13, 39, 65, 91, 120]
         # random order so that optimizer does not start in one corner every time
         # the order was computed as
         # numpy.random.permutation(range(0,27))
@@ -86,35 +86,35 @@ class MultiSubjectRegistration:
 
         self.grid_order_10 = [591, 415, 411, 905, 539, 368, 714, 506, 488, 228, 856, 482, 858, 407, 403, 323, 829, 626, 371, 77, 232, 653, 891, 92, 370, 813, 175, 427, 408, 915, 995, 521, 789, 433, 67, 528, 325, 588, 544, 516, 652, 160, 782, 589, 899, 412, 621, 203, 584, 581, 938, 737, 888, 47, 234, 393, 658, 820, 93, 372, 781, 775, 937, 139, 580, 85, 985, 803, 960, 980, 237, 784, 733, 917, 128, 462, 447, 876, 461, 753, 641, 341, 843, 907, 110, 105, 600, 265, 23, 156, 363, 367, 841, 297, 874, 419, 951, 41, 762, 165, 682, 527, 704, 627, 613, 149, 622, 252, 609, 898, 113, 394, 817, 281, 900, 366, 178, 881, 213, 642, 46, 740, 647, 216, 935, 29, 698, 22, 352, 19, 127, 962, 478, 610, 759, 707, 319, 457, 383, 897, 357, 805, 748, 134, 320, 918, 345, 109, 410, 715, 335, 353, 4, 513, 45, 657, 585, 853, 114, 824, 177, 822, 132, 422, 689, 438, 131, 844, 167, 181, 391, 697, 973, 454, 258, 361, 570, 97, 768, 28, 864, 212, 37, 179, 596, 162, 280, 878, 170, 184, 708, 2, 651, 683, 640, 979, 307, 52, 747, 517, 862, 205, 618, 529, 840, 531, 913, 202, 764, 518, 147, 78, 699, 469, 423, 857, 34, 709, 552, 927, 389, 358, 992, 562, 649, 1, 563, 453, 887, 314, 800, 43, 629, 68, 837, 637, 574, 866, 72, 250, 390, 794, 569, 150, 896, 920, 299, 117, 44, 432, 716, 176, 26, 282, 532, 399, 788, 164, 692, 9, 676, 186, 694, 695, 833, 210, 48, 15, 861, 129, 838, 91, 263, 991, 661, 934, 835, 233, 424, 998, 555, 473, 157, 943, 309, 182, 603, 452, 311, 910, 810, 266, 169, 444, 241, 327, 956, 188, 257, 807, 140, 542, 359, 686, 20, 793, 769, 804, 523, 215, 583, 787, 174, 942, 656, 73, 294, 706, 582, 111, 577, 460, 606, 463, 121, 329, 116, 253, 35, 751, 732, 392, 154, 537, 719, 287, 931, 564, 339, 290, 828, 534, 474, 437, 662, 540, 826, 251, 957, 193, 235, 440, 104, 288, 435, 55, 272, 961, 166, 796, 249, 912, 405, 152, 53, 725, 701, 381, 612, 530, 119, 211, 993, 590, 648, 285, 718, 655, 260, 214, 514, 936, 439, 286, 509, 133, 221, 308, 275, 559, 362, 443, 825, 550, 868, 666, 254, 291, 994, 779, 680, 413, 705, 143, 62, 839, 21, 515, 3, 155, 735, 384, 70, 755, 968, 332, 123, 120, 986, 373, 922, 355, 561, 284, 501, 632, 338, 304, 445, 883, 467, 790, 665, 982, 579, 799, 63, 360, 734, 639, 758, 450, 490, 118, 197, 939, 832, 500, 894, 449, 988, 711, 587, 244, 378, 103, 909, 557, 667, 659, 965, 135, 465, 192, 558, 535, 889, 38, 448, 400, 746, 811, 446, 953, 673, 66, 356, 279, 996, 455, 895, 125, 631, 739, 239, 599, 821, 397, 636, 766, 18, 736, 82, 549, 99, 401, 61, 690, 436, 638, 989, 108, 16, 713, 472, 245, 507, 687, 972, 185, 240, 566, 710, 141, 785, 90, 209, 451, 495, 404, 903, 315, 42, 981, 79, 347, 729, 330, 479, 39, 480, 302, 295, 884, 669, 545, 893, 761, 717, 242, 486, 49, 846, 382, 946, 144, 264, 977, 771, 767, 406, 777, 831, 269, 5, 904, 434, 57, 496, 869, 497, 693, 208, 932, 56, 101, 928, 873, 122, 100, 354, 560, 145, 337, 475, 595, 721, 8, 420, 538, 818, 575, 752, 191, 852, 255, 678, 880, 187, 670, 301, 567, 236, 380, 774, 634, 770, 547, 270, 396, 303, 124, 83, 646, 802, 624, 74, 130, 966, 819, 750, 218, 336, 441, 508, 671, 385, 617, 724, 426, 568, 0, 503, 978, 823, 773, 340, 51, 684, 225, 967, 344, 136, 541, 7, 376, 668, 493, 386, 402, 96, 262, 276, 84, 741, 76, 33, 318, 231, 801, 431, 224, 797, 834, 172, 700, 875, 949, 619, 351, 305, 24, 278, 342, 916, 200, 941, 194, 468, 554, 879, 754, 757, 466, 812, 425, 576, 923, 925, 98, 416, 10, 911, 688, 827, 95, 908, 565, 40, 744, 969, 106, 954, 553, 702, 664, 151, 102, 201, 863, 81, 792, 615, 749, 87, 248, 886, 115, 964, 388, 50, 267, 890, 316, 892, 206, 958, 350, 578, 227, 476, 13, 247, 872, 107, 608, 25, 926, 456, 974,  6, 30, 870, 94, 499, 760, 919, 983, 12, 720, 198, 246, 65, 644, 489, 959, 271, 594, 546, 786, 798, 510, 333, 519, 171, 663, 86, 328, 229, 851, 89, 847, 17, 283, 743, 620, 421, 395, 60, 322, 442, 313, 484, 616, 409, 614, 975, 158, 369, 997, 293, 226, 756, 195, 58, 32, 296, 524, 536, 703, 940, 630, 650, 836, 153, 806, 999, 551, 428, 348, 783, 54, 633, 458, 161, 660, 877, 491, 944, 321, 865, 947, 906, 173, 256, 830, 742, 765, 848, 685, 791, 712, 990, 871, 728, 429, 625, 414, 492, 924, 326, 730, 238, 223, 142, 138, 289, 597, 349, 64, 901, 814, 572, 525, 220, 526, 727, 675, 207, 745, 11, 180, 723, 204, 921, 645, 27, 365, 882, 398, 722, 643, 573, 159, 36, 306, 259, 628, 31, 504, 855, 533, 607, 485, 520, 459, 334, 292, 933, 976, 623, 815, 312, 331, 854, 190, 88, 375, 778, 14, 487, 317, 592, 930, 952, 963, 859, 418, 168, 343, 885, 955, 71, 548, 571, 948, 346, 377, 763, 502, 795, 498, 481, 691, 842, 945, 902, 816, 277, 146, 196, 189, 681, 374, 126, 845, 364, 217, 324, 222, 971, 867, 298, 183, 635, 430, 59, 512, 984, 471, 987, 808, 850, 75, 556, 199, 593, 274, 605, 80, 849, 950, 914, 929, 477, 112, 300, 602, 230, 163, 522, 780, 674, 69, 268, 726, 679, 860, 586, 494, 672, 604, 505, 776, 611, 970, 511, 738, 731, 417, 483, 273, 601, 772, 387, 543, 696, 470, 464, 809, 310, 261, 654, 598, 677, 137, 148, 243, 379, 219]
 
-        self.initialize_nonlinear_grid()
+        self.initialize_nonrigid_grid()
 
-    def initialize_nonlinear_grid(self):
-        """This initializes the nonlinear grid. This should be called before adding
+    def initialize_nonrigid_grid(self):
+        """This initializes the nonrigid grid. This should be called before adding
 
         subjects' polydata. Calling it in init handles this.
         """
         
         self.target_landmarks = list()
-        if self.nonlinear_grid_resolution == 3:
-            grid = self.nonlinear_grid_3
+        if self.nonrigid_grid_resolution == 3:
+            grid = self.nonrigid_grid_3
             grid_order = self.grid_order_3
-        elif self.nonlinear_grid_resolution == 4:
-            grid = self.nonlinear_grid_4
+        elif self.nonrigid_grid_resolution == 4:
+            grid = self.nonrigid_grid_4
             grid_order = self.grid_order_4
-        elif self.nonlinear_grid_resolution == 5:
-            grid = self.nonlinear_grid_5
+        elif self.nonrigid_grid_resolution == 5:
+            grid = self.nonrigid_grid_5
             grid_order = self.grid_order_5                        
-        elif self.nonlinear_grid_resolution == 6:
-            grid = self.nonlinear_grid_6
+        elif self.nonrigid_grid_resolution == 6:
+            grid = self.nonrigid_grid_6
             grid_order = self.grid_order_6
-        elif self.nonlinear_grid_resolution == 8:
-            grid = self.nonlinear_grid_8
+        elif self.nonrigid_grid_resolution == 8:
+            grid = self.nonrigid_grid_8
             grid_order = self.grid_order_8
-        elif self.nonlinear_grid_resolution == 10:
-            grid = self.nonlinear_grid_10
+        elif self.nonrigid_grid_resolution == 10:
+            grid = self.nonrigid_grid_10
             grid_order = self.grid_order_10
         else:
-            print "<congeal_multisubject.py> Error: Unknown nonlinear grid mode:", self.nonlinear_grid_resolution
+            print "<congeal_multisubject.py> Error: Unknown nonrigid grid mode:", self.nonrigid_grid_resolution
         tmp = list()
         for r in grid:
             for a in grid:
@@ -123,36 +123,36 @@ class MultiSubjectRegistration:
         # now shuffle the order of these points to avoid biases
         for idx in grid_order:
             self.target_landmarks.extend(tmp[idx])
-        self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
+        self.target_points = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(self.target_landmarks)
 
-    def update_nonlinear_grid(self):
-        """This updates the nonlinear grid. Subjects must be added first using
+    def update_nonrigid_grid(self):
+        """This updates the nonrigid grid. Subjects must be added first using
 
         add_polydata.
         """
         
         # Compute the new grid
         new_target_landmarks = list()
-        if self.nonlinear_grid_resolution == 3:
-            grid = self.nonlinear_grid_3
+        if self.nonrigid_grid_resolution == 3:
+            grid = self.nonrigid_grid_3
             grid_order = self.grid_order_3
-        elif self.nonlinear_grid_resolution == 4:
-            grid = self.nonlinear_grid_4
+        elif self.nonrigid_grid_resolution == 4:
+            grid = self.nonrigid_grid_4
             grid_order = self.grid_order_4
-        elif self.nonlinear_grid_resolution == 5:
-            grid = self.nonlinear_grid_5
+        elif self.nonrigid_grid_resolution == 5:
+            grid = self.nonrigid_grid_5
             grid_order = self.grid_order_5                        
-        elif self.nonlinear_grid_resolution == 6:
-            grid = self.nonlinear_grid_6
+        elif self.nonrigid_grid_resolution == 6:
+            grid = self.nonrigid_grid_6
             grid_order = self.grid_order_6
-        elif self.nonlinear_grid_resolution == 8:
-            grid = self.nonlinear_grid_8
+        elif self.nonrigid_grid_resolution == 8:
+            grid = self.nonrigid_grid_8
             grid_order = self.grid_order_8
-        elif self.nonlinear_grid_resolution == 10:
-            grid = self.nonlinear_grid_10
+        elif self.nonrigid_grid_resolution == 10:
+            grid = self.nonrigid_grid_10
             grid_order = self.grid_order_10
         else:
-            print "<congeal_multisubject.py> Error: Unknown nonlinear grid mode:", self.nonlinear_grid_resolution
+            print "<congeal_multisubject.py> Error: Unknown nonrigid grid mode:", self.nonrigid_grid_resolution
         tmp = list()
         for r in grid:
             for a in grid:
@@ -165,8 +165,8 @@ class MultiSubjectRegistration:
         # Apply the existing transform to the target landmarks to compute new source landmarks
         new_transforms = list()
         for trans in self.transforms_as_array:
-                source_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(trans)
-                tps =  wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(source_landmarks,self.target_points)
+                source_landmarks = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(trans)
+                tps =  wma.register_two_subjects_nonrigid.compute_thin_plate_spline_transform(source_landmarks,self.target_points)
                 tps.Inverse()
                 new_source_landmarks = list()
                 for pt in new_target_landmarks:
@@ -175,24 +175,24 @@ class MultiSubjectRegistration:
                 new_transforms.append(numpy.array(new_source_landmarks).flatten())
         new_target_landmarks = numpy.array(new_target_landmarks).flatten()
         # Update all the relevant variables (the spline transform does not change but all source and target points do)
-        print "UPDATE NONLINEAR GRID: ", len(self.target_landmarks), len(trans), "==>", len(new_target_landmarks), len(new_transforms[-1]),
+        print "UPDATE NONRIGID GRID: ", len(self.target_landmarks), len(trans), "==>", len(new_target_landmarks), len(new_transforms[-1]),
         self.transforms_as_array = new_transforms
         self.target_landmarks = new_target_landmarks
-        self.target_points = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
+        self.target_points = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(self.target_landmarks)
 
     def add_polydata(self, polydata, subject_id):
-        """Add a subject's data to the groupwise registration. self.nonlinear
+        """Add a subject's data to the groupwise registration. self.nonrigid
 
-        must be set before calling this, if nonlinear registration is desired.
+        must be set before calling this, if nonrigid registration is desired.
         """
         
         self.polydatas.append(polydata)
-        if self.nonlinear:
+        if self.nonrigid:
             # This sets up identity transform to initialize. This will
             # be re-calculated with current grid resolution in
-            # update_nonlinear_grid.
+            # update_nonrigid_grid.
             # Set source and target points equal for initial identity transform:
-            trans = wma.register_two_subjects_nonlinear.compute_thin_plate_spline_transform(self.target_points,self.target_points)
+            trans = wma.register_two_subjects_nonrigid.compute_thin_plate_spline_transform(self.target_points,self.target_points)
             self.transforms.append(trans)
             self.transforms_as_array.append(self.target_landmarks)
         else:
@@ -209,7 +209,7 @@ class MultiSubjectRegistration:
          shrinks all distances become smaller and the similarity is
          higher. This is not the desired effect."""
 
-        if self.nonlinear:
+        if self.nonrigid:
             # remove any average displacement of each source point.
             # this means the mean of the source points must equal the target point
             transforms_array = numpy.array(self.transforms_as_array)
@@ -236,10 +236,10 @@ class MultiSubjectRegistration:
                 print "MEAN DISPLACEMENT 2:", meandisp
 
             matrix_average = numpy.zeros((3,4))
-            target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
+            target_landmarks = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(self.target_landmarks)
             for trans in self.transforms_as_array:
                 affine_part = vtk.vtkLandmarkTransform()
-                source_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(trans)
+                source_landmarks = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(trans)
                 affine_part.SetSourceLandmarks(source_landmarks)
                 affine_part.SetTargetLandmarks(target_landmarks)
                 affine_part.SetModeToAffine()
@@ -283,11 +283,11 @@ class MultiSubjectRegistration:
             self.transforms_as_array = new_source_pts
 
             # TEST ONLY (to ensure the above was correct)
-            target_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(self.target_landmarks)
+            target_landmarks = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(self.target_landmarks)
             matrix_average = numpy.zeros((3,4))
             for trans in self.transforms_as_array:
                 affine_part = vtk.vtkLandmarkTransform()
-                source_landmarks = wma.register_two_subjects_nonlinear.convert_numpy_array_to_vtk_points(trans)
+                source_landmarks = wma.register_two_subjects_nonrigid.convert_numpy_array_to_vtk_points(trans)
                 affine_part.SetSourceLandmarks(source_landmarks)
                 affine_part.SetTargetLandmarks(target_landmarks)
                 affine_part.SetModeToAffine()
@@ -326,12 +326,12 @@ class MultiSubjectRegistration:
         if self.total_iterations == 1:
             self.progress_filename = os.path.join(self.output_directory, 'registration_performance.txt')
             progress_file = open(self.progress_filename, 'w')
-            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonlinear', '\t', 'subject_brain_fibers', '\t', 'fibers_per_subject_in_mean_brain','\t', 'mean_brain_fibers','\t', 'maxfun','\t', 'grid_resolution_if_nonlinear','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'min_function_calls_per_subject','\t', 'max_function_calls_per_subject','\t', 'subjects_hitting_maxfun','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased', '\t', 'time'
+            print >> progress_file, 'iteration','\t', 'sigma', '\t', 'nonrigid', '\t', 'subject_brain_fibers', '\t', 'fibers_per_subject_in_mean_brain','\t', 'mean_brain_fibers','\t', 'maxfun','\t', 'grid_resolution_if_nonrigid','\t', 'initial_step','\t', 'final_step','\t', 'objective_before','\t', 'objective_after', '\t', 'objective_change', '\t', 'objective_percent_change', '\t', 'mean_function_calls_per_subject','\t', 'min_function_calls_per_subject','\t', 'max_function_calls_per_subject','\t', 'subjects_hitting_maxfun','\t', 'total_subjects','\t', 'subjects_decreased','\t', 'mean_subject_change', '\t', 'mean_subject_decrease_if_decreased', '\t', 'time'
             progress_file.close()
             
         # make a directory for the current iteration
-        if self.nonlinear:
-            dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+        if self.nonrigid:
+            dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonrigid_grid_resolution)
         else:
             dirname = "iteration_%05d_sigma_%03d" % (self.total_iterations, self.sigma)
 
@@ -411,8 +411,8 @@ class MultiSubjectRegistration:
 
             # Append parameter information to lists of parameters for subprocesses
             sigma_list.append(self.sigma)
-            if self.nonlinear:
-                mode_list.append('Nonlinear')
+            if self.nonrigid:
+                mode_list.append('Nonrigid')
             else:
                 mode_list.append('Linear')                    
             subj_idx_list.append(subj_idx)
@@ -422,7 +422,7 @@ class MultiSubjectRegistration:
             stepsize_list.append(numpy.array([self.initial_step, self.final_step]))
             maxfun_list.append(self.maxfun)
             render_list.append(self.render)
-            grid_resolution_list.append(self.nonlinear_grid_resolution)
+            grid_resolution_list.append(self.nonrigid_grid_resolution)
             
         # Multiprocess over subjects
         print "\nITERATION", self.total_iterations, "STARTING MULTIPROCESSING. NUMBER OF JOBS:", self.parallel_jobs, "\n"
@@ -485,8 +485,8 @@ class MultiSubjectRegistration:
 
         if HAVE_PLT:
             plt.figure(0)
-            if self.nonlinear:
-                fname_fig_base = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+            if self.nonrigid:
+                fname_fig_base = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonrigid_grid_resolution)
             else:
                 fname_fig_base = "iteration_%05d_sigma_%03d_" % (self.total_iterations, self.sigma)
             # Place the legend below the plot so it does not overlap it when there are many subjects
@@ -503,7 +503,7 @@ class MultiSubjectRegistration:
             mean_decreases = 0.0
         else:
             mean_decreases = numpy.mean(decreases)
-        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonlinear, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonlinear_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', mean_decreases, '\t', elapsed_time
+        print >> progress_file, self.total_iterations,'\t', self.sigma, '\t', self.nonrigid, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonrigid_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', mean_decreases, '\t', elapsed_time
         progress_file.close()
 
         # remove_mean_from_transforms
@@ -512,8 +512,8 @@ class MultiSubjectRegistration:
         # update our transforms list for the next iteration
         self.transforms = list()
         for trans in self.transforms_as_array:
-            if self.nonlinear:
-                vtktrans = wma.register_two_subjects_nonlinear.convert_transform_to_vtk(trans, self.target_points)
+            if self.nonrigid:
+                vtktrans = wma.register_two_subjects_nonrigid.convert_transform_to_vtk(trans, self.target_points)
                 #print vtktrans
             else:
                 vtktrans = wma.register_two_subjects.convert_transform_to_vtk(trans)
@@ -542,8 +542,8 @@ class MultiSubjectRegistration:
         if intermediate_save:
             # Make a directory for the current iteration.
             # This directory name must match the one created above in the iteration.
-            if self.nonlinear:
-                dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonlinear_grid_resolution)
+            if self.nonrigid:
+                dirname = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonrigid_grid_resolution)
             else:
                 dirname = "iteration_%05d_sigma_%03d" % (self.total_iterations, self.sigma)
             outdir = os.path.join(self.output_directory, dirname)
@@ -565,7 +565,7 @@ class MultiSubjectRegistration:
 
             if self.verbose:
                 for trans in  self.transforms:
-                    if self.nonlinear:
+                    if self.nonrigid:
                         print trans
                     else:
                         print trans.GetMatrix()
@@ -611,21 +611,21 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     
     #print "\n BEGIN ITERATION", iteration_count, "subject", subject_idx, "sigma:", sigma, "mean brain:", mean.shape, "subject:", subject.shape, "initial transform length:", len(initial_transform), "steps:", step_size[0], step_size[1], "maxfun:", maxfun, type(initial_transform), "Grid:", grid_resolution, "Mode:", mode, "initial transform:", initial_transform,
     
-    # Set up registration objects and parameters that are specific to affine vs nonlinear
+    # Set up registration objects and parameters that are specific to affine vs nonrigid
     if mode == 'Linear':
         register = wma.register_two_subjects.RegisterTractography()
         register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma) 
 
-    elif mode == "Nonlinear":
-        register = wma.register_two_subjects_nonlinear.RegisterTractographyNonlinear()
-        register.nonlinear_grid_resolution = grid_resolution
-        register.initialize_nonlinear_grid()
+    elif mode == "Nonrigid":
+        register = wma.register_two_subjects_nonrigid.RegisterTractographyNonrigid()
+        register.nonrigid_grid_resolution = grid_resolution
+        register.initialize_nonrigid_grid()
         register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d_grid_%03d" % (subject_idx, iteration_count, sigma, grid_resolution) 
 
     else:
         print "ERROR: Unknown registration mode"
 
-    # Set up parameters that are used for both affine and nonlinear
+    # Set up parameters that are used for both affine and nonrigid
     register.maxfun = maxfun
     register.sigma = sigma        
     register.parallel_jobs = 1
@@ -646,7 +646,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     # With affine registration, some subjects may have converged already to the current model.
     if mode == 'Linear':
         obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
-    elif mode == "Nonlinear":
+    elif mode == "Nonrigid":
         obj_diff = numpy.min(register.objective_function_values) - register.objective_function_values[0]
     #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff, register.objective_function_values[-1] - register.objective_function_values[0], register.final_transform
     if obj_diff < 0:

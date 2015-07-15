@@ -34,7 +34,7 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-mode', action="store", dest="mode", type=str, default="affine",
-    help='The mode can be affine or nonlinear. Affine is the default. It should be run first before nonlinear.')
+    help='The mode can be affine or nonrigid. Affine is the default. It should be run first before nonrigid.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int, default=20000,
     help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
@@ -124,7 +124,7 @@ if mode == "affine":
     subject_brain_size_per_scale = [250, 1500, 1750, 2000]
     initial_step_per_scale = [10, 5, 5, 5]
     final_step_per_scale = [5, 2, 2, 2]
-    register.nonlinear = False
+    register.nonrigid = False
     
 elif mode == "affine_neonate":
     # Try smaller sigma for neonates
@@ -136,9 +136,9 @@ elif mode == "affine_neonate":
     subject_brain_size_per_scale = [250, 1500, 2000, 2500]
     initial_step_per_scale = [10, 5, 5, 5]
     final_step_per_scale = [5, 2, 2, 2]
-    register.nonlinear = False
+    register.nonrigid = False
 
-elif mode == "nonlinear":
+elif mode == "nonrigid":
     # this is in mm space.
     initial_step_per_scale = [5, 3, 2]
     final_step_per_scale = [2, 1, 1]
@@ -156,10 +156,10 @@ elif mode == "nonlinear":
     maxfun_per_scale = [500, 500, 750]
     # fiber representation for computation.
     points_per_fiber = 15
-    register.nonlinear = True
-    register.nonlinear_grid_resolution = 5
+    register.nonrigid = True
+    register.nonrigid_grid_resolution = 5
     
-elif mode == "nonlinear_fine":
+elif mode == "nonrigid_fine":
     # this is in mm space.
     initial_step_per_scale = [2, 2, 2]
     final_step_per_scale = [1, 1, 1]
@@ -177,9 +177,9 @@ elif mode == "nonlinear_fine":
     maxfun_per_scale = [1296, 1944, 2592]
     # fiber representation for computation.
     points_per_fiber = 15
-    register.nonlinear = True
-    register.nonlinear_grid_resolution = 6
-    register.initialize_nonlinear_grid()
+    register.nonrigid = True
+    register.nonrigid_grid_resolution = 6
+    register.initialize_nonrigid_grid()
 
 elif mode == "affineTEST":
     # very quick test if software is working
@@ -190,9 +190,9 @@ elif mode == "affineTEST":
     subject_brain_size_per_scale = [100, 500, 1000]
     initial_step_per_scale = [5, 5, 5, 5]
     final_step_per_scale = [2, 2, 2, 2]
-    register.nonlinear = False
+    register.nonrigid = False
     
-elif mode == "nonlinearTEST":
+elif mode == "nonrigidTEST":
     # very quick test if software is working
     initial_step_per_scale = [5, 3, 1]
     final_step_per_scale = [2, 1, 0.05]
@@ -203,7 +203,7 @@ elif mode == "nonlinearTEST":
     # stop computation: this is just a quick test the software is working
     maxfun_per_scale = [10, 10, 10]
     points_per_fiber = 15
-    register.nonlinear = True
+    register.nonrigid = True
 
 else:
     print "\n<register> Error: Unknown registration mode:", mode
@@ -211,7 +211,7 @@ else:
 
 
     
-# We have to add polydatas after setting nonlinear in the register object
+# We have to add polydatas after setting nonrigid in the register object
 register.set_subject(subject_pd, subject_id)
 register.set_atlas(atlas_pd, atlas_id)
 
