@@ -94,7 +94,7 @@ class RegisterTractographyNonlinear(wma.register_two_subjects.RegisterTractograp
         self.initialize_nonlinear_grid()
 
         # transform we optimize over is the source landmarks (initialize to identity, equal to target landmarks)
-        self.initial_transform = self.target_landmarks
+        self.initial_transform = numpy.array(self.target_landmarks)
 
         # internal recordkeeping
         self.iterations = 0
