@@ -41,7 +41,7 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-mode', action="store", dest="mode", type=str, default="affine",
-    help='The mode can be affine or nonlinear. Affine is the default. It should be run first before nonlinear.')
+    help='The mode can be affine or nonrigid. Affine is the default. It should be run first before nonrigid.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int, default=20000,
     help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
@@ -194,13 +194,9 @@ if mode == "affine":
     subject_brain_size_per_scale = [500, 1500, 2000, 2500, 3000]
     initial_step_per_scale = [10, 5, 2, 1, 0.5]
     final_step_per_scale = [5, 2, 1, 0.5, 0.4]
+    register.nonrigid = False
     #points_per_fiber = 10
-    register.nonlinear = False
-    # tested these parameters and sigma 1 is too small for affine: it makes the anterior commissure register worse
-    #sigma_per_scale = [30, 10, 5, 3, 2, 1]
-    #iterations_per_scale=[3, 3, 3, 3, 3, 10]
-    #maxfun_per_scale = [45, 60, 75, 90, 150, 150]
-
+    
 if mode == "affine_powell":
     sigma_per_scale = [10, 10, 10]
     iterations_per_scale=[3, 3, 3]
@@ -214,7 +210,7 @@ if mode == "affine_powell":
     # try quicker convergence
     final_step_per_scale = [8, 4, 1.5]
     #points_per_fiber = 10
-    register.nonlinear = False
+    register.nonrigid = False
 
 elif mode == "affine_overlapping":
     # Mode so we don't waste time computing the first three iterations for connectome data that is rigidly aligned already.
@@ -226,10 +222,10 @@ elif mode == "affine_overlapping":
     subject_brain_size_per_scale = [1500, 2000, 2500, 3000]
     initial_step_per_scale = [5, 2, 1, 0.5]
     final_step_per_scale = [2, 1, 0.5, 0.4]
-    register.nonlinear = False
+    register.nonrigid = False
 
-elif mode == "nonlinear":
-    # testing a fast nonlinear mode to follow after improved affine registration.
+elif mode == "nonrigid":
+    # testing a fast nonrigid mode to follow after improved affine registration.
     grid_resolution_per_scale = [3, 4, 5, 6]
     # this is in mm space.
     initial_step_per_scale = [2, 2, 1, 0.75]
@@ -252,10 +248,8 @@ elif mode == "nonlinear":
     # so stop the optimizer early and create a better current model.
     maxfun_per_scale = [100, 210, 390, 700]
     # fiber representation for computation.
-    # TEST
-    #points_per_fiber = 40
     #points_per_fiber = 15
-    register.nonlinear = True
+    register.nonrigid = True
     
 elif mode == "affineTEST":
     # very quick test if software is working
@@ -266,10 +260,10 @@ elif mode == "affineTEST":
     subject_brain_size_per_scale = [100, 500, 1000]
     initial_step_per_scale = [5, 5, 5, 5]
     final_step_per_scale = [2, 2, 2, 2]
-    register.nonlinear = False
+    register.nonrigid = False
     points_per_fiber = 5
-
-elif mode == "nonlinearTEST":
+    
+elif mode == "nonrigidTEST":
     # very quick test if software is working
     grid_resolution_per_scale = [3, 4, 5, 6, 8, 10]
     initial_step_per_scale = [5, 3, 1, 1, 1, 1]
@@ -281,13 +275,13 @@ elif mode == "nonlinearTEST":
     # stop computation: this is just a quick test the software is working
     maxfun_per_scale = [10, 10, 10, 10, 10, 10]
     points_per_fiber = 15
-    register.nonlinear = True
+    register.nonrigid = True
 
 else:
     print "\n<register> Error: Unknown registration mode:", mode
     exit()
 
-# We have to add polydatas after setting nonlinear in the register object
+# We have to add polydatas after setting nonrigid in the register object
 for (pd, id) in zip(input_pds, subject_ids):
     register.add_polydata(pd, id)
 
@@ -407,9 +401,9 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
-    if register.nonlinear:
-        register.nonlinear_grid_resolution = grid_resolution_per_scale[scale]
-        register.update_nonlinear_grid()
+    if register.nonrigid:
+        register.nonrigid_grid_resolution = grid_resolution_per_scale[scale]
+        register.update_nonrigid_grid()
     
     for idx in range(0,iterations_per_scale[scale]):
         register.iterate()

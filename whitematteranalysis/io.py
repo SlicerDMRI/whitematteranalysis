@@ -315,7 +315,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
     transform file format is just a list of displacements that have to be in
     the same order as they are stored in ITK C code. This now outputs an ITK
     transform that works correctly to transform the tracts (or any volume in
-    the same space) in Slicer. In the nonlinear case, we also output a vtk
+    the same space) in Slicer. In the nonrigid case, we also output a vtk
     native spline transform file using MNI format.
     """
 
@@ -348,7 +348,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
         if tx.GetClassName() == 'vtkThinPlateSplineTransform':
-            #print 'Saving nonlinear transform displacements in ITK format'
+            #print 'Saving nonrigid transform displacements in ITK format'
 
             # Deep copy to avoid modifying input transform that will be applied to polydata
             tps = vtk.vtkThinPlateSplineTransform()
