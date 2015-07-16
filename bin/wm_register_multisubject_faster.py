@@ -57,9 +57,9 @@ parser.add_argument(
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
     help='Verbose. Run with -verbose to store more files and images of intermediate and final polydatas.')
-#parser.add_argument(
-#    '-pf', action="store", dest="pointsPerFiber", type=int, default=15,
-#    help='Number of points for fiber representation during registration. The default of 15 is reasonable.')
+parser.add_argument(
+    '-pf', action="store", dest="pointsPerFiber", type=int, default=15,
+    help='Number of points for fiber representation during registration. The default of 15 is reasonable.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
@@ -114,8 +114,8 @@ else:
 verbose = args.flag_verbose
 
 
-#points_per_fiber = args.pointsPerFiber
-#print "<register> Number of points for fiber representation: ", points_per_fiber
+points_per_fiber = args.pointsPerFiber
+print "<register> Number of points for fiber representation: ", points_per_fiber
 
 if args.flag_norender:
     print "<register> No rendering (for compute servers without X connection)."
@@ -175,14 +175,14 @@ register = wma.congeal_multisubject.MultiSubjectRegistration()
 register.input_directory = args.inputDirectory
 register.output_directory = args.outputDirectory
 
+register.verbose = verbose
+
 register.parallel_jobs = parallel_jobs
 register.render = not no_render
 
 # -------------
 # SETTINGS
 # -------------
-
-points_per_fiber = 10
 
 if mode == "affine":
     # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
@@ -194,13 +194,36 @@ if mode == "affine":
     subject_brain_size_per_scale = [500, 1500, 2000, 2500, 3000]
     initial_step_per_scale = [10, 5, 2, 1, 0.5]
     final_step_per_scale = [5, 2, 1, 0.5, 0.4]
-    points_per_fiber = 10
     register.nonrigid = False
-    # tested these parameters and sigma 1 is too small for affine: it makes the anterior commissure register worse
-    #sigma_per_scale = [30, 10, 5, 3, 2, 1]
-    #iterations_per_scale=[3, 3, 3, 3, 3, 10]
-    #maxfun_per_scale = [45, 60, 75, 90, 150, 150]
+    #points_per_fiber = 10
     
+if mode == "affine_powell":
+    sigma_per_scale = [10, 10, 10]
+    iterations_per_scale=[3, 3, 3]
+    maxfun_per_scale = [25, 50, 80]
+    #mean_brain_size_per_scale = [3000, 5000, 6000]
+    #subject_brain_size_per_scale = [1500, 2500, 3000]
+    mean_brain_size_per_scale = [3000, 5000, 5000]
+    subject_brain_size_per_scale = [1500, 2500, 2500]
+    initial_step_per_scale = [10, 5, 2]
+    #final_step_per_scale = [5, 2, 1]
+    # try quicker convergence
+    final_step_per_scale = [8, 4, 1.5]
+    #points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "affine_overlapping":
+    # Mode so we don't waste time computing the first three iterations for connectome data that is rigidly aligned already.
+    # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
+    sigma_per_scale = [10, 5, 3, 2]
+    iterations_per_scale=[3, 3, 3, 6]
+    maxfun_per_scale = [50, 50, 60, 100]
+    mean_brain_size_per_scale = [3000, 5000, 6000, 6000]
+    subject_brain_size_per_scale = [1500, 2000, 2500, 3000]
+    initial_step_per_scale = [5, 2, 1, 0.5]
+    final_step_per_scale = [2, 1, 0.5, 0.4]
+    register.nonrigid = False
+
 elif mode == "nonrigid":
     # testing a fast nonrigid mode to follow after improved affine registration.
     grid_resolution_per_scale = [3, 4, 5, 6]
@@ -225,7 +248,7 @@ elif mode == "nonrigid":
     # so stop the optimizer early and create a better current model.
     maxfun_per_scale = [100, 210, 390, 700]
     # fiber representation for computation.
-    points_per_fiber = 15
+    #points_per_fiber = 15
     register.nonrigid = True
     
 elif mode == "affineTEST":
@@ -238,18 +261,19 @@ elif mode == "affineTEST":
     initial_step_per_scale = [5, 5, 5, 5]
     final_step_per_scale = [2, 2, 2, 2]
     register.nonrigid = False
+    points_per_fiber = 5
     
 elif mode == "nonrigidTEST":
     # very quick test if software is working
-    grid_resolution_per_scale = [3, 5, 6]
-    initial_step_per_scale = [5, 3, 1]
-    final_step_per_scale = [2, 1, 0.05]
-    sigma_per_scale = [3, 2, 1]
-    iterations_per_scale = [1, 1, 1]
-    mean_brain_size_per_scale = [1500, 2000, 3000]
-    subject_brain_size_per_scale = [500, 750, 1000]
+    grid_resolution_per_scale = [3, 4, 5, 6, 8, 10]
+    initial_step_per_scale = [5, 3, 1, 1, 1, 1]
+    final_step_per_scale = [2, 1, 1, 1, 1, 1]
+    sigma_per_scale = [3, 2, 1, 1, 1, 1]
+    iterations_per_scale = [1, 1, 1, 1, 1, 1]
+    mean_brain_size_per_scale = [1000, 1000, 1000, 1000, 1000, 1000]
+    subject_brain_size_per_scale = [100, 100, 100, 100, 100, 100]
     # stop computation: this is just a quick test the software is working
-    maxfun_per_scale = [10, 10, 10]
+    maxfun_per_scale = [10, 10, 10, 10, 10, 10]
     points_per_fiber = 15
     register.nonrigid = True
 
@@ -364,10 +388,10 @@ comparisons_so_far = 0
 progress_filename = os.path.join(args.outputDirectory, 'progress.txt')
 progress_file = open(progress_filename, 'w')
 print >> progress_file, "Beginning registration. Total iterations will be:", total_iterations
-print >> progress_file,"\nCurrent date: "  + time.strftime("%x")
-print >> progress_file, "Current time: " + time.strftime("%X") + '\n'
+print >> progress_file,"Start date: "  + time.strftime("%x")
+print >> progress_file, "Start time: " + time.strftime("%X") + '\n'
 progress_file.close()
-
+prev_time = time.time()
 do_scales = range(len(sigma_per_scale))
 
 for scale in do_scales:
@@ -388,9 +412,10 @@ for scale in do_scales:
         percent = 100*(float(comparisons_so_far)/total_comparisons)
         print "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
         progress_file = open(progress_filename, 'a')
-        print >> progress_file, "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
+        curr_time = time.time()
+        print >> progress_file, "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent, ". Time:", time.strftime("%X"), ". Minutes Elapsed:", (curr_time - prev_time)/60
         progress_file.close()
-
+        prev_time = curr_time
 
         iteration += 1
         # Intermediate save. For testing only.
@@ -404,6 +429,6 @@ print "\nDone registering. For more information on the output, please read:", re
 
 progress_file = open(progress_filename, 'a')
 print >> progress_file, "\nFinished registration."
-print >> progress_file,"Current date: "  + time.strftime("%x")
-print >> progress_file, "Current time: " + time.strftime("%X")
+print >> progress_file,"End date: "  + time.strftime("%x")
+print >> progress_file, "End time: " + time.strftime("%X")
 progress_file.close()
