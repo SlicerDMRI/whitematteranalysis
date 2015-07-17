@@ -113,9 +113,9 @@ class RegisterTractography:
         # internal recordkeeping
         self._x_opt = None
         self.iterations = 0
-        self.moving_points = None
-        self.number_of_fibers_moving = None
-        self.points_per_fiber = None
+        ## self.moving_points = None
+        ## self.number_of_fibers_moving = None
+        ## self.points_per_fiber = None
 
         # choice of optimization method
         self.optimizer = "Powell"
@@ -132,9 +132,9 @@ class RegisterTractography:
 
         # get and apply transforms from current_x
         ## t1 = time.time()
-        ## movingOLD = transform_fiber_array_numpyOLD(self.moving, current_x)
+        moving = transform_fiber_array_numpy(self.moving, current_x)
         ## t2 = time.time()
-        moving = transform_fiber_array_numpy(self.moving_points, self.number_of_fibers_moving, self.points_per_fiber, current_x)
+        ##moving = transform_fiber_array_numpy(self.moving_points, self.number_of_fibers_moving, self.points_per_fiber, current_x)
         ## t3 = time.time()
         ## diff = numpy.abs(movingOLD - moving)
         ## print "DIFFERENCE IN TXFORMS:", numpy.max(diff), "TIME:", t2-t1, t3-t2
@@ -176,14 +176,15 @@ class RegisterTractography:
         ## #ren.save_views('.', 'moving_brain_{0:05d}'.format(self.iterations))
         ## del ren
 
+        # In the end this was much slower so stick with all data in numpy arrays.
         # Create a vtkPoints object with the input points
-        self.moving_points = vtk.vtkPoints()
-        (dims, self.number_of_fibers_moving, self.points_per_fiber) = self.moving.shape
-        count = 0
-        for lidx in range(0, self.number_of_fibers_moving):
-            for pidx in range(0, self.points_per_fiber):
-                self.moving_points.InsertNextPoint(self.moving[0, lidx, pidx], self.moving[1, lidx, pidx], self.moving[2, lidx, pidx])
-                count += 1
+        ## self.moving_points = vtk.vtkPoints()
+        ## (dims, self.number_of_fibers_moving, self.points_per_fiber) = self.moving.shape
+        ## count = 0
+        ## for lidx in range(0, self.number_of_fibers_moving):
+        ##     for pidx in range(0, self.points_per_fiber):
+        ##         self.moving_points.InsertNextPoint(self.moving[0, lidx, pidx], self.moving[1, lidx, pidx], self.moving[2, lidx, pidx])
+        ##         count += 1
 
         # For debugging/monitoring of progress
         if self.render:
@@ -342,7 +343,7 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     #return numpy.max(distance, 1)
 
     
-def transform_fiber_array_numpyOLD(in_array, transform):
+def transform_fiber_array_numpy(in_array, transform):
     """Transform in_array of R,A,S by transform (15 components, rotation about
     R,A,S, translation in R, A, S,  scale along R, A, S, and
     shear. Fibers are assumed to be in RAS (or LPS as long as all inputs
@@ -384,11 +385,13 @@ def transform_fiber_array_numpyOLD(in_array, transform):
     
     return out_array
 
-def transform_fiber_array_numpy(moving_points, number_of_fibers, points_per_fiber, transform):
+def transform_fiber_array_numpyNOTUSED(moving_points, number_of_fibers, points_per_fiber, transform):
     """Transform in_array of R,A,S by transform (15 components, rotation about
     R,A,S, translation in R, A, S,  scale along R, A, S, and
     shear. Fibers are assumed to be in RAS (or LPS as long as all inputs
     are consistent).  Transformed fibers are returned.
+
+    This overall slows down computations. So keep all data in numpy double arrays for now.
     """
     out_array = numpy.zeros((3, number_of_fibers, points_per_fiber))
 
