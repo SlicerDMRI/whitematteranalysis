@@ -113,6 +113,9 @@ class RegisterTractography:
         # internal recordkeeping
         self._x_opt = None
         self.iterations = 0
+        self.moving_points = None
+        self.number_of_fibers_moving = None
+        self.points_per_fiber = None
 
         # choice of optimization method
         self.optimizer = "Powell"
@@ -128,7 +131,13 @@ class RegisterTractography:
         self._x_opt = current_x
 
         # get and apply transforms from current_x
-        moving = transform_fiber_array_numpy(self.moving, current_x)
+        ## t1 = time.time()
+        ## movingOLD = transform_fiber_array_numpyOLD(self.moving, current_x)
+        ## t2 = time.time()
+        moving = transform_fiber_array_numpy(self.moving_points, self.number_of_fibers_moving, self.points_per_fiber, current_x)
+        ## t3 = time.time()
+        ## diff = numpy.abs(movingOLD - moving)
+        ## print "DIFFERENCE IN TXFORMS:", numpy.max(diff), "TIME:", t2-t1, t3-t2
 
         # compute objective
         obj = inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
@@ -166,6 +175,15 @@ class RegisterTractography:
         ## ren.save_views('.', 'moving_brain_{0:05d}_'.format(self.iterations)+str(time.clock())[-5:-1])
         ## #ren.save_views('.', 'moving_brain_{0:05d}'.format(self.iterations))
         ## del ren
+
+        # Create a vtkPoints object with the input points
+        self.moving_points = vtk.vtkPoints()
+        (dims, self.number_of_fibers_moving, self.points_per_fiber) = self.moving.shape
+        count = 0
+        for lidx in range(0, self.number_of_fibers_moving):
+            for pidx in range(0, self.points_per_fiber):
+                self.moving_points.InsertNextPoint(self.moving[0, lidx, pidx], self.moving[1, lidx, pidx], self.moving[2, lidx, pidx])
+                count += 1
 
         # For debugging/monitoring of progress
         if self.render:
@@ -324,7 +342,7 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     #return numpy.max(distance, 1)
 
     
-def transform_fiber_array_numpy(in_array, transform):
+def transform_fiber_array_numpyOLD(in_array, transform):
     """Transform in_array of R,A,S by transform (15 components, rotation about
     R,A,S, translation in R, A, S,  scale along R, A, S, and
     shear. Fibers are assumed to be in RAS (or LPS as long as all inputs
@@ -334,7 +352,7 @@ def transform_fiber_array_numpy(in_array, transform):
     out_array = numpy.zeros(in_array.shape)
 
     vtktrans = convert_transform_to_vtk(transform, scaled=True)
-    
+
     # Transform moving fiber array by applying transform to original fibers
     for lidx in range(0, number_of_fibers):
         for pidx in range(0, points_per_fiber):
@@ -366,6 +384,33 @@ def transform_fiber_array_numpy(in_array, transform):
     
     return out_array
 
+def transform_fiber_array_numpy(moving_points, number_of_fibers, points_per_fiber, transform):
+    """Transform in_array of R,A,S by transform (15 components, rotation about
+    R,A,S, translation in R, A, S,  scale along R, A, S, and
+    shear. Fibers are assumed to be in RAS (or LPS as long as all inputs
+    are consistent).  Transformed fibers are returned.
+    """
+    out_array = numpy.zeros((3, number_of_fibers, points_per_fiber))
+
+    vtktrans = convert_transform_to_vtk(transform, scaled=True)
+
+    # Transform moving fiber array by applying transform to original fibers
+    pts = vtk.vtkPoints()
+    vtktrans.TransformPoints(moving_points, pts)
+
+    # Copy this into numpy world
+    count = 0
+    for lidx in range(0, number_of_fibers):
+        for pidx in range(0, points_per_fiber):
+            (out_array[0, lidx, pidx], out_array[1, lidx, pidx], out_array[2, lidx, pidx]) = pts.GetPoint(count)
+            ## pt = pts.GetPoint(count)
+            ## out_array[0, lidx, pidx] = pt[0]
+            ## out_array[1, lidx, pidx] = pt[1]
+            ## out_array[2, lidx, pidx] = pt[2]
+            count += 1
+
+    del vtktrans
+    return out_array
 
 def convert_transform_to_vtk(transform, scaled=False, mode=[1,1,1,1]):
     """ Produce an output vtkTransform corresponding to the
