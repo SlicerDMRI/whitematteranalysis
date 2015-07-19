@@ -184,20 +184,94 @@ register.render = not no_render
 # SETTINGS
 # -------------
 
+# This is the fast default mode using Powell's method for optimization
+# and preferring fast iterations with a smaller sample of data
+# instead of slower iterations.
 if mode == "affine":
-    # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
-    # Note: sigma 1mm is too small for affine: it makes the anterior commissure register worse
-    sigma_per_scale = [20, 10, 5, 3, 2]
-    iterations_per_scale=[3, 3, 3, 3, 6]
-    maxfun_per_scale = [25, 50, 50, 60, 100]
-    mean_brain_size_per_scale = [2000, 3000, 5000, 6000, 6000]
-    subject_brain_size_per_scale = [500, 1500, 2000, 2500, 3000]
-    initial_step_per_scale = [10, 5, 2, 1, 0.5]
-    final_step_per_scale = [5, 2, 1, 0.5, 0.4]
+    sigma_per_scale = [10, 10, 5]
+    iterations_per_scale=[3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    maxfun_per_scale = [20, 40, 80]
+    mean_brain_size_per_scale = [3000, 3000, 3500]
+    subject_brain_size_per_scale = [1500, 1500, 1500]
+    initial_step_per_scale = [10, 5, 3]
+    final_step_per_scale = [8, 4, 2]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
     register.nonrigid = False
+
+# This is not particularly better than the above though it is much slower
+elif mode == "affine_powellSLOWERTEST":
+    sigma_per_scale = [10, 10, 5]
+    iterations_per_scale=[3, 1, 3]
+    #maxfun_per_scale = [25, 50, 80]
+    maxfun_per_scale = [20, 40, 80]
+    mean_brain_size_per_scale = [3000, 5000, 5000]
+    subject_brain_size_per_scale = [1500, 2500, 2500]
+    initial_step_per_scale = [10, 5, 2]
+    #final_step_per_scale = [5, 2, 1]
+    # try quicker convergence
+    final_step_per_scale = [8, 4, 1.5]
     #points_per_fiber = 10
-    
-if mode == "affine_powell":
+    register.nonrigid = False
+
+# This is now the default fast nonrigid method.
+# Points per fiber is set to 5.
+# This does multiscale registration using the 5x5x5 fast grid
+elif mode == "nonrigid":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [5, 5, 5]
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 1]
+    final_step_per_scale = [1.5, 1, 0.5]
+    # use only very local information (small sigma)
+    sigma_per_scale = [2, 2, 1.75]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [2, 2, 2]
+    # Data samples from group model and each brain
+    mean_brain_size_per_scale = [3000, 3000, 4000]
+    subject_brain_size_per_scale = [1000, 1500, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [390, 390, 390]
+    # fiber representation for computation.
+    points_per_fiber = 5
+    register.nonrigid = True
+
+# This mode also uses the slower-to-compute 6x6x6 grid
+elif mode == "nonrigid_finer":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [4, 5, 6, 6]
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 1, 1]
+    final_step_per_scale = [1.5, 1, 0.8, 0.8]
+    # use only very local information (small sigma)
+    # going to 1mm so quickly seems not to help. It's not clear 1mm works well. 2mm seems more stable.
+    #sigma_per_scale = [2, 2, 1, 1]
+    sigma_per_scale = [3, 2, 1.75, 1.5]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [3, 3, 2, 2]
+    # These are a bit lower than the totals in the affine because
+    # this computation is expensive
+    mean_brain_size_per_scale = [3000, 3000, 4000, 5000]
+    subject_brain_size_per_scale = [1000, 1000, 1500, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [205, 390, 700, 700]
+    # fiber representation for computation.
+    points_per_fiber = 5
+    register.nonrigid = True
+
+elif mode == "affine_powellOLD":
     sigma_per_scale = [10, 10, 10]
     iterations_per_scale=[3, 3, 3]
     maxfun_per_scale = [25, 50, 80]
@@ -212,7 +286,7 @@ if mode == "affine_powell":
     #points_per_fiber = 10
     register.nonrigid = False
 
-elif mode == "affine_overlapping":
+elif mode == "affine_overlapping_cobylaOLD":
     # Mode so we don't waste time computing the first three iterations for connectome data that is rigidly aligned already.
     # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
     sigma_per_scale = [10, 5, 3, 2]
@@ -224,7 +298,113 @@ elif mode == "affine_overlapping":
     final_step_per_scale = [2, 1, 0.5, 0.4]
     register.nonrigid = False
 
-elif mode == "nonrigid":
+elif mode == "affine_cobylaOLD":
+    # Default parameters for affine registration, optimized for speed by stopping computation when most subjects should have improved
+    # Note: sigma 1mm is too small for affine: it makes the anterior commissure register worse
+    sigma_per_scale = [20, 10, 5, 3, 2]
+    iterations_per_scale=[3, 3, 3, 3, 6]
+    maxfun_per_scale = [25, 50, 50, 60, 100]
+    mean_brain_size_per_scale = [2000, 3000, 5000, 6000, 6000]
+    subject_brain_size_per_scale = [500, 1500, 2000, 2500, 3000]
+    initial_step_per_scale = [10, 5, 2, 1, 0.5]
+    final_step_per_scale = [5, 2, 1, 0.5, 0.4]
+    register.nonrigid = False
+    #points_per_fiber = 10
+
+elif mode == "nonrigid_powell":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [3, 4, 5, 6]
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 1, 0.75]
+    final_step_per_scale = [1.5, 1, 0.75, 0.5]
+    # use only very local information (small sigma)
+    # going to 1mm so quickly seems not to help. It's not clear 1mm works well. 2mm seems more stable.
+    #sigma_per_scale = [2, 2, 1, 1]
+    #sigma_per_scale = [2, 2, 1.75, 1.5]
+    # test larger because powell is more sensitive
+    # test smaller because powell is more sensitive
+    sigma_per_scale = [2, 2, 2, 2]
+    #sigma_per_scale = [5, 3, 2, 1]
+    # how many times to repeat the process at each scale
+    #iterations_per_scale = [3, 6, 3, 3]
+    iterations_per_scale = [1, 1, 1, 1]
+    # These are a bit lower than the totals in the affine because
+    # this computation is expensive
+    mean_brain_size_per_scale = [3000, 3000, 3000, 3000]
+    subject_brain_size_per_scale = [1000, 1000, 1000, 1000]
+    #mean_brain_size_per_scale = [4500, 5000, 5000, 5000]
+    #subject_brain_size_per_scale = [1000, 2000, 2000, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    # this is maxiter, which seems to actually stop it (still not)
+    maxfun_per_scale = [2, 2, 2, 2]
+    #maxfun_per_scale = [100, 210, 390, 700]
+    # fiber representation for computation.
+    #points_per_fiber = 15
+    register.nonrigid = True
+
+elif mode == "nonrigid_powellOLD":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [3, 4, 5, 6]
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 1, 0.75]
+    final_step_per_scale = [1.5, 1, 0.75, 0.5]
+    # use only very local information (small sigma)
+    # going to 1mm so quickly seems not to help. It's not clear 1mm works well. 2mm seems more stable.
+    #sigma_per_scale = [2, 2, 1, 1]
+    #sigma_per_scale = [2, 2, 1.75, 1.5]
+    # test larger because powell is more sensitive
+    sigma_per_scale = [5, 3, 2, 1]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [3, 6, 3, 3]
+    # These are a bit lower than the totals in the affine because
+    # this computation is expensive
+    mean_brain_size_per_scale = [4500, 5000, 5000, 5000]
+    subject_brain_size_per_scale = [1000, 2000, 2000, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [90, 210, 390, 700]
+    #maxfun_per_scale = [100, 210, 390, 700]
+    # fiber representation for computation.
+    #points_per_fiber = 15
+    register.nonrigid = True
+
+elif mode == "nonrigidOLDCOBYLA":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [5, 6, 6]
+    # this is in mm space.
+    initial_step_per_scale = [2, 2, 1]
+    final_step_per_scale = [1.5, 1, 1.5]
+    # use only very local information (small sigma)
+    # going to 1mm so quickly seems not to help. It's not clear 1mm works well. 2mm seems more stable.
+    #sigma_per_scale = [2, 2, 1, 1]
+    sigma_per_scale = [2, 2, 1]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [2, 2, 1]
+    # These are a bit lower than the totals in the affine because
+    # this computation is expensive
+    mean_brain_size_per_scale = [5000, 5000, 6000]
+    subject_brain_size_per_scale = [2000, 2000, 3000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [390, 700, 1200]
+    # fiber representation for computation.
+    #points_per_fiber = 15
+    register.nonrigid = True
+
+elif mode == "nonrigidORIGINAL":
     # testing a fast nonrigid mode to follow after improved affine registration.
     grid_resolution_per_scale = [3, 4, 5, 6]
     # this is in mm space.
