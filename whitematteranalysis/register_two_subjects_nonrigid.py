@@ -282,15 +282,22 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             bounds = list()
             for lm in self.target_landmarks:
                 bounds.append((lm-30,lm+30))
+            ## (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
+            ##                                                                self.initial_transform,
+            ##                                                                approx_grad = True,
+            ##                                                                maxfun=self.maxfun,
+            ##                                                                maxiter=self.maxfun,
+            ##                                                                factr=1e12,
+            ##                                                                epsilon=self.final_step,
+            ##                                                                iprint=0,
+            ##                                                                bounds=bounds)
             (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
                                                                            self.initial_transform,
                                                                            approx_grad = True,
-                                                                           maxfun=self.maxfun,
                                                                            maxiter=self.maxfun,
                                                                            factr=1e12,
                                                                            epsilon=self.final_step,
-                                                                           iprint=0,
-                                                                           bounds=bounds)
+                                                                           iprint=0)
             print f, dict
 
         elif self.optimizer == "Powell":
