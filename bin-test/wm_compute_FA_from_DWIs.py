@@ -60,8 +60,9 @@ mask_list = list_nhdr_files(args.inputDirectoryMask)
 for (dwi, mask) in zip(dwi_list, mask_list):
     subject_id = os.path.splitext(os.path.basename(dwi))[0]
     fname_out_dti = os.path.join(args.outputDirectory, subject_id + '_DTI.nhdr')
+    fname_out_b0 = os.path.join(args.outputDirectory, subject_id + '_B0.nhdr')
     fname_out_fa = os.path.join(args.outputDirectory, subject_id + '_FA.nhdr')
-    print "/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DWIToDTIEstimation -m ", mask, dwi, fname_out_dti
+    print "/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DWIToDTIEstimation -m ", mask, dwi, fname_out_dti, fname_out_b0
     print "/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DiffusionTensorScalarMeasurements", fname_out_dti, fname_out_fa, "-e FractionalAnisotropy &"
 
     
