@@ -120,6 +120,34 @@ fibers_qc_fname = os.path.join(output_dir, 'quality_control_fibers.txt')
 data_qc_fname = os.path.join(output_dir, 'quality_control_data.txt')
 spatial_qc_fname = os.path.join(output_dir, 'quality_control_spatial_locations.txt')
 
+# html files to view results easily
+html_toplevel_fname = os.path.join(output_dir, 'index.html')
+html_left_fname = os.path.join(output_dir, 'view_left.html')
+html_right_fname = os.path.join(output_dir, 'view_right.html')
+html_inf_fname = os.path.join(output_dir, 'view_inf.html')
+html_sup_fname = os.path.join(output_dir, 'view_sup.html')
+html_ant_fname = os.path.join(output_dir, 'view_ant.html')
+html_post_fname = os.path.join(output_dir, 'view_post.html')
+
+html_view_fnames = [html_left_fname, html_right_fname, html_inf_fname, html_sup_fname, html_ant_fname, html_post_fname]
+html_views = ["view_left_", "view_right_", "view_inf_", "view_sup_", "view_ant_", "view_post_"]
+html_views_descrip = ["Left", "Right", "Inferior", "Superior", "Anterior", "Posterior"]
+
+for (fname, descrip) in zip(html_view_fnames, html_views_descrip):
+    f = open(fname, 'w')
+    outstr = "<!DOCTYPE html>\n<html>\n"
+    f.write(outstr)
+    outstr = "<style>\n.floated_img\n{\nfloat: left;\n}\n"
+    outstr += "body {\nbackground-color: black; color: LightGray;\n}\n"
+    outstr += "img {\nborder:1px solid #021a40; margin: 5px; width=\"200\"\n}\n"
+    outstr += "p {margin: 5px; width=\"200\"; text-align: center;\n}\n"
+    outstr += "h1 {text-align: center;\n}\n"
+    outstr += "</style>\n"
+    f.write(outstr)
+    outstr = "<body>\n<h1>All " + descrip + " Views</h1>\n"
+    f.write(outstr)
+    f.close()
+
 fibers_qc_file = open(fibers_qc_fname, 'w')
 fiber_test_lengths = [0, 1, 2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 outstr = "SUBJECT_ID \t FIBER_STEP_SIZE \t TOTAL_POINTS \t TOTAL_FIBERS \t"
@@ -160,6 +188,23 @@ for fname in input_polydatas:
     if not os.path.exists(output_dir_subdir):
         os.makedirs(output_dir_subdir)
     ren.save_views(output_dir_subdir, subject_id)
+
+    # Save view information in html file
+    for (fname, view) in zip(html_view_fnames, html_views):
+        f = open(fname, 'a')
+        img_fname = os.path.join('tract_QC_' + subject_id, view + subject_id + '.jpg')
+        print output_dir_subdir
+        print img_fname
+        #outstr = "<a href=\"" + img_fname + "\" >" + subject_id + "<img src=\""+ img_fname + "\" alt=\"" + subject_id + "></a>\n"
+        #outstr = "<figure>\n"
+        #outstr+= "<img src=\"" + img_fname + "\" alt=\"" + subject_id + "\" width=\"300\">\n"
+        #outstr+= "<figcaption>" + subject_id + "</figcaption>\n"
+        #outstr+= "</figure>\n"
+        outstr = "<div class=\"floated_img\">\n"
+        outstr+= "<a href=\"" + img_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
+        outstr+= "<p>" + subject_id + "</p>\n</div>\n"
+        f.write(outstr)
+        f.close()
 
     # Compute and save stats about this subject's fiber histogram
     fibers_qc_file = open(fibers_qc_fname, 'a')
@@ -258,3 +303,12 @@ del appender
 
 data_qc_file.close()
 fibers_qc_file.close()
+
+
+# Finish html files
+for (fname) in html_view_fnames:
+    f = open(fname, 'a')
+    img_fname = os.path.join(output_dir_subdir, view + subject_id + '.jpg')
+    outstr = "\n</body>\n</html>\n"
+    f.write(outstr)
+    f.close()
