@@ -219,6 +219,35 @@ elif mode == "affine_powellSLOWERTEST":
 # This is now the default fast nonrigid method.
 # Points per fiber is set to 5.
 # This does multiscale registration using the 5x5x5 fast grid
+elif mode == "nonrigid_bspline":
+    # testing a fast nonrigid mode to follow after improved affine registration.
+    grid_resolution_per_scale = [6, 6]
+    # this is in mm space.
+    initial_step_per_scale = [2, 1.5]
+    final_step_per_scale = [1.5, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [2, 2]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [1, 2]
+    # Data samples from group model and each brain
+    mean_brain_size_per_scale = [3000, 3000]
+    subject_brain_size_per_scale = [1000, 1000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    #maxfun_per_scale = [400]
+    maxfun_per_scale = [700, 1400]
+    # fiber representation for computation.
+    points_per_fiber = 5
+    register.nonrigid = True
+
+
+# This is now the default fast nonrigid method.
+# Points per fiber is set to 5.
+# This does multiscale registration using the 5x5x5 fast grid
 elif mode == "nonrigid":
     # testing a fast nonrigid mode to follow after improved affine registration.
     grid_resolution_per_scale = [5, 5, 5]

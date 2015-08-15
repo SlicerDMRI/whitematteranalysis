@@ -29,7 +29,7 @@ except ImportError:
 
 import whitematteranalysis as wma
 
-class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractography):
+class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.RegisterTractography):
 
     def constraint(self, x_current):
         # Make sure the optimizer is searching in a reasonable region.
