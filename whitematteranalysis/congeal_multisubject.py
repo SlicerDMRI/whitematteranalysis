@@ -75,14 +75,27 @@ class MultiSubjectRegistration:
         # Apply the existing transform to the new grid
         new_transforms = list()
         for trans in self.transforms_as_array:
-                #if self.nonrigid_grid_resolution
-                res = self.nonrigid_grid_resolution
-                #self.displacement_field_numpy = numpy.zeros(res*res*res*3)
-                vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
-                # create a new displacement field at the new grid resolution.
-                # FOR NOW SKIP THIS
-                print "WARNING IMPLEMENT UPDATED GRID USING PREVIOUS TRANSFORM"
-                new_transforms.append(trans)
+            # create the bspline transform from this displacement field
+            vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
+            # now compute a new displacement field from the transform, using the new grid resolution
+            # This code always uses a grid of 200mm x 200mm x 200mm
+            size_mm = 200.0
+            dims = self.nonrigid_grid_resolution
+            spacing = size_mm / (dims - 1)
+            origin = -size_mm / 2.0
+            grid = vtk.vtkTransformToGrid()
+            grid.SetGridOrigin(origin, origin, origin)
+            grid.SetGridSpacing(spacing, spacing, spacing)
+            grid.SetGridExtent(0, dims-1, 0, dims-1, 0, dims-1)
+            grid.SetGridScalarTypeToFloat()
+            grid.SetInput(vtktrans)
+            grid.Update()
+            # convert the vtkImageData displacement field back to a numpy object
+            displacement_field_vtk = grid.GetOutput()
+            #print displacement_field_vtk.GetPointData().GetArray(0)
+            newtrans = vtk.util.numpy_support.vtk_to_numpy(displacement_field_vtk.GetPointData().GetArray(0))
+            #print newtrans.shape
+            new_transforms.append(newtrans.ravel())
 
         # Update all the relevant variables (the spline transform does not change but all source and target points do)
         print "UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(trans), "==>", len(new_transforms[-1]),
