@@ -149,6 +149,15 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
         reader.SetFileName(transform_filename)
         reader.Update()
         transform = reader.GetTransform()
+    elif ext == '.img':
+        reader = vtk.vtkImageReader()
+        reader.SetFileName(transform_filename)
+        reader.Update()
+        coeffs = reader.GetOutput()
+        transform = vtk.vtkBSplineTransform()
+        transform.SetCoefficients(coeffs)
+        print coeffs
+        print transform
     else:
         f = open(transform_filename, 'r')
         transform = vtk.vtkTransform()
@@ -189,6 +198,36 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     del pd
     del transform
 
+def transform_polydata_from_disk_using_transform_object(in_filename, transform, out_filename):
+    # Read it in.
+    print "<io.py> Transforming ", in_filename, "->", out_filename, "..."
+    start_time = time.time()
+    pd = read_polydata(in_filename)
+    elapsed_time = time.time() - start_time
+    print "READ:", elapsed_time
+    # Transform it.
+    start_time = time.time()
+    transformer = vtk.vtkTransformPolyDataFilter()
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        transformer.SetInputData(pd)
+    else:
+        transformer.SetInput(pd)
+    transformer.SetTransform(transform)
+    transformer.Update()
+    elapsed_time = time.time() - start_time
+    print "TXFORM:", elapsed_time
+
+    # Write it out.
+    start_time = time.time()
+    pd2 = transformer.GetOutput()
+    write_polydata(pd2, out_filename)
+    elapsed_time = time.time() - start_time
+    print "WRITE:", elapsed_time
+
+    # Clean up.
+    del transformer
+    del pd2
+    del pd
 
 def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jobs=3):
     """Loop over all input polydata files and apply the vtk transforms from the
@@ -222,7 +261,7 @@ def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jo
     for idx in range(0, len(input_pd_fnames)):
         fname = input_pd_fnames[idx]
         tx = transforms[idx]
-        subject_id = os.path.splitext(os.path.basename(fname))[0] + 'NEW'
+        subject_id = os.path.splitext(os.path.basename(fname))[0]
         out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
         fname_list.append(fname)
         out_fname_list.append(out_fname)
@@ -235,6 +274,20 @@ def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jo
             writer.SetFileName(fname)
             writer.Write()
             del writer
+        elif tx.GetClassName() == 'vtkBSplineTransform':
+            # there is no vtk file format for bspline transforms, unfortunately.
+            print "Saving bspline transformed polydata without writing transform to disk for multiprocessing"
+            transform_polydata_from_disk_using_transform_object(fname, tx, out_fname)
+            # this did not work, and also it would lose the grid size information
+            ## image = tx.GetCoefficients()
+            ## writer = vtk.vtkImageWriter()
+            ## writer.SetFileDimensionality(1)
+            ## fname = '.tmp_vtk_txform_' + str(subject_id) + '.img'
+            ## fname = os.path.join(output_dir, fname)
+            ## writer.SetFileName(fname)
+            ## writer.SetInput(image)
+            ## writer.Write()
+            ## del writer
         else:
             fname = '.tmp_vtk_txform_' + str(subject_id) + '.txt'
             f = open(fname, 'w')
@@ -245,14 +298,15 @@ def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jo
         transform_list.append(fname)
 
     # Run this in parallel
-    ret = Parallel(
-            n_jobs=parallel_jobs, verbose=0)(
-                delayed(transform_polydata_from_disk)(in_filename, transform_filename, out_filename)
-                for (in_filename, transform_filename, out_filename) in zip(fname_list, transform_list, out_fname_list))
+    if tx.GetClassName() != 'vtkBSplineTransform':
+        ret = Parallel(
+                n_jobs=parallel_jobs, verbose=0)(
+                    delayed(transform_polydata_from_disk)(in_filename, transform_filename, out_filename)
+                    for (in_filename, transform_filename, out_filename) in zip(fname_list, transform_list, out_fname_list))
 
-    # remove the temporary transform files
-    for fname in transform_list:
-        os.remove(fname)
+        # remove the temporary transform files
+        for fname in transform_list:
+            os.remove(fname)
 
     #for idx in range(0, len(input_pd_fnames)):
         #print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
@@ -325,14 +379,15 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
 
         # save out the vtk transform to a text file as it is
         # The MNI transform reader/writer are available in vtk so use those:
-        writer = vtk.vtkMNITransformWriter()
-        writer.AddTransform(tx)
-        if subject_ids is not None:
-            fname = 'vtk_txform_' + str(subject_ids[idx]) + '.xfm'
-        else:
-            fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
-        writer.SetFileName(os.path.join(outdir, fname))
-        writer.Write()
+        if tx.GetClassName() != 'vtkBSplineTransform':
+            writer = vtk.vtkMNITransformWriter()
+            writer.AddTransform(tx)
+            if subject_ids is not None:
+                fname = 'vtk_txform_' + str(subject_ids[idx]) + '.xfm'
+            else:
+                fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
+            writer.SetFileName(os.path.join(outdir, fname))
+            writer.Write()
 
         # file name for itk transform written below
         if subject_ids is not None:
@@ -347,11 +402,14 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         # that is stored in the .xfm text file, above.
         # To apply our transform to resample a volume in LPS:
         # convert to RAS, use inverse of transform to resample, convert back to LPS
-        if tx.GetClassName() == 'vtkThinPlateSplineTransform':
+        if tx.GetClassName() == 'vtkThinPlateSplineTransform' or  tx.GetClassName() == 'vtkBSplineTransform':
             #print 'Saving nonrigid transform displacements in ITK format'
 
             # Deep copy to avoid modifying input transform that will be applied to polydata
-            tps = vtk.vtkThinPlateSplineTransform()
+            if tx.GetClassName() == 'vtkThinPlateSplineTransform':
+                tps = vtk.vtkThinPlateSplineTransform()
+            else:
+                tps = vtk.vtkBSplineTransform()
             tps.DeepCopy(tx)
 
             # invert to get the transform suitable for resampling an image
