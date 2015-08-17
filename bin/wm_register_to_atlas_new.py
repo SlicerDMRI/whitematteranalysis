@@ -83,7 +83,9 @@ if not os.path.exists(outdir):
     print "<register> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 subject_outdir = os.path.join(outdir, subject_id)
-
+if not os.path.exists(subject_outdir):
+    print "<register> Output directory", outdir, "does not exist, creating it."
+    os.makedirs(subject_outdir)
 
 number_of_fibers = args.numberOfFibers
 print "<register> Number of fibers to analyze per subject: ", number_of_fibers
@@ -231,6 +233,14 @@ total_comparisons = numpy.multiply(iterations_per_scale,numpy.multiply(numpy.arr
 total_comparisons = numpy.sum(total_comparisons)
 comparisons_so_far = 0
 
+progress_filename = os.path.join(subject_outdir, 'progress.txt')
+progress_file = open(progress_filename, 'w')
+print >> progress_file, "Beginning registration. Total iterations will be:", total_iterations
+print >> progress_file,"Start date: "  + time.strftime("%x")
+print >> progress_file, "Start time: " + time.strftime("%X") + '\n'
+progress_file.close()
+prev_time = time.time()
+
 do_scales = range(len(sigma_per_scale))
 
 for scale in do_scales:
@@ -250,6 +260,11 @@ for scale in do_scales:
         comparisons_so_far += comparisons_this_scale
         percent = 100*(float(comparisons_so_far)/total_comparisons)
         print "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
+        progress_file = open(progress_filename, 'a')
+        curr_time = time.time()
+        print >> progress_file, "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent, ". Time:", time.strftime("%X"), ". Minutes Elapsed:", (curr_time - prev_time)/60
+        progress_file.close()
+        prev_time = curr_time
         iteration += 1
         # Intermediate save. For testing only.
         if verbose:
@@ -258,4 +273,10 @@ for scale in do_scales:
 # Final save when we are done
 register.save_transformed_polydata()
 
-print "Done registering."
+print "Done registering. See output in:", subject_outdir
+
+progress_file = open(progress_filename, 'a')
+print >> progress_file, "\nFinished registration."
+print >> progress_file,"End date: "  + time.strftime("%x")
+print >> progress_file, "End time: " + time.strftime("%X")
+progress_file.close()
