@@ -139,6 +139,7 @@ elif mode == "affine_neonate":
     register.nonrigid = False
 
 elif mode == "nonrigid":
+    grid_resolution_per_scale = [3, 5, 6]
     # this is in mm space.
     initial_step_per_scale = [5, 3, 2]
     final_step_per_scale = [2, 1, 1]
@@ -239,7 +240,10 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
-    
+    if register.nonrigid:
+        register.nonrigid_grid_resolution = grid_resolution_per_scale[scale]
+        register.update_nonrigid_grid()
+
     for idx in range(0,iterations_per_scale[scale]):
         register.iterate()
         comparisons_this_scale = mean_brain_size_per_scale[scale]*subject_brain_size_per_scale[scale]
