@@ -461,8 +461,11 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     # Set up registration objects and parameters that are specific to affine vs nonrigid
     if mode == 'Linear':
         register = wma.register_two_subjects.RegisterTractography()
-        register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma) 
-
+        register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma)
+        # Make sure the initial iterations are performed with Cobyla. Powell's method fails if brains are not well aligned already.
+        # The constrained optimization is very safe for the initial iterations.
+        if iteration_count < 3:
+            register.optimizer = "Cobyla"
     elif mode == "Nonrigid":
         register = wma.register_two_subjects_nonrigid_bsplines.RegisterTractographyNonrigid()
         register.nonrigid_grid_resolution = grid_resolution
