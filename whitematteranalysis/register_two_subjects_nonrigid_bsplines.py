@@ -307,13 +307,13 @@ def convert_transform_to_vtk(transform):
 
     # this is a hard-coded assumption about where the polydata is located in space.
     # other code should check that it is centered.
-    # This code uses a grid of 200mm x 200mm x 200mm
+    # This code uses a grid of 240mm x 240mm x 240mm
     #spacing origin extent
     num_vectors = len(transform) / 3
     dims = numpy.power(num_vectors, 1.0/3.0)
-    size_mm = 200.0
+    size_mm = 240.0
     origin = -size_mm / 2.0
-    # assume 200mm x 200mm x 200mm grid
+    # assume 240mm x 240mm x 240mm grid
     spacing = size_mm / (dims - 1)
     grid_image.SetOrigin(origin, origin, origin)
     grid_image.SetSpacing(spacing, spacing, spacing)
