@@ -430,7 +430,8 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             # vtk.vtkTransformToGrid() does, but this puts things into
             # LPS.
 
-            grid_size = [11, 11, 11]
+            #grid_size = [11, 11, 11]
+            grid_size = [15, 15, 15]
             grid_spacing = 20
 
             extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
