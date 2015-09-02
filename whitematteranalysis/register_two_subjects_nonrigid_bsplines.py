@@ -36,7 +36,8 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
     def constraint(self, x_current):
         # Make sure the optimizer is searching in a reasonable region.
         # TEST: Don't let the translations grow too large
-        penalty = 10.0 - numpy.mean(numpy.abs(x_current))
+        #penalty = 10.0 - numpy.mean(numpy.abs(x_current))
+        penalty = 30.0 - numpy.mean(numpy.abs(x_current * 0.01))
 
         # progress report sometimes
         
@@ -102,8 +103,9 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         class: threshold, sigma. Compares sampled fibers from moving
         input, to all fibers of fixed input."""
 
+        scaled_current_x = current_x * 0.01
         # get and apply transforms from current_x
-        moving = self.transform_fiber_array_numpy(self.moving, current_x)
+        moving = self.transform_fiber_array_numpy(self.moving, scaled_current_x)
 
         # compute objective
         obj = wma.register_two_subjects.inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
@@ -113,13 +115,13 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             #print "OBJECTIVE:", obj, "PREV MIN",  self.minimum_objective
             self.minimum_objective = obj
             # must copy current_x into allocated memory space to keep the value
-            self.final_transform[:] = current_x
+            self.final_transform[:] = scaled_current_x
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print "O:",  obj, "X:", current_x
+            print "O:",  obj, "X:", scaled_current_x
         #print "X:", self._x_opt
         return obj
 
@@ -215,14 +217,15 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         if self.optimizer == "Cobyla":
 
+            print "INITIAL transform shape", self.initial_transform.shape
             # Optimize using cobyla. Allows definition of initial and
             # final step size scales (rhos), as well as constraints.  Here
             # we use the constraints to encourage that the transform stays a transform.
             # note disp 0 turns off all display
-            self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
-                                                      self.initial_transform, self.constraint,
-                                                      maxfun=self.maxfun, rhobeg=self.initial_step,
-                                                      rhoend=self.final_step, disp=0)
+            not_used = scipy.optimize.fmin_cobyla(self.objective_function,
+                                                  self.initial_transform * 100, self.constraint,
+                                                  maxfun=self.maxfun, rhobeg=self.initial_step  * 100,
+                                                  rhoend=self.final_step  * 100, disp=0)
         elif self.optimizer == "BFGS":
             # Test optimization with BFGS
             # (Broyden-Fletcher-Goldfarb-Shanno algorithm) refines at each
@@ -304,22 +307,24 @@ def convert_transform_to_vtk(transform):
     grid_image.SetScalarTypeToFloat()
     grid_image.GetPointData().SetScalars(displacement_field_vtk)
     grid_image.SetNumberOfScalarComponents(3)
+    grid_image.Update()
+    #print "CONVERT TXFORM 1:", grid_image.GetExtent(), displacement_field_vtk.GetSize()
 
     # this is a hard-coded assumption about where the polydata is located in space.
     # other code should check that it is centered.
     # This code uses a grid of 240mm x 240mm x 240mm
     #spacing origin extent
     num_vectors = len(transform) / 3
-    dims = numpy.power(num_vectors, 1.0/3.0)
+    dims = round(numpy.power(num_vectors, 1.0/3.0))
     size_mm = 240.0
     origin = -size_mm / 2.0
     # assume 240mm x 240mm x 240mm grid
     spacing = size_mm / (dims - 1)
     grid_image.SetOrigin(origin, origin, origin)
     grid_image.SetSpacing(spacing, spacing, spacing)
-    grid_image.SetExtent(0, dims-1, 0, dims-1, 0, dims-1)
-    #grid_image.SetDimensions(dims, dims, dims)
-    #print "CONVERT TXFORM:", num_vectors, dims, grid_image.GetExtent()
+    #grid_image.SetExtent(0, dims-1.0, 0, dims-1.0, 0, dims-1.0)
+    grid_image.SetDimensions(int(dims), int(dims), int(dims))
+    #print "CONVERT TXFORM:", num_vectors, dims, int(dims), dims-1.0, grid_image.GetExtent(), 
     
     #print "GRID:", grid_image
     coeff = vtk.vtkImageBSplineCoefficients()
