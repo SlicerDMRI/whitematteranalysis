@@ -78,8 +78,8 @@ class MultiSubjectRegistration:
             # create the bspline transform from this displacement field
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             # now compute a new displacement field from the transform, using the new grid resolution
-            # This code always uses a grid of 200mm x 200mm x 200mm
-            size_mm = 200.0
+            # This code always uses a grid of 240mm x 240mm x 240mm
+            size_mm = 240.0
             dims = self.nonrigid_grid_resolution
             spacing = size_mm / (dims - 1)
             origin = -size_mm / 2.0
@@ -98,7 +98,7 @@ class MultiSubjectRegistration:
             new_transforms.append(newtrans.ravel())
 
         # Update all the relevant variables (the spline transform does not change but all source and target points do)
-        print "UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(trans), "==>", len(new_transforms[-1]),
+        print "UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(trans), "==>", len(new_transforms[-1]), "SHAPE:", newtrans.shape, "GRID:", grid
         self.transforms_as_array = new_transforms
 
     def add_polydata(self, polydata, subject_id):
@@ -135,9 +135,15 @@ class MultiSubjectRegistration:
             # remove any average displacement of each source point.
             # this means the mean of the source points must equal the target point
             transforms_array = numpy.array(self.transforms_as_array)
+            res = self.nonrigid_grid_resolution
+            print "SHAPE of transforms:", transforms_array.shape, "RES:", res, "TOT:", res*res*res*3
+            meanabs = numpy.mean(numpy.abs(transforms_array), 0)
+            
             meandisp = numpy.mean(transforms_array, 0)
             #if self.verbose:
-            print "MEAN DISPLACEMENT:", meandisp
+            #print "MEAN DISPLACEMENT:", meandisp
+            print "MEAN ABS DISPLACEMENT:", numpy.min(meanabs), numpy.mean(meanabs), numpy.max(meanabs)
+            print "NONZERO > 0.5:", numpy.sum(meanabs > 0.5), "> 0.1:", numpy.sum(meanabs > 0.1), "/", res*res*res*3
 
             for transform in self.transforms_as_array:
                 transform[:] = transform - meandisp
@@ -146,7 +152,7 @@ class MultiSubjectRegistration:
 
             meandisp = numpy.mean(transforms_array, 0)
             #if self.verbose:
-            print "MEAN DISPLACEMENT 2:", meandisp
+            #print "MEAN DISPLACEMENT 2:", meandisp
 
         else:
             # Here we are in the affine case
