@@ -150,7 +150,7 @@ for (fname, descrip) in zip(html_view_fnames, html_views_descrip):
 
 fibers_qc_file = open(fibers_qc_fname, 'w')
 fiber_test_lengths = [0, 1, 2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-outstr = "SUBJECT_ID \t FIBER_STEP_SIZE \t TOTAL_POINTS \t TOTAL_FIBERS \t"
+outstr = "SUBJECT_ID\tFIBER_STEP_SIZE\tTOTAL_POINTS\tTOTAL_FIBERS\t"
 for test_length in fiber_test_lengths[1:]:
     outstr = outstr + "LEN_" + str(test_length) + '\t'
 outstr = outstr + '\n'
@@ -158,13 +158,13 @@ fibers_qc_file.write(outstr)
 fibers_qc_file.close()
 
 data_qc_file = open(data_qc_fname, 'w')
-outstr = "SUBJECT_ID \t DATA_INFORMATION (field name, number of components, point or cell data)"
+outstr = "SUBJECT_ID\tDATA_INFORMATION (field name, number of components, point or cell data)"
 outstr = outstr + '\n'
 data_qc_file.write(outstr)
 data_qc_file.close()
 
 spatial_qc_file = open(spatial_qc_fname, 'w')
-outstr = "SUBJECT_ID \t Xmin \t Xmax \t Ymin \t Ymax \t Zmin \t Zmax"    
+outstr = "SUBJECT_ID\tXmin\tXmax\tYmin\tYmax\tZmin\tZmax"    
 outstr = outstr + '\n'
 spatial_qc_file.write(outstr)
 spatial_qc_file.close()
