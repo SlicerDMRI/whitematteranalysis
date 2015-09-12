@@ -182,8 +182,12 @@ for fname in input_polydatas:
     # Read data
     pd = wma.io.read_polydata(fname)
 
-    # Render individual subject
-    ren = wma.render.render(pd,1000, verbose=False)
+    # Preprocess for rendering without short fibers and compute fiber lengths
+    pd2, lengths, step_size = wma.filter.preprocess(pd, 5, return_lengths=True, verbose=False)
+    lengths = numpy.array(lengths)
+    
+    # Render individual subject, only including fibers above 5mm.
+    ren = wma.render.render(pd2, 1000, verbose=False)
     output_dir_subdir = os.path.join(output_dir, 'tract_QC_' + subject_id)
     if not os.path.exists(output_dir_subdir):
         os.makedirs(output_dir_subdir)
@@ -207,11 +211,11 @@ for fname in input_polydatas:
         f.close()
 
     # Compute and save stats about this subject's fiber histogram
+    # numbers of fibers at different possible threshold lengths
+    pd2, lengths, step_size = wma.filter.preprocess(pd, 20, return_lengths=True, verbose=False)
+    lengths = numpy.array(lengths)
     fibers_qc_file = open(fibers_qc_fname, 'a')
     outstr = str(subject_id) +  '\t'
-    # numbers of fibers at different possible threshold lengths
-    pd2, lengths, step_size = wma.filter.preprocess(pd, 100, return_lengths=True, verbose=False)
-    lengths = numpy.array(lengths)
     outstr = outstr + '{0:.4f}'.format(step_size) + '\t'
     # total points in the dataset
     outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
@@ -234,12 +238,18 @@ for fname in input_polydatas:
     # Save the subject's fiber lengths  
     if HAVE_PLT:
         plt.figure(1)
-        plt.hist(lengths, bins=100, histtype='step', label=subject_id)
+        if lengths.size > 1:
+            plt.hist(lengths, bins=100, histtype='step', label=subject_id)
         plt.figure(2)
         plt.title('Histogram of fiber lengths')
         plt.xlabel('fiber length (mm)')
         plt.ylabel('number of fibers')
-        plt.hist(lengths, bins=100, histtype='step', label=subject_id)
+        if lengths.size > 1:
+            plt.hist(lengths, bins=100, histtype='step', label=subject_id)
+        else:
+            # Plot something so that saving does not fail
+            plt.hist([0,0,0,0], bins=1, histtype='step', label=subject_id)
+            plt.title('No fibers in dataset.')
         # Place the legend below the plot so it does not overlap it when there are many subjects
         lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
         # save everything even if the legend is long and goes off the plot
@@ -247,7 +257,8 @@ for fname in input_polydatas:
         plt.close()
 
     # Append selected fibers for rendering of all subjects together to check overlap
-    number_rendered_fibers = 500
+    # number_rendered_fibers = 500
+    number_rendered_fibers = 100
     pd3 = wma.filter.downsample(pd2, number_rendered_fibers, verbose=False)
     mask = numpy.ones(number_rendered_fibers)
     colors = numpy.multiply(mask, subject_idx)
@@ -290,7 +301,10 @@ if HAVE_PLT:
     # Place the legend below the plot so it does not overlap it when there are many subjects
     lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
     # save everything even if the legend is long and goes off the plot
-    plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
+    try:
+        plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
+    except:
+        print "Groupwise tract length histogram save failed. Check if the input datasets have any fibers--all may be empty."
     plt.close()
 
 print "<quality_control> Final step: rendering all vtk files together."
