@@ -300,6 +300,7 @@ class MultiSubjectRegistration:
         objective_changes_per_subject = list()
         decreases = list()
         if HAVE_PLT:
+            plt.close('all')
             plt.figure(0)
             plt.title('Iteration '+str(self.total_iterations)+' Objective Values for All Subjects')
             plt.xlabel('objective function computations')
@@ -408,7 +409,7 @@ class MultiSubjectRegistration:
             if not os.path.exists(outdir_pds):
                 os.makedirs(outdir_pds)
 
-            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds, parallel_jobs=self.parallel_jobs)
+            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir_pds)
 
         else:
             # make a directory for the final output
@@ -423,7 +424,7 @@ class MultiSubjectRegistration:
                     else:
                         print trans.GetMatrix()
 
-            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir, parallel_jobs=self.parallel_jobs)
+            wma.io.transform_polydatas_from_disk(self.input_directory, transform_list, outdir)
 
             # Save the current atlas representation to disk.
             # Right now this is all the input fibers from all subjects.

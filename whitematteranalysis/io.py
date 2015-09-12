@@ -229,7 +229,39 @@ def transform_polydata_from_disk_using_transform_object(in_filename, transform, 
     del pd2
     del pd
 
-def transform_polydatas_from_disk(input_dir, transforms, output_dir, parallel_jobs=3):
+def transform_polydatas_from_disk(input_dir, transforms, output_dir):
+    """Loop over all input polydata files and apply the vtk transforms from the
+
+    input transforms list. Save transformed polydata files in the output
+    directory. As long as files were read in using list_vtk_files
+    originally, they will be in the same order as the transforms now.
+    """
+
+    # Find input files
+    input_pd_fnames = list_vtk_files(input_dir)
+    num_pd = len(input_pd_fnames)
+    print "<io.py> ======================================="
+    print "<io.py> Transforming vtk and vtp files from directory: ", input_dir
+    print "<io.py> Total number of files found: ", num_pd
+    print "<io.py> Writing output to directory: ", output_dir
+    print "<io.py> ======================================="
+
+    if not os.path.exists(output_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+    if not os.path.exists(input_dir):
+        print "<io.py> ERROR: Output directory does not exist."
+        return
+
+    # Transform the files
+    for idx in range(0, len(input_pd_fnames)):
+        in_filename = input_pd_fnames[idx]
+        subject_id = os.path.splitext(os.path.basename(in_filename))[0]
+        out_filename = os.path.join(output_dir, subject_id + '_reg.vtk')
+        transform_polydata_from_disk_using_transform_object(in_filename, transforms[idx], out_filename)
+
+# This function was faster but is not always safe. Could crash due to missing file if any write/disk access issue
+def transform_polydatas_from_diskUNSAFE(input_dir, transforms, output_dir, parallel_jobs=3):
     """Loop over all input polydata files and apply the vtk transforms from the
 
     input transforms list. Save transformed polydata files in the output
