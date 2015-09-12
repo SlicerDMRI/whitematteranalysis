@@ -103,6 +103,12 @@ def compute_lengths(inpd):
     Step size is estimated using points in the middle of a fiber with over 15 points.
 
     """
+
+    # Make sure we have lines and points.
+    if (inpd.GetNumberOfLines() == 0) or (inpd.GetNumberOfPoints() == 0):
+        print "<filter.py> No fibers found in input polydata."
+        return 0, 0
+    
     # measure step size (using first two points on first line that has >=15 points)
     cell_idx = 0
     ptids = vtk.vtkIdList()
@@ -114,8 +120,10 @@ def compute_lengths(inpd):
         ## the GetCell function is not wrapped in Canopy python-vtk
         cell_idx += 1
     # make sure we have some points along this fiber
-    assert ptids.GetNumberOfIds() >= 15
-
+    # In case all fibers in the brain are really short, treat it the same as no fibers.
+    if ptids.GetNumberOfIds() < 15:
+        return 0, 0
+    
     # Use points from the middle of the fiber to estimate step length.
     # This is because the step size may vary near endpoints (in order to include
     # endpoints when downsampling the fiber to reduce file size).
@@ -156,6 +164,21 @@ def preprocess(inpd, min_length_mm,
 
     """
 
+    # Make sure we have lines and points.
+    if (inpd.GetNumberOfLines() == 0) or (inpd.GetNumberOfPoints() == 0):
+        print "<filter.py> No fibers found in input polydata."
+        if return_indices:
+            if return_lengths:
+                return inpd, 0, 0, 0
+            else:
+                return inpd, 0
+        else:
+            if return_lengths:
+                return inpd, 0, 0
+            else:
+                return inpd
+
+    
     fiber_lengths, step_size = compute_lengths(inpd)
 
     min_length_pts = round(min_length_mm / float(step_size))
