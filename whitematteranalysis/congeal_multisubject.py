@@ -471,7 +471,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
         register.process_id_string = "_subject_%05d_iteration_%05d_sigma_%03d" % (subject_idx, iteration_count, sigma)
         # Make sure the initial iterations are performed with Cobyla. Powell's method fails if brains are not well aligned already.
         # The constrained optimization is very safe for the initial iterations.
-        if iteration_count < 3:
+        if sigma > 10.0:
             register.optimizer = "Cobyla"
     elif mode == "Nonrigid":
         register = wma.register_two_subjects_nonrigid_bsplines.RegisterTractographyNonrigid()
