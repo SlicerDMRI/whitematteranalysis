@@ -20,6 +20,8 @@ import sys
 import time
 import vtk
 import vtk.util.numpy_support
+import os
+import resource
 
 try:
     from joblib import Parallel, delayed
@@ -41,11 +43,17 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         # progress report sometimes
         
-        iters = len(self.objective_function_values)
+        iters = self.objective_computations
+        #len(self.objective_function_values)
         print_every = int(self.maxfun  / 10)
         if iters % print_every == 0:
-            print iters, "/", self.maxfun
-            
+            elapsed_time = time.time() - self.last_time
+            self.last_time = time.time()
+            self.total_time = time.time() - self.start_time
+            #print iters, "/", self.maxfun, "Total time:", self.total_time, "Last iters:", elapsed_time, "Per iter:", elapsed_time / print_every, "Memory:", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            progress_file = open(self.progress_filename, 'a')
+            print >> progress_file, iters, "/", self.maxfun, "Total time:", self.total_time, "Last iters:", elapsed_time, "Per iter:", elapsed_time / print_every, "Memory:", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            progress_file.close()    
         return penalty
     
     def __init__(self):
@@ -63,8 +71,14 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         # output of registration
         self.objective_function_values = list()
+        #self.objective_function_values = [1.0, 0.0]
+        self.objective_computations = 0
         self.final_transform = None
-        
+        self.progress_filename = None
+        self.start_time = None
+        self.total_time = 0.0
+        self.last_time = None
+
         # subject data that must be input
         #self.fixed = None
         #self.moving = None
@@ -83,14 +97,21 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         # internal recordkeeping
         self.iterations = 0
 
+        # works for Cobyla. May not be needed.
+        #self.scaling = 100
+
+        # works well for BFGS
+        self.scaling = 0.1
+        # not ok for bfgs
+        #self.scaling = 0.05
+        
         # keep track of the best objective we have seen so far to return that when computation stops.
         self.minimum_objective = numpy.inf
 
         # choice of optimization method
         #self.optimizer = "Powell"
-        self.optimizer = "Cobyla"
-        #self.optimizer = "BFGS"
-        print "OPTIMIZER:", self.optimizer
+        #self.optimizer = "Cobyla"
+        self.optimizer = "BFGS"
 
     def initialize_nonrigid_grid(self):
         res = self.nonrigid_grid_resolution
@@ -102,8 +123,11 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         the current x in search space, as well as parameters of the
         class: threshold, sigma. Compares sampled fibers from moving
         input, to all fibers of fixed input."""
-
-        scaled_current_x = current_x * 0.01
+        self.objective_computations += 1
+    
+        #scaled_current_x = current_x * 0.01
+        scaled_current_x = current_x / self.scaling
+        
         # get and apply transforms from current_x
         moving = self.transform_fiber_array_numpy(self.moving, scaled_current_x)
 
@@ -119,6 +143,10 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         # save objective function value for analysis of performance
         self.objective_function_values.append(obj)
+
+        # temporary for testing
+        if self.optimizer == "BFGS":
+            self.constraint(current_x)
 
         if self.verbose:
             print "O:",  obj, "X:", scaled_current_x
@@ -172,7 +200,14 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         compute). Then call compute several times, using different
         parameters for the class, for example first just for
         translation."""
-
+        print "OPTIMIZER:", self.optimizer
+        self.start_time = time.time()
+        self.total_time = 0.0
+        self.progress_filename = os.path.join(self.output_directory, "log"+self.process_id_string+".log")
+        print self.progress_filename
+        progress_file = open(self.progress_filename, 'w')
+        print >> progress_file, "Starting computation, time:", self.start_time
+        progress_file.close()
         # subject data must be input first. No check here for speed
         #self.fixed = None
         #self.moving = None
@@ -215,6 +250,14 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         if self.verbose:
             print "<congeal.py> Initial value for X:", self.initial_transform
 
+        progress_file = open(self.progress_filename, 'a')
+        self.total_time = time.time() - self.start_time
+        print >> progress_file, "INITIAL transform shape", self.initial_transform.shape, "Init time:", self.total_time
+        progress_file.close()
+
+        # initialize time for objective function computations
+        self.last_time = time.time()
+
         if self.optimizer == "Cobyla":
 
             print "INITIAL transform shape", self.initial_transform.shape
@@ -223,9 +266,9 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             # we use the constraints to encourage that the transform stays a transform.
             # note disp 0 turns off all display
             not_used = scipy.optimize.fmin_cobyla(self.objective_function,
-                                                  self.initial_transform * 100, self.constraint,
-                                                  maxfun=self.maxfun, rhobeg=self.initial_step  * 100,
-                                                  rhoend=self.final_step  * 100, disp=0)
+                                                  self.initial_transform * self.scaling, self.constraint,
+                                                  maxfun=self.maxfun, rhobeg=self.initial_step * self.scaling,
+                                                  rhoend=self.final_step * self.scaling, disp=1)
         elif self.optimizer == "BFGS":
             # Test optimization with BFGS
             # (Broyden-Fletcher-Goldfarb-Shanno algorithm) refines at each
@@ -238,9 +281,9 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             # Note If you do not specify the gradient to the L-BFGS
             # solver, you need to add approx_grad=1
             # list of (min,max) pairs for the values being optimized. Assume we never should move by >30mm
-            bounds = list()
-            for lm in self.target_landmarks:
-                bounds.append((lm-30,lm+30))
+            #bounds = list()
+            #for lm in self.target_landmarks:
+            #    bounds.append((lm-30,lm+30))
             ## (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
             ##                                                                self.initial_transform,
             ##                                                                approx_grad = True,
@@ -250,14 +293,19 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             ##                                                                epsilon=self.final_step,
             ##                                                                iprint=0,
             ##                                                                bounds=bounds)
-            (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
-                                                                           self.initial_transform,
+            #maxiter=1,
+            (not_used, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
+                                                                           self.initial_transform * self.scaling,
                                                                            approx_grad = True,
-                                                                           maxiter=self.maxfun,
-                                                                           factr=1e12,
-                                                                           epsilon=self.final_step,
-                                                                           iprint=0)
-            print f, dict
+                                                                           maxfun=self.maxfun,
+                                                                           maxiter=2,
+                                                                           factr=1e30,
+                                                                           epsilon=self.final_step * self.scaling,
+                                                                           iprint=1)
+            self.final_transform = self.final_transform / self.scaling
+
+            
+            #print f, dict
 
         elif self.optimizer == "Powell":
             # Test optimization with Powell's method
@@ -275,6 +323,11 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         else:
             print "Unknown optimizer."
+
+        progress_file = open(self.progress_filename, 'a')
+        self.total_time = time.time() - self.start_time
+        print >> progress_file, "Done optimizing. TOTAL TIME:", self.total_time
+        progress_file.close()
 
         if self.verbose:
             print "O:", self.objective_function_values
