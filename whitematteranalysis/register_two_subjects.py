@@ -156,6 +156,8 @@ class RegisterTractography:
         compute). Then call compute several times, using different
         sigma, to perform multiscale registration."""
 
+        print "OPTIMIZER:", self.optimizer
+
         # subject data must be input first. No check here for speed
         #self.fixed = None
         #self.moving = None
