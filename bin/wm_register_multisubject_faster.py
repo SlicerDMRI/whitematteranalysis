@@ -190,7 +190,6 @@ register.render = not no_render
 # This mode can handle it if the brains are not initially aligned in any way.
 if mode == "affine":
     sigma_per_scale = [20, 10, 10, 5]
-    iterations_per_scale=[3, 3, 3, 3]
     # Powell seems not to pay much attention to requested max.
     # If sigma > 10 uses Cobyla, which does use the maxfun
     maxfun_per_scale = [50, 20, 40, 80]
@@ -200,6 +199,227 @@ if mode == "affine":
     subject_brain_size_per_scale = [1000, 1500, 1500, 1500]
     initial_step_per_scale = [10, 10, 5, 3]
     final_step_per_scale = [8, 8, 4, 2]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest1":
+    # This was ok but wanted to make it run longer and owrk better. very fast.
+    sigma_per_scale = [20, 10, 10, 5]
+    iterations_per_scale=[3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    maxfun_per_scale = [50, 20, 40, 80]
+    #maxfun_per_scale = [50, 80, 80, 80]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500]
+    initial_step_per_scale = [10, 10, 5, 3]
+    final_step_per_scale = [8, 8, 4, 2]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest2":
+    # This was ok but wanted to make it run longer and owrk better. very fast. abut the same as before
+    print "NOT HERE"
+    # this test actually changed both the 3 and 4 things and was bad
+
+elif mode == "cobylatest3":
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3]
+    final_step_per_scale = [6, 6, 4, 2]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest4":
+    # tried smaller sigma
+    # This test 4 with decreasing the sigma worked poorly
+    #sigma_per_scale = [20, 10, 10, 5]
+    # for Cobyla test
+    sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500]
+    initial_step_per_scale = [10, 10, 5, 3]
+    final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    #initial_step_per_scale = [10, 8, 5, 3]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest5":
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # make it harder to converge so it will work longer and hopefully better
+    final_step_per_scale = [2, 2, 1, 1]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest6" or mode == "cobylatest7":
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5, 3]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500, 4000]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500, 1500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # make it harder to converge so it will work longer and hopefully better
+    final_step_per_scale = [2, 2, 1, 1, 1]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest8_ppf20":
+    # test connectome with higher points per fiber
+    # Do another sigma 5 instead of sigma 3 in cobylatest7
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5, 5]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500, 4000]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500, 1500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # make it harder to converge so it will work longer and hopefully better
+    final_step_per_scale = [2, 2, 1, 1, 1]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 20
+    register.nonrigid = False
+
+elif mode == "cobylatest8_neonate":
+    # More fibers. works well for neonate registration.
+    # Do another sigma 5 instead of sigma 3 in cobylatest7
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5, 5]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [4000, 4000, 4000, 4500, 6000]
+    subject_brain_size_per_scale = [1500, 1750, 2000, 2000, 2500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # make it harder to converge so it will work longer and hopefully better
+    final_step_per_scale = [2, 2, 1, 1, 1]
+    # 10ppf is very fast here. <3 minutes per iteration.
+    # We override user input here (which was for testing)
+    points_per_fiber = 10
+    register.nonrigid = False
+
+elif mode == "cobylatest8_morefibers3mm":
+    # Do another sigma 5 instead of sigma 3 in cobylatest7
+    # Tried smaller steps
+    # These seem to work better. Cobyla needed smaller steps to avoid leaving local minima on next iteration
+    sigma_per_scale = [20, 10, 10, 5, 3]
+    # for Cobyla test
+    #sigma_per_scale = [20, 7.5, 5, 3]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    # Powell seems not to pay much attention to requested max.
+    # If sigma > 10 uses Cobyla, which does use the maxfun
+    #maxfun_per_scale = [50, 20, 40, 80]
+    # for Cobyla test
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    #mean_brain_size_per_scale = [1000, 3000, 3000, 3500]
+    #subject_brain_size_per_scale = [500, 1500, 1500, 1500]
+    mean_brain_size_per_scale = [4000, 4000, 4000, 4500, 6000]
+    subject_brain_size_per_scale = [1500, 1750, 2000, 2000, 2500]
+    #initial_step_per_scale = [10, 10, 5, 3]
+    #final_step_per_scale = [8, 8, 4, 2]
+    # for Cobyla test
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    #final_step_per_scale = [6, 6, 4, 2]
+    # make it harder to converge so it will work longer and hopefully better
+    final_step_per_scale = [2, 2, 1, 1, 1]
     # 10ppf is very fast here. <3 minutes per iteration.
     # We override user input here (which was for testing)
     points_per_fiber = 10
@@ -227,9 +447,9 @@ elif mode == "affine_neonate":
     iterations_per_scale=[3, 3, 3, 3]
     # Powell seems not to pay much attention to requested max.
     # If sigma > 10 uses Cobyla, which does use the maxfun
-    maxfun_per_scale = [50, 80, 40, 80]
-    mean_brain_size_per_scale = [2000, 4000, 4000, 400]
-    subject_brain_size_per_scale = [1000, 1500, 2000, 2000]
+    maxfun_per_scale = [50, 80, 80, 80]
+    mean_brain_size_per_scale = [2000, 4000, 4500, 4500]
+    subject_brain_size_per_scale = [1000, 1500, 2000, 2500]
     initial_step_per_scale = [10, 5, 5, 3]
     final_step_per_scale = [6, 4, 4, 2]
     # 10ppf is very fast here. <3 minutes per iteration.
@@ -265,6 +485,30 @@ elif mode == "nonrigid":
     # this computation is expensive
     mean_brain_size_per_scale = [3000, 3000, 4000, 5000]
     subject_brain_size_per_scale = [1000, 1000, 1500, 2000]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [205, 390, 670, 670]
+    # fiber representation for computation.
+    #points_per_fiber = 5
+    points_per_fiber = 10
+    register.nonrigid = True
+
+elif mode == "nonrigid_neonate_test1":
+    grid_resolution_per_scale = [4, 5, 6, 6]
+    # this is in mm space.
+    initial_step_per_scale = [5, 4, 3, 2]
+    final_step_per_scale = [3, 3, 2, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [5, 3, 2, 1.5]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [3, 3, 2, 2]
+    # higher totals for variable neonate tractography
+    mean_brain_size_per_scale = [4000, 4500, 5000, 6000]
+    subject_brain_size_per_scale = [2000, 2500, 3000, 3500]
     # 3x3x3 grid, 27*3 = 81 parameter space.
     # 4x4x4 grid, 64*3 = 192 parameter space.
     # 5x5x5 grid, 125*3 = 375 parameter space.
