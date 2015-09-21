@@ -302,8 +302,6 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
                                                                            factr=1e30,
                                                                            epsilon=self.final_step * self.scaling,
                                                                            iprint=1)
-            self.final_transform = self.final_transform / self.scaling
-
             
             #print f, dict
 
