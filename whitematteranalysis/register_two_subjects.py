@@ -56,7 +56,8 @@ class RegisterTractography:
             penalty -= 1
         # want scaling between 0.9 and 1.2. In practice, only shrinking is an issue.
         # Don't let it shrink by more than 0.75
-        min_scale = 0.75
+        #min_scale = 0.75
+        min_scale = 0.95
         if transform[6] < min_scale:
             penalty -= 1
         if transform[7] < min_scale:
@@ -108,7 +109,8 @@ class RegisterTractography:
         self.initial_transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
 
         # the scaling components should have much smaller changes than the others, so scale them accordingly in optimizer search space
-        self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
+        #self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
+        self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200,  1, 1, 1, 1, 1, 1])
 
         # internal recordkeeping
         self._x_opt = None
@@ -118,8 +120,8 @@ class RegisterTractography:
         ## self.points_per_fiber = None
 
         # choice of optimization method
-        self.optimizer = "Powell"
-        #self.optimizer = "Cobyla"
+        #self.optimizer = "Powell"
+        self.optimizer = "Cobyla"
         
     def objective_function(self, current_x):
         """ The actual objective used in registration.  Function of
@@ -253,14 +255,17 @@ class RegisterTractography:
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print "TRANS:", self.final_transform, "FLAG:", warnflag
+            print "FLAG:", warnflag
 
         else:
             print "Unknown optimizer."
 
         self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
 
-        # Return output transforms from this iteration
+        tx = self.final_transform
+        print "TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14]
+                                
+        # Return output transform from this iteration
         return self.final_transform
 
 
@@ -424,7 +429,8 @@ def convert_transform_to_vtk(transform, scaled=False, mode=[1,1,1,1]):
 
     if scaled:
         # transform_scaling (must be same as defined above in class)
-        transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300, 1, 1, 1, 1, 1, 1]))
+        #transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300, 1, 1, 1, 1, 1, 1]))
+        transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200, 1, 1, 1, 1, 1, 1]))
                                  
     vtktrans = vtk.vtkTransform()
 
