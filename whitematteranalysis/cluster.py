@@ -508,23 +508,24 @@ def spectral(input_polydata, number_of_clusters=200,
             print("Silhouette Coefficient: %0.3f" % cluster_metric)
  
     else:
-        # This found fewer clusters than we need to represent the anatomy well
-        # Leave code here in case wanted in future for more testing.
-        print '<cluster.py> Affinity Propagation clustering in embedding space.'
-        af = AffinityPropagation(preference=-50).fit(embed)
-        cluster_centers_indices = af.cluster_centers_indices_
-        labels = af.labels_
-        n_clusters_ = len(cluster_centers_indices)
-        print('Estimated number of clusters: %d' % n_clusters_)
-        cluster_idx = labels
-        for k in range(n_clusters_):
-            class_members = labels == k
-            atlas.centroids = embed[cluster_centers_indices[k]]
-        # return metrics
-        if 0:
-            # This is extremely slow, but leave code here if ever wanted for testing
-            cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
-            print("Silhouette Coefficient: %0.3f" % cluster_metric)
+        print "ERROR: Unknown centroid finder", centroid_finder
+        ## # This found fewer clusters than we need to represent the anatomy well
+        ## # Leave code here in case wanted in future for more testing.
+        ## print '<cluster.py> Affinity Propagation clustering in embedding space.'
+        ## af = AffinityPropagation(preference=-50).fit(embed)
+        ## cluster_centers_indices = af.cluster_centers_indices_
+        ## labels = af.labels_
+        ## n_clusters_ = len(cluster_centers_indices)
+        ## print('Estimated number of clusters: %d' % n_clusters_)
+        ## cluster_idx = labels
+        ## for k in range(n_clusters_):
+        ##     class_members = labels == k
+        ##     atlas.centroids = embed[cluster_centers_indices[k]]
+        ## # return metrics
+        ## if 0:
+        ##     # This is extremely slow, but leave code here if ever wanted for testing
+        ##     cluster_metric = metrics.silhouette_score(embed, labels, metric='sqeuclidean')
+        ##     print("Silhouette Coefficient: %0.3f" % cluster_metric)
 
     # 6) Output results.
     print '<cluster.py> Done spectral clustering, returning results.'
