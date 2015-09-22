@@ -135,7 +135,6 @@ def write_polydata(polydata, filename):
 
     if VERBOSE:
         print "Done writing ", filename
-        print "Number of lines found:", outpd.GetNumberOfLines()
 
 def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     # Read it in.
@@ -657,20 +656,20 @@ class LateralityResults:
         print "e"
         # generate histogram (needs matplotlib)
         li_stats = self.laterality_index[numpy.nonzero(self.laterality_index)]
-        if USE_MATPLOTLIB and 0:
-            try:
-                print "f"
-                matplotlib.pyplot.hist(li_stats, bins=25, color=[.6, .6, .6])
-                print "f1"
-                matplotlib.pyplot.savefig(
-                    os.path.join(dirname, 'LI_histogram.pdf'))
-                print "f2"
-                matplotlib.pyplot.close()
-                print "g"
-            except Exception:
-                print "<io.py> matplotlib was unable to write histogram."
-                raise
-        print "1"
+        ## if USE_MATPLOTLIB and 0:
+        ##     try:
+        ##         print "f"
+        ##         matplotlib.pyplot.hist(li_stats, bins=25, color=[.6, .6, .6])
+        ##         print "f1"
+        ##         matplotlib.pyplot.savefig(
+        ##             os.path.join(dirname, 'LI_histogram.pdf'))
+        ##         print "f2"
+        ##         matplotlib.pyplot.close()
+        ##         print "g"
+        ##     except Exception:
+        ##         print "<io.py> matplotlib was unable to write histogram."
+        ##         raise
+        ## print "1"
         # generate fiber visualization
         #try:
             # pd3_li = filter.maskFibers(pd3_out,abs(li)>max(abs(li))*.01, li)
