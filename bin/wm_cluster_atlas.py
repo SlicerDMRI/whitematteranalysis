@@ -34,8 +34,8 @@ parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
     help='Number of fibers to analyze from each subject. Default is 2000 (this assumes 10 or more subjects; for fewer subjects, more fibers are needed per subject). Note: 10000-20000 fibers per subject is good when outlier removal is used.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int,
-    help='Minimum length (in mm) of fibers to analyze. 25mm is default. This default is reasonable for single-tensor DTI tractography. For two-tensor UKF, 80mm is more reasonable (as tracts are longer in general). Run the quality control script on your data first and inspect the fiber length distribution in your dataset. Note that with too low a threshold, the clustering will be dominated by the more prevalent short fibers, such as u-fibers, instead of longer association fibers.')
+    '-l', action="store", dest="fiberLength", type=int, default=60,
+    help='Minimum length (in mm) of fibers to analyze. 60mm is default. Smaller values, as low as 25mm can work for single-tensor DTI tractography if it is quite clean. For higher-order models, tracts are generally longer and a higher threshold is more useful. Run the quality control script on your data first and inspect the fiber length distribution in your dataset. Note that with too low a threshold, the clustering will be dominated by the more prevalent and more variable short fibers, such as u-fibers, instead of longer association fibers that are usually of interest.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
@@ -122,11 +122,8 @@ else:
     number_of_fibers_per_subject = 2000
     print "fibers to analyze per subject: Setting to default", number_of_fibers_per_subject
 
-if args.fiberLength is not None:
-    fiber_length = args.fiberLength
-else:
-    fiber_length = 25.0
-print "minimum length of fibers to analyze (in mm): ", args.fiberLength
+fiber_length = args.fiberLength
+print "minimum length of fibers to analyze (in mm): ", fiber_length
 
 if args.numberOfJobs is not None:
     number_of_jobs = args.numberOfJobs
