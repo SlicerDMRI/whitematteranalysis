@@ -367,7 +367,9 @@ def convert_transform_to_vtk(transform):
     #spacing origin extent
     num_vectors = len(transform) / 3
     dims = round(numpy.power(num_vectors, 1.0/3.0))
-    size_mm = 240.0
+    # This MUST correspond to the size used in congeal_multisubject update_nonrigid_grid
+    #size_mm = 240.0
+    size_mm = 200.0
     origin = -size_mm / 2.0
     # assume 240mm x 240mm x 240mm grid
     spacing = size_mm / (dims - 1)

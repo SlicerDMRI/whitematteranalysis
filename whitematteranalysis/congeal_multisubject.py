@@ -79,7 +79,9 @@ class MultiSubjectRegistration:
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             # now compute a new displacement field from the transform, using the new grid resolution
             # This code always uses a grid of 240mm x 240mm x 240mm
-            size_mm = 240.0
+            # This MUST correspond to the size used in register_two_subjects_nonrigid_bsplines convert_transform_to_vtk
+            #size_mm = 240.0
+            size_mm = 200.0
             dims = self.nonrigid_grid_resolution
             spacing = size_mm / (dims - 1)
             origin = -size_mm / 2.0
