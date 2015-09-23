@@ -36,10 +36,10 @@ parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
     help='Number of fibers to analyze from each subject. If this parameter is not used, all fibers will be analyzed by default.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int, default 60,
+    '-l', action="store", dest="fiberLength", type=int, default=60,
     help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
 parser.add_argument(
-    '-j', action="store", dest="numberOfJobs", type=int,
+    '-j', action="store", dest="numberOfJobs", type=int, default=1,
     help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
@@ -92,10 +92,7 @@ number_of_fibers = args.numberOfFibers
 fiber_length = args.fiberLength
 print "minimum length of fibers to analyze (in mm): ", fiber_length
 
-if args.numberOfJobs is not None:
-    number_of_jobs = args.numberOfJobs
-else:
-    number_of_jobs = 1
+number_of_jobs = args.numberOfJobs
 print 'Using N jobs:', number_of_jobs
 
 if args.flag_verbose:
