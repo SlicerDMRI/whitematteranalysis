@@ -34,10 +34,10 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
-    help='Number of fibers to analyze from each subject.')
+    help='Number of fibers to analyze from each subject. If this parameter is not used, all fibers will be analyzed by default.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int,
-    help='Minimum length (in mm) of fibers to analyze. 25mm is default.')
+    '-l', action="store", dest="fiberLength", type=int, default 60,
+    help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
@@ -89,11 +89,8 @@ else:
     print "fibers to analyze per subject: ALL"
 number_of_fibers = args.numberOfFibers
 
-if args.fiberLength is not None:
-    fiber_length = args.fiberLength
-else:
-    fiber_length = 25.0
-print "minimum length of fibers to analyze (in mm): ", args.fiberLength
+fiber_length = args.fiberLength
+print "minimum length of fibers to analyze (in mm): ", fiber_length
 
 if args.numberOfJobs is not None:
     number_of_jobs = args.numberOfJobs
