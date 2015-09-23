@@ -39,11 +39,11 @@ parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int, default=20000,
     help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int, default=80,
-    help='Minimum length (in mm) of fibers to analyze. 60mm is reasonable for DTI single-tensor tractography which is shorter in general. Use a higher value such as 80 or 100 for two-tensor or other advanced tractography. This parameter removes short, noisy fibers and focuses on larger structures that can be registered well. For neonate data, a value of 40mm is suggested. The default is 80mm.')
+    '-l', action="store", dest="fiberLength", type=int, default=20,
+    help='Minimum length (in mm) of fibers to analyze. The default is 20mm.')
 parser.add_argument(
-    '-lmax', action="store", dest="fiberLengthMax", type=int, default=150,
-    help='Maximum length (in mm) of fibers to analyze. This parameter can be used to remove extremely long fibers that may have traversed several structures. For example, a value of 150 will avoid sampling the tail end of the fiber length distribution. The default is 150 mm.')
+    '-lmax', action="store", dest="fiberLengthMax", type=int, default=260,
+    help='Maximum length (in mm) of fibers to analyze. This parameter can be used to remove extremely long fibers that may have traversed several structures. For example, a value of 200 will avoid sampling the tail end of the fiber length distribution. The default is 260 mm.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
     help='Verbose. Run with -verbose to store more files and images of intermediate and final polydatas.')
