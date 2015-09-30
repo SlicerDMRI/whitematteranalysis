@@ -151,6 +151,11 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         if self.verbose:
             print "O:",  obj, "X:", scaled_current_x
         #print "X:", self._x_opt
+
+        # Stop the optimizer if needed
+        if self.objective_computations > self.maxfun:
+            raise RuntimeError("The optimizer needs to stop.")
+
         return obj
 
     def transform_fiber_array_numpy(self, in_array, transform):
@@ -294,15 +299,17 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             ##                                                                iprint=0,
             ##                                                                bounds=bounds)
             #maxiter=1,
-            (not_used, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
+            try:
+                (not_used, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
                                                                            self.initial_transform * self.scaling,
                                                                            approx_grad = True,
                                                                            maxfun=self.maxfun,
                                                                            maxiter=2,
-                                                                           factr=1e30,
+                                                                           factr=1e12,
                                                                            epsilon=self.final_step * self.scaling,
                                                                            iprint=1)
-            
+            except:
+                print "EXCEPTION WAS CAUGHT, total objectives:", self.objective_computations
             #print f, dict
 
         elif self.optimizer == "Powell":
