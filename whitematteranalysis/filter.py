@@ -109,19 +109,19 @@ def compute_lengths(inpd):
         print "<filter.py> No fibers found in input polydata."
         return 0, 0
     
-    # measure step size (using first two points on first line that has >=15 points)
+    # measure step size (using first line that has >=5 points)
     cell_idx = 0
     ptids = vtk.vtkIdList()
     inpoints = inpd.GetPoints()
     inpd.GetLines().InitTraversal()
-    while (ptids.GetNumberOfIds() < 15) & (cell_idx < inpd.GetNumberOfLines()):
+    while (ptids.GetNumberOfIds() < 5) & (cell_idx < inpd.GetNumberOfLines()):
         inpd.GetLines().GetNextCell(ptids)
         ##    inpd.GetLines().GetCell(cell_idx, ptids)
         ## the GetCell function is not wrapped in Canopy python-vtk
         cell_idx += 1
     # make sure we have some points along this fiber
     # In case all fibers in the brain are really short, treat it the same as no fibers.
-    if ptids.GetNumberOfIds() < 15:
+    if ptids.GetNumberOfIds() < 5:
         return 0, 0
     
     # Use points from the middle of the fiber to estimate step length.
@@ -129,7 +129,7 @@ def compute_lengths(inpd):
     # endpoints when downsampling the fiber to reduce file size).
     step_size = 0.0
     count = 0.0
-    for ptidx in range(2, ptids.GetNumberOfIds()-3):
+    for ptidx in range(1, ptids.GetNumberOfIds()-1):
         point0 = inpoints.GetPoint(ptids.GetId(ptidx))
         point1 = inpoints.GetPoint(ptids.GetId(ptidx + 1))
         step_size += numpy.sqrt(numpy.sum(numpy.power(numpy.subtract(point0, point1), 2)))
@@ -180,6 +180,8 @@ def preprocess(inpd, min_length_mm,
 
     
     fiber_lengths, step_size = compute_lengths(inpd)
+
+    #print "LINES:", inpd.GetNumberOfLines(), "STEP", step_size
 
     min_length_pts = round(min_length_mm / float(step_size))
     if verbose:
