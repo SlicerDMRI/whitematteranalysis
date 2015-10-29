@@ -234,7 +234,7 @@ print "<wm_cluster_from_atlas.py> Cluster indices range from:", first_cluster, "
 print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
 cluster_sizes = list()
 cluster_fnames = list()
-for c in range(number_of_clusters):
+for c in range(number_of_clusters+1):
     mask = cluster_numbers_s == c
     cluster_size = numpy.sum(mask)
     cluster_sizes.append(cluster_size)
