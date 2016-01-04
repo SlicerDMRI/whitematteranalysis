@@ -17,7 +17,7 @@ atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.
 #Installation
 ###1. Download whitematteranalysis from github. 
 
-      git clone git://github.com/ljod/whitematteranalysis.git
+      git clone https://github.com/ljod/whitematteranalysis.git
       
 ###2. Install python. 
 Anaconda is a nice option since it has VTK and scipy.
