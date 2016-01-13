@@ -20,11 +20,11 @@ class TractMeasurement:
             print "<tract_measurement.py> Error: Separator shold be one of Comma, Tab or Space. "
             raise AssertionError
         if self.separator == 'Comma':
-            self.separator = ','
+            separator_char = ','
         elif self.separator == 'Tab':
-            self.separator = '\t'
+            separator_char = '\t'
         elif self.separator == 'Space':
-            self.separator = ' '
+            separator_char = ' '
 
         hierarchy_list = ['Row', 'Column'] 
         if not any(self.hierarchy in s for s in hierarchy_list):
@@ -33,32 +33,33 @@ class TractMeasurement:
 
         self.measurement_matrix = [];
         with open(self.measurement_file, 'r') as txtfile:
-            reader = csv.reader(txtfile, delimiter=self.separator, skipinitialspace=True,  quoting=csv.QUOTE_NONE)
+            reader = csv.reader(txtfile, delimiter=separator_char, skipinitialspace=True,  quoting=csv.QUOTE_NONE)
             for row in reader:
                 row = map(str.strip, row)
                 self.measurement_matrix.append(row)
 
         if self.hierarchy == 'Row':
-            self.measurement_matrix = map(list, zip(*self.measurement_matrix))
+            # TO-DO: transfer Row output into list
+            print "<tract_measurement.py> Error: Only support Column currently. "
+            raise AssertionError
 
     def check(self):
         # Simple check if the first three fields are Name, Num_Point and Num_Fiber
         measures = self.measurement_matrix[0]
         if measures[0] != 'Name' or measures[1] != 'Num_Points' or measures[2] != 'Num_Fibers':
             print "<tract_measurement.py> Error: Measurement loading failed. First three fileds extracted are: \n 1. ", measures[0], "\n 2. ", measures[1], "\n 3. ", measures[2], "\nwhich are expected to be \n 1. Name \n 2. Num_Points \n 3. Num_Fibers. " 
-            return False
-        return True
+            raise AssertionError
+
         
 def load_measurement(measurement_file, hierarchy = 'Column', separator = 'Comma'):
-    tm = TractMeasurement()
     
+    tm = TractMeasurement()
     tm.measurement_file = measurement_file
     tm.hierarchy = hierarchy
     tm.separator = separator  
+    
     tm.load()
-
-    if not tm.check():
-        raise AssertionError
+    tm.check()
 
     return tm.measurement_matrix
 
