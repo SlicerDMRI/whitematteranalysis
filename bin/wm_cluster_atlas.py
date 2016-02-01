@@ -74,7 +74,7 @@ parser.add_argument(
     help='The number of iterations to repeat the clustering and outlier removal process. The default is ten iterations.')
 parser.add_argument(
     '-subject_percent', action='store', dest="subjectPercentToKeepCluster",type=float, default=0.4,
-    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then on the next iteration, the clustering will be run without being affected by the outlier fibers.')
+    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40%% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then on the next iteration, the clustering will be run without being affected by the outlier fibers.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')
