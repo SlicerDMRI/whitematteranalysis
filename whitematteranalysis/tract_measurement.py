@@ -1,5 +1,6 @@
 import csv
 import os
+import glob
 
 class TractMeasurement:
     """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""
@@ -8,7 +9,7 @@ class TractMeasurement:
         self.measurement_file = None
         self.measurement_matrix = None
         self.hierarchy = 'Column'
-        self.separator = ','
+        self.separator = 'Tab'
 
     def load(self):
 
@@ -52,8 +53,11 @@ class TractMeasurement:
             raise AssertionError
 
         
-def load_measurement(measurement_file, hierarchy = 'Column', separator = 'Comma'):
-    
+def load_measurement(measurement_file, hierarchy = 'Column', separator = 'Tab'):
+
+    """ Load measurement for one subject
+    """
+
     tm = TractMeasurement()
     tm.measurement_file = measurement_file
     tm.hierarchy = hierarchy
@@ -65,4 +69,17 @@ def load_measurement(measurement_file, hierarchy = 'Column', separator = 'Comma'
     return tm.measurement_matrix
 
 
+def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separator = 'Tab'):
 
+    """ Load measurements for multiple subjects
+    """
+    input_mask = "{0}/*.txt".format(measurement_folder)
+    input_mask2 = "{0}/*.csv".format(measurement_folder)
+
+    measurement_files = glob.glob(input_mask) + glob.glob(input_mask2)
+
+    measurement_list = list()
+    for m in measurement_files:
+        measurement_list.append(load_measurement(m, hierarchy, separator))
+
+    return measurement_list
