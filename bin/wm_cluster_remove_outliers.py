@@ -201,7 +201,7 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     mask[reject_idx] = 0
     #print mask, number_fibers_in_subject_cluster, mask.shape, pd_subject.GetNumberOfLines()
     fname_c = os.path.join(outdir, pd_out_fname)
-    pd_c = wma.filter.mask(pd_subject, mask, verbose=False)
+    pd_c = wma.filter.mask(pd_subject, mask, verbose=False, preserve_point_data=True, preserve_cell_data=True)
     wma.io.write_polydata(pd_c, fname_c)
 
 
