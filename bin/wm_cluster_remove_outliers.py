@@ -2,9 +2,8 @@
 import numpy
 import argparse
 import os
-#import multiprocessing
-#import time
 import glob
+import shutil
 
 import vtk
 
@@ -33,9 +32,6 @@ parser.add_argument(
 parser.add_argument(
     'outputDirectory',
     help='The output directory will be created if it does not exist. Outlier-removed subject clusters will be stored in a subdirectory of the output directory. The subdirectory will have the same subject id as contained in the input directory.')
-parser.add_argument(
-    '-j', action="store", dest="numberOfJobs", type=int, default=1,
-    help='Number of processors to use.')
 parser.add_argument(
     '-verbose', action='store_true', dest="flag_verbose",
     help='Verbose. Run with -verbose for more text output.')
@@ -72,9 +68,6 @@ print "input directory:", args.inputDirectory
 print "atlas directory:", args.atlasDirectory
 print "output directory:", outdir
 
-number_of_jobs = args.numberOfJobs
-print 'Using N jobs:', number_of_jobs
-
 if args.flag_verbose:
     print "Verbose ON."
 else:
@@ -86,6 +79,20 @@ print "==========================\n"
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
 # =======================================================================
+
+# Copy all MRML files to the new subject directory
+input_mask = "{0}/clustered_tracts*.mrml".format(args.inputDirectory)
+mrml_files = sorted(glob.glob(input_mask))
+for fname_src in mrml_files:
+    fname_base = os.path.basename(fname_src)
+    fname_dest = os.path.join(outdir, fname_base)
+    shutil.copyfile(fname_src, fname_dest)
+
+# Overall progress/outlier removal info file
+fname_progress = os.path.join(outdir, 'cluster_log.txt')
+log_file = open(fname_progress, 'w')
+print >> log_file, 'cluster','\t', 'input_fibers','\t', 'output_fibers','\t', 'number_removed','\t', 'percentage_removed','\t', 'mean_distance_before','\t', 'mean_distance_after','\t', 'mean_probability_before','\t', 'mean_probability_after'
+log_file.close()
 
 # read atlas
 print "<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory
@@ -151,8 +158,8 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     # Compute distances and fiber probabilities FOR ATLAS to form a basis for comparison
     # Note that ideally this could be done once and stored, rather than computed for each subject
     if distance_method == 'StrictSimilarity':
-        cluster_similarity_atlas = wma.cluster._pairwise_distance_matrix(pd_atlas, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
-        cluster_similarity = cluster_distances
+        cluster_distances = wma.cluster._pairwise_distance_matrix(pd_atlas, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
+        cluster_similarity_atlas = cluster_distances
     else:
         cluster_distances = wma.cluster._pairwise_distance_matrix(pd_atlas, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
         cluster_similarity_atlas = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
@@ -177,8 +184,6 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     if verbose:
         print "cluster", c, "tsim_atlas:", numpy.min(total_similarity_atlas), numpy.mean(total_similarity_atlas), numpy.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster
         print "cluster", c, "tsim_subject:", numpy.min(total_similarity_subject), numpy.mean(total_similarity_subject), numpy.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster
-
-    c += 1
     
     # remove outliers with low similarity to their cluster
     mean_sim_atlas = numpy.mean(total_similarity_atlas)
@@ -204,7 +209,13 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     pd_c = wma.filter.mask(pd_subject, mask, verbose=False, preserve_point_data=True, preserve_cell_data=True)
     wma.io.write_polydata(pd_c, fname_c)
 
+    cluster_distances = numpy.sqrt(cluster_distances)
+    cluster_mean_distances = numpy.mean(cluster_distances, axis=0)
+    mask = mask == 1
 
-# To DO: Now keep track of overall rejection statistics for the pipeline
-# ALso copy in the MRML file from the atlas or subject directory
+    log_file = open(fname_progress, 'a')
+    print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', number_fibers_in_subject_cluster-number_rejected,'\t', number_rejected,'\t', float(number_rejected)/number_fibers_in_subject_cluster, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_distances[mask]), '\t', numpy.mean(total_similarity_subject), '\t', numpy.mean(total_similarity_subject[mask])
+    log_file.close()
+
+    c += 1
 
