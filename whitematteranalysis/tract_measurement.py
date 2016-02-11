@@ -2,7 +2,8 @@ import csv
 import os
 
 class TractMeasurement:
-    
+    """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""
+
     def __init__(self):
         self.measurement_file = None
         self.measurement_matrix = None
