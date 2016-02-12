@@ -57,7 +57,7 @@ class TractMeasurement:
         self.cluster_number = self.measurement_matrix.shape[0]
 
     def check(self):
-        # Simple check if the first three fields are Name, Num_Point and Num_Fiber
+        # Simple check if the first two fields are Num_Point and Num_Fiber
         header = self.measurement_header
         if header[0] != 'Num_Points' or header[1] != 'Num_Fibers':
             print "<tract_measurement.py> Error: Measurement loading failed. First three fields extracted are: \n 1. ", measures[0], "\n 2. ", measures[1], "\n 3. ", measures[2], "\nwhich are expected to be \n 1. Name \n 2. Num_Points \n 3. Num_Fibers. "
