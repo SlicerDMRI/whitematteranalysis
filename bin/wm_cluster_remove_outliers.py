@@ -25,10 +25,10 @@ parser.add_argument("-v", "--version",
     help="Show program's version number and exit")
 parser.add_argument(
     'inputDirectory',
-    help='A directory containing subject clusters (.vtk or .vtp).')
+    help='A directory containing subject clusters (.vtp).')
 parser.add_argument(
     'atlasDirectory',
-    help='The directory where the atlas is stored. Must contain atlas.p and atlas.vtp, as well as atlas clusters (.vtk or .vtp)')
+    help='The directory where the atlas is stored. Must contain atlas.p and atlas.vtp, as well as atlas clusters (.vtp)')
 parser.add_argument(
     'outputDirectory',
     help='The output directory will be created if it does not exist. Outlier-removed subject clusters will be stored in a subdirectory of the output directory. The subdirectory will have the same subject id as contained in the input directory.')
@@ -139,11 +139,32 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     # grab the cluster as polydata
     pd_atlas = wma.io.read_polydata(ca)
     pd_subject = wma.io.read_polydata(cs)
-    pd_out_fname = os.path.basename(cs)
+    pd_out_fname = os.path.join(outdir, os.path.basename(cs))
     
     number_fibers_in_atlas_cluster = pd_atlas.GetNumberOfLines()
     number_fibers_in_subject_cluster = pd_subject.GetNumberOfLines()
 
+    # if either cluster is empty, we have to skip outlier removal
+    if number_fibers_in_subject_cluster == 0:
+        wma.io.write_polydata(pd_subject, pd_out_fname)
+        print "cluster", c, "empty in subject"
+        log_file = open(fname_progress, 'a')
+        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', numpy.mean(cluster_mean_distances), '\t', 0, '\t', 0, '\t', 0
+        log_file.close()
+        c += 1
+        continue
+
+    if number_fibers_in_atlas_cluster == 0:
+        # this should not ever happen. Note that "outlier removed" atlas is temporary and should not be used for classification.
+        # (Note the other option is to remove this cluster as it was removed at the end of the iteration for the atlas.)
+        print "cluster", c, "empty in atlas"
+        print "ERROR: An atlas should not contain empty clusters. Please use the initial_clusters atlas for this outlier removal script and for subject clustering."
+        log_file = open(fname_progress, 'a')
+        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', numpy.mean(cluster_mean_distances), '\t', 0, '\t', 0, '\t', 0
+        log_file.close()
+        c += 1
+        continue
+    
     # for the future, in case this can be integrated here and use atlas information for hemisphere separation 
     ## # figure out hemisphere labels for this cluster
     ## farray = wma.fibers.FiberArray()
@@ -205,9 +226,8 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     mask = numpy.ones([number_fibers_in_subject_cluster])
     mask[reject_idx] = 0
     #print mask, number_fibers_in_subject_cluster, mask.shape, pd_subject.GetNumberOfLines()
-    fname_c = os.path.join(outdir, pd_out_fname)
     pd_c = wma.filter.mask(pd_subject, mask, verbose=False, preserve_point_data=True, preserve_cell_data=True)
-    wma.io.write_polydata(pd_c, fname_c)
+    wma.io.write_polydata(pd_c, pd_out_fname)
 
     cluster_distances = numpy.sqrt(cluster_distances)
     cluster_mean_distances = numpy.mean(cluster_distances, axis=0)
