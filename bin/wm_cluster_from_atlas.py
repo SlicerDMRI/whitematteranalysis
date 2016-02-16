@@ -46,7 +46,7 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100%% of fibers.')
 parser.add_argument(
     '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
     help='To cluster in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
@@ -69,13 +69,9 @@ if not os.path.exists(outdir):
 
 fname = args.inputFile
 subject_id = os.path.splitext(os.path.basename(fname))[0]
-outdir = args.outputDirectory
-if not os.path.exists(outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
-    os.makedirs(outdir)
 outdir = os.path.join(outdir, subject_id)
 if not os.path.exists(outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
+    print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
 print "\n=========================="
@@ -275,7 +271,7 @@ print "<wm_cluster_atlas.py> Subsampling ratio for display of", show_fibers, "to
 fname = os.path.join(outdir, 'clustered_tracts.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
-# Also write one with 100% of fibers displayed
+# Also write one with 100%% of fibers displayed
 fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
 
