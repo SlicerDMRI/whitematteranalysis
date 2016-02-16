@@ -50,6 +50,9 @@ parser.add_argument(
 parser.add_argument(
     '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
     help='To cluster in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
+parser.add_argument(
+    '-norender', action='store_true', dest="flag_norender",
+    help='No Render. Prevents rendering of images that would require an X connection.')
 
 args = parser.parse_args()
 
@@ -109,6 +112,12 @@ if args.registerAtlasToSubjectSpace:
     exit()
 else:
     print "Registration of atlas fibers to subject fibers is OFF. Subject must be in atlas space before calling this script."
+
+if args.flag_norender:
+    print "No rendering (for compute servers without X connection)."
+else:
+    print "Rendering. After clustering, will create colorful jpg images."
+render = not args.flag_norender
 
 print "==========================\n"
   
@@ -276,10 +285,11 @@ fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
 
 # View the whole thing in png format for quality control
-print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
-ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
-ren.save_views(outdir)
-del ren
+if render:
+    print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
+    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
+    ren.save_views(outdir)
+    del ren
 
 print "\n=========================="
 print '<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n'
