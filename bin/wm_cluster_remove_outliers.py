@@ -149,7 +149,7 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
         wma.io.write_polydata(pd_subject, pd_out_fname)
         print "cluster", c, "empty in subject"
         log_file = open(fname_progress, 'a')
-        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', numpy.mean(cluster_mean_distances), '\t', 0, '\t', 0, '\t', 0
+        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0
         log_file.close()
         c += 1
         continue
@@ -160,7 +160,7 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
         print "cluster", c, "empty in atlas"
         print "ERROR: An atlas should not contain empty clusters. Please use the initial_clusters atlas for this outlier removal script and for subject clustering."
         log_file = open(fname_progress, 'a')
-        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', numpy.mean(cluster_mean_distances), '\t', 0, '\t', 0, '\t', 0
+        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0
         log_file.close()
         c += 1
         continue
