@@ -232,14 +232,17 @@ wma.io.write_polydata(output_polydata_s, fname_output)
 # Figure out file name and mean color for each cluster, and write the individual polydatas
 fnames = list()
 cluster_colors = list()
-number_of_clusters = numpy.max(cluster_numbers_s)
-first_cluster = numpy.min(cluster_numbers_s)
-print "<wm_cluster_from_atlas.py> Cluster indices range from:", first_cluster, "to", number_of_clusters
+# These lines counted clusters present in the subject only
+##number_of_clusters = numpy.max(cluster_numbers_s)
+##first_cluster = numpy.min(cluster_numbers_s)
+# Get the number of clusters directly from the atlas to ensure we output files for all clusters.
+[number_of_clusters, number_of_eigenvectors] = atlas.centroids.shape
+print "<wm_cluster_from_atlas.py> Cluster indices range from:", 0, "to", number_of_clusters
 
 print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
 cluster_sizes = list()
 cluster_fnames = list()
-for c in range(number_of_clusters+1):
+for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
     cluster_size = numpy.sum(mask)
     cluster_sizes.append(cluster_size)
