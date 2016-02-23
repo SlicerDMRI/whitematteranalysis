@@ -28,7 +28,9 @@ setup(
         'bin/wm_separate_clusters_by_hemisphere.py',
         'bin/wm_flatten_length_distribution.py',
         'bin/wm_create_mrml_file.py',
-        'bin/wm_cluster_remove_outliers.py'
+        'bin/wm_cluster_remove_outliers.py',
+        'bin/wm_extract_measurement.py',
+        'bin/wm_quality_control_cluster_measurements.py'
     ],
     include_dirs=[numpy.get_include()]
 )
