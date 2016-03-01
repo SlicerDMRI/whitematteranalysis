@@ -47,20 +47,27 @@ print '      # Mean value of', tm.measurement_header[2], 'of all clusters is', n
 ##
 print '====================='
 print 'test 3: multi subjects'
-measurement_folder = '/Users/fan/Desktop/tmp' # TODO: change data path, containing multiple measurement files
+measurement_folder = './test_data_measurement/group_test'
 hierarchy = "Column"
-separator = "Comma"
+separator = "Tab"
 
 measurement_list = wma.tract_measurement.load_measurement_in_folder(measurement_folder, hierarchy, separator)
+
+print ' <tm> Number of cases to be analyzed:', len(measurement_list)
+idx = 0
+for tm in measurement_list:
+    print ' <tm> Case', idx, 'ID:', tm.case_id
+    idx = idx + 1
 
 print ' <tm> Extract FA distribution of cluster 0 across all subjects'
 vec_FA = []
 for tm in measurement_list:
-    vec_FA.append(tm.get_measurements_by_name('tensors.FractionalAnisotropyMean')[0]) # TODO: change the name according to 'measurement_header'
+    vec_FA.append(tm.get_measurements_by_name('tensor1.FractionalAnisotropy')[0])
 
 print ' <tm> FA vector length:', len(vec_FA)
-print ' <tm> FA vector (first 5):', vec_FA[0:4]
+print ' <tm> FA vector:', vec_FA
 print ' <tm> Mean FA of cluster 0 from all subjects:', numpy.mean(vec_FA)
-print ' <tm> Perform t-test between the first 10 subjects and the second 10 subjects'
-t, p = scipy.stats.ttest_ind(vec_FA[0:9], vec_FA[10:19], equal_var=False) # TODO: provide indices of different groups (e.g., patient V.S. control)
+print ' <tm> Perform t-test between the first 3 subjects and the second 3 subjects'
+t, p = scipy.stats.ttest_ind(vec_FA[0:2], vec_FA[3:5], equal_var=False)
 print ' <tm> t =', t, ', p =', p
+

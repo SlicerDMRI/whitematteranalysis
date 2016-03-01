@@ -7,8 +7,12 @@ class TractMeasurement:
     """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""
 
     def __init__(self):
+        self.case_id = None
         self.measurement_file = None
         self.cluster_number = None
+        # For Fibers_File_Folder, cluster_path gives the cluster file (vtk/vtp) path
+        # For Fibers_Hierarchy extraction, cluster_path gives the hierarchy name provided in the mrml file
+        # TODO: This variable name is confusing if using Fibers_Hierarchy but still kept to avoid breaking wm_quality_control_cluster_measurements.py
         self.cluster_path = None
         self.measurement_header = None
         self.measurement_matrix = None
@@ -51,6 +55,7 @@ class TractMeasurement:
 
         tmp_matrix = numpy.array(txt_matrix)
 
+        self.case_id = os.path.splitext(os.path.split(self.measurement_file)[1])[0]
         self.cluster_path = tmp_matrix[1:, 0]
         self.measurement_header = tmp_matrix[0, 1:]
         self.measurement_matrix = tmp_matrix[1:, 1:].astype(numpy.float)
