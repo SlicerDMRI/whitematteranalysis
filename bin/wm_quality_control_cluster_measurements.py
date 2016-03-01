@@ -31,8 +31,10 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "<register> Error: Input directory", args.inputDirectory, "does not exist."
+    print "Error: Input directory", args.inputDirectory, "does not exist."
     exit()
+
+print "\n\n== Testing measurement files in directory:",  args.inputDirectory
 
 ## output_dir = args.outputDirectory
 ## if not os.path.exists(output_dir):
@@ -41,18 +43,17 @@ if not os.path.isdir(args.inputDirectory):
 
 measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')
 
-print "Number of subjects data found:", len(measurement_list)
+print "\n== Number of subjects data found:", len(measurement_list)
 
 if len(measurement_list) < 1:
     print "ERROR, no measurement files found in directory:", args.inputDirectory
     exit()
 
 # print the header
-print "\nMeasurement header found and includes these variables:"
+print "\n==Measurement header found. Measurements are:"
 header = measurement_list[0].measurement_header
 for variable in header:
-    print variable, "",
-print "\n"
+    print variable
 
 # sanity check all measured variables are the same
 print "\n== Testing if all subjects have the same measurement header."
@@ -60,16 +61,17 @@ test = True
 for subject_measured in measurement_list:
     all_same = all(subject_measured.measurement_header == header)
     if not all_same:
-        print "ERROR: Subject with this path does not have same measurement header:", subject_measured.cluster_path[0]
+        print "ERROR: Subject does not have same measurement header:", subject_measured.case_id
         test = False
 if test:
     print "Passed. All subjects have the same measurement header."
 
-# make clear subject id list from path to clusters
+# Make subject id list for reporting of any potential outliers
 subject_id_list = []
 for subject_measured in measurement_list:
-    fname = subject_measured.cluster_path[0]
-    subject_id_list.append(os.path.basename(os.path.split(fname)[0]))
+    #fname = subject_measured.cluster_path[0]
+    #subject_id_list.append(os.path.basename(os.path.split(fname)[0]))
+    subject_id_list.append(subject_measured.case_id)
 subject_id_list = numpy.array(subject_id_list)
 
 # sanity check number of clusters is the same for all subjects
@@ -88,7 +90,8 @@ else:
     print "ERROR: All subjects do not have the same number of clusters. There was an earlier error in clustering or measurement that must be fixed before analysis."
 
 # sanity check numbers of fibers are ok for all subjects
-print "\n== Testing if all subjects have reasonable mean fibers per cluster. Will print any subjects with more than", args.OutlierStandardDeviation, "standard deviations below group mean."
+print "\n== Testing if all subjects have reasonable mean fibers per cluster."
+print "Will print any subjects with more than", args.OutlierStandardDeviation, "standard deviations below group mean."
 test = True
 vidx = list(header).index('Num_Fibers')
 mean_fibers_list = []
@@ -115,7 +118,8 @@ if test:
     print "Passed. All subjects have reasonable mean fibers per cluster."
         
 # sanity check number of empty clusters is not too large
-print "\n== Testing if all subjects have reasonable numbers of empty clusters. Will print any subjects with more than", args.OutlierStandardDeviation, "standard deviations above group mean."
+print "\n== Testing if all subjects have reasonable numbers of empty clusters."
+print "Will print any subjects with more than", args.OutlierStandardDeviation, "standard deviations above group mean."
 test = True
 empty_clusters_list = []
 for subject_measured in measurement_list:
@@ -139,3 +143,5 @@ for mf, sp in zip(empty_clusters_list[sorted_idx], subject_id_list[sorted_idx]):
         test = False
 if test:
     print "Passed. All subjects have reasonable numbers of empty clusters."
+
+print "\nPlease use reasonable judgement and visual inspection of data to decide if any subject datasets are outliers. Remember, 5% of a normally-distributed dataset will fall 2 standard deviations away from the mean, so most datasets will have some ""outliers"". Also try the parameter -outlier_std 3 to see if any datasets are 3 std from the mean."
