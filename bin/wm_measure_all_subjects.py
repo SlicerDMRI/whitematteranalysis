@@ -5,7 +5,7 @@ import os
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_extract_measurement.py> Error importing white matter analysis package\n"
+    print "<wm_measure_all_subjects> Error importing white matter analysis package\n"
     raise
 
 #-----------------
@@ -46,7 +46,7 @@ if not os.path.exists(outdir):
     print "Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
-print "<wm_extract_measurement.py>. Starting scalar measurement extraction."
+print "<wm_measure_all_subjects>. Starting scalar measurement extraction."
 print ""
 print "=====input directory======\n", args.inputDirectory
 print "=====output directory=====\n", args.outputDirectory
@@ -55,7 +55,7 @@ print "=========================="
 
 sub_dirs = os.listdir(args.inputDirectory)
 
-print "<wm_extract_measurement.py> found", len(sub_dirs), "sub directories."
+print "<wm_measure_all_subjects> found", len(sub_dirs), "sub directories."
 
 subject_list = []
 for dir in sub_dirs:
@@ -63,7 +63,7 @@ for dir in sub_dirs:
     if dir.endswith('_reg'):
         subject_list.append(dir)
 
-print "<wm_extract_measurement.py> found", len(subject_list), "subjects."
+print "<wm_measure_all_subjects> found", len(subject_list), "subjects."
 
 count = 1
 for sub in subject_list:
@@ -77,4 +77,4 @@ for sub in subject_list:
               ' > ' + os.path.join(args.outputDirectory, 'tmp'+sub_name))
     os.remove(os.path.join(args.outputDirectory, 'tmp'+sub_name))
 
-print "<wm_extract_measurement.py> Measurements from", count, "subjects were extracted."
+print "<wm_measure_all_subjects> Measurements from", count, "subjects were extracted."
