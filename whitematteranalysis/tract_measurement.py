@@ -2,6 +2,7 @@ import csv
 import os
 import glob
 import numpy
+import xlrd
 
 class TractMeasurement:
     """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""
@@ -112,3 +113,18 @@ def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separat
         measurement_list.append(load_measurement(m, hierarchy, separator))
 
     return measurement_list
+
+def load_demographics(xlsx):
+    """ Load load_demographics file
+        Each row is one case, including case_id, group, age, etc.
+    """
+    wb = xlrd.open_workbook(xlsx)
+    sh = wb.sheet_by_index(0)
+
+    header = sh.row_values(0)
+
+    demographics = list()
+    for h in range(len(header)):
+        demographics.append(sh.col_values(h)[1:])
+
+    return (header, demographics)

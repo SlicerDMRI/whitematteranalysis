@@ -71,3 +71,23 @@ print ' <tm> Perform t-test between the first 3 subjects and the second 3 subjec
 t, p = scipy.stats.ttest_ind(vec_FA[0:2], vec_FA[3:5], equal_var=False)
 print ' <tm> t =', t, ', p =', p
 
+##
+print '====================='
+print 'test 4: demographics'
+print '<tm> Loading demographics file:'
+header, demographics = wma.tract_measurement.load_demographics('./test_data_measurement/demographics.xlsx')
+
+print '<tm> Number of cases:', len(demographics[0])
+print '<tm> Number of fields:', len(header)
+for h in range(len(header)):
+    print '     Field', h , header[h]
+
+case_id_list = demographics[0]
+age_list = map(int, demographics[1])
+group_list = demographics[2]
+print '<tm> First 5 case ID:', case_id_list[:5] # May display u' since unicode was used in the testing xlsx file
+print '<tm> First 5 case age:', age_list[:5]
+print '<tm> First 5 case group:', group_list[0:5]
+print '<tm>  Last 5 case ID:', case_id_list[-5:]
+print '<tm>  Last 5 case age:', age_list[-5:]
+print '<tm>  Last 5 case''s group:', group_list[-5:]
