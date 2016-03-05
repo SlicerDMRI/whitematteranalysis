@@ -114,17 +114,73 @@ def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separat
 
     return measurement_list
 
+
+class Demographics:
+    """Group demographics."""
+
+    def __init__(self):
+        self.demographics_file = None
+        self.demographics_header = None
+        self.case_id_list = None
+        self.group_id_list = None
+        self.demographics = None
+
+    def load(self):
+        if not os.path.isfile(self.demographics_file):
+            print "<tract_measurement.py> Error: Input file", self.demographics_file , "does not exist."
+            raise AssertionError
+
+        if os.path.splitext(self.demographics_file)[1] != '.xls' and os.path.splitext(self.demographics_file)[1] != '.xlsx':
+            print "<tract_measurement.py> Error: Either .xls or .xlsx file format is required."
+            raise AssertionError
+
+        try:
+            wb = xlrd.open_workbook(self.demographics_file)
+            sh = wb.sheet_by_index(0)
+            self.demographics_header = map(str, sh.row_values(0))
+        except:
+            print "<tract_measurement.py> Error: Fail to load:", self.demographics_file
+            print "                       Please make sure the file has the demographics in the first sheet."
+            raise AssertionError
+
+        self.demographics = list()
+        for h in range(len(self.demographics_header)):
+            col = map(str, sh.col_values(h)[1:])
+            self.demographics.append(col)
+
+        self.case_id_list = self.demographics[0]
+        self.group_id_list = self.demographics[1]
+
+    def check(self):
+        # Simple check if the first two fields are subjectID and groupID
+        header = self.demographics_header
+        if header[0] != 'subjectID' or header[1] != 'groupID':
+            print "<tract_measurement.py> Error: Demographics loading failed. \n" \
+                  "                       First two fields extracted are [", header[0], "] and [", header[1], "], which are expected to be [ subjectID ] and [ groupID ]."
+            raise AssertionError
+
+    def get_demographics_by_index(self, query_index):
+        if query_index >= len(self.demographics_header):
+            print " Error: Index", query_index, "should range from 0 to", len(self.demographics_header)
+
+        return self.demographics[query_index]
+
+    def get_demographics_by_header(self, query_header_name):
+        for h in range(len(self.demographics_header)):
+            if query_header_name == self.demographics_header[h]:
+                return self.demographics[h]
+
+        print " Error: Header", query_header_name, "cannot be found. Select from:\n", self.demographics_header
+        return None
+
 def load_demographics(xlsx):
     """ Load load_demographics file
-        Each row is one case, including case_id, group, age, etc.
+        Each row is one case, including subjectID, groupID, Age, etc.
     """
-    wb = xlrd.open_workbook(xlsx)
-    sh = wb.sheet_by_index(0)
 
-    header = sh.row_values(0)
+    dg = Demographics()
+    dg.demographics_file = xlsx
+    dg.load()
+    dg.check()
 
-    demographics = list()
-    for h in range(len(header)):
-        demographics.append(sh.col_values(h)[1:])
-
-    return (header, demographics)
+    return dg
