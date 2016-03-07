@@ -52,10 +52,6 @@ if not os.path.exists(args.subjectsInformationFile):
     print "<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist."
     exit()
 
-if not os.path.exists(args.subjectsInformationFile):
-    print "<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist."
-    exit()
-
 if args.atlasDirectory:
     if not os.path.isdir(args.atlasDirectory):
         print "<wm_statistics> Error: Input directory", args.atlasDirectory, "does not exist."
@@ -110,6 +106,7 @@ print "Study groups found:", study_groups
 if len(study_groups) > 2:
     print "ERROR: this code can currently only handle two study groups."
     exit()
+print "Subjects per group:", numpy.sum(numpy.array(group_id_list)==study_groups[0]), numpy.sum(numpy.array(group_id_list)==study_groups[1])
 
 print "Performing statistics for measure:", measurement
 
@@ -371,7 +368,6 @@ if atlas_directory:
     # save a MRML file with tracts colored by p-value
     fname = './test_'+measurement+'.mrml'
     print "Saving MRML visualization:", fname
-
     # find clusters in subject and atlas input directories
     input_mask = "{0}/cluster_*.vtp".format(atlas_directory)
     atlas_clusters = sorted(glob.glob(input_mask))
