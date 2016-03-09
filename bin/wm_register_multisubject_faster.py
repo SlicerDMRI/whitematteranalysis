@@ -358,7 +358,8 @@ register.output_directory = args.outputDirectory
 register.verbose = verbose
 register.parallel_jobs = parallel_jobs
 register.render = not no_render
-register.nonrigid = nonrigid
+if nonrigid:
+    register.mode = "Nonrigid"
 # We have to add polydatas after setting nonrigid in the register object
 for (pd, id) in zip(input_pds, subject_ids):
     register.add_polydata(pd, id)
@@ -479,7 +480,7 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
-    if register.nonrigid:
+    if register.mode == "Nonrigid":
         register.nonrigid_grid_resolution = grid_resolution_per_scale[scale]
         register.update_nonrigid_grid()
     

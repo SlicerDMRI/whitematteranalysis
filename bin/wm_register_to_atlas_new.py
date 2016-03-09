@@ -109,6 +109,8 @@ print "\n<register> Starting registration...\n"
 # SETTINGS
 # -------------
 
+rigid = False
+
 if mode == "affine":
     sigma_per_scale = [20, 10, 10, 5, 5]
     iterations_per_scale=[3, 3, 3, 3, 3]
@@ -120,9 +122,36 @@ if mode == "affine":
     # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
     points_per_fiber = 10
     nonrigid = False
-    # This affine mode tested originally as cobylatest8
     # Cobyla optimizer is safer regarding scaling
     # Cobyla needs smaller steps than Powell to avoid leaving local minima on next iteration
+
+elif mode == "affine_fast":
+    # This mode is equivalent to previous parameters
+    sigma_per_scale = [30, 10, 7.5, 5]
+    iterations_per_scale=[2, 2, 2, 2]
+    maxfun_per_scale = [45, 60, 75, 90]
+    mean_brain_size_per_scale = [1000, 3000, 4000, 5000]
+    subject_brain_size_per_scale = [250, 1500, 1750, 2000]
+    initial_step_per_scale = [10, 5, 5, 5]
+    final_step_per_scale = [5, 2, 2, 2]
+    # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
+    points_per_fiber = 10
+    nonrigid = False
+
+elif mode == "rigid_affine_fast":
+    # This mode is equivalent to previous parameters and includes an initial rigid step
+    sigma_per_scale = [30, 30, 10, 7.5, 5]
+    iterations_per_scale=[2, 2, 2, 2, 2]
+    maxfun_per_scale = [45, 45, 60, 75, 90]
+    mean_brain_size_per_scale = [1000, 1000, 3000, 4000, 5000]
+    subject_brain_size_per_scale = [250, 250, 1500, 1750, 2000]
+    initial_step_per_scale = [10, 10, 5, 5, 5]
+    final_step_per_scale = [5, 5, 2, 2, 2]
+    # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
+    points_per_fiber = 10
+    nonrigid = False
+    rigid = True
+    rigid_scale = [1, 1, 1, 0, 0]
 
 elif mode == "affine_neonate":
     # More fibers are needed for neonate registration or noisy data.
@@ -266,11 +295,11 @@ else:
 register = wma.congeal_to_atlas.SubjectToAtlasRegistration()
 register.output_directory = subject_outdir
 register.input_polydata_filename = args.inputSubject
-register.nonrigid = nonrigid
+if nonrigid:
+    register.mode = "Nonrigid"
 # We have to add polydatas after setting nonrigid in the register object
 register.set_subject(subject_pd, subject_id)
 register.set_atlas(atlas_pd, atlas_id)
-
 
 register.points_per_fiber = points_per_fiber
 
@@ -303,9 +332,14 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
-    if register.nonrigid:
+    if register.mode == "Nonrigid":
         register.nonrigid_grid_resolution = grid_resolution_per_scale[scale]
         register.update_nonrigid_grid()
+    if rigid:
+        if rigid_scale[scale]:
+            register.mode = "Rigid"
+        else:
+            register.mode = "Affine"
 
     for idx in range(0,iterations_per_scale[scale]):
         register.iterate()

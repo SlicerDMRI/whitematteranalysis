@@ -112,6 +112,11 @@ class RegisterTractography:
         #self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
         self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200,  1, 1, 1, 1, 1, 1])
 
+        # the registration mode includes trans, rot, scale, shear.
+        # so for rigid, use mode =  [1, 1, 0, 0]
+        # so for translation only, use mode =  [1, 1, 0, 0]
+        self.mode=[1,1,1,1]
+
         # internal recordkeeping
         self._x_opt = None
         self.iterations = 0
@@ -134,7 +139,7 @@ class RegisterTractography:
 
         # get and apply transforms from current_x
         ## t1 = time.time()
-        moving = transform_fiber_array_numpy(self.moving, current_x)
+        moving = transform_fiber_array_numpy(self.moving, current_x, self.mode)
         ## t2 = time.time()
         ##moving = transform_fiber_array_numpy(self.moving_points, self.number_of_fibers_moving, self.points_per_fiber, current_x)
         ## t3 = time.time()
@@ -260,10 +265,34 @@ class RegisterTractography:
         else:
             print "Unknown optimizer."
 
-        self.final_transform = numpy.divide(self.final_transform,self.transform_scaling)
+        self.final_transform = numpy.divide(self.final_transform, self.transform_scaling)
+
+        # modify the output according to the mode. Note: ideally for
+        # rigid or translation only, should make the optimizer search
+        # space smaller instead of ignoring some dimensions. This is a
+        # test for now.
+        if not self.mode[0] == 1:
+            self.final_transform[0] = 0.0
+            self.final_transform[1] = 0.0
+            self.final_transform[2] = 0.0
+        if not self.mode[1] == 1:
+            self.final_transform[3] = 0.0
+            self.final_transform[4] = 0.0
+            self.final_transform[5] = 0.0
+        if not self.mode[2] == 1:
+            self.final_transform[6] = 1.0
+            self.final_transform[7] = 1.0
+            self.final_transform[8] = 1.0
+        if not self.mode[3] == 1:
+            self.final_transform[9] = 0.0
+            self.final_transform[10] = 0.0
+            self.final_transform[11] = 0.0
+            self.final_transform[12] = 0.0
+            self.final_transform[13] = 0.0
+            self.final_transform[14] = 0.0
 
         tx = self.final_transform
-        print "TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14]
+        print "TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14], "MODE:", self.mode, "MODE0:", self.mode[0]
                                 
         # Return output transform from this iteration
         return self.final_transform
@@ -350,7 +379,7 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
     #return numpy.max(distance, 1)
 
     
-def transform_fiber_array_numpy(in_array, transform):
+def transform_fiber_array_numpy(in_array, transform, mode=[1,1,1,1]):
     """Transform in_array of R,A,S by transform (15 components, rotation about
     R,A,S, translation in R, A, S,  scale along R, A, S, and
     shear. Fibers are assumed to be in RAS (or LPS as long as all inputs
@@ -359,7 +388,7 @@ def transform_fiber_array_numpy(in_array, transform):
     (dims, number_of_fibers, points_per_fiber) = in_array.shape
     out_array = numpy.zeros(in_array.shape)
 
-    vtktrans = convert_transform_to_vtk(transform, scaled=True)
+    vtktrans = convert_transform_to_vtk(transform, scaled=True, mode=mode)
 
     # Transform moving fiber array by applying transform to original fibers
     for lidx in range(0, number_of_fibers):
