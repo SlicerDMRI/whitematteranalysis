@@ -222,15 +222,17 @@ for fname in input_polydatas:
     for (fname, view) in zip(html_view_fnames, html_views):
         f = open(fname, 'a')
         img_fname = os.path.join('tract_QC_' + subject_id, view + subject_id + '.jpg')
+        html_fname = os.path.join('tract_QC_' + subject_id, 'view_multiple_'+subject_id+'.html')
         print output_dir_subdir
         print img_fname
+        print html_individual_multiviews
         #outstr = "<a href=\"" + img_fname + "\" >" + subject_id + "<img src=\""+ img_fname + "\" alt=\"" + subject_id + "></a>\n"
         #outstr = "<figure>\n"
         #outstr+= "<img src=\"" + img_fname + "\" alt=\"" + subject_id + "\" width=\"300\">\n"
         #outstr+= "<figcaption>" + subject_id + "</figcaption>\n"
         #outstr+= "</figure>\n"
         outstr = "<div class=\"floated_img\">\n"
-        outstr+= "<a href=\"" + html_individual_multiviews + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
+        outstr+= "<a href=\"" + html_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
         outstr+= "<p>" + subject_id + "</p>\n</div>\n"
         f.write(outstr)
         f.close()
