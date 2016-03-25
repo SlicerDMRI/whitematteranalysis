@@ -193,6 +193,31 @@ for fname in input_polydatas:
         os.makedirs(output_dir_subdir)
     ren.save_views(output_dir_subdir, subject_id)
 
+    print 'Multiple views for individual subject'
+    html_individual_multiviews = os.path.join(output_dir_subdir, 'view_multiple_'+subject_id+'.html')
+    f = open(html_individual_multiviews, 'w')
+    outstr = "<!DOCTYPE html>\n<html>\n"
+    f.write(outstr)
+    outstr = "<style>\n.floated_img\n{\nfloat: left;\n}\n"
+    outstr += "body {\nbackground-color: black; color: LightGray;\n}\n"
+    outstr += "img {\nborder:1px solid #021a40; margin: 5px; width=\"200\"\n}\n"
+    outstr += "p {margin: 5px; width=\"200\"; text-align: center;\n}\n"
+    outstr += "h1 {text-align: center;\n}\n"
+    outstr += "</style>\n"
+    f.write(outstr)
+    outstr = "<body>\n<h1>All " + subject_id + " Views</h1>\n"
+    f.write(outstr)
+    f.close()
+
+    for (view, descrip) in zip(html_views, html_views_descrip):
+        f = open(html_individual_multiviews, 'a')
+        img_fname = os.path.join(view + subject_id + '.jpg')
+        outstr = "<div class=\"floated_img\">\n"
+        outstr+= "<a href=\"" + img_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"450\"></a>\n"
+        outstr+= "<p>" + descrip + "</p>\n</div>\n"
+        f.write(outstr)
+        f.close()
+
     # Save view information in html file
     for (fname, view) in zip(html_view_fnames, html_views):
         f = open(fname, 'a')
@@ -205,7 +230,7 @@ for fname in input_polydatas:
         #outstr+= "<figcaption>" + subject_id + "</figcaption>\n"
         #outstr+= "</figure>\n"
         outstr = "<div class=\"floated_img\">\n"
-        outstr+= "<a href=\"" + img_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
+        outstr+= "<a href=\"" + html_individual_multiviews + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
         outstr+= "<p>" + subject_id + "</p>\n</div>\n"
         f.write(outstr)
         f.close()
