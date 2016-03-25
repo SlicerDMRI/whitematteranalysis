@@ -70,11 +70,11 @@ parser.add_argument(
     '-cluster_outlier_std', action='store', dest="clusterOutlierStandardDeviation", type=float, default=2.0,
     help='After clustering, reject fiber outliers whose fiber probability (within their cluster) is more than this number of standard deviations below the mean (either within-cluster mean or across-clusters mean). Then, on the next iteration, the clustering will be re-run without being affected by the outlier fibers. The default is 2.0 standard deviations. For more strict rejection, enter a smaller number such as 1.75. To turn off outlier rejection, enter a large number such as 100 (and set the number of iterations to 1). This probability is measured in an accurate way using pairwise comparison of all fibers in each cluster, in a leave-one-out fashion with regards to subjects. The purpose of this is to remove outlier fibers accurately within each cluster. This parameter can be tuned by the user depending on the amount of outlier fibers present in the tractography.')
 parser.add_argument(
-    '-iter', action='store', dest="iterations", type=int, default=10,
-    help='The number of iterations to repeat the clustering and outlier removal process. The default is ten iterations.')
+    '-iter', action='store', dest="iterations", type=int, default=3,
+    help='The number of iterations to repeat the clustering and outlier removal process. The default is three iterations. Visual inspection of the atlases produced after 0, 1, 2, etc. iterations of outlier removal should help choose which iteration works well for the particular dataset.')
 parser.add_argument(
     '-subject_percent', action='store', dest="subjectPercentToKeepCluster",type=float, default=0.4,
-    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then on the next iteration, the clustering will be run without being affected by the outlier fibers.')
+    help='Reject fibers in outlier clusters that contain few subjects. The default is 0.4, which means that 40%% of the subjects must be present in the cluster for its fibers to be retained. This is a safe threshold that will generally only reject clusters that contain tractography errors. Then on the next iteration, the clustering will be run without being affected by the outlier fibers.')
 parser.add_argument(
     '-norender', action='store_true', dest="flag_norender",
     help='No Render. Prevents rendering of images that would require an X connection.')

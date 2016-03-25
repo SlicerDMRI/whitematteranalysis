@@ -302,7 +302,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
 
         elif self.optimizer == "Powell":
             # Test optimization with Powell's method
-            # Powell’s method is a conjugate direction method.
+            # Powell's method is a conjugate direction method.
             #(self.final_transform, fopt, direc, iters, funcalls, warnflag, allvecs)
             (self.final_transform, fopt, direc, iters, funcalls, warnflag) = scipy.optimize.fmin_powell(self.objective_function,
                                                                             self.initial_transform,

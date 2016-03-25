@@ -46,10 +46,13 @@ parser.add_argument(
     help='Verbose. Run with -verbose for more text output.')
 parser.add_argument(
     '-mrml_fibers', action="store", dest="showNFibersInSlicer", type=float,
-    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100% of fibers.')
+    help='Approximate upper limit on number of fibers to show when MRML scene of clusters is loaded into slicer.Default is 10000 fibers; increase for computers with more memory. Note this can be edited later in the MRML file by searching for SubsamplingRatio and editing that number throughout the file. Be sure to use a text editor program (save as plain text format). An extra MRML file will be saved for visualizing 100%% of fibers.')
 parser.add_argument(
     '-reg', action='store_true', dest="registerAtlasToSubjectSpace",
     help='To cluster in individual subject space, register atlas polydata to subject. Otherwise, by default this code assumes the subject has already been registered to the atlas.')
+parser.add_argument(
+    '-norender', action='store_true', dest="flag_norender",
+    help='No Render. Prevents rendering of images that would require an X connection.')
 
 args = parser.parse_args()
 
@@ -69,13 +72,9 @@ if not os.path.exists(outdir):
 
 fname = args.inputFile
 subject_id = os.path.splitext(os.path.basename(fname))[0]
-outdir = args.outputDirectory
-if not os.path.exists(outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
-    os.makedirs(outdir)
 outdir = os.path.join(outdir, subject_id)
 if not os.path.exists(outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
+    print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
 
 print "\n=========================="
@@ -113,6 +112,12 @@ if args.registerAtlasToSubjectSpace:
     exit()
 else:
     print "Registration of atlas fibers to subject fibers is OFF. Subject must be in atlas space before calling this script."
+
+if args.flag_norender:
+    print "No rendering (for compute servers without X connection)."
+else:
+    print "Rendering. After clustering, will create colorful jpg images."
+render = not args.flag_norender
 
 print "==========================\n"
   
@@ -227,14 +232,17 @@ wma.io.write_polydata(output_polydata_s, fname_output)
 # Figure out file name and mean color for each cluster, and write the individual polydatas
 fnames = list()
 cluster_colors = list()
-number_of_clusters = numpy.max(cluster_numbers_s)
-first_cluster = numpy.min(cluster_numbers_s)
-print "<wm_cluster_from_atlas.py> Cluster indices range from:", first_cluster, "to", number_of_clusters
+# These lines counted clusters present in the subject only
+##number_of_clusters = numpy.max(cluster_numbers_s)
+##first_cluster = numpy.min(cluster_numbers_s)
+# Get the number of clusters directly from the atlas to ensure we output files for all clusters.
+[number_of_clusters, number_of_eigenvectors] = atlas.centroids.shape
+print "<wm_cluster_from_atlas.py> Cluster indices range from:", 0, "to", number_of_clusters
 
 print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
 cluster_sizes = list()
 cluster_fnames = list()
-for c in range(number_of_clusters+1):
+for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
     cluster_size = numpy.sum(mask)
     cluster_sizes.append(cluster_size)
@@ -275,15 +283,16 @@ print "<wm_cluster_atlas.py> Subsampling ratio for display of", show_fibers, "to
 fname = os.path.join(outdir, 'clustered_tracts.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
 
-# Also write one with 100% of fibers displayed
+# Also write one with 100%% of fibers displayed
 fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
 wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
 
 # View the whole thing in png format for quality control
-print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
-ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
-ren.save_views(outdir)
-del ren
+if render:
+    print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
+    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
+    ren.save_views(outdir)
+    del ren
 
 print "\n=========================="
 print '<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n'
