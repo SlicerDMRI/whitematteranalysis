@@ -107,6 +107,7 @@ def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separat
     input_mask2 = "{0}/*.csv".format(measurement_folder)
 
     measurement_files = glob.glob(input_mask) + glob.glob(input_mask2)
+    measurement_files = sorted(measurement_files)
 
     measurement_list = list()
     for m in measurement_files:
