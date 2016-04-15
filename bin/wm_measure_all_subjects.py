@@ -69,7 +69,7 @@ print "<wm_measure_all_subjects> found", len(sub_dirs), "sub directories."
 
 subject_list = []
 for dir in sub_dirs:
-    # consider all sub directories: if dir.endswith('_reg') or dir.endswith('_outlier_removed'):
+    # consider one subdirectory as one subject
     subject_list.append(dir)
 
 print "<wm_measure_all_subjects> found", len(subject_list), "subjects."
