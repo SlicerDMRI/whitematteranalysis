@@ -668,7 +668,7 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
         all_fibers_n = range(0, fiber_array_n.number_of_fibers)
 
         distances = Parallel(n_jobs=number_of_jobs,
-                             verbose=1)(
+                             verbose=0)(
             delayed(similarity.fiber_distance)(
                 fiber_array_n.get_fiber(lidx),
                 fiber_array_m,

@@ -105,84 +105,160 @@ verbose = args.flag_verbose
 print "\n<register> Starting registration...\n"
 
 
-        
-register = wma.congeal_to_atlas.SubjectToAtlasRegistration()
-register.output_directory = subject_outdir
-register.input_polydata_filename = args.inputSubject
-
 # -------------
 # SETTINGS
 # -------------
 
-points_per_fiber = 10
+rigid = False
 
 if mode == "affine":
-    # default affine for adults with fewer fibers than neonate brains (lower variability)
+    sigma_per_scale = [20, 10, 10, 5, 5]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3500, 4000]
+    subject_brain_size_per_scale = [1000, 1500, 1500, 1500, 1500]
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    final_step_per_scale = [2, 2, 1, 1, 1]
+    # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
+    points_per_fiber = 10
+    nonrigid = False
+    # Cobyla optimizer is safer regarding scaling
+    # Cobyla needs smaller steps than Powell to avoid leaving local minima on next iteration
+
+elif mode == "affine_fast":
+    # This mode is equivalent to previous parameters
     sigma_per_scale = [30, 10, 7.5, 5]
-    # We don't need so many iterations because the atlas mean brain is already done, but these are really fast.
     iterations_per_scale=[2, 2, 2, 2]
     maxfun_per_scale = [45, 60, 75, 90]
     mean_brain_size_per_scale = [1000, 3000, 4000, 5000]
     subject_brain_size_per_scale = [250, 1500, 1750, 2000]
     initial_step_per_scale = [10, 5, 5, 5]
     final_step_per_scale = [5, 2, 2, 2]
-    register.nonrigid = False
-    
+    # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
+    points_per_fiber = 10
+    nonrigid = False
+
+elif mode == "rigid_affine_fast":
+    # This mode is equivalent to previous parameters and includes an initial rigid step
+    sigma_per_scale = [30, 30, 10, 7.5, 5]
+    iterations_per_scale=[2, 2, 2, 2, 2]
+    maxfun_per_scale = [45, 45, 60, 75, 90]
+    mean_brain_size_per_scale = [1000, 1000, 3000, 4000, 5000]
+    subject_brain_size_per_scale = [250, 250, 1500, 1750, 2000]
+    initial_step_per_scale = [10, 10, 5, 5, 5]
+    final_step_per_scale = [5, 5, 2, 2, 2]
+    # 10ppf gives approximately equivalent results to 20 ppf, so we use 10.
+    points_per_fiber = 10
+    nonrigid = False
+    rigid = True
+    rigid_scale = [1, 1, 1, 0, 0]
+
 elif mode == "affine_neonate":
-    # Try smaller sigma for neonates
-    sigma_per_scale = [20, 10, 7.5, 5]
-    # We don't need so many iterations because the atlas mean brain is already done, but these are really fast.
-    iterations_per_scale=[2, 2, 2, 2]
-    maxfun_per_scale = [50, 80, 80, 200]
-    mean_brain_size_per_scale = [1000, 3000, 5000, 7500]
-    subject_brain_size_per_scale = [250, 1500, 2000, 2500]
-    initial_step_per_scale = [10, 5, 5, 5]
-    final_step_per_scale = [5, 2, 2, 2]
-    register.nonrigid = False
+    # More fibers are needed for neonate registration or noisy data.
+    # This mode is the same as affine, above, but with more fibers sampled.
+    sigma_per_scale = [20, 10, 10, 5, 5]
+    iterations_per_scale=[3, 3, 3, 3, 3]
+    maxfun_per_scale = [50, 80, 80, 80, 100]
+    mean_brain_size_per_scale = [4000, 4000, 4000, 4500, 6000]
+    subject_brain_size_per_scale = [1500, 1750, 2000, 2000, 2500]
+    initial_step_per_scale = [10, 8, 5, 3, 2]
+    final_step_per_scale = [2, 2, 1, 1, 1]
+    points_per_fiber = 10
+    nonrigid = False
+
+elif mode == "nonrigid_neonate":
+    # This mode uses the maximum data possible to register
+    # smaller, lower-quality or noisier datasets.
+    # The grid goes up to 6x6x6
+    grid_resolution_per_scale = [4, 5, 6, 6]
+    # this is in mm space.
+    initial_step_per_scale = [5, 4, 3, 2]
+    final_step_per_scale = [3, 3, 2, 1]
+    # use only very local information (small sigma)
+    sigma_per_scale = [5, 3, 2, 1.5]
+    # how many times to repeat the process at each scale
+    iterations_per_scale = [3, 3, 2, 2]
+    # higher totals for variable neonate tractography
+    mean_brain_size_per_scale = [4000, 4500, 5000, 6000]
+    subject_brain_size_per_scale = [2000, 2500, 3000, 3500]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [205, 390, 670, 670]
+    # fiber representation for computation.
+    #points_per_fiber = 5
+    points_per_fiber = 10
+    nonrigid = True
 
 elif mode == "nonrigid":
-    grid_resolution_per_scale = [3, 5, 6]
+    # This mode uses the minimum data possible to register
+    # large, high-quality datasets.
+    # This is the mode formerly known as "superfast"
+    # The grid goes up to 8x8x8
+    grid_resolution_per_scale = [4, 5, 6, 7, 8]
     # this is in mm space.
-    initial_step_per_scale = [5, 3, 2]
-    final_step_per_scale = [2, 1, 1]
+    initial_step_per_scale = [5, 4, 3, 2, 1.5]
+    final_step_per_scale = [3, 3, 2, 1, 1]
     # use only very local information (small sigma)
-    sigma_per_scale = [3, 2, 1]
+    # sigma 1.25 is apparently not useful: stick with a minumum of 2mm
+    sigma_per_scale = [5, 3, 2, 2, 2]
     # how many times to repeat the process at each scale
-    iterations_per_scale = [2, 2, 2]
-    # this takes twice as long--still testing what is optimal for this parameter
-    #iterations_per_scale = [4, 4, 4]
-    # these are small samples to go (relatively) quickly: the goal is just to improve the mean brain each time
-    mean_brain_size_per_scale = [2500, 2750, 3000]
-    subject_brain_size_per_scale = [500, 750, 900]
-    # stop computation early. no need to ever converge, just improve objective as quickly as possible
-    # These settings are for a 5x5x5 grid, 125*3 = 375 parameter space.
-    maxfun_per_scale = [500, 500, 750]
+    iterations_per_scale = [10, 10, 8, 5, 2]
+    # These lower than the totals in the affine because
+    # this computation is more expensive
+    mean_brain_size_per_scale = [1000, 1000, 1000, 1000, 1000]
+    subject_brain_size_per_scale = [500, 500, 500, 500, 500]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # 7x7x7 grid, 343*3 = 1029 parameter space.
+    # 8x8x8 grid, 512*3 = 1536 parameter space.
+    # 9x9x9 grid, 721*3 = 2187 parameter space.
+    # 10x10x10, 1000*3 = 3000 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [205, 390, 670, 1049, 1556]
     # fiber representation for computation.
-    points_per_fiber = 15
-    register.nonrigid = True
-    register.nonrigid_grid_resolution = 5
-    
-elif mode == "nonrigid_fine":
+    points_per_fiber = 3
+    nonrigid = True
+
+elif mode == "nonrigid_10":
+    # This runs longer than default nonrigid, going to a 10x10x10 grid.
+    # This mode uses the minimum data possible to register
+    # large, high-quality datasets.
+    # This is the mode formerly known as "superfast"
+    # The grid goes up to 10x10x10
+    grid_resolution_per_scale = [4, 5, 6, 7, 8, 9, 10]
     # this is in mm space.
-    initial_step_per_scale = [2, 2, 2]
-    final_step_per_scale = [1, 1, 1]
+    initial_step_per_scale = [5, 4, 3, 2, 1.5, 1.5, 1.5]
+    final_step_per_scale = [3, 3, 2, 1, 1, 1, 1]
     # use only very local information (small sigma)
-    sigma_per_scale = [3, 2, 1]
+    # sigma 1.25 is apparently not useful: stick with a minumum of 2mm
+    sigma_per_scale = [5, 3, 2, 2, 2, 2, 2]
     # how many times to repeat the process at each scale
-    iterations_per_scale = [2, 2, 2]
-    # this takes twice as long--still testing what is optimal for this parameter
-    #iterations_per_scale = [4, 4, 4]
-    # We need more samples than for the 5x5x5 grid. These parameters run slowly but perform well.
-    # The lower sample sizes  [2500, 2750, 3000] [500, 750, 900] were not effective here.
-    mean_brain_size_per_scale = [3000, 4000, 5000]
-    subject_brain_size_per_scale = [1000, 1500, 2000]
-    # These settings are for a 6x6x6 grid, 216*3 = 648 parameter space.
-    maxfun_per_scale = [1296, 1944, 2592]
+    iterations_per_scale = [10, 10, 8, 5, 4, 3, 2]
+    # These lower than the totals in the affine because
+    # this computation is more expensive
+    mean_brain_size_per_scale = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
+    subject_brain_size_per_scale = [500, 500, 500, 500, 500, 500, 500]
+    # 3x3x3 grid, 27*3 = 81 parameter space.
+    # 4x4x4 grid, 64*3 = 192 parameter space.
+    # 5x5x5 grid, 125*3 = 375 parameter space.
+    # 6x6x6 grid, 216*3 = 648 parameter space.
+    # 7x7x7 grid, 343*3 = 1029 parameter space.
+    # 8x8x8 grid, 512*3 = 1536 parameter space.
+    # 9x9x9 grid, 721*3 = 2187 parameter space.
+    # 10x10x10, 1000*3 = 3000 parameter space.
+    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
+    # so stop the optimizer early and create a better current model.
+    maxfun_per_scale = [205, 390, 670, 1049, 1556, 2200, 3020]
     # fiber representation for computation.
-    points_per_fiber = 15
-    register.nonrigid = True
-    register.nonrigid_grid_resolution = 6
-    register.initialize_nonrigid_grid()
+    points_per_fiber = 3
+    nonrigid = True
 
 elif mode == "affineTEST":
     # very quick test if software is working
@@ -193,31 +269,37 @@ elif mode == "affineTEST":
     subject_brain_size_per_scale = [100, 500, 1000]
     initial_step_per_scale = [5, 5, 5, 5]
     final_step_per_scale = [2, 2, 2, 2]
-    register.nonrigid = False
+    nonrigid = False
+    points_per_fiber = 5
     
 elif mode == "nonrigidTEST":
     # very quick test if software is working
-    initial_step_per_scale = [5, 3, 1]
-    final_step_per_scale = [2, 1, 0.05]
-    sigma_per_scale = [3, 2, 1]
-    iterations_per_scale = [1, 1, 1]
-    mean_brain_size_per_scale = [1500, 2000, 3000]
-    subject_brain_size_per_scale = [500, 750, 1000]
+    grid_resolution_per_scale = [3, 4, 5, 6, 8, 10]
+    initial_step_per_scale = [5, 3, 1, 1, 1, 1]
+    final_step_per_scale = [2, 1, 1, 1, 1, 1]
+    sigma_per_scale = [3, 2, 1, 1, 1, 1]
+    iterations_per_scale = [1, 1, 1, 1, 1, 1]
+    mean_brain_size_per_scale = [1000, 1000, 1000, 1000, 1000, 1000]
+    subject_brain_size_per_scale = [100, 100, 100, 100, 100, 100]
     # stop computation: this is just a quick test the software is working
-    maxfun_per_scale = [10, 10, 10]
+    maxfun_per_scale = [10, 10, 10, 10, 10, 10]
     points_per_fiber = 15
-    register.nonrigid = True
+    nonrigid = True
 
 else:
     print "\n<register> Error: Unknown registration mode:", mode
     exit()
 
 
-    
+
+register = wma.congeal_to_atlas.SubjectToAtlasRegistration()
+register.output_directory = subject_outdir
+register.input_polydata_filename = args.inputSubject
+if nonrigid:
+    register.mode = "Nonrigid"
 # We have to add polydatas after setting nonrigid in the register object
 register.set_subject(subject_pd, subject_id)
 register.set_atlas(atlas_pd, atlas_id)
-
 
 register.points_per_fiber = points_per_fiber
 
@@ -250,9 +332,14 @@ for scale in do_scales:
     register.maxfun = maxfun_per_scale[scale]
     register.mean_brain_size = mean_brain_size_per_scale[scale]
     register.subject_brain_size = subject_brain_size_per_scale[scale]
-    if register.nonrigid:
+    if register.mode == "Nonrigid":
         register.nonrigid_grid_resolution = grid_resolution_per_scale[scale]
         register.update_nonrigid_grid()
+    if rigid:
+        if rigid_scale[scale]:
+            register.mode = "Rigid"
+        else:
+            register.mode = "Affine"
 
     for idx in range(0,iterations_per_scale[scale]):
         register.iterate()

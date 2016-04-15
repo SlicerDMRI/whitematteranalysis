@@ -23,7 +23,6 @@ class SubjectToAtlasRegistration:
         # performance options set by user
         self.verbose = False
         self.points_per_fiber = 15
-        self.nonrigid = False
         
         # optimizer parameters set by user
         self.maxfun = 300
@@ -34,7 +33,9 @@ class SubjectToAtlasRegistration:
         # A different sample of 1000 is taken every iteration, so we really
         # see more fibers than this over the course of the registration
         self.subject_brain_size = 1000
-        
+        # options are Affine, Rigid, Nonrigid
+        self.mode = "Affine"
+
         # internal stuff
         self.subject_polydata = None
         self.atlas_polydata = None
@@ -77,7 +78,7 @@ class SubjectToAtlasRegistration:
         
     def set_subject(self, polydata, subject_id):
         self.subject_polydata = polydata
-        if self.nonrigid:
+        if self.mode == "Nonrigid":
             # This sets up identity transform to initialize.
             res = self.nonrigid_grid_resolution
             trans = numpy.zeros(res*res*res*3)
@@ -114,19 +115,15 @@ class SubjectToAtlasRegistration:
         fibers.convert_from_polydata(subject_brain, self.points_per_fiber)
         moving = numpy.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
 
-        if self.nonrigid:
-            mode = 'Nonrigid'
-        else:
-            mode = 'Linear'
         subject_idx = 1
         iteration_count = self.total_iterations
         output_directory = self.output_directory
         step_size = numpy.array([self.initial_step, self.final_step])
         render = False
         
-        (self.transform_as_array, objectives, diff) = wma.congeal_multisubject.congeal_multisubject_inner_loop(fixed, moving, self.transform_as_array, mode, self.sigma, subject_idx, iteration_count, self.output_directory, step_size, self.maxfun, render, self.nonrigid_grid_resolution)
+        (self.transform_as_array, objectives, diff) = wma.congeal_multisubject.congeal_multisubject_inner_loop(fixed, moving, self.transform_as_array, self.mode, self.sigma, subject_idx, iteration_count, self.output_directory, step_size, self.maxfun, render, self.nonrigid_grid_resolution)
 
-        if self.nonrigid:
+        if self.mode == "Nonrigid":
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(self.transform_as_array)
             print vtktrans
         else:
@@ -170,7 +167,7 @@ class SubjectToAtlasRegistration:
                 os.makedirs(outdir)
 
             print "______________ FINAL__________________"
-            if self.nonrigid:
+            if self.mode == "Nonrigid":
                 print self.transform
             else:
                 print self.transform.GetMatrix()
