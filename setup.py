@@ -31,7 +31,8 @@ setup(
         'bin/wm_cluster_remove_outliers.py',
         'bin/wm_measure_all_subjects.py',
         'bin/wm_quality_control_cluster_measurements.py',
-        'bin/wm_statistics.py'
+        'bin/wm_statistics.py',
+        'bin/wm_statistics_export_data.py'
     ],
     include_dirs=[numpy.get_include()]
 )
