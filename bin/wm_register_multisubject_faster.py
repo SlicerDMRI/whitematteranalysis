@@ -148,6 +148,19 @@ if mode == "affine":
     # Cobyla optimizer is safer regarding scaling
     # Cobyla needs smaller steps than Powell to avoid leaving local minima on next iteration
 
+elif mode == "affine_fast_cheap":
+    # For large datasets e.g. n=100
+    sigma_per_scale = [20, 10, 10, 10]
+    iterations_per_scale=[3, 3, 3, 3]
+    maxfun_per_scale = [50, 80, 80, 80]
+    mean_brain_size_per_scale = [2000, 3000, 3000, 3000]
+    subject_brain_size_per_scale = [1000, 1000, 1000, 1000]
+    initial_step_per_scale = [10, 8, 5, 3]
+    # small final step is important for better convergence
+    final_step_per_scale = [1, 1, 0.5, 0.5]
+    points_per_fiber = 5
+    nonrigid = False
+
 elif mode == "affine_neonate":
     # More fibers are needed for neonate registration or noisy data.
     # This mode is the same as affine, above, but with more fibers sampled.
@@ -191,7 +204,6 @@ elif mode == "nonrigid_neonate":
 elif mode == "nonrigid":
     # This mode uses the minimum data possible to register
     # large, high-quality datasets.
-    # This is the mode formerly known as "superfast"
     # The grid goes up to 8x8x8
     grid_resolution_per_scale = [4, 5, 6, 7, 8]
     # this is in mm space.
@@ -221,25 +233,23 @@ elif mode == "nonrigid":
     points_per_fiber = 3
     nonrigid = True
 
-elif mode == "nonrigid_10":
-    # This runs longer than default nonrigid, going to a 10x10x10 grid.
+elif mode == "nonrigid_lowsample":
     # This mode uses the minimum data possible to register
-    # large, high-quality datasets.
-    # This is the mode formerly known as "superfast"
-    # The grid goes up to 10x10x10
-    grid_resolution_per_scale = [4, 5, 6, 7, 8, 9, 10]
+    # large, high-quality datasets. e.g. n=100
+    # The grid goes up to 8x8x8
+    grid_resolution_per_scale = [4, 5, 6, 7, 8]
     # this is in mm space.
-    initial_step_per_scale = [5, 4, 3, 2, 1.5, 1.5, 1.5]
-    final_step_per_scale = [3, 3, 2, 1, 1, 1, 1]
+    initial_step_per_scale = [5, 4, 3, 2, 1.5]
+    final_step_per_scale = [3, 3, 2, 1, 1]
     # use only very local information (small sigma)
     # sigma 1.25 is apparently not useful: stick with a minumum of 2mm
-    sigma_per_scale = [5, 3, 2, 2, 2, 2, 2]
+    sigma_per_scale = [5, 3, 2, 2, 2]
     # how many times to repeat the process at each scale
-    iterations_per_scale = [10, 10, 8, 5, 4, 3, 2]
-    # These lower than the totals in the affine because
+    iterations_per_scale = [10, 10, 8, 5, 2]
+    # These are lower than the totals in the affine because
     # this computation is more expensive
-    mean_brain_size_per_scale = [1000, 1000, 1000, 1000, 1000, 1000, 1000]
-    subject_brain_size_per_scale = [500, 500, 500, 500, 500, 500, 500]
+    mean_brain_size_per_scale = [800, 800, 800, 800, 800]
+    subject_brain_size_per_scale = [450, 450, 450, 450, 450]
     # 3x3x3 grid, 27*3 = 81 parameter space.
     # 4x4x4 grid, 64*3 = 192 parameter space.
     # 5x5x5 grid, 125*3 = 375 parameter space.
@@ -250,35 +260,9 @@ elif mode == "nonrigid_10":
     # 10x10x10, 1000*3 = 3000 parameter space.
     # Inspection of output pdfs shows that objective decreases steadily for all subjects,
     # so stop the optimizer early and create a better current model.
-    maxfun_per_scale = [205, 390, 670, 1049, 1556, 2200, 3020]
+    maxfun_per_scale = [205, 390, 670, 1049, 1556]
     # fiber representation for computation.
     points_per_fiber = 3
-    nonrigid = True
-
-elif mode == "nonrigidOLD":
-    # This mode is worse than the superfast mode for connectome, and much slower.
-    grid_resolution_per_scale = [4, 5, 6, 6]
-    # this is in mm space.
-    initial_step_per_scale = [5, 4, 3, 2]
-    final_step_per_scale = [3, 3, 2, 1]
-    # use only very local information (small sigma)
-    sigma_per_scale = [5, 3, 2, 1.5]
-    # how many times to repeat the process at each scale
-    iterations_per_scale = [3, 3, 2, 2]
-    # These are a bit lower than the totals in the affine because
-    # this computation is expensive
-    mean_brain_size_per_scale = [3000, 3000, 4000, 5000]
-    subject_brain_size_per_scale = [1000, 1000, 1500, 2000]
-    # 3x3x3 grid, 27*3 = 81 parameter space.
-    # 4x4x4 grid, 64*3 = 192 parameter space.
-    # 5x5x5 grid, 125*3 = 375 parameter space.
-    # 6x6x6 grid, 216*3 = 648 parameter space.
-    # Inspection of output pdfs shows that objective decreases steadily for all subjects,
-    # so stop the optimizer early and create a better current model.
-    maxfun_per_scale = [205, 390, 670, 670]
-    # fiber representation for computation.
-    #points_per_fiber = 5
-    points_per_fiber = 10
     nonrigid = True
 
 elif mode == "affineTEST":
