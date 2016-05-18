@@ -92,10 +92,8 @@ if transform_way == 'multiple':
     if number_of_polydatas != number_of_transforms:
         print "Error: The number of input VTK/VTP files", number_of_polydatas,"should be equal to the number of transform files", number_of_transforms
         exit()
-    for polydata, transform in zip(input_polydatas, input_transforms):
-        print "<wm_harden_transform_with_slicer>", transform, 'is applied to', polydata
 
-print "<wm_harden_transform_with_slicer> Starting scalar measurement extraction."
+print "<wm_harden_transform_with_slicer> Starting harden transforms."
 print ""
 print "=====input directory======\n", inputdir
 print "=====output directory=====\n", outdir
