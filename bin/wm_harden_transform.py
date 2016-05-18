@@ -22,22 +22,22 @@ parser.add_argument("-v", "--version",
     help="Show program's version number and exit")
 parser.add_argument(
     'inputDirectory',
-    help='Directory of VTK/VTP files that are going to be transformed.')
+    help='Directory of input VTK/VTP files that are going to be transformed.')
 parser.add_argument(
     'outputDirectory',
-    help='Directory of the transformed results.')
+    help='Directory of output transformed results.')
 parser.add_argument(
     'Slicer',
     help='Path of 3D Slicer.')
 parser.add_argument(
     '-t', dest="transform_file",
-    help='Individual transform matrix file. If this is assigned, all input files will be transformed with the same transform matrix.')
+    help='Individual transform matrix file. If this is assigned, all input files will be transformed with this transform matrix.')
 parser.add_argument(
     '-ts', dest="transform_folder",
-    help='Multiple transform matrix files. If this is assigned, each input file will be transformed with one corresponding transform matrix. Make sure that the file names of the TPK/VTP file and the transform file match each other in alphabetical order.')
+    help='Folder of multiple transform matrix files. If this is assigned, input files will be transformed with different transform matrices. Make sure that the input and transform files match each other in alphabetical order.')
 parser.add_argument(
     '-i', action = 'store_true', dest = "inverse_transform",
-    help='Transform with the inverse transform matrix if given.')
+    help='Inverse transform if given.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
