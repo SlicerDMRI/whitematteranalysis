@@ -115,7 +115,7 @@ def command_harden_transform(polydata, transform, inverse, slicer_path, outdir):
     cmd = slicer_path + " --no-main-window --python-script $(which harden_transform_with_slicer.py) " + \
           polydata + " " + transform + " " + str(str_inverse) + " " + outdir + " --python-code 'slicer.app.quit()' " + \
           ' >> ' + os.path.join(outdir, 'log.txt 2>&1')
-    print cmd
+
     os.system(cmd)
 
 if transform_way == 'multiple':
