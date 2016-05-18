@@ -44,18 +44,18 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-
+inputdir = os.path.abspath(args.inputDirectory)
 if not os.path.isdir(args.inputDirectory):
     print "Error: Input directory", args.inputDirectory, "does not exist."
     exit()
 
-outdir = args.outputDirectory
-if not os.path.exists(outdir):
-    print "Output directory", outdir, "does not exist, creating it."
+outdir = os.path.abspath(args.outputDirectory)
+if not os.path.exists(args.outputDirectory):
+    print "Output directory", args.outputDirectory, "does not exist, creating it."
     os.makedirs(outdir)
 
-slicer_path = args.Slicer
-if not os.path.exists(slicer_path):
+slicer_path = os.path.abspath(args.Slicer)
+if not os.path.exists(args.Slicer):
     print "Error: 3D Slicer", args.Slicer, "does not exist."
     exit()
 
@@ -65,13 +65,13 @@ if (args.transform_file is None and args.transform_folder is None) or \
     exit()
 elif args.transform_file is not None:
     transform_way = 'individual'
-    transform_path = args.transform_file
+    transform_path = os.path.abspath(args.transform_file)
     if not os.path.isfile(args.transform_file):
         print "Error: Input transform file", args.transform_file, "does not exist or it is not a file."
         exit()
 elif args.transform_folder is not None:
     transform_way = 'multiple'
-    transform_path = args.transform_folder
+    transform_path = os.path.abspath(args.transform_folder)
     if not os.path.isdir(args.transform_folder):
         print "Error: Input transform file folder ", args.transform_folder, "does not exist."
         exit()
@@ -83,11 +83,11 @@ if args.numberOfJobs is not None:
 else:
     number_of_jobs = 1
 
-input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
+input_polydatas = wma.io.list_vtk_files(inputdir)
 number_of_polydatas = len(input_polydatas)
 
 if transform_way == 'multiple':
-    input_transforms = wma.io.list_transform_files(args.transform_folder)
+    input_transforms = wma.io.list_transform_files(transform_path)
     number_of_transforms = len(input_transforms)
     if number_of_polydatas != number_of_transforms:
         print "Error: The number of input VTK/VTP files", number_of_polydatas,"should be equal to the number of transform files", number_of_transforms
@@ -97,9 +97,9 @@ if transform_way == 'multiple':
 
 print "<wm_harden_transform_with_slicer> Starting scalar measurement extraction."
 print ""
-print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=====3D Slicer====\n", args.Slicer
+print "=====input directory======\n", inputdir
+print "=====output directory=====\n", outdir
+print "=====3D Slicer====\n", slicer_path
 print "=====Way of transform====\n", transform_way
 print "=====Inverse? ====\n", inverse
 print "=====Transform file(s) path====\n", transform_path
@@ -113,8 +113,9 @@ def command_harden_transform(polydata, transform, inverse, slicer_path, outdir):
 
     print "<wm_harden_transform_with_slicer> Transforming:", polydata
     cmd = slicer_path + " --no-main-window --python-script $(which harden_transform_with_slicer.py) " + \
-          polydata + " " + transform + " " + str(str_inverse) + " " + outdir + " --exit-after-startup" + \
-          ' >> ' + os.path.join(args.outputDirectory, 'log.txt 2>&1')
+          polydata + " " + transform + " " + str(str_inverse) + " " + outdir + " --python-code 'slicer.app.quit()' " + \
+          ' >> ' + os.path.join(outdir, 'log.txt 2>&1')
+    print cmd
     os.system(cmd)
 
 if transform_way == 'multiple':
@@ -138,4 +139,4 @@ print "<wm_harden_transform_with_slicer> Transform were conducted for", number_o
 if number_of_results != number_of_polydatas:
     print "Error: The numbers of inputs and outputs are different. Check log file for errors."
 else:
-    os.remove(os.path.join(args.outputDirectory, 'log.txt'))
+    os.remove(os.path.join(outdir, 'log.txt'))
