@@ -126,9 +126,11 @@ if transform_way == 'multiple':
 else:
     print "======", transform_path, "will be applied to all inputs.\n"
 
-    Parallel(n_jobs=number_of_jobs, verbose=1)(
-        delayed(command_harden_transform)(polydata, transform_path, inverse, slicer_path, outdir)
-        for polydata in input_polydatas)
+    command_harden_transform(inputdir, transform_path, inverse, slicer_path, outdir)
+
+    # Parallel(n_jobs=number_of_jobs, verbose=1)(
+    #     delayed(command_harden_transform)(polydata, transform_path, inverse, slicer_path, outdir)
+    #     for polydata in input_polydatas)
 
 output_polydatas = wma.io.list_vtk_files(outdir)
 number_of_results = len(output_polydatas)

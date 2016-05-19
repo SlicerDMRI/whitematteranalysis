@@ -3,6 +3,12 @@ import argparse
 import slicer
 import os
 
+try:
+    import whitematteranalysis as wma
+except:
+    print "<wm_harden_transform_with_slicer> Error importing white matter analysis package\n"
+    raise
+
 parser = argparse.ArgumentParser(
     description="Harden transform with Slicer.",
     epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
@@ -54,4 +60,9 @@ def harden_transform(polydata, transform, inverse, outdir):
         output_name = polydata_name.replace(".", "_inv_trans.")
     slicer.util.saveNode(polydata_node, os.path.join(outdir, output_name))
 
-harden_transform(args.polydata, args.transform, args.inverse, args.outdir)
+if os.path.isfile(args.polydata):
+    harden_transform(args.polydata, args.transform, args.inverse, args.outdir)
+elif os.path.isdir(args.polydata):
+    input_polydatas = wma.io.list_vtk_files(args.polydata)
+    for polydata in input_polydatas:
+        harden_transform(polydata, args.transform, args.inverse, args.outdir)
