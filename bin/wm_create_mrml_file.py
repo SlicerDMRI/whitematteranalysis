@@ -38,11 +38,11 @@ print "<quality_control> Found ", number_of_files, "vtk files in input directory
 
 # define R, G, B colors
 # hack a colormap. 0..255 values for each
-step = 255 / (number_of_files-1)
+step = int(100*255.0 / (number_of_files-1))
 print step, number_of_files
-R = range(0,255+1, step)
-G = numpy.abs(range(-127,128+1, step))* 2.0
-B = range(255+1,0, -step)
+R = numpy.array(range(0,100*255+1, step)) / 100.0
+G = numpy.abs(range(100*-127,100*128+1, step))* 2.0 / 100.0
+B = numpy.array(range(100*255+1,0, -step)) / 100.0
 
 #print len(R), len (G), len(B)
 #print R

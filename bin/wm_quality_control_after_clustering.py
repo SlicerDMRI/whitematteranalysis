@@ -2,6 +2,7 @@
 import argparse
 import os
 import numpy
+import glob
 
 try:
     import whitematteranalysis as wma
@@ -36,9 +37,6 @@ parser.add_argument(
 parser.add_argument(
     'outputDirectory',
     help='Quality control information will be stored in the output directory, which will be created if it does not exist.')
-parser.add_argument(
-    '-j', action="store", dest="numberOfJobs", type=int,
-    help='Number of processors to use.')
 
 args = parser.parse_args()
 
@@ -60,7 +58,11 @@ num_of_subjects = len(subject_list)
 flag_same_num_clusters = 1
 for sidx in range(0, num_of_subjects):
     sub = subject_list[sidx]
-    cluster_polydatas = wma.io.list_vtk_files(os.path.join(args.inputDirectory, sub))
+    sub_dir = os.path.join(args.inputDirectory, sub)
+    input_mask = "{0}/cluster_*.vtk".format(sub_dir)
+    input_mask2 = "{0}/cluster_*.vtp".format(sub_dir)
+    cluster_polydatas = glob.glob(input_mask) + glob.glob(input_mask2)
+    cluster_polydatas = sorted(cluster_polydatas)
     print "  ", sub, "has", len(cluster_polydatas), "clusters."
     if sidx == 0:
         num_of_clusters = len(cluster_polydatas)
@@ -78,7 +80,11 @@ num_fibers_per_subject = numpy.zeros([num_of_subjects, num_of_clusters])
 for sidx in range(0, num_of_subjects):
     sub = subject_list[sidx]
     print "   loading", sub
-    cluster_polydatas = wma.io.list_vtk_files(os.path.join(args.inputDirectory, sub))
+    sub_dir = os.path.join(args.inputDirectory, sub)
+    input_mask = "{0}/cluster_*.vtk".format(sub_dir)
+    input_mask2 = "{0}/cluster_*.vtp".format(sub_dir)
+    cluster_polydatas = glob.glob(input_mask) + glob.glob(input_mask2)
+    cluster_polydatas = sorted(cluster_polydatas)
     for cidx in range(0, num_of_clusters):
         fname = cluster_polydatas[cidx]
         pd = wma.io.read_polydata(fname)
@@ -99,8 +105,10 @@ clusters_qc_file.close()
 
 if HAVE_PLT:
     print "<wm_quality_control_after_clustering.py> Saving subjects per cluster histogram."
-    plt.figure()
-    plt.hist(subjects_per_cluster, num_of_subjects)
+    fig, ax = plt.subplots()
+    counts = numpy.bincount(subjects_per_cluster)
+    ax.bar(range(num_of_subjects + 1), counts, width=1, align='center')
+    ax.set(xticks=range(num_of_subjects + 1), xlim=[-1, num_of_subjects + 1])
     plt.title('Histogram of Subjects per Cluster')
     plt.xlabel('subjects per cluster')
     plt.ylabel('number of clusters')
