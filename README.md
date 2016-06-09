@@ -8,7 +8,7 @@ It implements algorithms from publications listed here:
 http://projects.iq.harvard.edu/whitematteranalysis/publications
 
 Also see the github.io page here:
-http://ljod.github.io/whitematteranalysis/
+http://slicerdmri.github.io/whitematteranalysis/
 
 Please reference O'Donnell, LJ., and Westin, CF. Automatic
 tractography segmentation using a high-dimensional white matter
@@ -17,7 +17,7 @@ atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.
 #Installation
 ###1. Download whitematteranalysis from github. 
 
-      git clone https://github.com/ljod/whitematteranalysis.git
+      git clone https://github.com/SlicerDMRI/whitematteranalysis.git
       
 ###2. Install python. 
 Anaconda is a nice option since it has VTK and scipy.
@@ -57,4 +57,4 @@ To install your compiled vtk into your python:
      python setup.py install
 
 ###7. Please see the wiki for usage instructions.
-https://github.com/ljod/whitematteranalysis/wiki
+https://github.com/SlicerDMRI/whitematteranalysis/wiki
