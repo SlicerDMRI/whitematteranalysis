@@ -106,9 +106,10 @@ clusters_qc_file.close()
 if HAVE_PLT:
     print "<wm_quality_control_after_clustering.py> Saving subjects per cluster histogram."
     fig, ax = plt.subplots()
-    counts = numpy.bincount(subjects_per_cluster)
+    counts = numpy.zeros(num_of_subjects+1)
+    counts[:numpy.max(subjects_per_cluster)+1] = numpy.bincount(subjects_per_cluster)
     ax.bar(range(num_of_subjects + 1), counts, width=1, align='center')
-    ax.set(xticks=range(num_of_subjects + 1), xlim=[-1, num_of_subjects + 1])
+    ax.set(xlim=[-1, num_of_subjects + 1])
     plt.title('Histogram of Subjects per Cluster')
     plt.xlabel('subjects per cluster')
     plt.ylabel('number of clusters')
