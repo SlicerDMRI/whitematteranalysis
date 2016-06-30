@@ -10,9 +10,16 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 Also see the github.io page here:
 http://slicerdmri.github.io/whitematteranalysis/
 
-Please reference O'Donnell, LJ., and Westin, CF. Automatic
+Please reference the following papers:
+
+O'Donnell, LJ., and Westin, CF. Automatic
 tractography segmentation using a high-dimensional white matter
 atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.
+
+O’Donnell LJ, Wells III WM, Golby AJ, Westin CF. Unbiased groupwise registration of white matter tractography. InInternational Conference on Medical Image Computing and Computer-Assisted Intervention 2012 Oct 1 (pp. 123-130). Springer Berlin Heidelberg.
+
+And for projects using Slicer please include this text (or similar):
+"We performed tractography visualization with anatomical hierarchies in 3D Slicer (http://www.slicer.org) via the SlicerDMRI project (https://github.com/SlicerDMRI), funded by NIH U01 CA199459."
 
 #Installation
 ###1. Download whitematteranalysis from github. 
