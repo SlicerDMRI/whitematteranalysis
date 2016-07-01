@@ -16,6 +16,7 @@ setup(
     ext_modules = cythonize("whitematteranalysis/*.pyx"),
     scripts = [ 
         'bin/picktracts_converter.py',
+        'bin/harden_transform_with_slicer.py',
         'bin/wm_cluster_atlas.py',
         'bin/wm_cluster_from_atlas.py',
         'bin/wm_cluster_subject.py',
@@ -33,7 +34,8 @@ setup(
         'bin/wm_quality_control_cluster_measurements.py',
         'bin/wm_statistics.py',
         'bin/wm_statistics_export_data.py',
-        'bin/wm_quality_control_after_clustering.py'
+        'bin/wm_quality_control_after_clustering.py',
+        'bin/wm_harden_transform.py'
     ],
     include_dirs=[numpy.get_include()]
 )

@@ -65,7 +65,14 @@ def list_vtk_files(input_dir):
     input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)
-    
+
+def list_transform_files(input_dir):
+    # Find input files
+    input_mask = "{0}/*.tfm".format(input_dir)
+    input_tf_fnames = glob.glob(input_mask)
+    input_tf_fnames = sorted(input_tf_fnames)
+    return (input_tf_fnames)
+
 def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fibers, random_seed=None, fiber_length_max=None):
     """ Find and read all .vtk and .vtp files in the given directory
     input_dir. Preprocess with fiber length threshold and downsample
