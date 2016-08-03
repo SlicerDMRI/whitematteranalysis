@@ -97,7 +97,7 @@ for c_idx in range(len(cluster_vtp_list)):
 appender.Update()
 pd_appended_cluster = appender.GetOutput()
 
-output_file = 'append_cluster_' + output_suffix[:-1] + '.vtp'
+output_file = 'cluster_appended_' + output_suffix[:-1] + '.vtp'
 wma.io.write_polydata(pd_appended_cluster, os.path.join(outdir, output_file))
 
 print '<wm_append_cluster> Appended clusters , number of fibers', pd_appended_cluster.GetNumberOfLines()
