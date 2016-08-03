@@ -74,7 +74,6 @@ for c_idx in range(len(cluster_vtp_list)):
     for p_idx in range(0, pd_cluster.GetNumberOfPoints()):
         vtk_array.InsertNextTuple1(int(cluster_list[c_idx]))
 
-    pd_cluster_point = pd_cluster.GetPointData().AddArray(vtk_array)
     pd_cluster.GetPointData().AddArray(vtk_array)
     pd_cluster.Update()
 
@@ -94,4 +93,3 @@ wma.io.write_polydata(pd_appended_cluster, os.path.join(outdir, output_file))
 print '<wm_append_cluster> Appended clusters , number of fibers', pd_appended_cluster.GetNumberOfLines()
 print ''
 print '<wm_append_cluster> Save result to', os.path.join(outdir, output_file)
-print '<wm_append_cluster> Use scalar \'cluster_idx\' to see the fibers from different subjects in 3D Slicer.'
