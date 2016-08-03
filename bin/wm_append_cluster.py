@@ -23,9 +23,8 @@ parser.add_argument(
     'outputDirectory',
     help='The output directory should be a new empty directory. It will be created if needed.')
 parser.add_argument(
-    'clusterList',
-    help='A list of clusters to be appended, separated by comma,  e.g., 1,2,4,5')
-
+    'clusterList', type=int, nargs='+',
+    help='A list of clusters to be appended, e.g., 1 2 3')
 
 args = parser.parse_args()
 
@@ -39,31 +38,23 @@ if not os.path.exists(args.outputDirectory):
     print "<wm_append_cluster> Error: Output directory", args.outputDirectory, "does not exist, creating it."
     os.makedirs(outdir)
 
-cluster_list = args.clusterList.split(",")
-if len(cluster_list) == 0:
-    print "<wm_append_cluster> Error: input list", args.clusterList, "is not correct."
-    exit()
+cluster_list = args.clusterList
 
 cluster_vtp_list = list()
 output_suffix = ''
-for c_idx in range(len(cluster_list)):
+for c_idx in cluster_list:
 
-    if len(cluster_list[c_idx]) > 5:
-        print "<wm_append_cluster> Error: input cluster index", cluster_list[c_idx], "should less that 99999."
+    if c_idx > 99999:
+        print "<wm_append_cluster> Error: input cluster index", c_idx, "should be smaller than 99999."
         exit()
 
-    try:
-        int(cluster_list[c_idx])
-    except:
-        print "<wm_append_cluster> Error: input cluster index ", cluster_list[c_idx], "should be an integer"
+    cluster_vtp_filename = 'cluster_' + str(c_idx).zfill(5) + '.vtp'
+    if not os.path.exists(os.path.join(inputdir, cluster_vtp_filename)):
+        print "<wm_append_cluster> Error:", cluster_vtp_filename, "does not exist."
         exit()
 
-    cluster_vtp_list.append('cluster_'+cluster_list[c_idx].zfill(5)+'.vtp')
-    output_suffix = output_suffix+cluster_list[c_idx]+'_'
-
-    if not os.path.exists(os.path.join(inputdir, cluster_vtp_list[c_idx])):
-        print "<wm_append_cluster> Error: cluster", cluster_vtp_list[c_idx], "does not exist."
-        exit()
+    cluster_vtp_list.append(cluster_vtp_filename)
+    output_suffix = output_suffix + str(c_idx) + '_'
 
 print ""
 print "<wm_append_cluster> Starting appending cluster."
