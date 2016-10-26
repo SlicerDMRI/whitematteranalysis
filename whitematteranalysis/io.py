@@ -450,6 +450,15 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                 tps = vtk.vtkBSplineTransform()
             tps.DeepCopy(tx)
 
+            #extent = tps.GetCoefficients().GetExtent()
+            #origin = tps.GetCoefficients().GetOrigin()
+            #spacing = tps.GetCoefficients().GetSpacing()
+            #dims = tps.GetCoefficients().GetDimensions()
+            #print "E:", extent
+            #print "O:", origin
+            #print "S:", spacing
+            #print "D:", dims
+
             # invert to get the transform suitable for resampling an image
             tps.Inverse()
 
@@ -468,9 +477,29 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             # vtk.vtkTransformToGrid() does, but this puts things into
             # LPS.
 
-            #grid_size = [11, 11, 11]
-            grid_size = [15, 15, 15]
-            grid_spacing = 20
+            # This low-res grid produced small differences (order of 1-2mm) when transforming
+            # polydatas inside Slicer vs. in this code. 
+            #grid_size = [15, 15, 15]
+            #grid_spacing = 10
+            # This higher-res grid has fewer small numerical differences
+            # grid_size = [50, 50, 50]
+            # grid_spacing = 5
+            # This higher-res grid has fewer small numerical differences, but files are larger
+            #grid_size = [70, 70, 70]
+            #grid_spacing = 3
+
+            # This higher-res grid is sufficient to limit numerical
+            # differences to under .1mm in tests.  However, files are
+            # quite large (47M). As this is still much smaller than
+            # the tractography files, and correctness is desired, we
+            # will produce large transform files. A preferable
+            # solution would be to store the forward transform we
+            # compute at the grid points at which it is defined, but
+            # there is no inverse flag available in the file
+            # format. Therefore the inverse must be stored at high
+            # resolution.
+            grid_size = [105, 105, 105]
+            grid_spacing = 2
 
             extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
             extent_1 = [ (grid_size[0] - 1)/2,  (grid_size[1] - 1)/2,  (grid_size[2] - 1)/2]
@@ -488,6 +517,8 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
                         grid_points_LPS.append([l*grid_spacing, p*grid_spacing, s*grid_spacing])
 
             displacements_LPS = list()
+
+            print "LPS grid for storing transform:", grid_points_LPS[0], grid_points_LPS[-1], grid_spacing
 
             lps_points = vtk.vtkPoints()
             lps_points2 = vtk.vtkPoints()
