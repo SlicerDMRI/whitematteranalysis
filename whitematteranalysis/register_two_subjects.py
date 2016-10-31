@@ -320,6 +320,21 @@ def inner_loop_objective(fixed, moving, sigmasq):
     # brain").  This neglects Z, the normalization constant for the
     # pdf, which would not affect the optimization.
     probability /= number_of_fibers_fixed
+
+    # Avoid trivial shrinking solutions:
+    # Reduce probability if volume (approx with bounding box) of moving brain differs from fixed.
+    # SHAPE: (3, 2000, 5)
+    #print "SHAPE:", moving.shape
+    vol_moving = (numpy.max(moving[0,:,:]) - numpy.min(moving[0,:,:])) * \
+      (numpy.max(moving[1,:,:]) - numpy.min(moving[1,:,:])) * \
+      (numpy.max(moving[2,:,:]) - numpy.min(moving[2,:,:]))
+
+    vol_fixed = (numpy.max(fixed[0,:,:]) - numpy.min(fixed[0,:,:])) * \
+      (numpy.max(fixed[1,:,:]) - numpy.min(fixed[1,:,:])) * \
+      (numpy.max(fixed[2,:,:]) - numpy.min(fixed[2,:,:]))
+
+    probability *= 1 - numpy.abs(vol_moving - vol_fixed) / vol_fixed
+
     #print numpy.min(probability), numpy.max(probability)
     # add negative log probabilities of all fibers in this brain.
     entropy = numpy.sum(- numpy.log(probability))
