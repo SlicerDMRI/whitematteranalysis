@@ -119,4 +119,4 @@ print "<wm_endpoint_analysis> Endpoint analysis were measured for", len(endpoint
 if len(tract_dir_list) != len(endpoint_txt_list):
     print "Error: The numbers of inputs and outputs are different. Check the log file of each subeject."
 else:
-    os.remove(os.path.join(args.outputDirectory, 'log*'))
+    os.system("rm -rf "+os.path.join(args.outputDirectory, 'log*'))

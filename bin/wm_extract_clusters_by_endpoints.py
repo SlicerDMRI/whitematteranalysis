@@ -28,7 +28,7 @@ parser.add_argument(
     help='Label of region-of-interest as in the header of the measurement files.')
 parser.add_argument(
     '-p', type=int,  dest="percentage_threshold", default='10',
-    help='Percentage threshold that is used to decide if fiber cluster connect to the input region in individual subject. For each subject, if over p\% of a fiber cluster\'s endpoints overlap with the region-of-interest, we consider this cluster and the input region are connected in this subject.')
+    help='Percentage threshold [0, 100] that is used to decide if fiber cluster connect to the input region in individual subject. For each subject, if over p/100 of a fiber cluster\'s endpoints overlap with the region-of-interest, we consider this cluster and the input region are connected in this subject.')
 parser.add_argument(
     '-s', type=int,  dest="subject_number_threshold", default='1',
     help='Subject number threshold that is used to decide if fiber cluster connect to the input region in the population. Across all subjects, if a cluster is connected to the input region in at least s subjects, we consider this cluster as one output result.')
