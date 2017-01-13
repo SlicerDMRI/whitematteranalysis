@@ -47,6 +47,7 @@ class TractMeasurement:
             reader = csv.reader(txtfile, delimiter=separator_char, skipinitialspace=True,  quoting=csv.QUOTE_NONE)
             for row in reader:
                 row = map(str.strip, row)
+                row = [('NAN' if (len(r)==0) else r) for r in row] # Replace '' to NAN
                 txt_matrix.append(row)
 
         if self.hierarchy == 'Row':
@@ -65,8 +66,8 @@ class TractMeasurement:
     def check(self):
         # Simple check if the first two fields are Num_Point and Num_Fiber
         header = self.measurement_header
-        if header[0] != 'Num_Points' or header[1] != 'Num_Fibers':
-            print "<tract_measurement.py> Error: Measurement loading failed. First three fields extracted are: \n 1. ", measures[0], "\n 2. ", measures[1], "\n 3. ", measures[2], "\nwhich are expected to be \n 1. Name \n 2. Num_Points \n 3. Num_Fibers. "
+        if not (header[0] == 'Num_Fibers' or header[1] == 'Num_Fibers'):
+            print "<tract_measurement.py> Error: Measurement loading failed. One of three first fields should contain Num_Fibers. "
             raise AssertionError
 
     def get_measurements_by_name(self, query_header_name):
