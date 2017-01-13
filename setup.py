@@ -38,7 +38,8 @@ setup(
         'bin/wm_harden_transform.py',
         'bin/wm_append_cluster.py',
         'bin/wm_remove_data_along_tracts.py',
-        'bin/wm_endpoint_analysis.py'
+        'bin/wm_measure_endpoint_overlap.py',
+        'wm_extract_clusters_by_endpoints'
     ],
     include_dirs=[numpy.get_include()]
 )
