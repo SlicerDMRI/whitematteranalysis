@@ -39,7 +39,7 @@ parser.add_argument(
     help='The output directory will be created if it does not exist.')
 parser.add_argument(
     '-pthresh', action="store", dest="hemispherePercentThreshold", type=float,
-    help='The percent of a fiber that has to be in one hemisphere to consider the fiber as part of that hemisphere (rather than a commissural fiber). This number should be between 0.75 and 0.95, where a higher number will tend to label fewer fibers as hemispheric and more fibers as commmissural (not strictly in one hemisphere or the other), while a lower number will be stricter about what is classified as commissural.')
+    help='The percent of a fiber that has to be in one hemisphere to consider the fiber as part of that hemisphere (rather than a commissural fiber). Default number is 0.6, where a higher number will tend to label fewer fibers as hemispheric and more fibers as commmissural (not strictly in one hemisphere or the other), while a lower number will be stricter about what is classified as commissural.')
 parser.add_argument(
     '-atlasMRML', action="store", dest="atlasMRML", 
     help='A MRML file defining the atlas clusters, to be copied into all directories.')
@@ -63,7 +63,7 @@ if not os.path.exists(atlasMRML):
     exit
         
 # default to be changed if user input is there
-hemisphere_percent_threshold = 0.95
+hemisphere_percent_threshold = 0.6
 if args.hemispherePercentThreshold is not None:
     if (args.hemispherePercentThreshold > 0.5) & (args.hemispherePercentThreshold <= 1.0):
         hemisphere_percent_threshold = args.hemispherePercentThreshold
