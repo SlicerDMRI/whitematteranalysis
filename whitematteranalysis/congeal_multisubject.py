@@ -374,12 +374,14 @@ class MultiSubjectRegistration:
                 #print vtktrans.GetMatrix()
             self.transforms.append(vtktrans)
 
+        # The improved transforms are unfortunately taking longer to write than the 
+        # computation at each iteration, for nonrigid. Only save these at the end, now.
         # save the current transforms to disk
         # save the transforms to text files
-        start_time = time.time()
-        wma.io.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
-        elapsed_time = time.time() - start_time
-        print "WRITE TXFORMS:", elapsed_time
+        #start_time = time.time()
+        #wma.io.write_transforms_to_itk_format(self.transforms, outdir, self.subject_ids)
+        #elapsed_time = time.time() - start_time
+        #print "WRITE TXFORMS:", elapsed_time
         
     def save_transformed_polydatas(self, intermediate_save=False, midsag_symmetric=False):
         """ Output polydatas for final or intermediate iterations. """
