@@ -63,19 +63,19 @@ print header
 region = args.region
 print "\n== Input region label:", region
 
-region_exist = False
-region_index = 0
-for variable in header:
-    if region == variable:
-        region_exist = True
-        break
-    region_index = region_index + 1
-
-if not region_exist:
-    print "\nError: region", region, "does not exist."
-    exit()
-else:
-    print "Region found at position", region_index+1
+# region_exist = False
+# region_index = 0
+# for variable in header:
+#     if region == variable:
+#         region_exist = True
+#         break
+#     region_index = region_index + 1
+#
+# if not region_exist:
+#     print "\nError: region", region, "does not exist."
+#     exit()
+# else:
+#     print "Region found at position", region_index+1
 
 subject_number_threshold = args.subject_number_threshold
 if subject_number_threshold < 0 or subject_number_threshold > number_of_subjects:
@@ -84,14 +84,23 @@ if subject_number_threshold < 0 or subject_number_threshold > number_of_subjects
 
 # sanity check all measured variables are the same
 print "\n== Testing if all subjects have the same measurement header."
-test = True
+region_indices = []
 for subject_measured in measurement_list:
-    all_same = all(subject_measured.measurement_header == header)
-    if not all_same:
-        print "ERROR: Subject does not have same measurement header:", subject_measured.case_id
-        test = False
-if test:
-    print "Passed. All subjects have the same measurement header."
+    header = subject_measured.measurement_header
+    region_exist = False
+    region_index = 0
+    for variable in header:
+        if region == variable:
+            region_exist = True
+            break
+        region_index = region_index + 1
+
+    if not region_exist:
+        print "\nError: region", region, "does not exist in", subject_measured.case_id
+        exit()
+    else:
+        print subject_measured.case_id, ", total number of regions:",len(subject_measured.measurement_header), ", input region found at position", region_index+1
+    region_indices.append(region_index)
 
 # Make subject id list for reporting of any potential outliers
 subject_id_list = []
@@ -117,11 +126,12 @@ else:
 print "\n== Histogram of the overlap percentage of each cluster to the input region."
 percentage_range = range(0, 100, 5)
 print_title = False
-for sub_id, subject_measured in zip(subject_id_list, measurement_list):
+for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_list, region_indices):
+	
     subject_percentage_distribution = subject_measured.measurement_matrix[:, region_index]
 
-    percent_str = sub_id
-    title_str = ("{:<"+str(len(sub_id))+"}").format('Percentage:')
+    percent_str = sub_id + '(' + str(subject_measured.measurement_header[region_index]) + ')'
+    title_str = ("{:<"+str(len(sub_id)+len(region)+2)+"}").format('Percentage:')
     for p in percentage_range:
         percent_str = percent_str + ', ' + "{:<4}".format(str(sum(subject_percentage_distribution > p)))
         title_str = title_str + ', ' + "{:<4}".format(str(p))
@@ -134,10 +144,10 @@ for sub_id, subject_measured in zip(subject_id_list, measurement_list):
 
 print "\n== Number of clusters whose percentages are over the percentage threshold."
 connected_matrix = []
-for sub_id, subject_measured in zip(subject_id_list, measurement_list):
+for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_list, region_indices):
     subject_percentage_distribution = subject_measured.measurement_matrix[:, region_index]
     connected_matrix.append(subject_percentage_distribution > percentage_threshold)
-    print sub_id, "has", str(sum(subject_percentage_distribution > percentage_threshold)), "/", number_of_clusters, " clusters connected to the input region."
+    print "%s has %4d / %4d clusters connected to the input region." % (sub_id, sum(subject_percentage_distribution > percentage_threshold), number_of_clusters)
 
 print "\n== Number of clusters that connect to the input region across all subjects."
 num_subjects_per_cluster = sum(connected_matrix)
@@ -153,6 +163,7 @@ print output_cluster_idx
 if not (args.fiber_cluster_folder is None):
     print "\n== Output mrml to the fiber cluster folder"
     sub_folder = os.listdir(args.fiber_cluster_folder)[0]
+    print sub_folder
     pd_cluster_3 = wma.io.list_vtk_files(os.path.join(args.fiber_cluster_folder, sub_folder))[2]
     suffix = os.path.split(pd_cluster_3)[1][13:-4]
 
@@ -178,3 +189,5 @@ if not (args.fiber_cluster_folder is None):
 
     for sub_folder in os.listdir(args.fiber_cluster_folder):
         wma.mrml.write(cluster_polydatas, colors, os.path.join(args.fiber_cluster_folder+'/'+sub_folder, mrml_filename), ratio=1.0)
+
+print 'Done!' + '\n'
