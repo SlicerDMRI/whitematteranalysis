@@ -297,8 +297,44 @@ class RegisterTractography:
         # Return output transform from this iteration
         return self.final_transform
 
+def fiber_probabilities(fixed, moving, sigmasq):
+    """Find the probability of an array of moving fibers given input fixed fibers.
+    """
+
+    (dims, number_of_fibers_moving, points_per_fiber) = moving.shape
+    # number of compared fibers (normalization factor)
+    (dims, number_of_fibers_fixed, points_per_fiber) = fixed.shape
+
+    probability = numpy.zeros(number_of_fibers_moving) + 1e-20
+
+    # Loop over fibers in moving. Find total probability of
+    # each fiber using all fibers from fixed.
+    for idx in xrange(number_of_fibers_moving):
+        probability[idx] += total_probability_numpy(moving[:,idx,:], fixed,
+                sigmasq)
+
+    # Divide total probability by number of fibers in the atlas ("mean
+    # brain").  This neglects Z, the normalization constant for the
+    # pdf, which would not affect the optimization.
+    probability /= number_of_fibers_fixed
+
+    return(probability)
 
 def inner_loop_objective(fixed, moving, sigmasq):
+
+    probability = fiber_probabilities(fixed, moving, sigmasq)
+    # new objective includes entropy of the moving brain
+    probability2 = fiber_probabilities(moving, moving, sigmasq)
+
+    # add negative log probabilities of all fibers in this brain.
+    entropy = numpy.sum(- numpy.log(probability))
+
+    entropy2 = numpy.sum(- numpy.log(probability2))
+
+    return entropy - entropy2
+
+
+def OLDinner_loop_objective(fixed, moving, sigmasq):
     """The code called within the objective_function to find the negative log
 
     probability of one brain given all other brains.
@@ -309,7 +345,10 @@ def inner_loop_objective(fixed, moving, sigmasq):
     (dims, number_of_fibers_fixed, points_per_fiber) = fixed.shape
 
     probability = numpy.zeros(number_of_fibers_moving) + 1e-20
-    
+
+    # test
+    #probability += 1
+
     # Loop over fibers in moving. Find total probability of
     # each fiber using all fibers from fixed.
     for idx in xrange(number_of_fibers_moving):
@@ -460,7 +499,7 @@ def convert_transform_to_vtk(transform, scaled=False, mode=[1,1,1,1]):
         # transform_scaling (must be same as defined above in class)
         #transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300, 1, 1, 1, 1, 1, 1]))
         transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200, 1, 1, 1, 1, 1, 1]))
-                                 
+
     vtktrans = vtk.vtkTransform()
 
     if mode[0]:
