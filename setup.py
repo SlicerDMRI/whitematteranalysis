@@ -19,7 +19,6 @@ setup(
         'bin/harden_transform_with_slicer.py',
         'bin/wm_cluster_atlas.py',
         'bin/wm_cluster_from_atlas.py',
-        'bin/wm_cluster_subject.py',
         'bin/wm_extract_cluster.py',
         'bin/wm_laterality_all.py',
         'bin/wm_preprocess_all.py',
