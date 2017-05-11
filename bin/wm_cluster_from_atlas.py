@@ -225,9 +225,9 @@ output_polydata_s, cluster_numbers_s, color, embed = \
     wma.cluster.spectral_atlas_label(input_data, atlas, number_of_jobs=number_of_jobs)
 
 # Write the polydata with cluster indices saved as cell data
-print '<wm_cluster_atlas.py> Saving output whole brain cluster file in directory:', outdir
-fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
-wma.io.write_polydata(output_polydata_s, fname_output)
+# print '<wm_cluster_atlas.py> Saving output whole brain cluster file in directory:', outdir
+# fname_output = os.path.join(outdir, 'clustered_whole_brain.vtp')
+# wma.io.write_polydata(output_polydata_s, fname_output)
 
 # Figure out file name and mean color for each cluster, and write the individual polydatas
 fnames = list()

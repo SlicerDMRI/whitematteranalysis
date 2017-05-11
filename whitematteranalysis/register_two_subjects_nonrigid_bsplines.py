@@ -362,10 +362,14 @@ def convert_transform_to_vtk(transform):
     displacement_field_vtk.SetNumberOfComponents(3)
     displacement_field_vtk.SetName('DisplacementField')
     grid_image = vtk.vtkImageData()
-    grid_image.SetScalarTypeToFloat()
-    grid_image.GetPointData().SetScalars(displacement_field_vtk)
-    grid_image.SetNumberOfScalarComponents(3)
-    grid_image.Update()
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        grid_image.AllocateScalars(vtk.VTK_FLOAT, 3)
+        grid_image.GetPointData().SetScalars(displacement_field_vtk)
+    else:
+        grid_image.SetScalarTypeToFloat()
+        grid_image.SetNumberOfScalarComponents(3)
+        grid_image.GetPointData().SetScalars(displacement_field_vtk)
+        grid_image.Update()
     #print "CONVERT TXFORM 1:", grid_image.GetExtent(), displacement_field_vtk.GetSize()
 
     # this is a hard-coded assumption about where the polydata is located in space.
@@ -388,14 +392,21 @@ def convert_transform_to_vtk(transform):
     
     #print "GRID:", grid_image
     coeff = vtk.vtkImageBSplineCoefficients()
-    coeff.SetInput(grid_image)
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        coeff.SetInputData(grid_image)
+    else:
+        coeff.SetInput(grid_image)
+
     coeff.Update()
     # this was in the test code.
     coeff.UpdateWholeExtent()
     #print "TX:", transform.shape, transform, displacement_field_vtk, grid_image.GetExtent(), coeff.GetOutput().GetExtent()
 
     vtktrans = vtk.vtkBSplineTransform()
-    vtktrans.SetCoefficients(coeff.GetOutput())
+    if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
+        vtktrans.SetCoefficientData(coeff.GetOutput())
+    else:
+        vtktrans.SetCoefficients(coeff.GetOutput())
     vtktrans.SetBorderModeToZero()
 
     ## print "~~~~~~~~~~~~~~~~~~~~~~~~"
