@@ -238,6 +238,7 @@ cluster_colors = list()
 # Get the number of clusters directly from the atlas to ensure we output files for all clusters.
 [number_of_clusters, number_of_eigenvectors] = atlas.centroids.shape
 print "<wm_cluster_from_atlas.py> Cluster indices range from:", 0, "to", number_of_clusters
+pd_c_list = wma.cluster.mask_all_clusters(output_polydata_s, cluster_numbers_s, number_of_clusters, preserve_point_data=True, preserve_cell_data=True,verbose=True)
 
 print '<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir
 cluster_sizes = list()
@@ -246,7 +247,8 @@ for c in range(number_of_clusters):
     mask = cluster_numbers_s == c
     cluster_size = numpy.sum(mask)
     cluster_sizes.append(cluster_size)
-    pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True,verbose=False)
+    #pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True,verbose=False)
+    pd_c = pd_c_list[c]
     # The clusters are stored starting with 1, not 0, for user friendliness.
     fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
     # save the filename for writing into the MRML file
