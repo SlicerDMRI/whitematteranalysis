@@ -27,7 +27,7 @@ parser.add_argument(
     help='Contains input tractography as vtkPolyData vtp format file(s).')
 parser.add_argument(
     'outputDirectory',
-    help='The output directory should be a new empty directory. It will be created if needed.')
+    help='The output directory should be a new empty directory. It will be created if needed. The actual output will be placed into a directory within this output directory, to preserve the informative name of the input directory that may contain subject ID, tract name, etc.')
 
 args = parser.parse_args()
 
@@ -36,15 +36,23 @@ if not os.path.isdir(args.inputDirectory):
     print "Error: Input directory", args.inputDirectory, "does not exist."
     exit()
 
-outdir = args.outputDirectory
-if not os.path.exists(outdir):
+if not os.path.exists(args.outputDirectory):
     print "Output directory", outdir, "does not exist, creating it."
-    os.makedirs(outdir)
+    os.makedirs(args.outputDirectory)
+
+# Preserve input directory name which may contain provenance like subject ID or structure, e.g UF
+subject_dir = os.path.splitext(os.path.basename(args.inputDirectory))[0]
+print subject_dir
+outdir_subject = os.path.join(args.outputDirectory, subject_dir+"_vtk")
+if not os.path.exists(outdir_subject):
+    print "Output directory", outdir_subject, "does not exist, creating it."
+    os.makedirs(outdir_subject)
 
 print ""
 print "wm_vtp2vtk.py: Convert all vtp files in input directory to vtk files in output directory."
 print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
+print "=====top-level output directory requested by user=====\n", args.outputDirectory
+print "=====final output directory=====\n", outdir_subject
 print "=========================="
 
 # =======================================================================
@@ -87,7 +95,7 @@ for pd_fname in inputPolyDatas:
         
     # outputs
     # -------------------
-    fname = os.path.join(args.outputDirectory, subjectID+'.vtk')
+    fname = os.path.join(outdir_subject, subjectID+'.vtk')
     try:
         print "====> Writing output polydata", fname, "..."
         wma.io.write_polydata(wm, fname)
