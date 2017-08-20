@@ -39,7 +39,8 @@ setup(
         'bin/wm_remove_data_along_tracts.py',
         'bin/wm_measure_endpoint_overlap.py',
         'bin/wm_extract_clusters_by_endpoints.py',
-        'bin/wm_assess_cluster_location.py'
+        'bin/wm_assess_cluster_location.py',
+        'bin/wm_vtp2vtk.py'
     ],
     include_dirs=[numpy.get_include()]
 )

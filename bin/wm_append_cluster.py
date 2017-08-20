@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import argparse
 import vtk
@@ -16,6 +17,9 @@ parser = argparse.ArgumentParser(
     epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu",
     version='1.0')
 
+parser.add_argument("-o", "--output",
+    dest="output_filename",
+    help="output filename (override default constructed filename)")
 parser.add_argument(
     'inputDirectory',
     help='Contains fiber clusters as vtkPolyData file(s).')
@@ -75,7 +79,6 @@ for c_idx in range(len(cluster_vtp_list)):
         vtk_array.InsertNextTuple1(int(cluster_list[c_idx]))
 
     pd_cluster.GetPointData().AddArray(vtk_array)
-    pd_cluster.Update()
 
     print '<wm_append_cluster>', cluster_vtp, ', number of fibers', pd_cluster.GetNumberOfLines()
 
@@ -88,6 +91,9 @@ appender.Update()
 pd_appended_cluster = appender.GetOutput()
 
 output_file = 'cluster_appended_' + output_suffix[:-1] + '.vtp'
+if (args.output_filename is not None):
+    output_file = args.output_filename
+    
 wma.io.write_polydata(pd_appended_cluster, os.path.join(outdir, output_file))
 
 print '<wm_append_cluster> Appended clusters , number of fibers', pd_appended_cluster.GetNumberOfLines()
