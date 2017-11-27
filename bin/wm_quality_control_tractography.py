@@ -150,7 +150,7 @@ for (fname, descrip) in zip(html_view_fnames, html_views_descrip):
 
 fibers_qc_file = open(fibers_qc_fname, 'w')
 fiber_test_lengths = [0, 1, 2, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
-outstr = "SUBJECT_ID\tFIBER_STEP_SIZE\tTOTAL_POINTS\tTOTAL_FIBERS\t"
+outstr = "SUBJECT_ID\tFIBER_STEP_SIZE\tTOTAL_POINTS\tMEAN_FIBER_LENGTH\tTOTAL_FIBERS\t"
 for test_length in fiber_test_lengths[1:]:
     outstr = outstr + "LEN_" + str(test_length) + '\t'
 outstr = outstr + '\n'
@@ -246,6 +246,8 @@ for fname in input_polydatas:
     outstr = outstr + '{0:.4f}'.format(step_size) + '\t'
     # total points in the dataset
     outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
+    # mean fiber length
+    outstr = outstr + str(numpy.mean(lengths)) + '\t'
     # total numbers of fibers
     for test_length in fiber_test_lengths:
         number_fibers = numpy.count_nonzero(lengths > test_length)
