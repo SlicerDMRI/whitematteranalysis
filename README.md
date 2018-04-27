@@ -34,7 +34,7 @@ http://slicerdmri.github.io/whitematteranalysis/
 Anaconda is a nice option since it has VTK and scipy.
 First install anaconda from http://continuum.io/downloads, then run: 
 
-      conda install vtk
+      conda install vtk=5.10.1
 
 ## 3. Install the following python packages (dependencies).
 

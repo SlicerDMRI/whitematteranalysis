@@ -40,7 +40,8 @@ setup(
         'bin/wm_measure_endpoint_overlap.py',
         'bin/wm_extract_clusters_by_endpoints.py',
         'bin/wm_assess_cluster_location.py',
-        'bin/wm_vtp2vtk.py'
+        'bin/wm_vtp2vtk.py',
+        'bin/wm_download_anatomically_curated_atlas.py'
     ],
     include_dirs=[numpy.get_include()]
 )
