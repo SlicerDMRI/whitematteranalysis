@@ -89,7 +89,7 @@ requested_atlas = args.requested_atlas
 repo = 'https://github.com/SlicerDMRI/ORG-Atlases'
 version = 'v1.0'
 
-org_atlases_version_folder_name = 'org-atlases-' + version[1:]
+org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
 org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
 
 output_atlas_folder = os.path.join(org_atlases_version_folder, requested_atlas)
