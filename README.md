@@ -69,5 +69,13 @@ To install your compiled vtk into your python:
      cd whitematteranalysis
      python setup.py install
 
-## 5. Please see the wiki for usage instructions.
-https://github.com/SlicerDMRI/whitematteranalysis/wiki
+## 5. Documentation
+* Please see the wiki for usage instructions of whitematteranalysis.
+
+    https://github.com/SlicerDMRI/whitematteranalysis/wiki
+
+* Please see the following page for instructions of applying a pre-provided anatomically curated white matter atlas, along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation. 
+
+    https://dmri.slicer.org/atlases
+
+
