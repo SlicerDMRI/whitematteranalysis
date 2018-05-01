@@ -357,7 +357,10 @@ class RenderPolyData:
     def save_image(self, filename="test.jpg"):
         img = vtk.vtkWindowToImageFilter()
         img.SetInput(self.render_window)
-        img.SetMagnification(self.magnification)
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 8.0):
+            img.SetScale(self.magnification, self.magnification)
+        else:
+            img.SetMagnification(self.magnification)
         img.Update()
         #writer = vtk.vtkPNGWriter()
         writer = vtk.vtkJPEGWriter()
