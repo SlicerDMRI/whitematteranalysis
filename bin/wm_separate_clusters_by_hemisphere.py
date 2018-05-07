@@ -171,8 +171,6 @@ for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
 
     else:
         if clusterLocationFile is None:
-            hemisphere_percent_threshold = 0.6 # default
-
             # internal representation for fast similarity computation
             # this also detects which hemisphere fibers are in
             fibers = wma.fibers.FiberArray()
@@ -274,19 +272,20 @@ def output_mrml(cluster_list, mrml_filename):
         colors = numpy.array(colors)
         wma.mrml.write(cluster_list, colors, mrml_filename, ratio=1.0)
 
-hemiMRML = os.path.join(outdir, "clustered_tracts_sep_hemispheric_n{0:04d}".format(len(hemi_list))+".mrml")
-commMRML = os.path.join(outdir, "clustered_tracts_sep_commissural_n{0:04d}".format(len(comm_list))+".mrml")
+if clusterLocationFile is not None:
+    hemiMRML = os.path.join(outdir, "clustered_tracts_sep_hemispheric_n{0:04d}".format(len(hemi_list))+".mrml")
+    commMRML = os.path.join(outdir, "clustered_tracts_sep_commissural_n{0:04d}".format(len(comm_list))+".mrml")
 
-print ""
-output_mrml(hemi_list, hemiMRML)
-output_mrml(comm_list, commMRML)
+    print ""
+    output_mrml(hemi_list, hemiMRML)
+    output_mrml(comm_list, commMRML)
 
-shutil.copyfile(hemiMRML, os.path.join(outdir_right, os.path.basename(hemiMRML)))
-shutil.copyfile(commMRML, os.path.join(outdir_right, os.path.basename(commMRML)))
-shutil.copyfile(hemiMRML, os.path.join(outdir_left, os.path.basename(hemiMRML)))
-shutil.copyfile(commMRML, os.path.join(outdir_left, os.path.basename(commMRML)))
-shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
-shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
+    shutil.copyfile(hemiMRML, os.path.join(outdir_right, os.path.basename(hemiMRML)))
+    shutil.copyfile(commMRML, os.path.join(outdir_right, os.path.basename(commMRML)))
+    shutil.copyfile(hemiMRML, os.path.join(outdir_left, os.path.basename(hemiMRML)))
+    shutil.copyfile(commMRML, os.path.join(outdir_left, os.path.basename(commMRML)))
+    shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
+    shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
 
 print ""
 print "<wm_separate_hemispheres.py> Done!!!"
