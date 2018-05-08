@@ -825,7 +825,10 @@ def _format_output_polydata(output_polydata, cluster_idx, color, embed, estimate
         embed_colors.InsertNextTuple3(
             color[lidx, 0], color[lidx, 1], color[lidx, 2])
         cluster_colors.InsertNextTuple1(int(cluster_idx[lidx]))
-        embed_data.InsertNextTupleValue(embed[lidx, :])
+        if (vtk.vtkVersion().GetVTKMajorVersion() >= 7.1):
+          embed_data.InsertNextTypedTuple(embed[lidx, :])
+        else:
+          embed_data.InsertNextTupleValue(embed[lidx, :])
         row_sum_data.InsertNextTuple1(float(estimated_row_sum[lidx]))
         col_sum_data.InsertNextTuple1(float(computed_column_sum[lidx]))
 
