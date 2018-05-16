@@ -20,10 +20,14 @@ http://slicerdmri.github.io/whitematteranalysis/
     In International Conference on Medical Image Computing and Computer-Assisted Intervention 2012 Oct 1 (pp. 123-130).
     Springer Berlin Heidelberg.
 
-**For projects using Slicer please also include this text (or similar):**
+**For projects using Slicer and SlicerDMRI please also include the following text (or similar) and citations:**
 
-    "We performed tractography visualization with anatomical hierarchies in 3D Slicer (http://www.slicer.org)
-    via the SlicerDMRI project (https://github.com/SlicerDMRI), funded by NIH U01 CA199459."
+* How to cite the [Slicer platform](http://wiki.slicer.org/slicerWiki/index.php/CitingSlicer)
+* An example of how to cite SlicerDMRI (modify the first part of the sentence according to your use case):
+
+    "We performed diffusion MRI tractography and/or analysis and/or visualization in 3D Slicer (www.slicer.org) via the SlicerDMRI project (dmri.slicer.org) (Norton et al. 2017)."
+    
+    - [Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.](http://cancerres.aacrjournals.org/content/77/21/e101)
 
 # Installation
 ## 1. Download whitematteranalysis from github. 
