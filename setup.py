@@ -35,7 +35,7 @@ setup(
         'bin/wm_statistics_export_data.py',
         'bin/wm_quality_control_after_clustering.py',
         'bin/wm_harden_transform.py',
-        'bin/wm_append_cluster.py',
+        'bin/wm_append_clusters.py',
         'bin/wm_remove_data_along_tracts.py',
         'bin/wm_measure_endpoint_overlap.py',
         'bin/wm_extract_clusters_by_endpoints.py',
