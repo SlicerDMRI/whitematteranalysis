@@ -44,7 +44,7 @@ First install anaconda from http://continuum.io/downloads, then run:
 
 Once you have anaconda installed, run: 
 
-      pip install joblib
+      pip install joblib==0.11
 
 Other distributions, or self-compiled, Python will require installation of scipy.stats, scipy.optimize, and statsmodels, depending on the usage.
 
