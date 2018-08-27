@@ -25,7 +25,7 @@ parser.add_argument("-v", "--version",
     help="Show program's version number and exit")
 parser.add_argument(
     'inputDirectory',
-    help='A directory containing subject clusters (.vtp).')
+    help='A directory containing subject clusters (.vtp). Please note that file separator should not be provided at the end of the input so that the program can automatically recognize subject ID from the input folder name.')
 parser.add_argument(
     'atlasDirectory',
     help='The directory where the atlas is stored. Must contain atlas.p and atlas.vtp, as well as atlas clusters (.vtp)')
