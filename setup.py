@@ -1,8 +1,30 @@
+import os, glob
 from distutils.core import setup
+from setuptools import setup, Extension, Command
+from setuptools.command.build_ext import build_ext as _build_ext
+
 #    url='http://pypi.python.org/pypi/WhiteMatterAnalysis/',
 #    scripts=['bin/test1.py','bin/test2.py'],
-from Cython.Build import cythonize
-import numpy
+
+# ext_modules work-around: https://stackoverflow.com/a/38057196
+# get_include work-around: https://stackoverflow.com/a/21621689
+
+import sys
+if sys.platform == 'win32':
+    # force setuptools to use the MSVC compiler environment
+    # otherwise it will check version for VC9, and error out
+    os.environ['MSSdk'] = '1'
+    os.environ['DISTUTILS_USE_SDK'] = '1'
+
+
+class build_ext(_build_ext):
+    def finalize_options(self):
+        _build_ext.finalize_options(self)
+        # Prevent numpy from thinking it is still in its setup process:
+        __builtins__.__NUMPY_SETUP__ = False
+        import numpy
+        self.include_dirs.append(numpy.get_include())
+
 
 setup(
     name='WhiteMatterAnalysis',
@@ -13,7 +35,15 @@ setup(
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
-    ext_modules = cythonize("whitematteranalysis/*.pyx"),
+
+    install_requires = ['setuptools>=18.0', 'numpy', 'scipy', 'cython', 'joblib', 'statsmodels', 'xlrd'],    
+    
+    ext_modules = [
+        Extension('whitematteranalysis.fibers', sources=['whitematteranalysis/fibers.pyx']),
+        Extension('whitematteranalysis.similarity', sources=['whitematteranalysis/similarity.pyx']),
+        ],
+    cmdclass={'build_ext':build_ext},
+
     scripts = [ 
         'bin/picktracts_converter.py',
         'bin/harden_transform_with_slicer.py',
@@ -42,7 +72,5 @@ setup(
         'bin/wm_assess_cluster_location.py',
         'bin/wm_vtp2vtk.py',
         'bin/wm_download_anatomically_curated_atlas.py'
-    ],
-    include_dirs=[numpy.get_include()]
+    ]
 )
-

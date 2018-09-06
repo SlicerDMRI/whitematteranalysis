@@ -21,7 +21,9 @@ import time
 import vtk
 import vtk.util.numpy_support
 import os
-import resource
+
+# debug only
+#import resource
 
 try:
     from joblib import Parallel, delayed
