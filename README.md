@@ -30,23 +30,30 @@ http://slicerdmri.github.io/whitematteranalysis/
     - [Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.](http://cancerres.aacrjournals.org/content/77/21/e101)
 
 # Installation
-## 1. Download whitematteranalysis from github. 
+## 1. Install Python 2. 
+Anaconda is a nice option since it has VTK and scipy, and includes up-to-date pip and setuptools.
 
-      git clone https://github.com/SlicerDMRI/whitematteranalysis.git
+  - Download and install Miniconda (**Python 2**) from https://conda.io/miniconda.html
+  
+  - Activate the conda environment (if applicable):
       
-## 2. Install python. 
-Anaconda is a nice option since it has VTK and scipy.
-First install anaconda from http://continuum.io/downloads, then run: 
+      - Windows:
+      
+      > \> /path/to/anaconda/Scripts/activate.bat
+      
+      - macOS and Linux:
+      
+      > $ /path/to/anaconda/bin/conda activate
 
-      conda install vtk=5.10.1
+### 1a. (Windows-only): install VTK 6.3 from [C. Gohlke's windows packages](https://www.lfd.uci.edu/~gohlke/pythonlibs/#vtk) (PyPI VTK packages for Windows are only available for Python 3):
 
-## 3. Install the following python packages (dependencies).
+      pip install https://download.lfd.uci.edu/pythonlibs/o4uhg4xd/VTK-6.3.0-cp27-cp27m-win_amd64.whl
+   
+## 2. Install whitematteranalysis with pip: 
 
-Once you have anaconda installed, run: 
+      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
+      
 
-      pip install joblib==0.11
-
-Other distributions, or self-compiled, Python will require installation of scipy.stats, scipy.optimize, and statsmodels, depending on the usage.
 
 Note: If you decide to use another python that does not already have VTK, you can compile VTK.
 * VTK: http://www.vtk.org/Wiki/VTK/Building
@@ -68,12 +75,7 @@ To install your compiled vtk into your python:
      cd VTK-build/Wrapping/Python
      python setup.py install
 
-## 4. Install WhiteMatterAnalysis into your python in the standard way.
-
-     cd whitematteranalysis
-     python setup.py install
-
-## 5. Documentation
+## Documentation
 * Please see the wiki for usage instructions of whitematteranalysis.
 
     https://github.com/SlicerDMRI/whitematteranalysis/wiki
