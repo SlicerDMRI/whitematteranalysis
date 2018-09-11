@@ -30,10 +30,20 @@ http://slicerdmri.github.io/whitematteranalysis/
     - [Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.](http://cancerres.aacrjournals.org/content/77/21/e101)
 
 # Installation
-## 1. Install python 2. 
+## 1. Install Python 2. 
 Anaconda is a nice option since it has VTK and scipy, and includes up-to-date pip and setuptools.
 
   - Download and install Miniconda (**Python 2**) from https://conda.io/miniconda.html
+  
+  - Activate the conda environment (if applicable):
+      
+      - Windows:
+      
+      > \> /path/to/anaconda/Scripts/activate.bat
+      
+      - macOS and Linux:
+      
+      > $ /path/to/anaconda/bin/conda activate
 
 ### 1a. (Windows-only): install VTK 6.3 from [C. Gohlke's windows packages](https://www.lfd.uci.edu/~gohlke/pythonlibs/#vtk) (PyPI VTK packages for Windows are only available for Python 3):
 
