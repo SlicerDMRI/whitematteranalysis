@@ -59,6 +59,8 @@ Anaconda is a nice option since it has VTK and scipy, and includes up-to-date pi
 
       pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
 
+Run 'wm_quality_control_tractography.py --help' to test if the installation is successful.
+
 Note: If you decide to use another python that does not already have VTK, you can compile VTK.
 * VTK: http://www.vtk.org/Wiki/VTK/Building
 * http://www.vtk.org/Wiki/VTK/Git/Download
