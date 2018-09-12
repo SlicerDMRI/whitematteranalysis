@@ -36,7 +36,7 @@ parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int,
     help='Number of fibers to analyze from each subject. If this parameter is not used, all fibers will be analyzed by default.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int, default=60,
+    '-l', action="store", dest="fiberLength", type=int, default=40,
     help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int, default=1,
