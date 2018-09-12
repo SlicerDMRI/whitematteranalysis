@@ -49,13 +49,15 @@ Anaconda is a nice option since it has VTK and scipy, and includes up-to-date pi
 
   - install VTK 6.3 from [C. Gohlke's windows packages](https://www.lfd.uci.edu/~gohlke/pythonlibs/#vtk) (PyPI VTK packages for Windows are only available for Python 3):
 
-      pip install https://download.lfd.uci.edu/pythonlibs/o4uhg4xd/VTK-6.3.0-cp27-cp27m-win_amd64.whl
+    > pip install https://download.lfd.uci.edu/pythonlibs/o4uhg4xd/VTK-6.3.0-cp27-cp27m-win_amd64.whl
    
   - install the [Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
   
   - start "Visual C++ 2008 64-bit Command Prompt", and then activate the anaconda environment as above (note: *before* running `pip install` step)
 
-## 2. Install whitematteranalysis with pip: 
+## 2. Install whitematteranalysis with pip:
+
+The following command will use pip to install whitematteranalysis from this source repository, and will install all library dependencies from PyPI:
 
       pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
 
