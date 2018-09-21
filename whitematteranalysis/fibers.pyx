@@ -10,7 +10,36 @@ class FiberArray
 import numpy
 import vtk
 import time
+from nibabel.affines import apply_affine
 
+def region_label_LR(label):
+    # combine left and right
+    left_sub_cortical_regions = [2, 7, 8, 10, 11, 12, 13, 17, 18, 26, 28]
+    right_sub_cortical_regions = [41, 46, 47, 49, 50, 51, 52, 53, 54, 58, 60]
+
+    left_GM_cortical_regions = range(1001, 1036)
+    right_GM_cortical_regions = range(2001, 2036)
+
+    left_WM_cortical_regions = range(3001, 3036)
+    right_WM_cortical_regions = range(4001, 4036)
+
+    CC_regions = range(251, 256)
+    commissural_sub_cortical_regions = [16, 77, 85]
+
+    WM_Unsegmented = [5001, 5002]
+   
+    for i in right_WM_cortical_regions:
+        label[label == i] = i - 2000 - 1000
+    for i in left_WM_cortical_regions:
+        label[label == i] = i - 2000
+    for i in right_GM_cortical_regions:
+        label[label == i] = i - 1000
+    for i in WM_Unsegmented:
+        label[label == i] = 5001
+    for i in right_sub_cortical_regions:
+        label[label == i] = left_sub_cortical_regions[right_sub_cortical_regions.index(i)]
+        
+    return label
 
 class Fiber:
     """A class for fiber tractography data, represented with a fixed length"""
@@ -19,6 +48,7 @@ class Fiber:
         self.r = None
         self.a = None
         self.s = None
+        self.H = None
         self.points_per_fiber = None
         self.hemisphere_percent_threshold = 0.95
         
@@ -31,6 +61,7 @@ class Fiber:
         fiber.r = self.r[::-1]
         fiber.a = self.a[::-1]
         fiber.s = self.s[::-1]
+        fiber.H = self.H
 
         fiber.points_per_fiber = self.points_per_fiber
 
@@ -45,6 +76,7 @@ class Fiber:
         fiber.r = - self.r
         fiber.a = self.a
         fiber.s = self.s
+        fiber.H = self.H
 
         fiber.points_per_fiber = self.points_per_fiber
 
@@ -118,6 +150,8 @@ class FiberArray:
         self.fiber_array_r = None
         self.fiber_array_a = None
         self.fiber_array_s = None
+        
+        self.H = None
 
         # output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
         self.fiber_hemisphere = None
@@ -190,6 +224,8 @@ class FiberArray:
         fiber.r = self.fiber_array_r[fiber_index, :]
         fiber.a = self.fiber_array_a[fiber_index, :]
         fiber.s = self.fiber_array_s[fiber_index, :]
+        
+        fiber.H = self.H[fiber_index, :]
 
         fiber.points_per_fiber = self.points_per_fiber
 
@@ -316,7 +352,7 @@ class FiberArray:
 
         return fibers
 
-    def convert_from_polydata(self, input_vtk_polydata, points_per_fiber=None):
+    def convert_from_polydata(self, input_vtk_polydata, input_freesurfer, points_per_fiber=None):
 
         """Convert input vtkPolyData to the fixed length fiber
         representation of this class.
@@ -339,6 +375,11 @@ class FiberArray:
             print "<fibers.py> Converting polydata to array representation. Lines:", \
                 self.number_of_fibers
 
+        # load freesurfer infomation
+        labelArray = input_freesurfer.get_data()
+        labelArray = region_label_LR(labelArray)
+        c = numpy.unique(labelArray)
+        
         # allocate array number of lines by line length
         self.fiber_array_r = numpy.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
@@ -346,6 +387,8 @@ class FiberArray:
                                           self.points_per_fiber))
         self.fiber_array_s = numpy.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
+        self.H = numpy.zeros((self.number_of_fibers,
+                              27, c.shape[0]))
 
         # loop over lines
         input_vtk_polydata.GetLines().InitTraversal()
@@ -376,6 +419,24 @@ class FiberArray:
                 self.fiber_array_a[lidx, pidx] = point[1]
                 self.fiber_array_s[lidx, pidx] = point[2]
                 pidx = pidx + 1
+            
+            #freesurfer infomation
+            U = numpy.zeros([27, line_length])
+            for index in range(0, line_length):
+                ptidx = line_ptids.GetId(index)
+                point = inpoints.GetPoint(ptidx)
+                point_ijk = apply_affine(numpy.linalg.inv(input_freesurfer.affine), point)
+                ijk = numpy.rint(point_ijk).astype(numpy.int32)
+                U[:, index] = numpy.reshape(labelArray[(ijk[0] - 1):(ijk[0] + 2), (ijk[1] - 1):(ijk[1] + 2), (ijk[2] - 1):(ijk[2] + 2)], 27)
+            
+            for i in range(0,27):
+                V = numpy.unique(U[i,:])
+                for j in range(0, V.shape[0]):
+                    k = numpy.sum(U[i,:] == V[j])
+                    t = numpy.argwhere(c == V[j])
+                    self.H[lidx, i, t] = k / float(line_length)
+                
+                
 
         # initialize hemisphere info
         if self.hemispheres:
