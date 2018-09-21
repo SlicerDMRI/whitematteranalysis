@@ -509,8 +509,8 @@ for iteration in range(cluster_iterations):
             cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
             cluster_similarity = cluster_distances
         else:
-            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
-            cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
+            cluster_distances, cluster_orientations = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
+            cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_orientations, cluster_local_sigma * cluster_local_sigma, sigmasq2 = 10)
 
         #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
         # by using sample we estimate expected value of the above
