@@ -1,4 +1,4 @@
-#!/Users/lh/anaconda2/bin/python
+#!/usr/bin/env python
 import numpy
 import argparse
 import os
