@@ -19,6 +19,16 @@ class Fiber:
         self.r = None
         self.a = None
         self.s = None
+        
+        self.orien_for_r = None
+        self.orien_for_a = None
+        self.orien_for_s = None
+        
+        self.orien_back_r = None
+        self.orien_back_a = None
+        self.orien_back_s = None
+        
+        
         self.points_per_fiber = None
         self.hemisphere_percent_threshold = 0.95
         
@@ -31,7 +41,15 @@ class Fiber:
         fiber.r = self.r[::-1]
         fiber.a = self.a[::-1]
         fiber.s = self.s[::-1]
-
+        
+        fiber.orien_for_r = self.orien_back_r[::-1]
+        fiber.orien_for_a = self.orien_back_a[::-1]
+        fiber.orien_for_s = self.orien_back_s[::-1]
+        
+        fiber.orien_back_r = self.orien_for_r[::-1]
+        fiber.orien_back_a = self.orien_for_a[::-1]
+        fiber.orien_back_s = self.orien_for_s[::-1]
+        
         fiber.points_per_fiber = self.points_per_fiber
 
         return fiber
@@ -45,6 +63,14 @@ class Fiber:
         fiber.r = - self.r
         fiber.a = self.a
         fiber.s = self.s
+        
+        fiber.orien_for_r = -self.orien_for_r
+        fiber.orien_for_a = self.orien_for_a
+        fiber.orien_for_s = self.orien_for_s
+        
+        fiber.orien_back_r = -self.orien_back_r
+        fiber.orien_back_a = self.orien_back_a
+        fiber.orien_back_s = self.orien_back_s
 
         fiber.points_per_fiber = self.points_per_fiber
 
@@ -118,6 +144,16 @@ class FiberArray:
         self.fiber_array_r = None
         self.fiber_array_a = None
         self.fiber_array_s = None
+        
+        # fiber forward orientation
+        self.fiber_orien_for_r = None
+        self.fiber_orien_for_a = None
+        self.fiber_orien_for_s = None
+        
+        # fiber backward orientation
+        self.fiber_orien_back_r = None
+        self.fiber_orien_back_a = None
+        self.fiber_orien_back_s = None
 
         # output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
         self.fiber_hemisphere = None
@@ -190,6 +226,14 @@ class FiberArray:
         fiber.r = self.fiber_array_r[fiber_index, :]
         fiber.a = self.fiber_array_a[fiber_index, :]
         fiber.s = self.fiber_array_s[fiber_index, :]
+        
+        fiber.orien_for_r = self.fiber_orien_for_r[fiber_index, :]
+        fiber.orien_for_a = self.fiber_orien_for_a[fiber_index, :]
+        fiber.orien_for_s = self.fiber_orien_for_s[fiber_index, :]
+        
+        fiber.orien_back_r = self.fiber_orien_back_r[fiber_index, :]
+        fiber.orien_back_a = self.fiber_orien_back_a[fiber_index, :]
+        fiber.orien_back_s = self.fiber_orien_back_s[fiber_index, :]
 
         fiber.points_per_fiber = self.points_per_fiber
 
@@ -346,6 +390,18 @@ class FiberArray:
                                           self.points_per_fiber))
         self.fiber_array_s = numpy.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
+        self.fiber_orien_for_r = numpy.zeros((self.number_of_fibers,
+                                              self.points_per_fiber))
+        self.fiber_orien_for_a = numpy.zeros((self.number_of_fibers,
+                                              self.points_per_fiber))
+        self.fiber_orien_for_s = numpy.zeros((self.number_of_fibers,
+                                              self.points_per_fiber))
+        self.fiber_orien_back_r = numpy.zeros((self.number_of_fibers,
+                                               self.points_per_fiber))
+        self.fiber_orien_back_a = numpy.zeros((self.number_of_fibers,
+                                               self.points_per_fiber))
+        self.fiber_orien_back_s = numpy.zeros((self.number_of_fibers,
+                                               self.points_per_fiber))
 
         # loop over lines
         input_vtk_polydata.GetLines().InitTraversal()
@@ -371,11 +427,117 @@ class FiberArray:
                 ptidx = line_ptids.GetId(int(round(line_index)))
 
                 point = inpoints.GetPoint(ptidx)
+                
+#                if int(round(line_index)) == line_length - 1:
+#                    point_near = inpoints.GetPoint(ptidx - 1)
+#                    l = numpy.sqrt(numpy.square(point[0] - point_near[0]) + \
+#                                   numpy.square(point[1] - point_near[1]) + \
+#                                   numpy.square(point[2] - point_near[2]))
+#                    
+#                    self.fiber_orien_for_r[lidx, pidx] = (point[0] - point_near[0]) / l
+#                    self.fiber_orien_for_a[lidx, pidx] = (point[1] - point_near[1]) / l
+#                    self.fiber_orien_for_s[lidx, pidx] = (point[2] - point_near[2]) / l
+#                    
+#                    self.fiber_orien_back_r[lidx, pidx] = (point[0] - point_near[0]) / l
+#                    self.fiber_orien_back_a[lidx, pidx] = (point[1] - point_near[1]) / l
+#                    self.fiber_orien_back_s[lidx, pidx] = (point[2] - point_near[2]) / l
+#                    
+#                elif int(round(line_index)) == 0:
+#                    point_near = inpoints.GetPoint(ptidx + 1)
+#                    l = numpy.sqrt(numpy.square(point_near[0] - point[0]) + \
+#                                   numpy.square(point_near[1] - point[1]) + \
+#                                   numpy.square(point_near[2] - point[2]))
+#                    
+#                    self.fiber_orien_for_r[lidx, pidx] = (point[0] - point_near[0]) / l
+#                    self.fiber_orien_for_a[lidx, pidx] = (point[1] - point_near[1]) / l
+#                    self.fiber_orien_for_s[lidx, pidx] = (point[2] - point_near[2]) / l
+#                    
+#                    self.fiber_orien_back_r[lidx, pidx] = (point[0] - point_near[0]) / l
+#                    self.fiber_orien_back_a[lidx, pidx] = (point[1] - point_near[1]) / l
+#                    self.fiber_orien_back_s[lidx, pidx] = (point[2] - point_near[2]) / l
+#                else:
+#                    point_next = inpoints.GetPoint(ptidx + 1)
+#                    point_pre = inpoints.GetPoint(ptidx - 1)
+#                    l1 = numpy.sqrt(numpy.square(point[0] - point_next[0]) + \
+#                                    numpy.square(point[1] - point_next[1]) + \
+#                                    numpy.square(point[2] - point_next[2]))
+#                    
+#                    l2 = numpy.sqrt(numpy.square(point[0] - point_pre[0]) + \
+#                                    numpy.square(point[1] - point_pre[1]) + \
+#                                    numpy.square(point[2] - point_pre[2]))
+#                    
+#                    self.fiber_orien_for_r[lidx, pidx] = (point[0] - point_next[0]) / l1
+#                    self.fiber_orien_for_a[lidx, pidx] = (point[1] - point_next[1]) / l1
+#                    self.fiber_orien_for_s[lidx, pidx] = (point[2] - point_next[2]) / l1
+#                    
+#                    self.fiber_orien_back_r[lidx, pidx] = (point[0] - point_pre[0]) / l2
+#                    self.fiber_orien_back_a[lidx, pidx] = (point[1] - point_pre[1]) / l2
+#                    self.fiber_orien_back_s[lidx, pidx] = (point[2] - point_pre[2]) / l2
 
                 self.fiber_array_r[lidx, pidx] = point[0]
                 self.fiber_array_a[lidx, pidx] = point[1]
                 self.fiber_array_s[lidx, pidx] = point[2]
                 pidx = pidx + 1
+                
+        input_vtk_polydata.GetLines().InitTraversal()
+        line_ptids = vtk.vtkIdList()
+        inpoints = input_vtk_polydata.GetPoints()
+        
+        for lidx in range(0, self.number_of_fibers):
+
+            input_vtk_polydata.GetLines().GetNextCell(line_ptids)
+            line_length = line_ptids.GetNumberOfIds()
+
+            if self.verbose:
+                if lidx % 100 == 0:
+                    print "<fibers.py> Line:", lidx, "/", self.number_of_fibers
+                    print "<fibers.py> number of points:", line_length
+
+            # loop over the indices that we want and get those points
+            for pidx in range(0, self.points_per_fiber):
+                
+                # do nearest neighbor interpolation: round index
+                if pidx == self.points_per_fiber - 1:
+                    l = numpy.sqrt(numpy.square(self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx - 1]) + \
+                                   numpy.square(self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx - 1]) + \
+                                   numpy.square(self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx - 1]))
+                    
+                    self.fiber_orien_for_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx - 1]) / l
+                    self.fiber_orien_for_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx - 1]) / l
+                    self.fiber_orien_for_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx - 1]) / l
+                    
+                    self.fiber_orien_back_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx - 1]) / l
+                    self.fiber_orien_back_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx - 1]) / l
+                    self.fiber_orien_back_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx - 1]) / l
+                    
+                elif pidx == 0:
+                    l = numpy.sqrt(numpy.square(self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx + 1]) + \
+                                   numpy.square(self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx + 1]) + \
+                                   numpy.square(self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx + 1]))
+                    
+                    self.fiber_orien_for_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx + 1] - self.fiber_array_r[lidx, pidx]) / l
+                    self.fiber_orien_for_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx + 1] - self.fiber_array_a[lidx, pidx]) / l
+                    self.fiber_orien_for_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx + 1] - self.fiber_array_s[lidx, pidx]) / l
+                    
+                    self.fiber_orien_back_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx + 1] - self.fiber_array_r[lidx, pidx]) / l
+                    self.fiber_orien_back_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx + 1] - self.fiber_array_a[lidx, pidx]) / l
+                    self.fiber_orien_back_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx + 1] - self.fiber_array_s[lidx, pidx]) / l
+                else:
+                    l1 = numpy.sqrt(numpy.square(self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx + 1]) + \
+                                    numpy.square(self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx + 1]) + \
+                                    numpy.square(self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx + 1]))
+                    
+                    l2 = numpy.sqrt(numpy.square(self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx - 1]) + \
+                                    numpy.square(self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx - 1]) + \
+                                    numpy.square(self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx - 1]))
+                    
+                    self.fiber_orien_for_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx + 1] - self.fiber_array_r[lidx, pidx]) / l1
+                    self.fiber_orien_for_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx + 1] - self.fiber_array_a[lidx, pidx]) / l1
+                    self.fiber_orien_for_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx + 1] - self.fiber_array_s[lidx, pidx]) / l1
+                    
+                    self.fiber_orien_back_r[lidx, pidx] = (self.fiber_array_r[lidx, pidx] - self.fiber_array_r[lidx, pidx - 1]) / l2
+                    self.fiber_orien_back_a[lidx, pidx] = (self.fiber_array_a[lidx, pidx] - self.fiber_array_a[lidx, pidx - 1]) / l2
+                    self.fiber_orien_back_s[lidx, pidx] = (self.fiber_array_s[lidx, pidx] - self.fiber_array_s[lidx, pidx - 1]) / l2
 
         # initialize hemisphere info
         if self.hemispheres:
