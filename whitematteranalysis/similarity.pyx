@@ -95,9 +95,9 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         print "ERROR: Please use distance method Landmarks to compute landmark distances"
         
     # compute the distance from this fiber to the array of other fibers
-    ddx = fiber_array.fiber_array_r - fiber.r
-    ddy = fiber_array.fiber_array_a - fiber.a
-    ddz = fiber_array.fiber_array_s - fiber.s
+    ddx = numpy.float32(fiber_array.fiber_array_r - fiber.r)
+    ddy = numpy.float32(fiber_array.fiber_array_a - fiber.a)
+    ddz = numpy.float32(fiber_array.fiber_array_s - fiber.s)
 
     dx = numpy.square(ddx)
     dy = numpy.square(ddy)

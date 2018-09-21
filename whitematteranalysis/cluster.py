@@ -591,7 +591,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     # 2) Do Normalized Cuts transform of similarity matrix.
     # row sum estimate for current B part of the matrix
     row_sum_2 = numpy.sum(B, axis=0) + \
-        numpy.dot(atlas.row_sum_matrix, B)
+        numpy.dot(numpy.float32(atlas.row_sum_matrix), B)
 
     # in case of negative row sum estimation (this should not ever happen)
     if any(row_sum_2<=0):
@@ -601,7 +601,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
 
              
     # normalized cuts normalization
-    row_sum = numpy.concatenate((atlas.row_sum_1, row_sum_2))
+    row_sum = numpy.concatenate((numpy.float32(atlas.row_sum_1), row_sum_2))
     dhat = numpy.sqrt(numpy.divide(1, row_sum))
     #dhat = numpy.sqrt(numpy.divide(1, numpy.concatenate((atlas.row_sum_1, row_sum_2))))
     B = \
@@ -611,9 +611,9 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
     # <done already in atlas creation>
 
     # 4) Compute embedding using eigenvectors
-    V = numpy.dot(numpy.dot(B.T, atlas.e_vec), \
-                      numpy.diag(numpy.divide(1.0, atlas.e_val)))
-    V = numpy.divide(V, atlas.e_vec_norm)
+    V = numpy.dot(numpy.dot(B.T, numpy.float32(atlas.e_vec)), \
+                      numpy.diag(numpy.divide(1.0, numpy.float32(atlas.e_val))))
+    V = numpy.divide(V, numpy.float32(atlas.e_vec_norm))
     embed = numpy.zeros((number_fibers, atlas.number_of_eigenvectors))
     for i in range(0, atlas.number_of_eigenvectors):
         embed[:,i] = numpy.divide(V[:,-(i+2)], V[:,-1])
@@ -665,19 +665,21 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
             landmarks_n = numpy.zeros((fiber_array_n.number_of_fibers,3))
     
         # pairwise distance matrix
-        all_fibers_n = range(0, fiber_array_n.number_of_fibers)
-
-        distances = Parallel(n_jobs=number_of_jobs,
-                             verbose=0)(
-            delayed(similarity.fiber_distance)(
+        distances = numpy.float32(numpy.zeros([fiber_array_n.number_of_fibers, fiber_array_m.number_of_fibers]))
+#        all_fibers_n = range(0, fiber_array_n.number_of_fibers)
+#
+#        distances = Parallel(n_jobs=number_of_jobs,
+#                             verbose=0)(
+        for lidx in xrange(fiber_array_n.number_of_fibers):
+            distances[lidx,:] = similarity.fiber_distance(
                 fiber_array_n.get_fiber(lidx),
                 fiber_array_m,
                 threshold, distance_method=distance_method,
                 fiber_landmarks=landmarks_n[lidx,:], 
                 landmarks=landmarks_m, bilateral=bilateral)
-            for lidx in all_fibers_n)
+#            for lidx in all_fibers_n)
 
-        distances = numpy.array(distances).T
+        distances = distances.T
 
     return distances
 
