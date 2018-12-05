@@ -45,17 +45,23 @@ parser.add_argument(
     help='The percent of a fiber that has to be in one hemisphere to consider the fiber as part of that hemisphere (rather than a commissural fiber). '
          'Default number is 0.6, where a higher number will tend to label fewer fibers as hemispheric and more fibers as commissural (not strictly in one hemisphere or the other), '
          'while a lower number will be stricter about what is classified as commissural. '
-         'This parameter is not applicable if -clusterLocationFile was provided.')
+         'This parameter is not applicable if -clusterLocationFile was provided. '
+         'Note: performing hemisphere separation uinsg -pthresh needs the input clusters are in the ATLAS space.')
 parser.add_argument(
     '-clusterLocationFile', action="store", dest="clusterLocationFile",
     help='A csv file defining the location of each cluster, i.e., hemispheric or commissural. '
-         'The hemispherePercentThreshold will be varied across the clusters if their locations are already known.')
+         'The hemispherePercentThreshold will be varied across the clusters if their locations are already known.'
+         'Note: performing hemisphere separation uinsg -clusterLocationFile needs the input clusters are in the ATLAS space.')
 parser.add_argument(
     '-atlasMRML', action="store", dest="atlasMRML", 
     help='A MRML file defining the atlas clusters, to be copied into all directories.')
+parser.add_argument(
+    '-labelInputClusterOnly', action='store_true',
+    help='If this is given, only the input vtk file will be changed without outputing separated clusters. '
+         'An additional pointdata HemisphereLocation will be added into the input vtk file. '
+         'This option is used if a user wants to separate the clusters after transforming them back to their DWI space.')
 
 args = parser.parse_args()
-
 
 if not os.path.isdir(args.inputDirectory):
     print "<wm_separate_hemispheres.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."
@@ -64,7 +70,8 @@ if not os.path.isdir(args.inputDirectory):
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
     print "<wm_separate_hemispheres.py> Output directory", outdir, "does not exist, creating it."
-    os.makedirs(outdir)
+    if not args.labelInputClusterOnly:
+        os.makedirs(outdir)
 
 atlasMRML = args.atlasMRML
 if not os.path.exists(atlasMRML):
@@ -92,23 +99,6 @@ if args.hemispherePercentThreshold is not None:
         print "<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", args.hemispherePercentThreshold, "must be between 0.5 and 1. (0.6 is recommended)."
         exit()
 
-print "<wm_separate_hemispheres.py> Starting computation."
-print ""
-print "=====input directory ======\n", args.inputDirectory
-print "=====output directory =====\n", args.outputDirectory
-print "=========================="
-print ""
-
-if location_data is None:
-    print "<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold
-else:
-    print "<wm_separate_hemispheres.py> Separating clusters using location file:", clusterLocationFile
-print ""
-
-
-# relatively high number of points for accuracy
-points_per_fiber = 40
-
 def list_cluster_files(input_dir):
     # Find input files
     input_mask = "{0}/cluster_*.vtk".format(input_dir)
@@ -117,141 +107,55 @@ def list_cluster_files(input_dir):
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)
 
-input_polydatas = list_cluster_files(args.inputDirectory)
+def write_mask_location_to_vtk(inpd, mask_location):
 
-number_of_subjects = len(input_polydatas)
+    inpointdata = inpd.GetPointData()
+    if inpointdata.GetNumberOfArrays() > 0:
+        point_data_array_indices = range(inpointdata.GetNumberOfArrays())
+        for idx in point_data_array_indices:
+            array = inpointdata.GetArray(idx)
+            if array.GetName() == 'HemisphereLocataion':
+                print '  -- HemisphereLocataion is in the input data: skip updating the vtk file.'
+                return inpd
 
-if location_data is not None and number_of_subjects != len(location_data):
-    print "<wm_separate_hemispheres.py> Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_subjects, len(location_data))
-    exit()
+    vtk_array = vtk.vtkDoubleArray()
+    vtk_array.SetName('HemisphereLocataion')
 
-print "<wm_separate_hemispheres.py> Input number of vtk/vtp files: ", number_of_subjects
+    inpd.GetLines().InitTraversal()
+    for lidx in range(0, inpd.GetNumberOfLines()):
+        ptids = vtk.vtkIdList()
+        inpd.GetLines().GetNextCell(ptids)
+        for pidx in range(0, ptids.GetNumberOfIds()):
+            vtk_array.InsertNextTuple1(mask_location[lidx])
 
-outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')
-if not os.path.exists(outdir_right):
-    os.makedirs(outdir_right)
-outdir_left = os.path.join(outdir, 'tracts_left_hemisphere')
-if not os.path.exists(outdir_left):
-    os.makedirs(outdir_left)
-outdir_commissure = os.path.join(outdir, 'tracts_commissural')
-if not os.path.exists(outdir_commissure):
-    os.makedirs(outdir_commissure)
+    inpd.GetPointData().AddArray(vtk_array)
+    inpd.Update()
 
-# copy requested MRML file into these directories
-fname_base = os.path.basename(atlasMRML)
-fname_output = os.path.join(outdir_right, fname_base)
-shutil.copyfile(atlasMRML, fname_output)
-fname_output = os.path.join(outdir_left, fname_base)
-shutil.copyfile(atlasMRML, fname_output)
-fname_output = os.path.join(outdir_commissure, fname_base)
-shutil.copyfile(atlasMRML, fname_output)
+    return inpd
 
-# midsagittal alignment step to get transform to apply to each polydata
-# alternatively could use the transform into atlas space that is found
-# during the labeling. This should be an option at the labeling step.
-# this transform is the one to use.
-#fname1 = os.path.join(outdir, subjectID+'_sym.vtp')
+def read_mask_location_from_vtk(inpd):
 
-# read in data
-hemi_list = []
-comm_list = []
-for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
+    mask_location = numpy.zeros(pd.GetNumberOfLines())
 
-    # figure out filename and extension
-    fname_base = os.path.basename(fname)
+    inpointdata = inpd.GetPointData()
+    flag_location = False
+    if inpointdata.GetNumberOfArrays() > 0:
+        point_data_array_indices = range(inpointdata.GetNumberOfArrays())
+        for idx in point_data_array_indices:
+            array = inpointdata.GetArray(idx)
+            if array.GetName() == 'HemisphereLocataion':
+                flag_location = True
+                    
+                inpd.GetLines().InitTraversal()
+                for lidx in range(0, inpd.GetNumberOfLines()):
+                    ptids = vtk.vtkIdList()
+                    inpd.GetLines().GetNextCell(ptids)
+                    for pidx in range(0, ptids.GetNumberOfIds()):
+                        mask_location[lidx] = array.GetTuple(ptids.GetId(pidx))[0]
 
-    # read data
-    print "<wm_separate_hemispheres.py> Reading input file:", fname
-    pd = wma.io.read_polydata(fname)
+                break
 
-    if pd.GetNumberOfLines() == 0:
-        pd_right = pd
-        pd_left = pd
-        pd_commissure = pd
-
-    else:
-        if clusterLocationFile is None:
-            # internal representation for fast similarity computation
-            # this also detects which hemisphere fibers are in
-            fibers = wma.fibers.FiberArray()
-            fibers.points_per_fiber = points_per_fiber
-            fibers.hemisphere_percent_threshold = hemisphere_percent_threshold
-            # must request hemisphere computation from object
-            fibers.hemispheres = True
-            # Now convert to array with points and hemispheres as above
-            fibers.convert_from_polydata(pd)
-
-            # separate into right and left hemispheres
-            # note: this assumes RAS coordinates as far as right and left labels
-            # LPS would be switched
-            # -------------------------
-            mask_right = numpy.zeros(pd.GetNumberOfLines())
-            mask_right[fibers.index_right_hem] = 1
-            pd_right = wma.filter.mask(pd, mask_right, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-
-            mask_left = numpy.zeros(pd.GetNumberOfLines())
-            mask_left[fibers.index_left_hem] = 1
-            pd_left = wma.filter.mask(pd, mask_left, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-
-            mask_commissure = numpy.zeros(pd.GetNumberOfLines())
-            mask_commissure[fibers.index_commissure] = 1
-            pd_commissure = wma.filter.mask(pd, mask_commissure, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-
-        else:
-            if location_data[c_idx][1] == 'c' or location_data[c_idx][1] == 'ng':
-                comm_list.append(fname_base)
-
-                pd_right = vtk.vtkPolyData()
-                pd_left = vtk.vtkPolyData()
-                pd_commissure = pd
-
-            elif location_data[c_idx][1] == 'h':
-                hemisphere_percent_threshold = 0.5001
-                hemi_list.append(fname_base)
-
-                # internal representation for fast similarity computation
-                # this also detects which hemisphere fibers are in
-                fibers = wma.fibers.FiberArray()
-                fibers.points_per_fiber = points_per_fiber
-                fibers.hemisphere_percent_threshold = hemisphere_percent_threshold
-                # must request hemisphere computation from object
-                fibers.hemispheres = True
-                # Now convert to array with points and hemispheres as above
-                fibers.convert_from_polydata(pd)
-
-                # separate into right and left hemispheres
-                # note: this assumes RAS coordinates as far as right and left labels
-                # LPS would be switched
-                # -------------------------
-                mask_right = numpy.zeros(pd.GetNumberOfLines())
-                mask_right[fibers.index_right_hem] = 1
-
-                mask_left = numpy.zeros(pd.GetNumberOfLines())
-                mask_left[fibers.index_left_hem] = 1
-              
-                if len(fibers.index_commissure) > 0:
-                    if len(fibers.index_left_hem) <= len(fibers.index_right_hem):
-                        mask_left[fibers.index_commissure] = 1
-                    else:
-                        mask_right[fibers.index_commissure] = 1
-
-                pd_right = wma.filter.mask(pd, mask_right, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-                pd_left = wma.filter.mask(pd, mask_left, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-                pd_commissure = vtk.vtkPolyData()
-
-                #mask_commissure = numpy.zeros(pd.GetNumberOfLines())
-                #mask_commissure[fibers.index_commissure] = 1
-                #pd_commissure = wma.filter.mask(pd, mask_commissure, preserve_point_data=True, preserve_cell_data=True, verbose=False)
-
-    print ' - fiber number: left %5d - right %5d - comm %5d' % (pd_left.GetNumberOfLines(), pd_right.GetNumberOfLines(), pd_commissure.GetNumberOfLines())
-
-    # output polydatas into the appropriate subdirectories
-    fname_output = os.path.join(outdir_right, fname_base)
-    wma.io.write_polydata(pd_right, fname_output)
-    fname_output = os.path.join(outdir_left, fname_base)
-    wma.io.write_polydata(pd_left, fname_output)
-    fname_output = os.path.join(outdir_commissure, fname_base)
-    wma.io.write_polydata(pd_commissure, fname_output)
+    return flag_location, mask_location
 
 def output_mrml(cluster_list, mrml_filename):
     number_of_files = len(cluster_list)
@@ -272,20 +176,167 @@ def output_mrml(cluster_list, mrml_filename):
         colors = numpy.array(colors)
         wma.mrml.write(cluster_list, colors, mrml_filename, ratio=1.0)
 
-if clusterLocationFile is not None:
-    hemiMRML = os.path.join(outdir, "clustered_tracts_sep_hemispheric_n{0:04d}".format(len(hemi_list))+".mrml")
-    commMRML = os.path.join(outdir, "clustered_tracts_sep_commissural_n{0:04d}".format(len(comm_list))+".mrml")
+print "<wm_separate_hemispheres.py> Starting computation."
+print ""
+print "=====input directory ======\n", args.inputDirectory
+print "=====output directory =====\n", args.outputDirectory
+print "=========================="
+print ""
 
-    print ""
-    output_mrml(hemi_list, hemiMRML)
-    output_mrml(comm_list, commMRML)
+if location_data is None:
+    print "<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold
+else:
+    print "<wm_separate_hemispheres.py> Separating clusters using location file:", clusterLocationFile
+print ""
 
-    shutil.copyfile(hemiMRML, os.path.join(outdir_right, os.path.basename(hemiMRML)))
-    shutil.copyfile(commMRML, os.path.join(outdir_right, os.path.basename(commMRML)))
-    shutil.copyfile(hemiMRML, os.path.join(outdir_left, os.path.basename(hemiMRML)))
-    shutil.copyfile(commMRML, os.path.join(outdir_left, os.path.basename(commMRML)))
-    shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
-    shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
+# relatively high number of points for accuracy
+points_per_fiber = 40
+
+input_polydatas = list_cluster_files(args.inputDirectory)
+
+number_of_clusters = len(input_polydatas)
+
+if location_data is not None and number_of_clusters != len(location_data):
+    print "<wm_separate_hemispheres.py> Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_clusters, len(location_data))
+    exit()
+
+print "<wm_separate_hemispheres.py> Input number of vtk/vtp files: ", number_of_clusters
+
+# midsagittal alignment step to get transform to apply to each polydata
+# alternatively could use the transform into atlas space that is found
+# during the labeling. This should be an option at the labeling step.
+# this transform is the one to use.
+
+if not args.labelInputClusterOnly:
+    outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')
+    if not os.path.exists(outdir_right):
+        os.makedirs(outdir_right)
+    outdir_left = os.path.join(outdir, 'tracts_left_hemisphere')
+    if not os.path.exists(outdir_left):
+        os.makedirs(outdir_left)
+    outdir_commissure = os.path.join(outdir, 'tracts_commissural')
+    if not os.path.exists(outdir_commissure):
+        os.makedirs(outdir_commissure)
+
+# read in data
+for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
+
+    # figure out filename and extension
+    fname_base = os.path.basename(fname)
+
+    # read data
+    print "<wm_separate_hemispheres.py> Separating input file:", fname
+    pd = wma.io.read_polydata(fname)
+
+    flag_location, mask_location = read_mask_location_from_vtk(pd)
+       
+     # If HemisphereLocataion is not defined in the input vtk file, the location of each fiber in the cluster is decided.
+    if not flag_location:
+        if clusterLocationFile is not None:
+            # internal representation for fast similarity computation
+            # this also detects which hemisphere fibers are in
+            fibers = wma.fibers.FiberArray()
+            fibers.points_per_fiber = points_per_fiber
+            fibers.hemisphere_percent_threshold = hemisphere_percent_threshold
+            # must request hemisphere computation from object
+            fibers.hemispheres = True
+            # Now convert to array with points and hemispheres as above
+            fibers.convert_from_polydata(pd)
+
+            # separate into right and left hemispheres
+            # note: this assumes RAS coordinates as far as right and left labels
+            # LPS would be switched
+            # -------------------------
+
+            mask_location[fibers.index_left_hem] = 1
+            mask_location[fibers.index_right_hem] = 2
+            mask_location[fibers.index_commissure] = 3
+        else:
+            if location_data[c_idx][1] == 'c' or location_data[c_idx][1] == 'ng':
+
+                mask_location[:] = 3
+
+            elif location_data[c_idx][1] == 'h':
+                hemisphere_percent_threshold = 0.5001
+
+                # internal representation for fast similarity computation
+                # this also detects which hemisphere fibers are in
+                fibers = wma.fibers.FiberArray()
+                fibers.points_per_fiber = points_per_fiber
+                fibers.hemisphere_percent_threshold = hemisphere_percent_threshold
+                # must request hemisphere computation from object
+                fibers.hemispheres = True
+                # Now convert to array with points and hemispheres as above
+                fibers.convert_from_polydata(pd)
+
+                # separate into right and left hemispheres
+                # note: this assumes RAS coordinates as far as right and left labels
+                # LPS would be switched
+                # -------------------------
+              
+                mask_location[fibers.index_left_hem] = 1
+                mask_location[fibers.index_right_hem] = 2
+
+                if len(fibers.index_commissure) > 0:
+                    if len(fibers.index_left_hem) <= len(fibers.index_right_hem):
+                        mask_location[fibers.index_commissure] = 1
+                    else:
+                        mask_location[fibers.index_commissure] = 2
+    
+         # Update the input vtk file
+        pd = write_mask_location_to_vtk(pd, mask_location)
+        wma.io.write_polydata(pd, fname)
+
+    if len(numpy.where(mask_location ==0)[0]) > 1:
+        print "Error: Not all fibers in", fname, "is labeled with hemisphere location infromation."
+        exit()
+
+    if not args.labelInputClusterOnly:
+        
+        # output separated clusters
+        mask_right = numpy.zeros(pd.GetNumberOfLines())
+        mask_left = numpy.zeros(pd.GetNumberOfLines())
+        mask_commissure = numpy.zeros(pd.GetNumberOfLines())
+
+        mask_left[numpy.where(mask_location==1)[0]] = 1
+        mask_right[numpy.where(mask_location==2)[0]] = 1
+        mask_commissure[numpy.where(mask_location==3)[0]] = 1
+
+        pd_right = wma.filter.mask(pd, mask_right, preserve_point_data=True, preserve_cell_data=True, verbose=False)
+        pd_left = wma.filter.mask(pd, mask_left, preserve_point_data=True, preserve_cell_data=True, verbose=False)
+        pd_commissure = wma.filter.mask(pd, mask_commissure, preserve_point_data=True, preserve_cell_data=True, verbose=False)
+
+        fname_output = os.path.join(outdir_right, fname_base)
+        wma.io.write_polydata(pd_right, fname_output)
+        fname_output = os.path.join(outdir_left, fname_base)
+        wma.io.write_polydata(pd_left, fname_output)
+        fname_output = os.path.join(outdir_commissure, fname_base)
+        wma.io.write_polydata(pd_commissure, fname_output)
+
+if not args.labelInputClusterOnly:
+    # copy requested MRML file into these directories
+    fname_base = os.path.basename(atlasMRML)
+    fname_output = os.path.join(outdir_right, fname_base)
+    shutil.copyfile(atlasMRML, fname_output)
+    fname_output = os.path.join(outdir_left, fname_base)
+    shutil.copyfile(atlasMRML, fname_output)
+    fname_output = os.path.join(outdir_commissure, fname_base)
+    shutil.copyfile(atlasMRML, fname_output)
+
+    # if clusterLocationFile is not None:
+    #     hemiMRML = os.path.join(outdir, "clustered_tracts_sep_hemispheric_n{0:04d}".format(len(hemi_list))+".mrml")
+    #     commMRML = os.path.join(outdir, "clustered_tracts_sep_commissural_n{0:04d}".format(len(comm_list))+".mrml")
+
+    #     print ""
+    #     output_mrml(hemi_list, hemiMRML)
+    #     output_mrml(comm_list, commMRML)
+
+    #     shutil.copyfile(hemiMRML, os.path.join(outdir_right, os.path.basename(hemiMRML)))
+    #     shutil.copyfile(commMRML, os.path.join(outdir_right, os.path.basename(commMRML)))
+    #     shutil.copyfile(hemiMRML, os.path.join(outdir_left, os.path.basename(hemiMRML)))
+    #     shutil.copyfile(commMRML, os.path.join(outdir_left, os.path.basename(commMRML)))
+    #     shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
+    #     shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
 
 print ""
 print "<wm_separate_hemispheres.py> Done!!!"
