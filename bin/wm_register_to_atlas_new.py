@@ -39,8 +39,8 @@ parser.add_argument(
     '-f', action="store", dest="numberOfFibers", type=int, default=20000,
     help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
 parser.add_argument(
-    '-l', action="store", dest="fiberLength", type=int, default=20,
-    help='Minimum length (in mm) of fibers to analyze. The default is 20mm.')
+    '-l', action="store", dest="fiberLength", type=int, default=40,
+    help='Minimum length (in mm) of fibers to analyze. The default is 40mm.')
 parser.add_argument(
     '-lmax', action="store", dest="fiberLengthMax", type=int, default=260,
     help='Maximum length (in mm) of fibers to analyze. This parameter can be used to remove extremely long fibers that may have traversed several structures. For example, a value of 200 will avoid sampling the tail end of the fiber length distribution. The default is 260 mm.')
