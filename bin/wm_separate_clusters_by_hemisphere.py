@@ -74,9 +74,10 @@ if not os.path.exists(outdir):
         os.makedirs(outdir)
 
 atlasMRML = args.atlasMRML
-if not os.path.exists(atlasMRML):
+if atlasMRML is None or not os.path.exists(atlasMRML):
     print "<wm_separate_hemispheres.py> Atlas MRML file", atlasMRML, "does not exist."
-    exit()
+    if not args.labelInputClusterOnly:
+        exit()
 
 clusterLocationFile = args.clusterLocationFile
 location_data = None
