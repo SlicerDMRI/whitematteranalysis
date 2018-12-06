@@ -339,5 +339,11 @@ if not args.labelInputClusterOnly:
     #     shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
     #     shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
 
+if args.labelInputClusterOnly:
+    flag_file = os.path.join(args.inputDirectory, 'cluster_location_labeling_log.txt')
+    file = open(flag_file, 'w')
+    file.write('Done!')
+    file.close()
+
 print ""
 print "<wm_separate_hemispheres.py> Done!!!"
