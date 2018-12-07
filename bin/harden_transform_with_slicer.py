@@ -30,7 +30,9 @@ args = parser.parse_args()
 def harden_transform(polydata, transform, inverse, outdir):
     
     polydata_base_path, polydata_name = os.path.split(polydata)
-    if os.path.exists(os.path.join(outdir, output_name)):
+    output_name = os.path.join(outdir, polydata_name)
+    
+    if os.path.exists(output_name):
         return
     
     check_load, polydata_node = slicer.util.loadModel(str(polydata), 1)
@@ -53,9 +55,7 @@ def harden_transform(polydata, transform, inverse, outdir):
     polydata_node.SetAndObserveTransformNodeID(t_node_id)
     logic.hardenTransform(polydata_node)
 
-    
-    output_name = polydata_name
-    slicer.util.saveNode(polydata_node, os.path.join(outdir, output_name))
+    slicer.util.saveNode(polydata_node, output_name)
 
 if os.path.isfile(args.polydata):
     harden_transform(args.polydata, args.transform, args.inverse, args.outdir)
