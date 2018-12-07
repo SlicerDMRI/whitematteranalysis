@@ -41,7 +41,10 @@ def harden_transform(polydata, transform, inverse, outdir):
 
     if inverse == "1":
         transform_node.Inverse()
-
+    
+    if os.path.exists(os.path.join(outdir, output_name)):
+        return
+    
     logic = slicer.vtkSlicerTransformLogic()
     t_node_id = transform_node.GetID()
 
