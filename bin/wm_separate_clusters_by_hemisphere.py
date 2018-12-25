@@ -233,7 +233,7 @@ for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
        
      # If HemisphereLocataion is not defined in the input vtk file, the location of each fiber in the cluster is decided.
     if not flag_location:
-        if clusterLocationFile is not None:
+        if clusterLocationFile is None:
             # internal representation for fast similarity computation
             # this also detects which hemisphere fibers are in
             fibers = wma.fibers.FiberArray()
