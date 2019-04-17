@@ -27,7 +27,7 @@ import whitematteranalysis.fibers
 import whitematteranalysis.similarity
 
 
-class RelativeDistanceModel:
+class RelativeDistanceModel(object):
 
     
     def __init__(self):

@@ -76,7 +76,7 @@ class Changegroupname_Dialog(qt.QDialog):
   def cleargroupnamelist(self):
       self.ui.temComboBox.clear()
   
-class ModuleEventsList:
+class ModuleEventsList(object):
   """A helper class to manage a list of observers for a module. Call removeObservers on module exit."""
     
   def __init__(self):
@@ -95,7 +95,7 @@ class ModuleEventsList:
     self.observerTags = []
 
 
-class ThreeDNodePicker:
+class ThreeDNodePicker(object):
   """A helper class to pick nodes in the 3D View. Can pick fiber bundles or models."""
   def __init__(self):
     # find the slicer objects needed for picking in the 3D window
@@ -194,7 +194,7 @@ class ThreeDNodePicker:
     return picked_node        
   
 
-class ModelDisplayHelper:
+class ModelDisplayHelper(object):
   """A helper class to handle all low-level display functionality for one or all models or fiber bundles. """
 
   def __init__(self):
@@ -329,7 +329,7 @@ class ModelDisplayHelper:
   def render(self):
     print("Render 3D")
 
-class TractsGroup:
+class TractsGroup(object):
   """A helper class to maintain one saved tracts group. """
   
   def __init__(self):
@@ -344,7 +344,7 @@ class TractsGroup:
     self.contents.append(tract)
 
 
-class TractsGroupManager:
+class TractsGroupManager(object):
   """A helper class to manage saved tracts groups. """
   
   def __init__(self):
@@ -421,7 +421,7 @@ class TractsGroupManager:
         self.groupnames.append(g.groupname)
 
           
-class IDTracts:
+class IDTracts(object):
   """A helper class to maintain ungrouped selected tracts. """
 
   def __init__(self):
@@ -441,7 +441,7 @@ class IDTracts:
         # if so, remove
         self.contents.remove(m)
     
-class IDClipboard:
+class IDClipboard(object):
   """A helper class to maintain one interactively edited list or clipboard of nodes, and its display at the individual clipboard level. """
 
   def __init__(self):
@@ -523,7 +523,7 @@ class IDClipboard:
     elif self.ModelInteractionClipboardVisibility == 0:
         self.ModelInteractionClipboardVisible()
 
-class IDClipboardManager:
+class IDClipboardManager(object):
   """A helper class to manage many editable clipboards of nodes and their appearance in 3D, as well as their GUI display."""
 
   def __init__(self):
@@ -841,7 +841,7 @@ class IDClipboardManager:
     f.close()
 
 
-class PickTracts:
+class PickTracts(object):
   def __init__(self, parent):
     parent.title = "PickTracts" # TODO make this more human readable by adding spaces
     parent.categories = ["Examples"]
@@ -872,7 +872,7 @@ class PickTracts:
 # qPickTractsWidget
 #
 
-class PickTractsWidget:
+class PickTractsWidget(object):
   def __init__(self, parent = None):
     if not parent:
       self.parent = slicer.qMRMLWidget()
@@ -1545,7 +1545,7 @@ class PickTractsWidget:
 # PickTractsLogic
 #
 
-class PickTractsLogic:
+class PickTractsLogic(object):
   """This class should implement all the actual 
   computation done by your module.  The interface 
   should be such that other python code can import

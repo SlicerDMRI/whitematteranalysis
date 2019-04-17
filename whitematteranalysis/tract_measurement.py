@@ -5,7 +5,7 @@ import glob
 import numpy
 import xlrd
 
-class TractMeasurement:
+class TractMeasurement(object):
     """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""
 
     def __init__(self):
@@ -118,7 +118,7 @@ def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separat
     return measurement_list
 
 
-class Demographics:
+class Demographics(object):
     """Group demographics."""
 
     def __init__(self):

@@ -5,7 +5,7 @@ import vtk
 import whitematteranalysis.fibers
 
 
-class RegistrationInformation:
+class RegistrationInformation(object):
     def __init__(self):
         self._original_fibers = whitematteranalysis.fibers.FiberArray()
         self._moving_fibers = whitematteranalysis.fibers.FiberArray()

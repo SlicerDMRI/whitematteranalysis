@@ -26,7 +26,7 @@ except:
 
 import whitematteranalysis as wma
 
-class MultiSubjectRegistration:
+class MultiSubjectRegistration(object):
 
     def __init__(self):
         # parameters that can be set by user

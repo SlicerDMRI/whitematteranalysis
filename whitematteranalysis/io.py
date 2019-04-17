@@ -621,7 +621,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
     return(tx_fnames)
 
 
-class LateralityResults:
+class LateralityResults(object):
 
     """Results of laterality computation for a subject.
 

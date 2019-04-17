@@ -30,7 +30,7 @@ except ImportError:
 
 import whitematteranalysis as wma
 
-class RegisterTractography:
+class RegisterTractography(object):
 
     def constraint(self, x_current):
         penalty = 0

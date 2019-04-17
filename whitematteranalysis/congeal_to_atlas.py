@@ -13,7 +13,7 @@ import numpy
 import vtk
 import whitematteranalysis as wma
 
-class SubjectToAtlasRegistration:
+class SubjectToAtlasRegistration(object):
 
     def __init__(self):
         # parameters that can be set by user

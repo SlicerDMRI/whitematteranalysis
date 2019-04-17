@@ -52,7 +52,7 @@ def compute_laterality_index(left, right, idx=None):
     return laterality_index
 
 
-class WhiteMatterLaterality:
+class WhiteMatterLaterality(object):
 
     """Laterality computation from fiber tracts."""
 

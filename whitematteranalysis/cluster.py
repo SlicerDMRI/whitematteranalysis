@@ -55,7 +55,7 @@ if 0:
         print("<cluster.py> Failed to import sklearn, cannot use affinity propagation.")
         print("<cluster.py> Please install sklearn for this functionality.")
     
-class ClusterAtlas:
+class ClusterAtlas(object):
     """Variables necessary to label a new subject from a spectral cluster atlas."""
 
     def __init__(self):

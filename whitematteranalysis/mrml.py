@@ -11,7 +11,7 @@ def write(pd_filenames, colors, filename, ratio=1.0):
     writer.write(pd_filenames, colors, filename, ratio)
     del writer
     
-class WriteMRML:
+class WriteMRML(object):
     
     def __init__(self):
         self.header = '<MRML  version="Slicer4" userTags="">\n'

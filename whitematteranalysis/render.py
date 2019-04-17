@@ -111,7 +111,7 @@ def argsort_by_jet_lookup_table(rgb_color):
     # Return indices that will sort these colors (centroids) in their match order
     return(numpy.argsort(numpy.array(match_jet)))
         
-class RenderPolyData:
+class RenderPolyData(object):
 
     """Makes a vtk render window to display polydata tracts"""
 
