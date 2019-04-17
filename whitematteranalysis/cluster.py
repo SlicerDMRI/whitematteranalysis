@@ -4,6 +4,7 @@ implementations of fiber clustering
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 import os
 import pickle
 
@@ -26,12 +27,12 @@ except ImportError:
     print("<cluster.py> Failed to import joblib, cannot multiprocess.")
     print("<cluster.py> Please install joblib for this functionality.")
 
-import fibers
-import similarity
-import filter
-import render
-import io
-import mrml
+from . import fibers
+from . import similarity
+from . import filter
+from . import render
+from . import io
+from . import mrml
 
 from pprint import pprint
 

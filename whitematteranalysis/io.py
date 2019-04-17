@@ -18,7 +18,7 @@ This function reads in the laterality data for further analysis.
 
 """
 from __future__ import print_function
-
+from __future__ import absolute_import
 import os
 import pickle
 import glob
@@ -27,8 +27,8 @@ import numpy
 import vtk
 from joblib import Parallel, delayed
 
-import render
-import filter
+from . import render
+from . import filter
 
 VERBOSE = 0
 

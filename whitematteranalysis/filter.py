@@ -17,6 +17,7 @@ remove_outliers
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import vtk
 import numpy
@@ -29,8 +30,8 @@ except ImportError:
     print("<filter.py> Failed to import joblib, cannot multiprocess.")
     print("<filter.py> Please install joblib for this functionality.")
 
-import fibers
-import similarity
+from . import fibers
+from . import similarity
 
 verbose = 0
 

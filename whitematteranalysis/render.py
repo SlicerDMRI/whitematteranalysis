@@ -1,12 +1,13 @@
 """ Class RenderPolyData for rendering tractography, and saving views. """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 
 import numpy
 import vtk
 
-import filter
+from . import filter
 
 def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False, scalar_bar=False, axes=False, scalar_range=None, data_mode="Cell", tube=True, colormap='jet', data_name=None, verbose=True):
     """ Function for easy matlab-like use of the rendering

@@ -18,6 +18,7 @@ LateralityResults (io.py)
 
 """
 from __future__ import print_function
+from __future__ import absolute_import
 
 import numpy
 
@@ -30,10 +31,10 @@ except ImportError:
     print("<laterality.py> Failed to import joblib, cannot multiprocess.")
     print("<laterality.py> Please install joblib for this functionality.")
 
-from fibers import FiberArray
-import similarity
-from io import LateralityResults
-import filter
+from .fibers import FiberArray
+from . import similarity
+from .io import LateralityResults
+from . import filter
 
 def compute_laterality_index(left, right, idx=None):
     ''' Compute laterality index from left and right hemisphere quantities.'''
