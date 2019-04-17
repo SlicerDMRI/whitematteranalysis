@@ -71,31 +71,31 @@ def processEvent(caller=None, event=None):
             print i, m.GetClassName()
             print m.GetPickedNodeID()
             print m.GetPickedRAS()
-        
-ask steve call vtkproppicker in model displayable manager
-and it's not exposed to python
-getpickednodeid
-maybe getpicked RAS ,e tc
-
-best practices
-fbnode managed by model displayable manager
-
-rely on model displayable manager
-code from python you can get it
-fb node set pickable true
-end of markups module wiki page info for developers
-markups 3d fiducial displayable manager
-
-can pass this through to the picker from vtkmrmlmodeldisplayablemanager
-interactor.GetLastEventPosition()
-translation to ras to get pick
-
-helper function on one of the displayable managers to say what does this belong to
-
-key press events n modules loadable markups
 
 
-        
-
-picked node: vtkMRMLFiberBundleLineDisplayNode1
-picked cell: 380
+#
+# ask steve call vtkproppicker in model displayable manager
+# and it's not exposed to python
+# getpickednodeid
+# maybe getpicked RAS ,e tc
+#
+# best practices
+# fbnode managed by model displayable manager
+#
+# rely on model displayable manager
+# code from python you can get it
+# fb node set pickable true
+# end of markups module wiki page info for developers
+# markups 3d fiducial displayable manager
+#
+# can pass this through to the picker from vtkmrmlmodeldisplayablemanager
+# interactor.GetLastEventPosition()
+# translation to ras to get pick
+#
+# helper function on one of the displayable managers to say what does this belong to
+#
+# key press events n modules loadable markups
+#
+# picked node: vtkMRMLFiberBundleLineDisplayNode1
+# picked cell: 380
+#
