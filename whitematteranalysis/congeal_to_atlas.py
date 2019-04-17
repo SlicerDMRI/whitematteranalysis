@@ -6,6 +6,7 @@ class MultiSubjectRegistration
 
 
 """
+from __future__ import print_function
 
 import os
 import numpy
@@ -73,7 +74,7 @@ class SubjectToAtlasRegistration:
         #print displacement_field_vtk.GetPointData().GetArray(0)
         newtrans = vtk.util.numpy_support.vtk_to_numpy(displacement_field_vtk.GetPointData().GetArray(0)).ravel()
         #print newtrans.shape
-        print "UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(self.transform_as_array), "==>", len(newtrans),        
+        print("UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(self.transform_as_array), "==>", len(newtrans), end=' ')
         self.transform_as_array = newtrans
         
     def set_subject(self, polydata, subject_id):
@@ -85,7 +86,7 @@ class SubjectToAtlasRegistration:
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             self.transform = vtktrans
             self.transform_as_array = trans
-            print "ADD PD:", trans
+            print("ADD PD:", trans)
         else:
             trans = vtk.vtkTransform()
             self.transform = trans
@@ -125,10 +126,10 @@ class SubjectToAtlasRegistration:
 
         if self.mode == "Nonrigid":
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(self.transform_as_array)
-            print vtktrans
+            print(vtktrans)
         else:
             vtktrans = wma.register_two_subjects.convert_transform_to_vtk(self.transform_as_array)
-            print vtktrans.GetMatrix()
+            print(vtktrans.GetMatrix())
         self.transform = vtktrans
 
         # get the subject's objectives as computed so far
@@ -145,7 +146,7 @@ class SubjectToAtlasRegistration:
         
     def save_transformed_polydata(self, intermediate_save=False):
 
-        print "SAVING POLYDATA"
+        print("SAVING POLYDATA")
 
         if intermediate_save:
             # make a directory for the current iteration
@@ -166,11 +167,11 @@ class SubjectToAtlasRegistration:
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
 
-            print "______________ FINAL__________________"
+            print("______________ FINAL__________________")
             if self.mode == "Nonrigid":
-                print self.transform
+                print(self.transform)
             else:
-                print self.transform.GetMatrix()
+                print(self.transform.GetMatrix())
 
             self.save_transformed_polydata_to_disk(outdir)
 
@@ -183,7 +184,7 @@ class SubjectToAtlasRegistration:
  
     def save_transformed_polydata_to_disk(self, outdir):
         out_fname = os.path.join(outdir, self.subject_id + '_reg.vtk')
-        print self.subject_id, " Transforming ", self.input_polydata_filename, "->", out_fname, "..."
+        print(self.subject_id, " Transforming ", self.input_polydata_filename, "->", out_fname, "...")
 
         pd = wma.io.read_polydata(self.input_polydata_filename)
 

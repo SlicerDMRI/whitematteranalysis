@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import os
 import multiprocessing
@@ -5,13 +6,13 @@ import multiprocessing
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_render_laterality_all.py> Error importing white matter analysis package\n"
+    print("<wm_render_laterality_all.py> Error importing white matter analysis package\n")
     raise
 
 try:
     from joblib import Parallel, delayed
 except:
-    print "<wm_render_laterality_all.py> Error importing joblib package\n"
+    print("<wm_render_laterality_all.py> Error importing joblib package\n")
     raise
 
 
@@ -45,23 +46,23 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 input_directories = os.listdir(args.inputDirectory)
-print input_directories
+print(input_directories)
 
-print "wm_render_laterality_all. Starting white matter outlier computation."
-print ""
-print "=====render laterality======"
+print("wm_render_laterality_all. Starting white matter outlier computation.")
+print("")
+print("=====render laterality======")
 
-print "input directory:", args.inputDirectory
-print 'CPUs detected:', multiprocessing.cpu_count()
+print("input directory:", args.inputDirectory)
+print('CPUs detected:', multiprocessing.cpu_count())
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
 else:
     parallel_jobs = multiprocessing.cpu_count()
-print 'Using N jobs:', parallel_jobs
+print('Using N jobs:', parallel_jobs)
 
 scalar_range = [-0.5, 0.5]
 if args.scalarRangeLow is not None:
@@ -69,7 +70,7 @@ if args.scalarRangeLow is not None:
 if args.scalarRangeHigh is not None:
     scalar_range[1] = args.scalarRangeHigh
     
-print "=========================="
+print("==========================")
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -77,15 +78,15 @@ print "=========================="
 
 def pipeline(indir):
     li_dir = os.path.join(args.inputDirectory,indir)
-    print "<wm_render_laterality_all.py> processing directory:", li_dir
+    print("<wm_render_laterality_all.py> processing directory:", li_dir)
     if os.path.isdir(li_dir):
         pd = None
         fname = os.path.join(li_dir,fname_to_read)
-        print fname
+        print(fname)
         if os.path.exists(fname):
             pd = wma.io.read_polydata(fname)
             if pd is not None:
-                print "<wm_render_laterality_all.py> Rendering polydata:", fname
+                print("<wm_render_laterality_all.py> Rendering polydata:", fname)
                 ren = wma.render.render(pd, scalar_range=scalar_range, scalar_bar=True, number_of_fibers=1000)
                 ren.save_views(li_dir)
 

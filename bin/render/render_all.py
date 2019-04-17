@@ -1,3 +1,4 @@
+from __future__ import print_function
 import glob
 import os
 import whitematteranalysis as wma
@@ -18,7 +19,7 @@ idx = 1
 renderers = list()
 
 for pd_file in inputPolyDatas:
-    print "S ", idx, "::", pd_file
+    print("S ", idx, "::", pd_file)
     pd = wma.io.read_polydata(pd_file)
     ren = wma.render.render(pd,1000)
     ren.view_superior()

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 import unittest
 import time
@@ -135,13 +136,13 @@ class ThreeDNodePicker:
     
   def processEvent(self, caller=None, event=None):
     # example event processing code. when using the class the process event callback should be defined when calling startPicking.  This is an example.
-    print "Using example processEvent. Please create your own based on this example code."
+    print("Using example processEvent. Please create your own based on this example code.")
     key = self.interactor.GetKeySym()
-    print "key:", key
+    print("key:", key)
     ret = self.pick()
     if ret:
         selection = self.getPickedNode()
-        print "picked:", selection.GetName()
+        print("picked:", selection.GetName())
         
   def pick(self):    
     pos = self.interactor.GetEventPosition()
@@ -200,30 +201,30 @@ class ModelDisplayHelper:
     self.highlightColor = [.5, .2, .9]
     self.originalColors = []
     self.displayState = 'Lines'
-    print "Find out tubes or not, and visible or not, from the data at init!"
+    print("Find out tubes or not, and visible or not, from the data at init!")
     
   def setColor(self, m, color):
-    print "set color", color
+    print("set color", color)
     for n in range(m.GetNumberOfDisplayNodes()):
         dn = m.GetNthDisplayNode(n)
         oldColor = dn.GetColor()
-        print "old color", oldColor, "setting color", color
+        print("old color", oldColor, "setting color", color)
         if not (oldColor[0] == color[0] and oldColor[1] == color[1] and oldColor[2] == color[2]):
-            print "old color and new are different"
+            print("old color and new are different")
             dn.SetColor(color)
             if not (oldColor == self.highlightColor):
-                print "saving prev color", oldColor
+                print("saving prev color", oldColor)
                 self.originalColors.append([m, oldColor])
             
   def resetColor(self, m):
     oldColor = None
     for node,color in self.originalColors:
-        print "test node, color", color
+        print("test node, color", color)
         if node is m:
-            print "found node on color list", node.GetName()
+            print("found node on color list", node.GetName())
             oldColor = color
     if oldColor:
-        print "found old color", oldColor
+        print("found old color", oldColor)
         slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for n in range(m.GetNumberOfDisplayNodes()):
             dn = m.GetNthDisplayNode(n)
@@ -244,11 +245,11 @@ class ModelDisplayHelper:
         slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
-            print "show model", m.GetName()
+            print("show model", m.GetName())
             self.visibleOn(m)
         slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
-        print "NodeType", nodeType, "is unsupported"
+        print("NodeType", nodeType, "is unsupported")
 
   def allVisibleOff(self, nodeType):
     # dictionary of the kind of nodes we are picking
@@ -258,14 +259,14 @@ class ModelDisplayHelper:
         slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
-            print "hide model", m.GetName()
+            print("hide model", m.GetName())
             self.visibleOff(m)
         slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
-        print "NodeType", nodeType, "is unsupported"
+        print("NodeType", nodeType, "is unsupported")
         
   def visibleOn(self,m):
-    print "show model", m.GetClassName()
+    print("show model", m.GetClassName())
     className =  m.GetClassName()
     if className == 'vtkMRMLFiberBundleNode':
         #for n in range(m.GetNumberOfDisplayNodes()):
@@ -291,25 +292,25 @@ class ModelDisplayHelper:
     # so update any visible nodes. This is likely
     # a bug, the desired behavior would be to store what is displayed
     # in the MRML file so it opens up with tubes again.
-    print "updateAll", nodeType
+    print("updateAll", nodeType)
     if nodeType == 'FiberBundleNode':
         nodePattern = '*'+nodeType+'*'
         nodes = slicer.util.getNodes(nodePattern)
         slicer.mrmlScene.StartState(slicer.mrmlScene.BatchProcessState)
         for key in nodes:
             m = nodes[key]
-            print "update model", m.GetName()
+            print("update model", m.GetName())
             # update visibility of correct display type, if it's visible now
             if m.GetTubeDisplayNode().GetVisibility() or m.GetLineDisplayNode().GetVisibility():
                 self.visibleOn(m)
         slicer.mrmlScene.EndState(slicer.mrmlScene.BatchProcessState)
     else:
-        print "NodeType", nodeType, "is not in need of update"
+        print("NodeType", nodeType, "is not in need of update")
 
         
   def visibleOff(self,m):
-    print "hide model", m.GetName()
-    print "type", m.GetClassName()  
+    print("hide model", m.GetName())
+    print("type", m.GetClassName())
     # for fiber bundles this sets everything
     # invisible, all three display formats
     m.SetDisplayVisibility(0)
@@ -317,16 +318,16 @@ class ModelDisplayHelper:
   def highlightOff(self, m):
     # undo special highlight of the current model 
     # put back the original color
-    print "highlightOff", m.GetName()
+    print("highlightOff", m.GetName())
     self.resetColor(m)
 
   def highlightOn(self, m):
     # highlight display of the current model 
-    print "highlightOn", m.GetName()
+    print("highlightOn", m.GetName())
     self.setColor(m, self.highlightColor)
 
   def render(self):
-    print "Render 3D"
+    print("Render 3D")
 
 class TractsGroup:
   """A helper class to maintain one saved tracts group. """
@@ -367,22 +368,22 @@ class TractsGroupManager:
     g = TractsGroup()
     g.setgroupname(namestring)
     for tract in clipmanager.newt.contents:
-        print "1",tract
+        print("1",tract)
         g.addcontents(tract)
     while len(clipmanager.newt.contents) > 0:
         clipmanager.newt.contents.pop()
     self.groups.append(g)
-    print "2",g
+    print("2",g)
 
   def addtogroup(self,namestring,clipmanager):
     for g in self.groups:
         if g.groupname == namestring:
             for tract in clipmanager.newt.contents:
-                print "3",tract
+                print("3",tract)
                 g.addcontents(tract)
             while len(clipmanager.newt.contents) > 0:
                 clipmanager.newt.contents.pop()
-            print "4",g
+            print("4",g)
             return
   
   def listgroup(self,namestring,clipmanager):
@@ -391,7 +392,7 @@ class TractsGroupManager:
     for g in self.groups:
         if g.groupname == namestring:
             for tract in g.contents:
-                print "5",tract
+                print("5",tract)
                 clipmanager.oldt.add(tract)
             #clipmanager.updateGUI()
             return
@@ -462,7 +463,7 @@ class IDClipboard:
     if m not in self.contents:
         if not self.contents:
             # If this is the first model, make it the default highlight color
-            print "default color?"
+            print("default color?")
             #self.ModelInteraction(clipboard,$id,clipboardColor) [Model($m,node) GetColor]
         # add model to clipboard list
         self.contents.append(m)
@@ -559,7 +560,7 @@ class IDClipboardManager:
     self.setNodeType('ModelNode')
       
   def toggleDisplayState(self, state):
-    print "TOGGLE DISPLAY IMPLEMENT ME"
+    print("TOGGLE DISPLAY IMPLEMENT ME")
     if state == 'Tubes':
         self.displayState = 'Tubes'
         self.display.displayState = 'Tubes'
@@ -574,19 +575,19 @@ class IDClipboardManager:
             c.display.displayState = 'Lines'
 
   def allModelsTubes(self):
-    print "display tubes for all models of current type in slicer"
+    print("display tubes for all models of current type in slicer")
     # for all fiber tracts regardless if on clipboards.
     self.updateRender()
 
   def allModelsLines(self):
-    print "show lines for all models of current type in slicer"
+    print("show lines for all models of current type in slicer")
     # for all fiber tracts regardless if on clipboards.
     self.updateRender()
 
   def toggleClipboardVisibilityState(self):
     # display of current clipboard
-    print "TOGGLE CLIP VISIBILITY IMPLEMENT ME"
-    print "STATE:", self.clipboardVisibilityState
+    print("TOGGLE CLIP VISIBILITY IMPLEMENT ME")
+    print("STATE:", self.clipboardVisibilityState)
     if self.clipboardVisibilityState == 'Visible':
         self.clipboardVisibilityState = 'Invisible'
         self.checkActive()
@@ -595,11 +596,11 @@ class IDClipboardManager:
         self.clipboardVisibilityState = 'Visible'
         self.checkActive()
         self.active.visibleOn()                
-    print "NEW STATE:", self.clipboardVisibilityState
+    print("NEW STATE:", self.clipboardVisibilityState)
 
   def toggleVisibilityState(self):
-    print "TOGGLE VISIBILITY IMPLEMENT ME"
-    print "STATE:", self.visibilityState
+    print("TOGGLE VISIBILITY IMPLEMENT ME")
+    print("STATE:", self.visibilityState)
     
     if self.visibilityState == 'AllVisible':
         # show just unselected ones ("to-do" list of models)
@@ -614,28 +615,28 @@ class IDClipboardManager:
         self.visibilityState = 'AllVisible'
         self.allModelsVisible()
 
-    print "NEW STATE:", self.visibilityState
+    print("NEW STATE:", self.visibilityState)
     
   def allModelsVisible(self):
-    print "display all models of current type in slicer"
+    print("display all models of current type in slicer")
     # for all fiber tracts regardless if on clipboards.
     self.display.allVisibleOn(self.nodeType)
     self.updateRender()
 
   def allModelsInvisible(self):
-    print "hide all models of current type in slicer"
+    print("hide all models of current type in slicer")
     # for all fiber tracts regardless if on clipboards.
     self.display.allVisibleOff(self.nodeType)
     self.updateRender()
     
   def allClipboardsVisible(self):
-    print "show all clipboards"
+    print("show all clipboards")
     for c in self.clipboards:
         c.visibleOn()
     self.updateRender()
 
   def allClipboardsInvisible(self):
-    print "hide all clipboards"
+    print("hide all clipboards")
     for c in self.clipboards:
         c.visibleOff()
     #self.ModelInteractionClipboardVisibility = 0
@@ -643,7 +644,7 @@ class IDClipboardManager:
 
   def updateGUI(self):
     # make sure the GUI is up to date
-    print "call something to update a GUI"
+    print("call something to update a GUI")
     # clear the text box to put current list there
 
     #if not self.clipboardTextBox:
@@ -672,7 +673,7 @@ class IDClipboardManager:
             #lappend guiString [Model($m,node) GetName]
             guiString = guiString + m.GetName() + '\n'
             #print "get model name", m
-    print "add model names to GUI"
+    print("add model names to GUI")
 
     # Either put numbers or model names, depending on
     # the mode
@@ -718,7 +719,7 @@ class IDClipboardManager:
 
   def updateRender(self):
     #self.Render3D()
-    print "Render 3D"
+    print("Render 3D")
        
   def remove(self, m):
     self.checkActive()
@@ -799,7 +800,7 @@ class IDClipboardManager:
     # update active clipboard?
     # which one should it be?
     # probably first on the list
-    print "what more to update here after deletion?"
+    print("what more to update here after deletion?")
     # update gui and render (again?)
     # perhaps do this in the calling function
     
@@ -820,13 +821,13 @@ class IDClipboardManager:
     self.updateRender()
 
   def nameClipboard(self, name):
-    print "give a clipboard a name that the user has requested"
+    print("give a clipboard a name that the user has requested")
     c = self.getActive()
     c.name = name
     #c.group.append(name)
-    print name
+    print(name)
     # the name came from the GUI so no need to update it until create menu
-    print "update menus"
+    print("update menus")
 
   def exportClipboardsToTextFile(self, filename):
     f = open(filename,'w')
@@ -912,7 +913,7 @@ class PickTractsWidget:
 
   def onNameChange(self):
     widget = self.nameTextBox
-    print "hello",widget.text
+    print("hello",widget.text)
     self.manager.nameClipboard(widget.text)
 
 
@@ -1247,7 +1248,7 @@ class PickTractsWidget:
             ret = self.picker.pick()
             if ret:
                 node = self.picker.getPickedNode()
-                print "Picked: ", node.GetName()
+                print("Picked: ", node.GetName())
                 if node:
                     if key == 's' or key == 'S':
                         namestring = self.groupChoose.currentText
@@ -1273,7 +1274,7 @@ class PickTractsWidget:
   def enter(self):
     #   So that this module's event bindings don't conflict with other 
     #   modules, use our bindings only when the user is in this module.
-    print "set up event handling and initialize display"
+    print("set up event handling and initialize display")
     #self.ModelInteractionAllVisibility = 0
     #self.ModelInteractionClipboardVisibility = 0
     #self.ModelInteractionClipboardHighlight = 0
@@ -1281,7 +1282,7 @@ class PickTractsWidget:
     self.picker.startPicking(eventName="KeyPressEvent", eventCallback = self.processSelectionEvent)
 
   def exit(self):
-    print "remove event handling and reset display"
+    print("remove event handling and reset display")
     # remove the event we added
     self.picker.stopPicking()
 
@@ -1293,7 +1294,7 @@ class PickTractsWidget:
     if viewselect == 0:
         self.manager.allModelsVisible()
         self.manager.visibilityState = 'AllVisible'
-        print "NEW STATE:", self.globalviewSelector.currentText
+        print("NEW STATE:", self.globalviewSelector.currentText)
     # Visibility State: Only Selected Tracts Visible
     if viewselect == 1:
         self.manager.allModelsInvisible()
@@ -1301,7 +1302,7 @@ class PickTractsWidget:
         self.manager.checkActive()
         self.manager.active.visibleOn()
         self.manager.clipboardVisibilityState = 'Visible'                
-        print "NEW STATE:", self.globalviewSelector.currentText
+        print("NEW STATE:", self.globalviewSelector.currentText)
     # Visibility State: Only Unselected Tracts Visible
     if viewselect == 2:
         self.manager.allModelsVisible()
@@ -1309,12 +1310,12 @@ class PickTractsWidget:
         self.manager.checkActive()
         self.manager.active.visibleOff()
         self.manager.clipboardVisibilityState = 'Invisible'
-        print "NEW STATE:", self.globalviewSelector.currentText
+        print("NEW STATE:", self.globalviewSelector.currentText)
     # Visibility State: All Tracts Unvisible
     if viewselect == 3:
         self.manager.allModelsInvisible()
         self.manager.visibilityState = 'AllInvisible'
-        print "NEW STATE:", self.globalviewSelector.currentText            
+        print("NEW STATE:", self.globalviewSelector.currentText)
 
   def onSaveSelectedTracts(self,m):
     NameString = self.groupChoose.currentText
@@ -1357,15 +1358,15 @@ class PickTractsWidget:
         self.TractsGroupManager.savetogroup(NameString,self.manager)
 
   def ongroupList(self):
-    print "Here!"
+    print("Here!")
     namestring = self.groupChoose.currentText
-    print namestring
+    print(namestring)
     self.TractsGroupManager.listgroup(namestring,self.manager)
     self.manager.updateGUI()    
 
   def onListTracts(self):
     namestring = self.groupChoose.currentText
-    print namestring
+    print(namestring)
     self.TractsGroupManager.listgroup(namestring,self.manager)            
 
   def onViewTracts(self):
@@ -1373,7 +1374,7 @@ class PickTractsWidget:
     self.TractsGroupManager.viewgroup(namestring,self.manager)  
     
   def groupnameChanged(self):
-    print "HaHa"
+    print("HaHa")
     string = ""
     self.flag_existgroup = 0
     for i in self.TractsGroupManager.groups:
@@ -1386,11 +1387,11 @@ class PickTractsWidget:
   
 
   def groupnameActivated(self):
-    print "activated"
+    print("activated")
     self.clipboardTextBox.setText("")
 
   def onnewgroup(self):
-    print "CH" 
+    print("CH")
     if self.groupChoose.currentText == "Create a New Group":
         #self.QDialog.show()
         #self.QDialogLayout = qt.QVBoxLayout()
@@ -1403,14 +1404,14 @@ class PickTractsWidget:
         #self.newgroupname = self.QDialog.temLienEdit.text
         self.QDialog.ui.temSaveButton.connect('clicked()',self.createnewgroup)
         self.QDialog.exec_()
-        print self.newgroupname
-        print "New"
+        print(self.newgroupname)
+        print("New")
     if self.groupChoose.currentText == "Change a Group Name":
-        print self.groupChoose.count
+        print(self.groupChoose.count)
         for i in range(0,self.groupChoose.count-2):
             groupname = ""
             groupname = self.groupChoose.itemText(i)
-            print "copy",groupname
+            print("copy",groupname)
             self.QDialog2.additem(groupname)
         self.QDialog2.ui.temSaveButton.connect('clicked()',self.changegroupname)
         self.QDialog2.exec_()
@@ -1424,7 +1425,7 @@ class PickTractsWidget:
     newgroupname = self.QDialog2.ui.temLineEdit.text
     self.groupChoose.setItemText(i,newgroupname)
     self.QDialog2.ui.temComboBox.setItemText(i,newgroupname)
-    print "changegroupname",newgroupname
+    print("changegroupname",newgroupname)
     if groupname != newgroupname:
         self.TractsGroupManager.changegroupname(groupname,newgroupname)
    
@@ -1489,7 +1490,7 @@ class PickTractsWidget:
             self.QDialog.ui.temLineEdit.clear()
             self.oldTractsTextBox.clear()
         string = groupfile.readline()
-    print groupnum
+    print(groupnum)
     groupfile.close()
     groupfile = file(pathfile[0],"r")
     string = groupfile.readline()
@@ -1504,8 +1505,8 @@ class PickTractsWidget:
             tractNAME = groupfile.readline()
             n2 = len(tractNAME) - 1
 	    node = self.picker.findPickedNode(tractNAME[0:n2])
-            print tractID[0:n1]
-            print tractNAME[0:n2]
+            print(tractID[0:n1])
+            print(tractNAME[0:n2])
             i = self.groupChoose.findText(groupstring[0:n])
             self.groupChoose.setCurrentIndex(i)
             self.manager.select(node, self.TractsGroupManager, groupstring)

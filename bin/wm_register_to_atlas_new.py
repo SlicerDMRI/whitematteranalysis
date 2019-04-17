@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os
 import glob
 import numpy
@@ -11,7 +12,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_register.py> Error importing white matter analysis package\n"
+    print("<wm_register.py> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -53,22 +54,22 @@ parser.add_argument(
  
 args = parser.parse_args()
 
-print "\n\n<register> =========GROUP REGISTRATION============"
-print "<register> Registering to atlas."
-print "<register> Input  subject file: ", args.inputSubject
-print "<register> Input  atlas file: ", args.inputAtlas
-print "<register> Output directory: ", args.outputDirectory
-print "\n<register> ============PARAMETERS================="
+print("\n\n<register> =========GROUP REGISTRATION============")
+print("<register> Registering to atlas.")
+print("<register> Input  subject file: ", args.inputSubject)
+print("<register> Input  atlas file: ", args.inputAtlas)
+print("<register> Output directory: ", args.outputDirectory)
+print("\n<register> ============PARAMETERS=================")
 
 mode = args.mode
-print "<register> Registration mode:", mode
+print("<register> Registration mode:", mode)
 
 if not os.path.isfile(args.inputSubject):
-    print "<register> Error: Input subject data", args.inputSubject, "does not exist."
+    print("<register> Error: Input subject data", args.inputSubject, "does not exist.")
     exit()
 
 if not os.path.isfile(args.inputAtlas):
-    print "<register> Error: Input atlas", args.inputAtlas, "does not exist."
+    print("<register> Error: Input atlas", args.inputAtlas, "does not exist.")
     exit()
 
 fname = args.inputSubject
@@ -80,29 +81,29 @@ atlas_pd = wma.io.read_polydata(fname)
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
+    print("<register> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 subject_outdir = os.path.join(outdir, subject_id)
 if not os.path.exists(subject_outdir):
-    print "<register> Output directory", outdir, "does not exist, creating it."
+    print("<register> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(subject_outdir)
 
 number_of_fibers = args.numberOfFibers
-print "<register> Number of fibers to analyze per subject: ", number_of_fibers
+print("<register> Number of fibers to analyze per subject: ", number_of_fibers)
 
 fiber_length = args.fiberLength
-print "<register> Minimum length of fibers to analyze (in mm): ", fiber_length
+print("<register> Minimum length of fibers to analyze (in mm): ", fiber_length)
 
 fiber_length_max = args.fiberLengthMax
-print "<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max
+print("<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
 
 if args.flag_verbose:
-    print "<register> Verbose display and intermediate image saving ON."
+    print("<register> Verbose display and intermediate image saving ON.")
 else:
-    print "<register> Verbose display and intermediate image saving OFF."
+    print("<register> Verbose display and intermediate image saving OFF.")
 verbose = args.flag_verbose
 
-print "\n<register> Starting registration...\n"
+print("\n<register> Starting registration...\n")
 
 
 # -------------
@@ -287,7 +288,7 @@ elif mode == "nonrigidTEST":
     nonrigid = True
 
 else:
-    print "\n<register> Error: Unknown registration mode:", mode
+    print("\n<register> Error: Unknown registration mode:", mode)
     exit()
 
 
@@ -317,9 +318,9 @@ comparisons_so_far = 0
 
 progress_filename = os.path.join(subject_outdir, 'progress.txt')
 progress_file = open(progress_filename, 'w')
-print >> progress_file, "Beginning registration. Total iterations will be:", total_iterations
-print >> progress_file,"Start date: "  + time.strftime("%x")
-print >> progress_file, "Start time: " + time.strftime("%X") + '\n'
+print("Beginning registration. Total iterations will be:", total_iterations, file=progress_file)
+print("Start date: "  + time.strftime("%x"), file=progress_file)
+print("Start time: " + time.strftime("%X") + '\n', file=progress_file)
 progress_file.close()
 prev_time = time.time()
 
@@ -346,10 +347,10 @@ for scale in do_scales:
         comparisons_this_scale = mean_brain_size_per_scale[scale]*subject_brain_size_per_scale[scale]
         comparisons_so_far += comparisons_this_scale
         percent = 100*(float(comparisons_so_far)/total_comparisons)
-        print "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent
+        print("Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent)
         progress_file = open(progress_filename, 'a')
         curr_time = time.time()
-        print >> progress_file, "Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent, ". Time:", time.strftime("%X"), ". Minutes Elapsed:", (curr_time - prev_time)/60
+        print("Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent, ". Time:", time.strftime("%X"), ". Minutes Elapsed:", (curr_time - prev_time)/60, file=progress_file)
         progress_file.close()
         prev_time = curr_time
         iteration += 1
@@ -360,10 +361,10 @@ for scale in do_scales:
 # Final save when we are done
 register.save_transformed_polydata()
 
-print "Done registering. See output in:", subject_outdir
+print("Done registering. See output in:", subject_outdir)
 
 progress_file = open(progress_filename, 'a')
-print >> progress_file, "\nFinished registration."
-print >> progress_file,"End date: "  + time.strftime("%x")
-print >> progress_file, "End time: " + time.strftime("%X")
+print("\nFinished registration.", file=progress_file)
+print("End date: "  + time.strftime("%x"), file=progress_file)
+print("End time: " + time.strftime("%X"), file=progress_file)
 progress_file.close()

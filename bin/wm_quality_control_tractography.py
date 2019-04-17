@@ -3,6 +3,7 @@
 
 # Run registration on the test dataset.
 
+from __future__ import print_function
 import argparse
 import os
 import numpy
@@ -12,14 +13,14 @@ import time
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_register.py> Error importing white matter analysis package\n"
+    print("<wm_register.py> Error importing white matter analysis package\n")
     raise
 
 HAVE_PLT = 1
 try:
     import matplotlib.pyplot as plt
 except:
-    print "<wm_quality_control.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n"
+    print("<wm_quality_control.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0    
 
 #-----------------
@@ -43,27 +44,27 @@ parser.add_argument(
  
 args = parser.parse_args()
 
-print "<quality_control> Starting..."
+print("<quality_control> Starting...")
 
 if not os.path.isdir(args.inputDirectory):
-    print "<register> Error: Input directory", args.inputDirectory, "does not exist."
+    print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 output_dir = args.outputDirectory
 if not os.path.exists(output_dir):
-    print "<register> Output directory", output_dir, "does not exist, creating it."
+    print("<register> Output directory", output_dir, "does not exist, creating it.")
     os.makedirs(output_dir)
 
 input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
-print "<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory
+print("<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
 
 if number_of_subjects < 1:
-    print "\n<quality_control> Error: No .vtk or .vtp files were found in the input directory.\n"
+    print("\n<quality_control> Error: No .vtk or .vtp files were found in the input directory.\n")
     exit()
 
-print "<quality_control> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok)."
-print "<quality_control> See the README.txt file in the output directory for more overview information."
+print("<quality_control> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok).")
+print("<quality_control> See the README.txt file in the output directory for more overview information.")
 
 # output summary files to save information about what was run
 readme_fname = os.path.join(output_dir, 'README.txt')
@@ -177,7 +178,7 @@ subject_idx = 1
 appender = vtk.vtkAppendPolyData()
 for fname in input_polydatas:
     subject_id = os.path.splitext(os.path.basename(fname))[0]
-    print "Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id
+    print("Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id)
 
     # Read data
     pd = wma.io.read_polydata(fname)
@@ -193,7 +194,7 @@ for fname in input_polydatas:
         os.makedirs(output_dir_subdir)
     ren.save_views(output_dir_subdir, subject_id)
 
-    print 'Multiple views for individual subject'
+    print('Multiple views for individual subject')
     html_individual_multiviews = os.path.join(output_dir_subdir, 'view_multiple_'+subject_id+'.html')
     f = open(html_individual_multiviews, 'w')
     outstr = "<!DOCTYPE html>\n<html>\n"
@@ -223,9 +224,9 @@ for fname in input_polydatas:
         f = open(fname, 'a')
         img_fname = os.path.join('tract_QC_' + subject_id, view + subject_id + '.jpg')
         html_fname = os.path.join('tract_QC_' + subject_id, 'view_multiple_'+subject_id+'.html')
-        print output_dir_subdir
-        print img_fname
-        print html_individual_multiviews
+        print(output_dir_subdir)
+        print(img_fname)
+        print(html_individual_multiviews)
         #outstr = "<a href=\"" + img_fname + "\" >" + subject_id + "<img src=\""+ img_fname + "\" alt=\"" + subject_id + "></a>\n"
         #outstr = "<figure>\n"
         #outstr+= "<img src=\"" + img_fname + "\" alt=\"" + subject_id + "\" width=\"300\">\n"
@@ -333,10 +334,10 @@ if HAVE_PLT:
     try:
         plt.savefig((os.path.join(output_dir, 'fiber_length_histograms.pdf')), bbox_extra_artists=(lgd,), bbox_inches='tight')
     except:
-        print "Groupwise tract length histogram save failed. Check if the input datasets have any fibers--all may be empty."
+        print("Groupwise tract length histogram save failed. Check if the input datasets have any fibers--all may be empty.")
     plt.close()
 
-print "<quality_control> Final step: rendering all vtk files together."
+print("<quality_control> Final step: rendering all vtk files together.")
 appender.Update()
 pd_all = appender.GetOutput()
 ren = wma.render.render(pd_all, verbose=False)

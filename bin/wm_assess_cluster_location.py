@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import os
 import glob
@@ -7,7 +8,7 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_assess_cluster_location> Error importing white matter analysis package\n"
+    print("<wm_assess_cluster_location> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -34,14 +35,14 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputAtlasDirectory):
-    print "Error: Input directory", args.inputTractDirectory, "does not exist."
+    print("Error: Input directory", args.inputTractDirectory, "does not exist.")
     exit()
 
-print "<wm_assess_cluster_location>. Starting processing."
-print ""
-print "=====input atlas directory======\n", args.inputAtlasDirectory
-print "=====pthresh====\n", args.hemispherePercentThreshold
-print "=====advanced_times_threshold====\n", args.advanced_times_threshold
+print("<wm_assess_cluster_location>. Starting processing.")
+print("")
+print("=====input atlas directory======\n", args.inputAtlasDirectory)
+print("=====pthresh====\n", args.hemispherePercentThreshold)
+print("=====advanced_times_threshold====\n", args.advanced_times_threshold)
 
 def list_cluster_files(input_dir):
     # Find input files
@@ -55,8 +56,8 @@ input_polydatas = list_cluster_files(args.inputAtlasDirectory)
 number_of_clusters = len(input_polydatas)
 
 points_per_fiber = 40
-print "%20s:  %10s  %10s  %10s  -  %10s" \
-          % ('cluster', 'left', 'right', 'comm', 'locations')
+print("%20s:  %10s  %10s  %10s  -  %10s" \
+          % ('cluster', 'left', 'right', 'comm', 'locations'))
 
 output_file = open(os.path.join(args.inputAtlasDirectory, 'clusters_location.txt'), 'w')
 outstr = 'cluster' + '\t'+ 'left hemispheric fibers' + '\t'+ 'right hemispheric fibers' + '\t'+ 'commissural fibers' + '\t'+ 'location' + '\n'
@@ -95,8 +96,8 @@ for fname in input_polydatas:
         location = 'Not Given'
         ng_list.append(fname_base)
 
-    print "%20s:  %10s  %10s  %10s  -  %10s" \
-            % (fname_base, num_left, num_right, num_comm, location)
+    print("%20s:  %10s  %10s  %10s  -  %10s" \
+            % (fname_base, num_left, num_right, num_comm, location))
 
     outstr = outstr + fname_base + '\t'+ str(num_left) + '\t'+ str(num_right) + '\t'+ str(num_comm) + '\t'+ location + '\n'
 

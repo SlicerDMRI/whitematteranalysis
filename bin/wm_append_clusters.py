@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import os
 import argparse
 import vtk
@@ -6,7 +7,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_append_clusters.py> Error importing white matter analysis package\n"
+    print("<wm_append_clusters.py> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -37,19 +38,19 @@ args = parser.parse_args()
 
 inputdir = os.path.abspath(args.inputDirectory)
 if not os.path.isdir(args.inputDirectory):
-    print "<wm_append_clusters> Error: Input directory", args.inputDirectory, "does not exist."
+    print("<wm_append_clusters> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 outdir = os.path.abspath(args.outputDirectory)
 if not os.path.exists(args.outputDirectory):
-    print "<wm_append_clusters> Error: Output directory", args.outputDirectory, "does not exist, creating it."
+    print("<wm_append_clusters> Error: Output directory", args.outputDirectory, "does not exist, creating it.")
     os.makedirs(outdir)
 
 if (args.clusterList is not None) and (args.tractMRML is not None):
-    print "<wm_append_clusters> Error: Only one of -clusterList and -tractMRML can be provided."
+    print("<wm_append_clusters> Error: Only one of -clusterList and -tractMRML can be provided.")
     exit()
 elif (args.clusterList is None) and (args.tractMRML is None):
-    print "<wm_append_clusters> All vtk/vtp files in the input directory will be appended."
+    print("<wm_append_clusters> All vtk/vtp files in the input directory will be appended.")
 
 outputfilename = 'appended_tract.vtp'
 if (args.appendedTractName is not None):
@@ -62,7 +63,7 @@ if args.clusterList is not None:
     for c_idx in args.clusterList:
         cluster_vtp_filename = 'cluster_' + str(c_idx).zfill(5) + '.vtp'
         if not os.path.exists(os.path.join(inputdir, cluster_vtp_filename)):
-            print "<wm_append_clusters> Error:", cluster_vtp_filename, "does not exist."
+            print("<wm_append_clusters> Error:", cluster_vtp_filename, "does not exist.")
             exit()
         cluster_vtp_list.append(cluster_vtp_filename)
 
@@ -74,19 +75,19 @@ elif args.tractMRML is not None:
         if idx > 0:
             cluster_vtp_filename = line[idx-13:idx+4]
             if not os.path.exists(os.path.join(inputdir, cluster_vtp_filename)):
-                print "<wm_append_clusters> Error:", cluster_vtp_filename, "does not exist."
+                print("<wm_append_clusters> Error:", cluster_vtp_filename, "does not exist.")
                 exit()
             cluster_vtp_list.append(cluster_vtp_filename)
 else:
     cluster_vtp_list = wma.io.list_vtk_files(inputdir)
 
-print ""
-print "<wm_append_clusters> Start to append clusters."
-print ""
-print "=====input directory======\n", inputdir
-print "=====output directory=====\n", outdir
-print "=====clusters to be appended====\n", cluster_vtp_list
-print ""
+print("")
+print("<wm_append_clusters> Start to append clusters.")
+print("")
+print("=====input directory======\n", inputdir)
+print("=====output directory=====\n", outdir)
+print("=====clusters to be appended====\n", cluster_vtp_list)
+print("")
 
 appender = vtk.vtkAppendPolyData()
 for c_idx in range(len(cluster_vtp_list)):
@@ -100,7 +101,7 @@ for c_idx in range(len(cluster_vtp_list)):
 
     pd_cluster.GetPointData().AddArray(vtk_array)
 
-    print '<wm_append_clusters>', cluster_vtp, ', number of fibers', pd_cluster.GetNumberOfLines()
+    print('<wm_append_clusters>', cluster_vtp, ', number of fibers', pd_cluster.GetNumberOfLines())
 
     if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
         appender.AddInputData(pd_cluster)
@@ -112,7 +113,7 @@ pd_appended_cluster = appender.GetOutput()
 
 wma.io.write_polydata(pd_appended_cluster, outputfile)
 
-print ''
-print '<wm_append_clusters> Appended fiber tract: number of fibers', pd_appended_cluster.GetNumberOfLines()
-print ''
-print '<wm_append_clusters> Save result to', outputfile, '\n'
+print('')
+print('<wm_append_clusters> Appended fiber tract: number of fibers', pd_appended_cluster.GetNumberOfLines())
+print('')
+print('<wm_append_clusters> Save result to', outputfile, '\n')

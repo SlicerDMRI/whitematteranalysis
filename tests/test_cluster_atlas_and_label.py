@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import whitematteranalysis as wma
 import vtk
 import numpy
@@ -10,9 +11,9 @@ import sys
 import os
 
 number_of_jobs = multiprocessing.cpu_count()
-print 'CPUs detected:', number_of_jobs
+print('CPUs detected:', number_of_jobs)
 
-print 'Read and preprocess'
+print('Read and preprocess')
 
 # these are small with only 500 fibers each
 indir = 'test_data'
@@ -38,13 +39,13 @@ input_mask = "{0}/*.vtk".format(indir)
 input_poly_datas = glob.glob(input_mask)
 
 if len(input_poly_datas) == 0:
-    print ""
-    print "ERROR: no polydatas found in input directory:"
-    print input_mask
-    print "<cluster_atlas> exiting."
+    print("")
+    print("ERROR: no polydatas found in input directory:")
+    print(input_mask)
+    print("<cluster_atlas> exiting.")
     sys.exit(0) 
 
-print input_poly_datas
+print(input_poly_datas)
 
 # below this line the pds are read and clustered
 number_of_subjects = len(input_poly_datas)
@@ -52,7 +53,7 @@ number_of_subjects = len(input_poly_datas)
 # read in data
 input_pds = list()
 for fname in input_poly_datas:
-    print fname
+    print(fname)
     pd = wma.io.read_polydata(fname)
     #print pd
     pd2 = wma.filter.preprocess(pd, minimum_length)
@@ -87,18 +88,18 @@ output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas = \
                              sigma = sigma)
 
 # OUTPUT information
-print 'View results'
+print('View results')
 if not os.path.isdir(outdir):
     os.mkdir(outdir)
 
 # view the whole thing
-print 'Rendering and saving image'
+print('Rendering and saving image')
 ren = wma.render.render(output_polydata_s, 500)
 ren.save_views(outdir)
 del ren
 
 # View cluster distribution
-print 'Saving cluster histogram'
+print('Saving cluster histogram')
 plt.figure()
 plt.hist(cluster_numbers_s, number_of_clusters)
 plt.savefig(os.path.join(outdir,'cluster_hist.pdf'))
@@ -164,7 +165,7 @@ atlas = atlas.load(outdir,'atlas1')
 # separate short fibers
 input_pds = list()
 for fname in input_poly_datas:
-    print fname
+    print(fname)
     pd = wma.io.read_polydata(fname)
     number_of_lines = pd.GetNumberOfLines()
     pd2, line_indices = wma.filter.preprocess(pd, minimum_length, return_indices=True)
