@@ -75,7 +75,7 @@ class Stats(object):
             keys = kwds.keys()
             keys.sort()
             extras = ", ".join(["%s=%s" % (k, kwds[k]) for k in keys])
-            raise ValueError, "unrecognized keyword args: %s" % extras
+            raise ValueError("unrecognized keyword args: %s" % extras)
         if not len(args):
             arg = None
         else:
@@ -627,7 +627,7 @@ if __name__ == '__main__':
             if line:
                 try:
                     self.stats = Stats(line)
-                except IOError, args:
+                except IOError as args:
                     print(args[1], file=self.stream)
                     return
                 except Exception as err:

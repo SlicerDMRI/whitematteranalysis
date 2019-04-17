@@ -1233,7 +1233,7 @@ class PickTractsWidget(object):
       evalString = 'globals()["%s"].%sTest()' % (moduleName, moduleName)
       tester = eval(evalString)
       tester.runTest()
-    except Exception, e:
+    except Exception as e:
       import traceback
       traceback.print_exc()
       qt.QMessageBox.warning(slicer.util.mainWindow(), 
