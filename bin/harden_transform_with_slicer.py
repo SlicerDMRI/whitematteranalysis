@@ -50,9 +50,7 @@ def harden_transform(polydata, transform, inverse, outdir):
     logic.hardenTransform(polydata_node)
 
     polydata_base_path, polydata_name = os.path.split(polydata)
-    output_name = polydata_name.replace(".", "_trans.")
-    if inverse == "1":
-        output_name = polydata_name.replace(".", "_inv_trans.")
+    output_name = polydata_name
     slicer.util.saveNode(polydata_node, os.path.join(outdir, output_name))
 
 if os.path.isfile(args.polydata):
