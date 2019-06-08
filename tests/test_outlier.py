@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy
 import pickle
 import whitematteranalysis as wma
@@ -5,7 +6,7 @@ import whitematteranalysis as wma
 fname = 'test_data_small/brain_0001.vtk'
 expected_results_file = 'test_outlier.pkl'
 
-print "Reading input file:", fname
+print("Reading input file:", fname)
 
 pd = wma.io.read_polydata(fname)
 
@@ -26,10 +27,10 @@ wma.io.write_polydata(reject, 'reject.vtp')
 # Open saved output mask, check for differences
 expected_mask = pickle.load(open(expected_results_file, 'rb'))
 
-print "Testing for differences in saved mask output and current outlier mask:"
+print("Testing for differences in saved mask output and current outlier mask:")
 #print numpy.array(expected_mask) - numpy.array(mask)
-print "Overall difference?:", numpy.max(numpy.array(expected_mask) - numpy.array(mask))
+print("Overall difference?:", numpy.max(numpy.array(expected_mask) - numpy.array(mask)))
 
 
-print 'Done'
+print('Done')
 

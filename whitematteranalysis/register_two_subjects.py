@@ -6,14 +6,15 @@ class RegisterTractography
 
 
 """
+from __future__ import print_function
 
 try:
     import scipy.optimize
     USE_SCIPY = 1
 except ImportError:
     USE_SCIPY = 0
-    print "<congeal.py> Failed to import  scipy.optimize, cannot align or register."
-    print "<congeal.py> Please install  scipy.optimize for this functionality."
+    print("<congeal.py> Failed to import  scipy.optimize, cannot align or register.")
+    print("<congeal.py> Please install  scipy.optimize for this functionality.")
 
 import numpy
 import sys
@@ -24,12 +25,12 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<congeal.py> Failed to import joblib, cannot multiprocess."
-    print "<congeal.py> Please install joblib for this functionality."
+    print("<congeal.py> Failed to import joblib, cannot multiprocess.")
+    print("<congeal.py> Please install joblib for this functionality.")
 
 import whitematteranalysis as wma
 
-class RegisterTractography:
+class RegisterTractography(object):
 
     def constraint(self, x_current):
         penalty = 0
@@ -153,7 +154,7 @@ class RegisterTractography:
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print "O:",  obj, "X:", self._x_opt
+            print("O:",  obj, "X:", self._x_opt)
 
         return obj
 
@@ -163,7 +164,7 @@ class RegisterTractography:
         compute). Then call compute several times, using different
         sigma, to perform multiscale registration."""
 
-        print "OPTIMIZER:", self.optimizer
+        print("OPTIMIZER:", self.optimizer)
 
         # subject data must be input first. No check here for speed
         #self.fixed = None
@@ -214,7 +215,7 @@ class RegisterTractography:
         self.iterations += 1
 
         if self.verbose:
-            print "<congeal.py> Initial value for X:", self.initial_transform
+            print("<congeal.py> Initial value for X:", self.initial_transform)
 
 
         if self.optimizer == "Cobyla":
@@ -246,7 +247,7 @@ class RegisterTractography:
                                                                            factr=1e12,
                                                                            epsilon=self.final_step,
                                                                            iprint=0)
-            print f, dict
+            print(f, dict)
 
         elif self.optimizer == "Powell":
             # Test optimization with Powell's method
@@ -260,10 +261,10 @@ class RegisterTractography:
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print "FLAG:", warnflag
+            print("FLAG:", warnflag)
 
         else:
-            print "Unknown optimizer."
+            print("Unknown optimizer.")
 
         self.final_transform = numpy.divide(self.final_transform, self.transform_scaling)
 
@@ -292,7 +293,7 @@ class RegisterTractography:
             self.final_transform[14] = 0.0
 
         tx = self.final_transform
-        print "TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14], "MODE:", self.mode, "MODE0:", self.mode[0]
+        print("TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14], "MODE:", self.mode, "MODE0:", self.mode[0])
                                 
         # Return output transform from this iteration
         return self.final_transform

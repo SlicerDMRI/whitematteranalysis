@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import numpy
 import argparse
 import os
@@ -10,7 +11,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_cluster_from_atlas.py> Error importing white matter analysis package\n"
+    print("<wm_cluster_from_atlas.py> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -45,36 +46,36 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "<wm_cluster_from_atlas.py> Error: Input subject directory", args.inputDirectory, "does not exist."
+    print("<wm_cluster_from_atlas.py> Error: Input subject directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.isdir(args.atlasDirectory):
-    print "<wm_cluster_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist."
+    print("<wm_cluster_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
+    print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
     
 subject_id = os.path.basename(args.inputDirectory)
 outdir = os.path.join(outdir, subject_id + '_outlier_removed')
 if not os.path.exists(outdir):
-    print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
+    print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
-print "\n=========================="
-print "input directory:", args.inputDirectory
-print "atlas directory:", args.atlasDirectory
-print "output directory:", outdir
+print("\n==========================")
+print("input directory:", args.inputDirectory)
+print("atlas directory:", args.atlasDirectory)
+print("output directory:", outdir)
 
 if args.flag_verbose:
-    print "Verbose ON."
+    print("Verbose ON.")
 else:
-    print "Verbose OFF."
+    print("Verbose OFF.")
 verbose = args.flag_verbose
 
-print "==========================\n"
+print("==========================\n")
   
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -91,11 +92,11 @@ for fname_src in mrml_files:
 # Overall progress/outlier removal info file
 fname_progress = os.path.join(outdir, 'cluster_log.txt')
 log_file = open(fname_progress, 'w')
-print >> log_file, 'cluster','\t', 'input_fibers','\t', 'output_fibers','\t', 'number_removed','\t', 'percentage_removed','\t', 'mean_distance_before','\t', 'mean_distance_after','\t', 'mean_probability_before','\t', 'mean_probability_after'
+print('cluster','\t', 'input_fibers','\t', 'output_fibers','\t', 'number_removed','\t', 'percentage_removed','\t', 'mean_distance_before','\t', 'mean_distance_after','\t', 'mean_probability_before','\t', 'mean_probability_after', file=log_file)
 log_file.close()
 
 # read atlas
-print "<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory
+print("<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory)
 atlas = wma.cluster.load_atlas(args.atlasDirectory, 'atlas')
 bilateral = atlas.bilateral
 
@@ -117,22 +118,22 @@ subject_clusters = sorted(glob.glob(input_mask))
 number_ac = len(atlas_clusters)
 number_sc = len(subject_clusters)
 
-print "Number of atlas and subject clusters:", number_ac, number_sc
+print("Number of atlas and subject clusters:", number_ac, number_sc)
 
 if number_ac != number_sc:
-    print "<wm_cluster_from_atlas.py> Error: Cluster number mismatch. \nAtlas directory (", args.atlasDirectory, ") has", number_ac, "clusters but subject directory (", args.inputDirectory, ") has", number_sc, "clusters."
+    print("<wm_cluster_from_atlas.py> Error: Cluster number mismatch. \nAtlas directory (", args.atlasDirectory, ") has", number_ac, "clusters but subject directory (", args.inputDirectory, ") has", number_sc, "clusters.")
     exit()
 
 
 # Loop over all clusters in atlas and subject. Remove outliers in the subject cluster using the same heuristics as during atlas creation.
-print "Starting local cluster outlier removal"
+print("Starting local cluster outlier removal")
 distance_method = 'Mean'
 # 20mm works well for cluster-specific outlier removal in conjunction with the mean distance.
 cluster_local_sigma = args.outlierSigma
-print "Local sigma for cluster outlier removal:", cluster_local_sigma
+print("Local sigma for cluster outlier removal:", cluster_local_sigma)
 
 cluster_outlier_std_threshold = args.clusterOutlierStandardDeviation
-print "Standard deviation for fiber outlier removal after clustering (accurate local probability): ", cluster_outlier_std_threshold
+print("Standard deviation for fiber outlier removal after clustering (accurate local probability): ", cluster_outlier_std_threshold)
 
 c = 1
 for ca, cs in zip(atlas_clusters,subject_clusters):
@@ -147,9 +148,9 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     # if either cluster is empty, we have to skip outlier removal
     if number_fibers_in_subject_cluster == 0:
         wma.io.write_polydata(pd_subject, pd_out_fname)
-        print "cluster", c, "empty in subject"
+        print("cluster", c, "empty in subject")
         log_file = open(fname_progress, 'a')
-        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0
+        print(c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0, file=log_file)
         log_file.close()
         c += 1
         continue
@@ -157,10 +158,10 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     if number_fibers_in_atlas_cluster == 0:
         # this should not ever happen. Note that "outlier removed" atlas is temporary and should not be used for classification.
         # (Note the other option is to remove this cluster as it was removed at the end of the iteration for the atlas.)
-        print "cluster", c, "empty in atlas"
-        print "ERROR: An atlas should not contain empty clusters. Please use the initial_clusters atlas for this outlier removal script and for subject clustering."
+        print("cluster", c, "empty in atlas")
+        print("ERROR: An atlas should not contain empty clusters. Please use the initial_clusters atlas for this outlier removal script and for subject clustering.")
         log_file = open(fname_progress, 'a')
-        print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0
+        print(c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0, file=log_file)
         log_file.close()
         c += 1
         continue
@@ -203,8 +204,8 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     #print "SHAPE total similarity:", total_similarity_atlas.shape, total_similarity_subject.shape
 
     if verbose:
-        print "cluster", c, "tsim_atlas:", numpy.min(total_similarity_atlas), numpy.mean(total_similarity_atlas), numpy.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster
-        print "cluster", c, "tsim_subject:", numpy.min(total_similarity_subject), numpy.mean(total_similarity_subject), numpy.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster
+        print("cluster", c, "tsim_atlas:", numpy.min(total_similarity_atlas), numpy.mean(total_similarity_atlas), numpy.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster)
+        print("cluster", c, "tsim_subject:", numpy.min(total_similarity_subject), numpy.mean(total_similarity_subject), numpy.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster)
     
     # remove outliers with low similarity to their cluster
     mean_sim_atlas = numpy.mean(total_similarity_atlas)
@@ -220,7 +221,7 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
 
     number_rejected =  len(reject_idx)
     
-    print "cluster", c, "rejecting cluster outlier fibers:", number_rejected, "/", number_fibers_in_subject_cluster, "=", float(number_rejected)/number_fibers_in_subject_cluster
+    print("cluster", c, "rejecting cluster outlier fibers:", number_rejected, "/", number_fibers_in_subject_cluster, "=", float(number_rejected)/number_fibers_in_subject_cluster)
 
     # Output a new polydata with the outliers removed.
     mask = numpy.ones([number_fibers_in_subject_cluster])
@@ -234,7 +235,7 @@ for ca, cs in zip(atlas_clusters,subject_clusters):
     mask = mask == 1
 
     log_file = open(fname_progress, 'a')
-    print >> log_file, c,'\t', number_fibers_in_subject_cluster,'\t', number_fibers_in_subject_cluster-number_rejected,'\t', number_rejected,'\t', float(number_rejected)/number_fibers_in_subject_cluster, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_distances[mask]), '\t', numpy.mean(total_similarity_subject), '\t', numpy.mean(total_similarity_subject[mask])
+    print(c,'\t', number_fibers_in_subject_cluster,'\t', number_fibers_in_subject_cluster-number_rejected,'\t', number_rejected,'\t', float(number_rejected)/number_fibers_in_subject_cluster, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_distances[mask]), '\t', numpy.mean(total_similarity_subject), '\t', numpy.mean(total_similarity_subject[mask]), file=log_file)
     log_file.close()
 
     c += 1

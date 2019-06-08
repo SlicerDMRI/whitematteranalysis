@@ -1,3 +1,4 @@
+from __future__ import print_function
 import glob
 import os
 import numpy
@@ -21,8 +22,8 @@ def view_polydatas(polydata_list):
     idx = 0
     for pd in polydata_list:
         nf = pd.GetNumberOfLines()
-        print idx
-        print nf
+        print(idx)
+        print(nf)
         mask = numpy.ones(nf)
         colors = numpy.multiply(mask, idx-1)
         pd2 = wma.filter.mask(pd, mask, colors)
@@ -37,7 +38,7 @@ def view_polydatas(polydata_list):
     return ren
 
 for fname in inputPolyDatas:
-    print fname
+    print(fname)
     pd = wma.io.read_polydata(fname)
     pd2 = wma.filter.preprocess(pd, minimum_length)
     pd3 = wma.filter.downsample(pd2, number_of_fibers)

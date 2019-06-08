@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 
+from __future__ import print_function
 import glob
 import os
 import argparse
@@ -9,7 +10,7 @@ import multiprocessing
 try:
     import whitematteranalysis as wma
 except:
-    print "Error importing white matter analysis package\n"
+    print("Error importing white matter analysis package\n")
     raise
 
 
@@ -33,27 +34,27 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.outputDirectory):
-    print "Output directory", outdir, "does not exist, creating it."
+    print("Output directory", outdir, "does not exist, creating it.")
     os.makedirs(args.outputDirectory)
 
 # Preserve input directory name which may contain provenance like subject ID or structure, e.g UF
 subject_dir = os.path.splitext(os.path.basename(args.inputDirectory))[0]
-print subject_dir
+print(subject_dir)
 outdir_subject = os.path.join(args.outputDirectory, subject_dir+"_vtk")
 if not os.path.exists(outdir_subject):
-    print "Output directory", outdir_subject, "does not exist, creating it."
+    print("Output directory", outdir_subject, "does not exist, creating it.")
     os.makedirs(outdir_subject)
 
-print ""
-print "wm_vtp2vtk.py: Convert all vtp files in input directory to vtk files in output directory."
-print "=====input directory======\n", args.inputDirectory
-print "=====top-level output directory requested by user=====\n", args.outputDirectory
-print "=====final output directory=====\n", outdir_subject
-print "=========================="
+print("")
+print("wm_vtp2vtk.py: Convert all vtp files in input directory to vtk files in output directory.")
+print("=====input directory======\n", args.inputDirectory)
+print("=====top-level output directory requested by user=====\n", args.outputDirectory)
+print("=====final output directory=====\n", outdir_subject)
+print("==========================")
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -71,11 +72,11 @@ def list_vtp_files(input_dir):
 # Loop over input vtps
 inputPolyDatas = list_vtp_files(args.inputDirectory)
 
-print "Input number of vtp files found: ", len(inputPolyDatas), '\n'
+print("Input number of vtp files found: ", len(inputPolyDatas), '\n')
 
 if len(inputPolyDatas) < 1:
-    print "Warning: no input vtp files found in input directory."
-    print ""
+    print("Warning: no input vtp files found in input directory.")
+    print("")
     exit()
     
 # for testing
@@ -89,7 +90,7 @@ for pd_fname in inputPolyDatas:
 
     # read input vtk data
     # -------------------
-    print "**Reading input:", pd_fname, "(", subjectID, ")"
+    print("**Reading input:", pd_fname, "(", subjectID, ")")
 
     wm = wma.io.read_polydata(pd_fname)
         
@@ -97,14 +98,14 @@ for pd_fname in inputPolyDatas:
     # -------------------
     fname = os.path.join(outdir_subject, subjectID+'.vtk')
     try:
-        print "====> Writing output polydata", fname, "..."
+        print("====> Writing output polydata", fname, "...")
         wma.io.write_polydata(wm, fname)
     except:
-        print "Unknown exception in IO"
+        print("Unknown exception in IO")
         raise
     del wm
 
-print ""
-print "Finished converting all vtp files to vtk files."
-print ""
+print("")
+print("Finished converting all vtp files to vtk files.")
+print("")
 

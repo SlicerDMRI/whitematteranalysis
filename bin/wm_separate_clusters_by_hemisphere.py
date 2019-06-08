@@ -9,6 +9,7 @@
 # and this can be learned. At that point all data are midsagitally aligned, which this requires.
 # For running this per-subject, the alignment should be performed to handle the tracts near the midline better.
 # That should be added as an option.
+from __future__ import print_function
 import numpy
 import argparse
 import os
@@ -19,7 +20,7 @@ import glob
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_separate_hemispheres.py> Error importing white matter analysis package\n"
+    print("<wm_separate_hemispheres.py> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -58,25 +59,25 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print "<wm_separate_hemispheres.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."
+    print("<wm_separate_hemispheres.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<wm_separate_hemispheres.py> Output directory", outdir, "does not exist, creating it."
+    print("<wm_separate_hemispheres.py> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
 atlasMRML = args.atlasMRML
 if not os.path.exists(atlasMRML):
-    print "<wm_separate_hemispheres.py> Atlas MRML file", atlasMRML, "does not exist."
+    print("<wm_separate_hemispheres.py> Atlas MRML file", atlasMRML, "does not exist.")
     exit()
 
 clusterLocationFile = args.clusterLocationFile
 location_data = None
 if clusterLocationFile is not None:
-    print clusterLocationFile
+    print(clusterLocationFile)
     if not os.path.exists(clusterLocationFile):
-        print "<wm_separate_hemispheres.py> Cluster location file is assigned but the file", clusterLocationFile, "does not exist."
+        print("<wm_separate_hemispheres.py> Cluster location file is assigned but the file", clusterLocationFile, "does not exist.")
         exit()
     else:
         location_data = numpy.loadtxt(open(clusterLocationFile, "rb"),
@@ -89,21 +90,21 @@ if args.hemispherePercentThreshold is not None:
     if (args.hemispherePercentThreshold > 0.5) & (args.hemispherePercentThreshold <= 1.0):
         hemisphere_percent_threshold = args.hemispherePercentThreshold
     else:
-        print "<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", args.hemispherePercentThreshold, "must be between 0.5 and 1. (0.6 is recommended)."
+        print("<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", args.hemispherePercentThreshold, "must be between 0.5 and 1. (0.6 is recommended).")
         exit()
 
-print "<wm_separate_hemispheres.py> Starting computation."
-print ""
-print "=====input directory ======\n", args.inputDirectory
-print "=====output directory =====\n", args.outputDirectory
-print "=========================="
-print ""
+print("<wm_separate_hemispheres.py> Starting computation.")
+print("")
+print("=====input directory ======\n", args.inputDirectory)
+print("=====output directory =====\n", args.outputDirectory)
+print("==========================")
+print("")
 
 if location_data is None:
-    print "<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold
+    print("<wm_separate_hemispheres.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold)
 else:
-    print "<wm_separate_hemispheres.py> Separating clusters using location file:", clusterLocationFile
-print ""
+    print("<wm_separate_hemispheres.py> Separating clusters using location file:", clusterLocationFile)
+print("")
 
 
 # relatively high number of points for accuracy
@@ -122,10 +123,10 @@ input_polydatas = list_cluster_files(args.inputDirectory)
 number_of_subjects = len(input_polydatas)
 
 if location_data is not None and number_of_subjects != len(location_data):
-    print "<wm_separate_hemispheres.py> Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_subjects, len(location_data))
+    print("<wm_separate_hemispheres.py> Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_subjects, len(location_data)))
     exit()
 
-print "<wm_separate_hemispheres.py> Input number of vtk/vtp files: ", number_of_subjects
+print("<wm_separate_hemispheres.py> Input number of vtk/vtp files: ", number_of_subjects)
 
 outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')
 if not os.path.exists(outdir_right):
@@ -161,7 +162,7 @@ for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
     fname_base = os.path.basename(fname)
 
     # read data
-    print "<wm_separate_hemispheres.py> Reading input file:", fname
+    print("<wm_separate_hemispheres.py> Reading input file:", fname)
     pd = wma.io.read_polydata(fname)
 
     if pd.GetNumberOfLines() == 0:
@@ -243,7 +244,7 @@ for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
                 #mask_commissure[fibers.index_commissure] = 1
                 #pd_commissure = wma.filter.mask(pd, mask_commissure, preserve_point_data=True, preserve_cell_data=True, verbose=False)
 
-    print ' - fiber number: left %5d - right %5d - comm %5d' % (pd_left.GetNumberOfLines(), pd_right.GetNumberOfLines(), pd_commissure.GetNumberOfLines())
+    print(' - fiber number: left %5d - right %5d - comm %5d' % (pd_left.GetNumberOfLines(), pd_right.GetNumberOfLines(), pd_commissure.GetNumberOfLines()))
 
     # output polydatas into the appropriate subdirectories
     fname_output = os.path.join(outdir_right, fname_base)
@@ -276,7 +277,7 @@ if clusterLocationFile is not None:
     hemiMRML = os.path.join(outdir, "clustered_tracts_sep_hemispheric_n{0:04d}".format(len(hemi_list))+".mrml")
     commMRML = os.path.join(outdir, "clustered_tracts_sep_commissural_n{0:04d}".format(len(comm_list))+".mrml")
 
-    print ""
+    print("")
     output_mrml(hemi_list, hemiMRML)
     output_mrml(comm_list, commMRML)
 
@@ -287,5 +288,5 @@ if clusterLocationFile is not None:
     shutil.copyfile(hemiMRML, os.path.join(outdir_commissure, os.path.basename(hemiMRML)))
     shutil.copyfile(commMRML, os.path.join(outdir_commissure, os.path.basename(commMRML)))
 
-print ""
-print "<wm_separate_hemispheres.py> Done!!!"
+print("")
+print("<wm_separate_hemispheres.py> Done!!!")

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import slicer
 import os
@@ -31,12 +32,12 @@ def harden_transform(polydata, transform, inverse, outdir):
 
     check_load, polydata_node = slicer.util.loadModel(str(polydata), 1)
     if not check_load:
-        print 'Could not load polydata file:', polydata
+        print('Could not load polydata file:', polydata)
         return
 
     check_load, transform_node = slicer.util.loadTransform(str(transform), 1)
     if not check_load:
-        print 'Could not load transform file:', transform
+        print('Could not load transform file:', transform)
         return
 
     if inverse == "1":

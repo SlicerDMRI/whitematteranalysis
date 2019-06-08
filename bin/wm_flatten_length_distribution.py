@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 
+from __future__ import print_function
 import glob
 import os
 import argparse
@@ -10,13 +11,13 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_laterality.py> Error importing white matter analysis package\n"
+    print("<wm_laterality.py> Error importing white matter analysis package\n")
     raise
 
 try:
     from joblib import Parallel, delayed
 except:
-    print "<wm_laterality.py> Error importing joblib package\n"
+    print("<wm_laterality.py> Error importing joblib package\n")
     raise
 
 
@@ -58,45 +59,45 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "Output directory", outdir, "does not exist, creating it."
+    print("Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
-print "wm_laterality. Starting white matter laterality computation."
-print ""
-print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=========================="
+print("wm_laterality. Starting white matter laterality computation.")
+print("")
+print("=====input directory======\n", args.inputDirectory)
+print("=====output directory=====\n", args.outputDirectory)
+print("==========================")
 
 if args.numberOfFibers is not None:
-    print "fibers to retain per subject: ", args.numberOfFibers
+    print("fibers to retain per subject: ", args.numberOfFibers)
     args.fibersPerBin = numpy.divide(args.numberOfFibers,args.numberOfBins)
 else:
-    print "fibers to retain per subject: ALL"
+    print("fibers to retain per subject: ALL")
 
 if args.fiberLengthMin is not None:
-    print "minimum length of fibers to retain (in mm): ", args.fiberLengthMin
+    print("minimum length of fibers to retain (in mm): ", args.fiberLengthMin)
 else:
-    print "minimum length of fibers to retain (in mm): 0"
+    print("minimum length of fibers to retain (in mm): 0")
 
 if args.fiberLengthMax is not None:
-    print "maximum length of fibers to retain (in mm): ", args.fiberLengthMax
+    print("maximum length of fibers to retain (in mm): ", args.fiberLengthMax)
 
-print "Bins:", args.numberOfBins
-print "Fibers per bin:", args.fibersPerBin
+print("Bins:", args.numberOfBins)
+print("Fibers per bin:", args.fibersPerBin)
 
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
 else:
     parallel_jobs = 1
-print 'Using N jobs:', parallel_jobs
+print('Using N jobs:', parallel_jobs)
 
 
-print "=========================="
+print("==========================")
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -108,7 +109,7 @@ inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
 
 inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
 
-print "<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)
+print("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas))
 
 # for testing
 #inputPolyDatas = inputPolyDatas[0:2]
@@ -136,15 +137,15 @@ def pipeline(inputPolyDatas, sidx, args):
     # outputs
     # -------------------
     msg = "**Writing output data for subject:", subjectID
-    print id_msg, msg
+    print(id_msg, msg)
 
     fname = os.path.join(args.outputDirectory, subjectID+'_flat.vtp')
     try:
-        print "Writing output polydata", fname, "..."
+        print("Writing output polydata", fname, "...")
         wma.io.write_polydata(wm2, fname)
-        print "Wrote output", fname, "."
+        print("Wrote output", fname, ".")
     except:
-        print "Unknown exception in IO"
+        print("Unknown exception in IO")
         raise
     del wm2
 

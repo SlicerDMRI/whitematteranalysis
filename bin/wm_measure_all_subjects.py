@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import os
 from joblib import Parallel, delayed
@@ -6,7 +7,7 @@ from joblib import Parallel, delayed
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_measure_all_subjects> Error importing white matter analysis package\n"
+    print("<wm_measure_all_subjects> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -36,11 +37,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.Slicer):
-    print "Error: 3D Slicer", args.Slicer, "does not exist."
+    print("Error: 3D Slicer", args.Slicer, "does not exist.")
     exit()
 
 module_FTSM = args.Slicer + ' --launch FiberTractMeasurements '
@@ -52,33 +53,33 @@ else:
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "Output directory", outdir, "does not exist, creating it."
+    print("Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
-print "<wm_measure_all_subjects>. Starting scalar measurement extraction."
-print ""
-print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=====3D Slicer====\n", args.Slicer
-print '=====Using N jobs:', number_of_jobs, "====\n"
-print "=========================="
+print("<wm_measure_all_subjects>. Starting scalar measurement extraction.")
+print("")
+print("=====input directory======\n", args.inputDirectory)
+print("=====output directory=====\n", args.outputDirectory)
+print("=====3D Slicer====\n", args.Slicer)
+print('=====Using N jobs:', number_of_jobs, "====\n")
+print("==========================")
 
 sub_dirs = os.listdir(args.inputDirectory)
 
-print "<wm_measure_all_subjects> found", len(sub_dirs), "sub directories."
+print("<wm_measure_all_subjects> found", len(sub_dirs), "sub directories.")
 
 subject_list = []
 for dir in sub_dirs:
     # consider one subdirectory as one subject
     subject_list.append(dir)
 
-print "<wm_measure_all_subjects> found", len(subject_list), "subjects."
+print("<wm_measure_all_subjects> found", len(subject_list), "subjects.")
 
 def extract_measures(sub, subject_list, module_FTSM, args):
     sub_name = sub
 
     count = subject_list.index(sub)
-    print " -", count+1, "/", len(subject_list), " subject id:", sub_name
+    print(" -", count+1, "/", len(subject_list), " subject id:", sub_name)
 
     os.system(module_FTSM + \
               ' --inputtype Fibers_File_Folder --format Column_Hierarchy --separator Tab ' + \
@@ -92,4 +93,4 @@ Parallel(n_jobs=number_of_jobs, verbose=1)(
                         delayed(extract_measures)(sub, subject_list, module_FTSM, args)
                         for sub in subject_list)
 
-print "<wm_measure_all_subjects> Measurements from", len(subject_list), "subjects were extracted."
+print("<wm_measure_all_subjects> Measurements from", len(subject_list), "subjects were extracted.")

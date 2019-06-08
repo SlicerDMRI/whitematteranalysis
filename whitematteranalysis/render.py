@@ -1,11 +1,13 @@
 """ Class RenderPolyData for rendering tractography, and saving views. """
+from __future__ import print_function
+from __future__ import absolute_import
 
 import os
 
 import numpy
 import vtk
 
-import filter
+from . import filter
 
 def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False, scalar_bar=False, axes=False, scalar_range=None, data_mode="Cell", tube=True, colormap='jet', data_name=None, verbose=True):
     """ Function for easy matlab-like use of the rendering
@@ -16,17 +18,17 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
     functionality."""
 
     if verbose:
-        print "<render.py> Initiating rendering."
+        print("<render.py> Initiating rendering.")
         
     if number_of_fibers is not None:
         if verbose:
-            print "<render.py> Downsampling vtkPolyData:", number_of_fibers
+            print("<render.py> Downsampling vtkPolyData:", number_of_fibers)
         # downsample if requested
         input_polydata = filter.downsample(input_polydata, number_of_fibers, preserve_point_data=True, preserve_cell_data=True, verbose=verbose)
 
     if data_name is not None:
         if verbose:
-            print "<render.py> Visualizing data:", data_name
+            print("<render.py> Visualizing data:", data_name)
         if data_mode == "Cell":
             input_polydata.GetCellData().SetActiveScalars(data_name)
         if data_mode == "Point":
@@ -37,7 +39,7 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
     ren.render_polydata(input_polydata, opacity=opacity, depth_peeling=depth_peeling, scalar_bar=scalar_bar, axes=axes, scalar_range=scalar_range, data_mode=data_mode, tube=tube, colormap=colormap, verbose=verbose)
 
     if verbose:
-        print "<render.py> Render pipeline created."
+        print("<render.py> Render pipeline created.")
     return ren
 
 def save_views(render_object, directory=".", subjectID=None):
@@ -110,7 +112,7 @@ def argsort_by_jet_lookup_table(rgb_color):
     # Return indices that will sort these colors (centroids) in their match order
     return(numpy.argsort(numpy.array(match_jet)))
         
-class RenderPolyData:
+class RenderPolyData(object):
 
     """Makes a vtk render window to display polydata tracts"""
 
@@ -159,13 +161,13 @@ class RenderPolyData:
     def __del__(self):
         try:
             if self.verbose:
-                print "<render.py> in DELETE"
+                print("<render.py> in DELETE")
             #del self.renderer
             #del self.render_window
             #del self.iren
             #del self.scalarbar
         except Exception:
-            print "<render.py> ERROR: deletion failed"
+            print("<render.py> ERROR: deletion failed")
 
     def scalar_bar_on(self):
         self.renderer.AddActor2D(self.scalarbar)
@@ -183,7 +185,7 @@ class RenderPolyData:
         #self.build_vtk()
 
         if verbose:
-            print "<render.py> Rendering vtkPolyData."
+            print("<render.py> Rendering vtkPolyData.")
         
         # actor and mapper
         mapper = vtk.vtkPolyDataMapper()
@@ -210,7 +212,7 @@ class RenderPolyData:
                 self.render_RGB = True
                 self.renderer.RemoveActor2D(self.scalarbar)
         if verbose:
-            print "<render.py> RGB: ", self.render_RGB
+            print("<render.py> RGB: ", self.render_RGB)
 
         if data_mode == "Cell":
             mapper.SetScalarModeToUseCellData()
@@ -301,7 +303,7 @@ class RenderPolyData:
         try:
             self.render_window.Render()
         except Exception:
-            print "<render.py> ERROR. Failed to render. Check display settings."
+            print("<render.py> ERROR. Failed to render. Check display settings.")
             # do not re-raise the exception because we may be in the
             # middle of running this pipeline via ssh, and this is not
             # a fatal error for the computation
@@ -377,10 +379,10 @@ class RenderPolyData:
     def save_views(self, directory=".", subjectID=None,  verbose=True):
 
         if verbose:
-            print "<render.py> Saving rendered views to disk:", directory
+            print("<render.py> Saving rendered views to disk:", directory)
         
         if not os.path.isdir(directory):
-            print "<render.py> ERROR: directory does not exist.", directory
+            print("<render.py> ERROR: directory does not exist.", directory)
             return
 
         #ext = ".png"

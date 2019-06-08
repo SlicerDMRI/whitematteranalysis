@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-print "wm_extract_cluster.py importing packages"
+from __future__ import print_function
+print("wm_extract_cluster.py importing packages")
 
 import glob
 import argparse
@@ -31,12 +32,12 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print "<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."
+    print("<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<wm_cluster_atlas.py> Output directory", outdir, "does not exist, creating it."
+    print("<wm_cluster_atlas.py> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
 # cluster filename we want
@@ -54,13 +55,13 @@ fname_list = list()
 for dir in input_directories:
     if os.path.isdir(dir):
         subject_id = os.path.basename(dir)
-        print dir
+        print(dir)
         fname = os.path.join(dir, fname_c)
         if os.path.exists(fname):
             fname1 = subject_id+'_'+fname_c
             fname_list.append(fname1)
             fname2 = os.path.join(outdir, fname1)
-            print fname, "===>>>>", fname2
+            print(fname, "===>>>>", fname2)
             shutil.copy(fname, fname2)
 
 # also output a MRML file to load them all into Slicer

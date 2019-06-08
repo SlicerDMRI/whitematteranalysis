@@ -3,6 +3,7 @@
 output in MRML scene file format (XML)
 
 """
+from __future__ import print_function
 import os
 
 def write(pd_filenames, colors, filename, ratio=1.0):
@@ -10,7 +11,7 @@ def write(pd_filenames, colors, filename, ratio=1.0):
     writer.write(pd_filenames, colors, filename, ratio)
     del writer
     
-class WriteMRML:
+class WriteMRML(object):
     
     def __init__(self):
         self.header = '<MRML  version="Slicer4" userTags="">\n'
@@ -26,7 +27,7 @@ class WriteMRML:
             col = str(colors[cidx,0]/256.0) + " " + str(colors[cidx,1]/256.0) + " " + str(colors[cidx,2]/256.0)
             color_list.append(col)
         #print color_list
-        print "<mrml.py> Writing", len(pd_filenames), " filenames in MRML scene:", filename
+        print("<mrml.py> Writing", len(pd_filenames), " filenames in MRML scene:", filename)
         f = open(filename, "w")
         f.write(self.header)
         for pidx in range(len(pd_filenames)):

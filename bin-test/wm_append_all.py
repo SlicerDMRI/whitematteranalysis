@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 
+from __future__ import print_function
 import argparse
 import os
 import vtk
@@ -8,7 +9,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_register.py> Error importing white matter analysis package\n"
+    print("<wm_register.py> Error importing white matter analysis package\n")
     raise
 
 
@@ -32,7 +33,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "<register> Error: Input directory", args.inputDirectory, "does not exist."
+    print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 
@@ -43,11 +44,11 @@ appender = vtk.vtkAppendPolyData()
 # Read in all polydata and append together into one object
 for fname in input_pd_fnames:
 
-    print "<append.py> Reading input file:", fname
+    print("<append.py> Reading input file:", fname)
 
     pd = wma.io.read_polydata(fname)
 
-    print "<append.py> Input number of fibers:", pd.GetNumberOfLines()
+    print("<append.py> Input number of fibers:", pd.GetNumberOfLines())
 
     if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
         appender.AddInputData(pd)

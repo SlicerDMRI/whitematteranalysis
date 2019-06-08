@@ -1,3 +1,4 @@
+from __future__ import print_function
 
 import os
 import argparse
@@ -14,7 +15,7 @@ def read_keypoint_file(filename):
     ## Features: 829
     ## Scale-space location[x y z scale] orientation[o11 o12 o13 o21 o22 o23 o31 o32 o32] 2nd moment eigenvalues[e1 e2 e3] info flag[i1] descriptor[d1 .. d64]
     
-    print filename
+    print(filename)
 
     # ignore first 6 rows for now and assume the data is as listed above
     location = []
@@ -30,7 +31,7 @@ def read_keypoint_file(filename):
     feature_count = 0
     for line in f:
         if line_number < 6:
-            print line
+            print(line)
         else:
             #print line_number
             feature_count += 1
@@ -48,14 +49,14 @@ def read_keypoint_file(filename):
             descriptor.append(data[17:81])
 
         line_number += 1
-    print "Read in", feature_count, "features."
+    print("Read in", feature_count, "features.")
     #print line
     return location, scale, orientation1, orientation2, orientation3, eigenvalues, flag, descriptor
     
 def convert_keypoint_to_polydata(location, scale, orientation1, orientation2, orientation3, eigenvalues, flag, descriptor):
 
     number_of_keypoints = len(location)
-    print number_of_keypoints
+    print(number_of_keypoints)
     
     # set up vtk objects
     pd = vtk.vtkPolyData()
@@ -143,13 +144,13 @@ args = parser.parse_args()
 
 subject_id = os.path.splitext(os.path.basename(args.inputFile))[0]
 output_filename = subject_id + '.vtk'
-print "Converting keypoint to polydata:\n", args.inputFile, "==>>", output_filename
+print("Converting keypoint to polydata:\n", args.inputFile, "==>>", output_filename)
 
 location, scale, orientation1, orientation2, orientation3, eigenvalues, flag, descriptor = read_keypoint_file(args.inputFile)
 
 pd = convert_keypoint_to_polydata(location, scale, orientation1, orientation2, orientation3, eigenvalues, flag, descriptor)
 
-print "Polydata has", pd.GetNumberOfPoints(), "keypoints."
+print("Polydata has", pd.GetNumberOfPoints(), "keypoints.")
 
 #print pd
 
@@ -160,7 +161,7 @@ writer.SetFileName(output_filename)
 writer.Write()
 del writer
 
-print "Saved file:", output_filename
+print("Saved file:", output_filename)
 
 # Also make a file to visualize to test
 source1 = vtk.vtkSphereSource()
@@ -186,7 +187,7 @@ glyph.SetInput(pd)
 glyph.SetSource(appender.GetOutput())
 glyph.Update()
 pd_glyph = glyph.GetOutput()
-print pd_glyph
+print(pd_glyph)
 # Tell the polydata to treat the orientation as vectors and create another polydata for those
 pd.GetPointData().SetActiveVectors('orientation1')
 glyph1 = vtk.vtkGlyph3D()
@@ -200,7 +201,7 @@ glyph1.SetSource(sourcec1.GetOutput())
 # turn scaling off to just see orientation
 #glyph1.ScalingOff()
 pd_glyph1 = glyph1.GetOutput()
-print pd_glyph1
+print(pd_glyph1)
 # By duplicating the above code it's possible to make a polydata for the other vectors too.
 
 # Save the polydata

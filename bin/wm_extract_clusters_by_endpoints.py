@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse
 import os
 import numpy
@@ -6,7 +7,7 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_endpoint_analysis> Error importing white matter analysis package\n"
+    print("<wm_endpoint_analysis> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -39,29 +40,29 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 percentage_threshold = args.percentage_threshold
 if percentage_threshold < 0 or percentage_threshold > 100:
-    print "Error: Percentage threshold should be in 0 to 100:"
+    print("Error: Percentage threshold should be in 0 to 100:")
     exit()
 
 measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')
 if len(measurement_list) < 1:
-    print "Error: No measurement files found in directory:", args.inputDirectory
+    print("Error: No measurement files found in directory:", args.inputDirectory)
     exit()
 
 number_of_subjects = len(measurement_list)
-print "\n== Number of subjects data found:", number_of_subjects
+print("\n== Number of subjects data found:", number_of_subjects)
 
 # print the header
-print "\n== Region labels found in the measurement file:"
+print("\n== Region labels found in the measurement file:")
 header = measurement_list[0].measurement_header
-print header
+print(header)
 
 region = args.region
-print "\n== Input region label:", region
+print("\n== Input region label:", region)
 
 # region_exist = False
 # region_index = 0
@@ -79,11 +80,11 @@ print "\n== Input region label:", region
 
 subject_number_threshold = args.subject_number_threshold
 if subject_number_threshold < 0 or subject_number_threshold > number_of_subjects:
-    print "Error: Subject number threshold should be in 0 to number of subject ("+ str(number_of_subjects)+ ")"
+    print("Error: Subject number threshold should be in 0 to number of subject ("+ str(number_of_subjects)+ ")")
     exit()
 
 # sanity check all measured variables are the same
-print "\n== Testing if all subjects have the same measurement header."
+print("\n== Testing if all subjects have the same measurement header.")
 region_indices = []
 for subject_measured in measurement_list:
     header = subject_measured.measurement_header
@@ -96,10 +97,10 @@ for subject_measured in measurement_list:
         region_index = region_index + 1
 
     if not region_exist:
-        print "\nError: region", region, "does not exist in", subject_measured.case_id
+        print("\nError: region", region, "does not exist in", subject_measured.case_id)
         exit()
     else:
-        print subject_measured.case_id, ", total number of regions:",len(subject_measured.measurement_header), ", input region found at position", region_index+1
+        print(subject_measured.case_id, ", total number of regions:",len(subject_measured.measurement_header), ", input region found at position", region_index+1)
     region_indices.append(region_index)
 
 # Make subject id list for reporting of any potential outliers
@@ -109,21 +110,21 @@ for subject_measured in measurement_list:
 subject_id_list = numpy.array(subject_id_list)
 
 # sanity check number of clusters is the same for all subjects
-print "\n== Testing if all subjects have the same number of clusters."
+print("\n== Testing if all subjects have the same number of clusters.")
 test = True
 number_of_clusters = measurement_list[0].measurement_matrix[:,0].shape[0]
-print "Group number of clusters (from first subject):", number_of_clusters
+print("Group number of clusters (from first subject):", number_of_clusters)
 for subject_measured, id in zip(measurement_list, subject_id_list):
     nc = subject_measured.measurement_matrix[:,0].shape[0]
     if not nc == number_of_clusters:
-        print nc, " : ", id
+        print(nc, " : ", id)
         test = False
 if test:
-    print "Passed. All subjects have the same number of clusters ("+ str(number_of_clusters) + ")."
+    print("Passed. All subjects have the same number of clusters ("+ str(number_of_clusters) + ").")
 else:
-    print "ERROR: All subjects do not have the same number of clusters. There was an earlier error in clustering or measurement that must be fixed before analysis."
+    print("ERROR: All subjects do not have the same number of clusters. There was an earlier error in clustering or measurement that must be fixed before analysis.")
 
-print "\n== Histogram of the overlap percentage of each cluster to the input region."
+print("\n== Histogram of the overlap percentage of each cluster to the input region.")
 percentage_range = range(0, 100, 5)
 print_title = False
 for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_list, region_indices):
@@ -137,33 +138,33 @@ for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_l
         title_str = title_str + ', ' + "{:<4}".format(str(p))
 
     if not print_title:
-        print title_str
+        print(title_str)
         print_title = True
 
-    print percent_str
+    print(percent_str)
 
-print "\n== Number of clusters whose percentages are over the percentage threshold."
+print("\n== Number of clusters whose percentages are over the percentage threshold.")
 connected_matrix = []
 for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_list, region_indices):
     subject_percentage_distribution = subject_measured.measurement_matrix[:, region_index]
     connected_matrix.append(subject_percentage_distribution > percentage_threshold)
-    print "%s has %4d / %4d clusters connected to the input region." % (sub_id, sum(subject_percentage_distribution > percentage_threshold), number_of_clusters)
+    print("%s has %4d / %4d clusters connected to the input region." % (sub_id, sum(subject_percentage_distribution > percentage_threshold), number_of_clusters))
 
-print "\n== Number of clusters that connect to the input region across all subjects."
+print("\n== Number of clusters that connect to the input region across all subjects.")
 num_subjects_per_cluster = sum(connected_matrix)
 for num_idx in range(number_of_subjects+1):
-    print "Clusters that are connected in", num_idx, '(subject number threshold) subjects: ', sum(num_subjects_per_cluster == num_idx)
+    print("Clusters that are connected in", num_idx, '(subject number threshold) subjects: ', sum(num_subjects_per_cluster == num_idx))
 
-print "\n== Result clusters that are detected by at least",subject_number_threshold,'subjects'
+print("\n== Result clusters that are detected by at least",subject_number_threshold,'subjects')
 output_cluster_idx = numpy.where(num_subjects_per_cluster >= subject_number_threshold)[0]
 output_cluster_idx = output_cluster_idx + 1
-print "Total", len(output_cluster_idx), "clusters."
-print output_cluster_idx
+print("Total", len(output_cluster_idx), "clusters.")
+print(output_cluster_idx)
 
 if not (args.fiber_cluster_folder is None):
-    print "\n== Output mrml to the fiber cluster folder"
+    print("\n== Output mrml to the fiber cluster folder")
     sub_folder = os.listdir(args.fiber_cluster_folder)[0]
-    print sub_folder
+    print(sub_folder)
     pd_cluster_3 = wma.io.list_vtk_files(os.path.join(args.fiber_cluster_folder, sub_folder))[2]
     suffix = os.path.split(pd_cluster_3)[1][13:-4]
 
@@ -190,4 +191,4 @@ if not (args.fiber_cluster_folder is None):
     for sub_folder in os.listdir(args.fiber_cluster_folder):
         wma.mrml.write(cluster_polydatas, colors, os.path.join(args.fiber_cluster_folder+'/'+sub_folder, mrml_filename), ratio=1.0)
 
-print 'Done!' + '\n'
+print('Done!' + '\n')
