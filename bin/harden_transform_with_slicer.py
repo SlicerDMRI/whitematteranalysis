@@ -28,7 +28,13 @@ parser.add_argument(
 args = parser.parse_args()
 
 def harden_transform(polydata, transform, inverse, outdir):
-
+    
+    polydata_base_path, polydata_name = os.path.split(polydata)
+    output_name = os.path.join(outdir, polydata_name)
+    
+    if os.path.exists(output_name):
+        return
+    
     check_load, polydata_node = slicer.util.loadModel(str(polydata), 1)
     if not check_load:
         print 'Could not load polydata file:', polydata
@@ -41,7 +47,7 @@ def harden_transform(polydata, transform, inverse, outdir):
 
     if inverse == "1":
         transform_node.Inverse()
-
+    
     logic = slicer.vtkSlicerTransformLogic()
     t_node_id = transform_node.GetID()
 
@@ -49,9 +55,7 @@ def harden_transform(polydata, transform, inverse, outdir):
     polydata_node.SetAndObserveTransformNodeID(t_node_id)
     logic.hardenTransform(polydata_node)
 
-    polydata_base_path, polydata_name = os.path.split(polydata)
-    output_name = polydata_name
-    slicer.util.saveNode(polydata_node, os.path.join(outdir, output_name))
+    slicer.util.saveNode(polydata_node, output_name)
 
 if os.path.isfile(args.polydata):
     harden_transform(args.polydata, args.transform, args.inverse, args.outdir)

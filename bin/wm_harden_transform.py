@@ -53,9 +53,6 @@ outdir = os.path.abspath(args.outputDirectory)
 if not os.path.exists(args.outputDirectory):
     print "Output directory", args.outputDirectory, "does not exist, creating it."
     os.makedirs(outdir)
-else:
-    print "Output directory", args.outputDirectory, "exist, quit jobs."
-    exit()
 
 slicer_path = os.path.abspath(args.Slicer)
 if not os.path.exists(args.Slicer):
