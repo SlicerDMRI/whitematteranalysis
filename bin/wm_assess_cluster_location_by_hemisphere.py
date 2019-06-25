@@ -281,5 +281,9 @@ for fname, c_idx in zip(input_polydatas, range(len(input_polydatas))):
         fname_output = os.path.join(outdir_commissure, fname_base)
         wma.io.write_polydata(pd_commissure, fname_output)
 
+f = open(os.path.join(args.inputDirectory, 'cluster_location_by_hemisphere.log'), 'a')
+f.write('<wm_assess_cluster_location_by_hemisphere.py> Done!!!')
+f.close()
+
 print ""
 print "<wm_assess_cluster_location_by_hemisphere.py> Done!!!"

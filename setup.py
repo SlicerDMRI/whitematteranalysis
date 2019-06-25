@@ -100,6 +100,7 @@ setup(
     scripts = [ 
         'bin/picktracts_converter.py',
         'bin/harden_transform_with_slicer.py',
+        'bin/wm_assess_cluster_location_by_hemisphere.py',
         'bin/wm_cluster_atlas.py',
         'bin/wm_cluster_from_atlas.py',
         'bin/wm_extract_cluster.py',
