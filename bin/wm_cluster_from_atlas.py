@@ -291,10 +291,14 @@ wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fn
 
 # View the whole thing in png format for quality control
 if render:
-    print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
-    ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
-    ren.save_views(outdir)
-    del ren
+
+    try:
+        print '<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.'
+        ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
+        ren.save_views(outdir)
+        del ren
+    except:
+        print '<wm_cluster_from_atlas.py> No X server available.'
 
 print "\n=========================="
 print '<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n'

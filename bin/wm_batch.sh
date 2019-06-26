@@ -11,13 +11,13 @@ Compulsory arguments:
           two folders named: ORG-RegAtlas-100HCP and ORG-800FC-100HCP 
      -s:  Path to 3D Slicer, e.g., under MacOS, it is /Applications/Slicer.app/Contents/MacOS/Slicer
 Optional arguments:
-     -r:  whole brain tractography registration mode (default = 'r')
-	        rig: rigid_affine_fast : this enables a rough tractography registraion. This mode in general 
-	                               applicable to tractography data generated from different dMRI 
-	                               acquisions and different populations (such as babies)
-	        nonrig: affine + nonrigid (2 stages) : this enables nonrigid deformations of the fibers. This mode
-	                                          needs the input tractography to be similar to the atals tractography, 
-	                                          e.g. two-tensor UKF tractography + HCP dMRI acquisiton. 
+     -r:  whole brain tractography registration mode (default = 'rig')
+            rig: rigid_affine_fast : this enables a rough tractography registraion. This mode in general 
+                                   applicable to tractography data generated from different dMRI 
+                                   acquisions and different populations (such as babies)
+            nonrig: affine + nonrigid (2 stages) : this enables nonrigid deformations of the fibers. This mode
+                                              needs the input tractography to be similar to the atals tractography, 
+                                              e.g. two-tensor UKF tractography + HCP dMRI acquisiton. 
      -n:  Number of threads (default = 1). If mutiple cores are available, recommended setting is 4. 
           Increasing the number of threads does not speed up too much, but it requires more computational resources.) 
      -x:  If the job is being run in an environment without a X client, a virtual X server environment is needed (for 
@@ -26,8 +26,12 @@ Optional arguments:
      -d: Export diffusion tensor measurements for each fiber cluster (or fiber tract). Note that diffusion tensor 
          (or other diffusion measurements) must be stored in the input VTK file. If this is specified, -m needs to be provided.
      -m: Path to the FiberTractMeasurements module in SlicerDMRI. For example, in 3D Slicer 4.11 stable release under MacOS, 
-     	 the CLI module path is:
-     	   /Applications/Slicer.app/Contents/Extensions-28264/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+         the CLI module path is:
+           /Applications/Slicer.app/Contents/Extensions-28264/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+     -c Clean the internal temporary files (default : 0)
+            0 : keep all files
+            1 : mininal removal : initial bilateral clusters, transformed bilateral clusters
+            2 : maximal removal : remove registration temp files, initial bilateral clusters, outlier removed bilateral clusters, transformed bilateral clusters
 
 Example:
 `basename $0` -i UKF-tract.vtk -o ./FiberClusteringTest -a ./ORG-Atlases-1.1.1 -s /Applications/Slicer.app/Contents/MacOS/Slicer
@@ -52,11 +56,13 @@ function reportMappingParameters {
  virtual X server:            $VX
  Export dMRI measures:        $DiffMeasure
  FiberTractMeasurementsCLI:   $FiberTractMeasurementsCLI
+ Clean Files:                 $CleanFiles
 ======================================================================================
+
 REPORTMAPPINGPARAMETERS
 }
 
-while getopts ":hi:i:o:a:s:n:r:x:d:m:" opt; do
+while getopts ":hi:i:o:a:s:n:r:x:d:m:c:" opt; do
   case $opt in
   	h) Usage; exit 0
     ;;
@@ -75,8 +81,10 @@ while getopts ":hi:i:o:a:s:n:r:x:d:m:" opt; do
     x) VX="$OPTARG"
     ;;
     d) DiffMeasure="$OPTARG"
-	;;
+    ;;
     m) FiberTractMeasurementsCLI="$OPTARG"
+    ;;
+    c) CleanFiles="$OPTARG"
     ;;
     \?) echo "\nERROR: Invalid option -$OPTARG"; echo ""; Usage
     ;;
@@ -109,6 +117,7 @@ fi
 
 if [ -z "$DiffMeasure" ] ; then
 	DiffMeasure=0
+	FiberTractMeasurementsCLI=None
 else
 	if [[ $DiffMeasure -lt 1 ]]; then
 	    DiffMeasure=0
@@ -129,6 +138,16 @@ if [ $DiffMeasure == 1 ]; then
 	fi
 fi
 
+if [ -z "$CleanFiles" ] ; then
+	CleanFiles=0
+else
+	if ! [[ $CleanFiles -lt 3 ]]; then
+	    echo "ERROR: invalid clean file mode."
+		echo ""
+		Usage
+	fi
+fi
+
 reportMappingParameters
 
 # Get CaseID 
@@ -140,6 +159,27 @@ echo "<WMA_batch> Working on input tractography:" $InputTractography
 echo "<WMA_batch> Case ID is assigned to be the file name of the input: [" ${caseID} "]"
 echo ""
 
+# Setup output
+OutputCaseFolder=$OutputDir/${caseID}
+echo "<WMA_batch> Fiber clustering result will be stored at:" $OutputCaseFolder
+if [ ! -d $OutputCaseFolder ]; then
+	echo ' - create an output folder.' 
+	mkdir -p $OutputCaseFolder
+else
+	
+	numfiles=($OutputCaseFolder/AnatomicalTracts/T*vtp)
+	numfiles=${#numfiles[@]}
+	if [ $numfiles -gt 1 ] ;then
+		echo ""
+		echo "** Final anantomical tracts ($numfiles tracts) exist in the output folder. Manually remove all files to rerun."
+		echo ""
+		exit
+	fi
+	echo ' - output folder exists.'
+
+fi
+echo ""
+
 # Setup white matter parcellation atlas
 RegAtlasFolder=$AtlasBaseFolder/ORG-RegAtlas-100HCP
 FCAtlasFolder=$AtlasBaseFolder/ORG-800FC-100HCP
@@ -148,15 +188,6 @@ echo " - tractography registration atlas:" $RegAtlasFolder
 echo " - fiber clustering atlas:" $FCAtlasFolder
 echo ""
 
-OutputCaseFolder=$OutputDir/${caseID}
-echo "<WMA_batch> Fiber clustering result will be stored at:" $OutputCaseFolder
-if [ ! -d $OutputCaseFolder ]; then
-	echo ' - create an output folder.' 
-	mkdir -p $OutputCaseFolder
-else
-	echo ' - output folder exists.'
-fi
-echo ""
 
 echo "<WMA_batch> Tractography registraion with mode [" $RegMode "]"
 RegistrationFolder=$OutputCaseFolder/TractRegistration
@@ -354,4 +385,18 @@ if [ $DiffMeasure == 1 ]; then
 	fi
 fi
 echo ""
+
+if [ $CleanFiles == 1 ]; then
+	echo "<WMA_batch> Clean files using mininal removal."
+	rm -rf $OutputCaseFolder/FiberClustering/InitialClusters
+	rm -rf $OutputCaseFolder/FiberClustering/TransformedClusters
+
+elif [ $CleanFiles == 2 ]; then
+	echo "<WMA_batch> Clean files using maximal removal."
+	rm -rf $OutputCaseFolder/TractRegistration/*/output_tractography/*vtk
+	rm -rf $OutputCaseFolder/TractRegistration/*/iteration*
+	rm -rf $OutputCaseFolder/FiberClustering/InitialClusters/*
+	rm -rf $OutputCaseFolder/FiberClustering/OutlierRemovedClusters/*
+	rm -rf $OutputCaseFolder/FiberClustering/TransformedClusters/*
+fi
 

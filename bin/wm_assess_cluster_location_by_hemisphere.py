@@ -82,7 +82,7 @@ def write_mask_location_to_vtk(inpd, mask_location):
             vtk_array.InsertNextTuple1(mask_location[lidx])
 
     inpd.GetPointData().AddArray(vtk_array)
-    inpd.Update()
+    # inpd.Update()
 
     return inpd
 
