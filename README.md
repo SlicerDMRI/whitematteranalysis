@@ -43,11 +43,13 @@ Run 'wm_quality_control_tractography.py --help' to test if the installation is s
     using a high-dimensional white matter atlas. Medical Imaging,
     IEEE Transactions on 26.11 (2007): 1562-1575.
 
-    O’Donnell LJ, Wells III WM, Golby AJ, Westin CF. Unbiased groupwise registration of white matter tractography.
-    In International Conference on Medical Image Computing and Computer-Assisted Intervention 2012 Oct 1 (pp. 123-130).
-    Springer Berlin Heidelberg.
+    O’Donnell LJ, Wells III WM, Golby AJ, Westin CF. 
+    Unbiased groupwise registration of white matter tractography.
+    In MICCAI, 2012, pp. 123-130.
 
-    Zhang, F., Wu, Y., Norton, I., Rathi, Y., Makris, N., O'Donnell, LJ. An anatomically curated fiber clustering white matter atlas for consistent white matter tract parcellation across the lifespan. NeuroImage, 2018 (179): 429-447
+    Zhang, F., Wu, Y., Norton, I., Rathi, Y., Makris, N., O'Donnell, LJ. 
+    An anatomically curated fiber clustering white matter atlas for consistent white matter tract parcellation across the lifespan. 
+    NeuroImage, 2018 (179): 429-447
 
 **For projects using Slicer and SlicerDMRI please also include the following text (or similar) and citations:**
 
