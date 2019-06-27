@@ -10,6 +10,52 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 Also see the github.io page here:
 http://slicerdmri.github.io/whitematteranalysis/
 
+# Installation
+## 1. Install Python 2. 
+Miniconda is a nice option since it includes up-to-date pip and setuptools and all library dependencies (such as VTK and scipy).
+
+  - Download and install Miniconda (**Python 2**) from https://conda.io/miniconda.html
+
+## 2. Install whitematteranalysis with pip:
+
+The following command will use pip to install whitematteranalysis from this source repository and all library dependencies:
+
+      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
+
+      "Note: On MacOS, there could be an issue (XXX) when using pip if x-code is not installed. Use "XX" to install x-code.
+
+Run 'wm_quality_control_tractography.py --help' to test if the installation is successful.
+
+<!-- Note: If you decide to use another python that does not already have VTK, you can compile VTK.
+* VTK: http://www.vtk.org/Wiki/VTK/Building
+* http://www.vtk.org/Wiki/VTK/Git/Download
+
+You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
+Make sure that at configure time it finds the version of python that you want to use for this project. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
+     cd VTK-build
+     ccmake ../VTK
+
+       PYTHON_EXECUTABLE                /Users/lauren/anaconda/bin/python            
+       PYTHON_EXTRA_LIBS                                                             
+       PYTHON_INCLUDE_DIR               /Users/lauren/anaconda/pkgs/python-2.7.4-1/in
+       PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
+       PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
+
+Note this requires both git and cmake. More information is at vtk.org.
+To install your compiled vtk into your python:
+     cd VTK-build/Wrapping/Python
+     python setup.py install -->
+
+## Documentation
+* Please see the wiki for usage instructions of whitematteranalysis.
+
+    https://github.com/SlicerDMRI/whitematteranalysis/wiki
+
+* Please see the following page for instructions of applying a pre-provided anatomically curated white matter atlas, along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation. 
+
+    https://dmri.slicer.org/atlases
+
+## References
 **Please cite the following papers:**
 
     O'Donnell, LJ., and Westin, CF. Automatic tractography segmentation
@@ -28,68 +74,3 @@ http://slicerdmri.github.io/whitematteranalysis/
     "We performed diffusion MRI tractography and/or analysis and/or visualization in 3D Slicer (www.slicer.org) via the SlicerDMRI project (dmri.slicer.org) (Norton et al. 2017)."
     
     - [Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.](http://cancerres.aacrjournals.org/content/77/21/e101)
-
-# Installation
-## 1. Install Python 2. 
-Anaconda is a nice option since it has VTK and scipy, and includes up-to-date pip and setuptools.
-
-  - Download and install Miniconda (**Python 2**) from https://conda.io/miniconda.html
-  
-  - Activate the conda environment (if applicable):
-      
-      - Windows:
-      
-      > \> /path/to/anaconda/Scripts/activate.bat
-      
-      - macOS and Linux:
-      
-      > $ /path/to/anaconda/bin/conda activate
-
-### 1a. (Windows-only):
-
-  - install VTK 6.3 from [C. Gohlke's windows packages](https://www.lfd.uci.edu/~gohlke/pythonlibs/#vtk) (PyPI VTK packages for Windows are only available for Python 3):
-
-    > pip install https://download.lfd.uci.edu/pythonlibs/o4uhg4xd/VTK-6.3.0-cp27-cp27m-win_amd64.whl
-   
-  - install the [Microsoft Visual C++ Compiler for Python 2.7](https://www.microsoft.com/en-us/download/details.aspx?id=44266)
-  
-  - start "Visual C++ 2008 64-bit Command Prompt", and then activate the anaconda environment as above (note: *before* running `pip install` step)
-
-## 2. Install whitematteranalysis with pip:
-
-The following command will use pip to install whitematteranalysis from this source repository, and will install all library dependencies from PyPI:
-
-      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
-
-Run 'wm_quality_control_tractography.py --help' to test if the installation is successful.
-
-Note: If you decide to use another python that does not already have VTK, you can compile VTK.
-* VTK: http://www.vtk.org/Wiki/VTK/Building
-* http://www.vtk.org/Wiki/VTK/Git/Download
-
-You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
-Make sure that at configure time it finds the version of python that you want to use for this project. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
-     cd VTK-build
-     ccmake ../VTK
-
-       PYTHON_EXECUTABLE                /Users/lauren/anaconda/bin/python            
-       PYTHON_EXTRA_LIBS                                                             
-       PYTHON_INCLUDE_DIR               /Users/lauren/anaconda/pkgs/python-2.7.4-1/in
-       PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
-       PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
-
-Note this requires both git and cmake. More information is at vtk.org.
-To install your compiled vtk into your python:
-     cd VTK-build/Wrapping/Python
-     python setup.py install
-
-## Documentation
-* Please see the wiki for usage instructions of whitematteranalysis.
-
-    https://github.com/SlicerDMRI/whitematteranalysis/wiki
-
-* Please see the following page for instructions of applying a pre-provided anatomically curated white matter atlas, along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation. 
-
-    https://dmri.slicer.org/atlases
-
-
