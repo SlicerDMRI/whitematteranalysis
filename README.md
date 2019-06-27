@@ -22,31 +22,11 @@ The following command will use pip to install whitematteranalysis from this sour
 
       pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
 
-      "Note: On MacOS, there could be an issue (XXX) when using pip if x-code is not installed. Use "XX" to install x-code.
+  (Note: On MacOS, to able to use pip, X-code needs to be installed using `xcode-select --install`.)
 
-Run 'wm_quality_control_tractography.py --help' to test if the installation is successful.
+Run 'wm_quality_control_tractography.py --help' to test if the installation is successful. 
 
-<!-- Note: If you decide to use another python that does not already have VTK, you can compile VTK.
-* VTK: http://www.vtk.org/Wiki/VTK/Building
-* http://www.vtk.org/Wiki/VTK/Git/Download
-
-You will need to compile it with python wrapping. VTK_WRAP_PYTHON must be on.
-Make sure that at configure time it finds the version of python that you want to use for this project. You may need to toggle t for advanced mode in ccmake. I have something like this when I run:
-     cd VTK-build
-     ccmake ../VTK
-
-       PYTHON_EXECUTABLE                /Users/lauren/anaconda/bin/python            
-       PYTHON_EXTRA_LIBS                                                             
-       PYTHON_INCLUDE_DIR               /Users/lauren/anaconda/pkgs/python-2.7.4-1/in
-       PYTHON_LIBRARY                   /Users/lauren/anaconda/lib/libpython2.7.dylib
-       PYTHON_UTIL_LIBRARY              /usr/lib/libutil.dylib   
-
-Note this requires both git and cmake. More information is at vtk.org.
-To install your compiled vtk into your python:
-     cd VTK-build/Wrapping/Python
-     python setup.py install -->
-
-## Documentation
+# Documentation
 * Please see the wiki for usage instructions of whitematteranalysis.
 
     https://github.com/SlicerDMRI/whitematteranalysis/wiki
@@ -55,7 +35,8 @@ To install your compiled vtk into your python:
 
     https://dmri.slicer.org/atlases
 
-## References
+# References
+
 **Please cite the following papers:**
 
     O'Donnell, LJ., and Westin, CF. Automatic tractography segmentation
@@ -65,6 +46,8 @@ To install your compiled vtk into your python:
     O’Donnell LJ, Wells III WM, Golby AJ, Westin CF. Unbiased groupwise registration of white matter tractography.
     In International Conference on Medical Image Computing and Computer-Assisted Intervention 2012 Oct 1 (pp. 123-130).
     Springer Berlin Heidelberg.
+
+    Zhang, F., Wu, Y., Norton, I., Rathi, Y., Makris, N., O'Donnell, LJ. An anatomically curated fiber clustering white matter atlas for consistent white matter tract parcellation across the lifespan. NeuroImage, 2018 (179): 429-447
 
 **For projects using Slicer and SlicerDMRI please also include the following text (or similar) and citations:**
 
