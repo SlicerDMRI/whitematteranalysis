@@ -14,7 +14,7 @@ Optional arguments:
      -r:  whole brain tractography registration mode (default = 'rig')
             rig: rigid_affine_fast : this enables a rough tractography registraion. This mode in general 
                                    applicable to tractography data generated from different dMRI 
-                                   acquisions and different populations (such as babies)
+                                   acquisitions and different populations (such as babies)
             nonrig: affine + nonrigid (2 stages) : this enables nonrigid deformations of the fibers. This mode
                                               needs the input tractography to be similar to the atals tractography, 
                                               e.g. two-tensor UKF tractography + HCP dMRI acquisiton. 
@@ -195,7 +195,7 @@ if [ "$RegMode" == "rig" ]; then
 	RegTractography=$RegistrationFolder/${caseID}/output_tractography/${caseID}_reg.vtk
 	
 	if [ ! -f $RegTractography ]; then
-		wm_register_to_atlas_new.py -l 40 -mode rigid_affine_fast \
+		wm_register_to_atlas_new.py -mode rigid_affine_fast \
 			$InputTractography $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
 	else
 		echo " - registration has been done."
@@ -204,12 +204,12 @@ elif [ "$RegMode" == "nonrig" ]; then
 	RegTractography=$RegistrationFolder/${caseID}_reg/output_tractography/${caseID}_reg_reg.vtk
 	
 	if [ ! -f $RegTractography ]; then
-		wm_register_to_atlas_new.py -l 40 -mode affine \
+		wm_register_to_atlas_new.py -mode affine \
 			$InputTractography $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
 
 		affineRegTract=$RegistrationFolder/${caseID}/output_tractography/${caseID}_reg.vtk
 		
-		wm_register_to_atlas_new.py -l 40 -mode nonrigid \
+		wm_register_to_atlas_new.py -mode nonrigid \
 			$affineRegTract $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
 	else
 		echo " - registration has been done."
@@ -226,7 +226,7 @@ FCcaseID=${fn//.$ext/}
 echo "<WMA_batch> Fiber clustering for whole-brain 800 fiber cluster parcellation."
 FiberClusteringInitialFolder=$OutputCaseFolder/FiberClustering/InitialClusters
 if [ ! -f $FiberClusteringInitialFolder/$FCcaseID/cluster_00800.vtp ]; then
-	wm_cluster_from_atlas.py -l 40 -j $NumThreads \
+	wm_cluster_from_atlas.py -j $NumThreads \
 		$RegTractography $FCAtlasFolder $FiberClusteringInitialFolder
 else
 	echo " - initial fiber clustering has been done."
