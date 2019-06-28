@@ -79,9 +79,9 @@ class LazyCommandClass(dict):
 
 setup(
     name='WhiteMatterAnalysis',
-    version='0.2.0',
-    author='Lauren O\'Donnell',
-    author_email='odonnell@bwh.harvard.edu',
+    version='0.3.0',
+    author='Fan Zhang and Lauren O\'Donnell',
+    author_email='fzhang@bwh.harvard.edu; odonnell@bwh.harvard.edu',
     packages=['whitematteranalysis'],
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
@@ -98,8 +98,26 @@ setup(
     cmdclass=LazyCommandClass(),
 
     scripts = [ 
-        'bin/*.py',
-        'bin/*.sh',
-        'utilities/*.py'
+        'bin/harden_transform_with_slicer.py',
+        'bin/wm_append_clusters.py',
+        'bin/wm_apply_ORG_atlas_to_subject.sh',
+        'bin/wm_assess_cluster_location_by_hemisphere.py',
+        'bin/wm_cluster_atlas.py',
+        'bin/wm_cluster_from_atlas.py',
+        'bin/wm_cluster_remove_outliers.py',
+        'bin/wm_compare_vtks.py',
+        'bin/wm_create_mrml_file.py',
+        'bin/wm_diffusion_measurements.py',
+        'bin/wm_download_anatomically_curated_atlas.py',
+        'bin/wm_harden_transform.py',
+        'bin/wm_preprocess_all.py',
+        'bin/wm_quality_control_tractography.py',
+        'bin/wm_quality_control_after_clustering.py',
+        'bin/wm_quality_control_cluster_measurements.py',
+        'bin/wm_quality_control_tract_overlap.py',
+        'bin/wm_register_multisubject_faster.py',
+        'bin/wm_register_to_atlas_new.py',
+        'bin/wm_remove_data_along_tracts.py',
+        'bin/wm_separate_clusters_by_hemisphere.py'
     ]
 )
