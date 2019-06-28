@@ -117,7 +117,7 @@ def pipeline(inputPolyDatas, sidx, args):
     if args.fiberLength is not None:
         msg = "**Preprocessing:", subjectID
         print(id_msg + msg)
-        wm2 = wma.filter.preprocess(wm, args.fiberLength, verbose=False)
+        wm2 = wma.filter.preprocess(wm, args.fiberLength, preserve_point_data=True, preserve_cell_data=True, verbose=False)
         print "Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines
 
     if wm2 is None:
@@ -133,7 +133,7 @@ def pipeline(inputPolyDatas, sidx, args):
         print(id_msg + msg)
 
         # , preserve_point_data=True needs editing of preprocess function to use mask function
-        wm3 = wma.filter.downsample(wm2, args.numberOfFibers, verbose=False)
+        wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=True, preserve_cell_data=True, verbose=False)
         print "Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines
 
     if wm3 is None:
