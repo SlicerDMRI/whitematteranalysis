@@ -47,6 +47,7 @@ function reportMappingParameters {
 ======================================================================================
  Mapping parameters
 --------------------------------------------------------------------------------------
+ Case ID (file name):         $caseID
  Input tractography:          $InputTractography
  Output directory:            $OutputDir
  ORG atlas folder:            $AtlasBaseFolder
@@ -148,12 +149,12 @@ else
 	fi
 fi
 
-reportMappingParameters
-
 # Get CaseID 
-ext=${InputTractography#*.}
 fn=$(basename -- $InputTractography)
+ext=${fn#*.}
 caseID=${fn//.$ext/}
+
+reportMappingParameters
 
 echo "<WMA_batch> Working on input tractography:" $InputTractography
 echo "<WMA_batch> Case ID is assigned to be the file name of the input: [" ${caseID} "]"
