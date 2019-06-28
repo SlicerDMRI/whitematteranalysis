@@ -58,6 +58,12 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
     
 subject_id = os.path.basename(args.inputDirectory)
+path_split = os.path.split(args.inputDirectory)
+if path_split[1] == '':
+    subject_id = os.path.split(path_split[0])[1]
+else:
+    subject_id = path_split[1]
+
 outdir = os.path.join(outdir, subject_id + '_outlier_removed')
 if not os.path.exists(outdir):
     print "<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it."
