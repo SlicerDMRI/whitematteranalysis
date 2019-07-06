@@ -42,6 +42,9 @@ parser.add_argument(
 parser.add_argument(
     '-j', action="store", dest="numberOfJobs", type=int,
     help='Number of processors to use.')
+parser.add_argument(
+    '-retaindata', action='store_true', dest="flag_retaindata",
+    help='If given, all point and cell data stored along the tractography will be retained.')
 
 args = parser.parse_args()
 
@@ -78,6 +81,11 @@ else:
     parallel_jobs = multiprocessing.cpu_count()
 print 'Using N jobs:', parallel_jobs
 
+if args.flag_retaindata:
+    print "Retain all data stored along the tractography."
+else:
+    print "Remove all data stored along the tractography and only keep fiber streamlines."
+retaindata = args.flag_retaindata
 
 print "=========================="
 
@@ -117,7 +125,7 @@ def pipeline(inputPolyDatas, sidx, args):
     if args.fiberLength is not None:
         msg = "**Preprocessing:", subjectID
         print(id_msg + msg)
-        wm2 = wma.filter.preprocess(wm, args.fiberLength, preserve_point_data=True, preserve_cell_data=True, verbose=False)
+        wm2 = wma.filter.preprocess(wm, args.fiberLength, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
         print "Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines
 
     if wm2 is None:
@@ -133,7 +141,7 @@ def pipeline(inputPolyDatas, sidx, args):
         print(id_msg + msg)
 
         # , preserve_point_data=True needs editing of preprocess function to use mask function
-        wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=True, preserve_cell_data=True, verbose=False)
+        wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
         print "Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines
 
     if wm3 is None:
