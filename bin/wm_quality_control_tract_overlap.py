@@ -98,7 +98,7 @@ for fname in input_polydatas:
 print "<quality_control> Final step: rendering two vtk files together."
 appender.Update()
 pd_all = appender.GetOutput()
-ren = wma.render.render(pd_all, verbose=False)
+ren = wma.render.render(pd_all, colormap='hot', verbose=False)
 ren.save_views(output_dir, "tract_overlap")
 del ren
 del appender
