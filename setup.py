@@ -100,6 +100,7 @@ setup(
     scripts = [ 
         'bin/harden_transform_with_slicer.py',
         'bin/wm_append_clusters.py',
+        'bin/wm_append_clusters_to_anatomical_tracts',
         'bin/wm_apply_ORG_atlas_to_subject.sh',
         'bin/wm_assess_cluster_location_by_hemisphere.py',
         'bin/wm_cluster_atlas.py',
