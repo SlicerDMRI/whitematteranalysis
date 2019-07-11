@@ -23,7 +23,7 @@ parser.add_argument(
     'inputDirectory',
     help='Directory of fiber clustering results obtained by <wm_cluster_from_altas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
 parser.add_argument(
-    'outputDirectory',
+    'outputCSV',
     help='Directory of output CSV files of fiber scalar measurement (computed using Slicer FiberTractMeasurements module).')
 parser.add_argument(
     'Slicer',
@@ -41,7 +41,7 @@ if not os.path.exists(args.Slicer):
 
 module_FTSM = args.Slicer + ' '
 
-outdir = args.outputDirectory
+outdir = os.path.split(args.outputCSV)[0]
 if not os.path.exists(outdir):
     print "Output directory", outdir, "does not exist, creating it."
     os.makedirs(outdir)
@@ -49,14 +49,13 @@ if not os.path.exists(outdir):
 print "<wm_diffusion_measurements>. Starting scalar measurement extraction."
 print ""
 print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
+print "=====output directory=====\n", outdir
 print "=====3D Slicer====\n", args.Slicer
 print "=========================="
 
 os.system(module_FTSM + \
           ' --inputtype Fibers_File_Folder --format Column_Hierarchy --separator Comma ' + \
           ' --inputdirectory ' + args.inputDirectory + \
-          ' --outputfile ' + os.path.join(args.outputDirectory, 'DiffusionMeasurements.csv ') + \
-          ' > ' + os.path.join(args.outputDirectory, 'DiffusionMeasurements.log'))
+          ' --outputfile ' + args.outputCSV)
 
-print "<wm_diffusion_measurements> Measurements done at:", os.path.join(args.outputDirectory, 'DiffusionMeasurements.csv ')
+print "<wm_diffusion_measurements> Measurements done at:", args.outputCSV
