@@ -227,8 +227,8 @@ if [ ! -f $RegTractography ]; then
 fi
 
 # Get the case ID for fiber clustering
-ext=${RegTractography#*.}
 fn=$(basename -- $RegTractography)
+ext=${fn#*.}
 FCcaseID=${fn//.$ext/}
 
 echo "<wm_apply_ORG_atlas_to_subject> Fiber clustering for whole-brain 800 fiber cluster parcellation."
