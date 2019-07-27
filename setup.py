@@ -103,6 +103,7 @@ setup(
         'bin/wm_append_clusters_to_anatomical_tracts.py',
         'bin/wm_apply_ORG_atlas_to_subject.sh',
         'bin/wm_assess_cluster_location_by_hemisphere.py',
+        'bin/wm_cluster_volumetric_measurements.py',
         'bin/wm_cluster_atlas.py',
         'bin/wm_cluster_from_atlas.py',
         'bin/wm_cluster_remove_outliers.py',
