@@ -1,5 +1,0 @@
-cython >= 0.28.2
-joblib >= 0.11
-statsmodels == 0.8
-scipy >= 1.0.1
-xlrd >= 1.1.0
