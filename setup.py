@@ -119,6 +119,8 @@ setup(
         'bin/wm_register_multisubject_faster.py',
         'bin/wm_register_to_atlas_new.py',
         'bin/wm_remove_data_along_tracts.py',
-        'bin/wm_separate_clusters_by_hemisphere.py'
+        'bin/wm_separate_clusters_by_hemisphere.py',
+        'bin/wm_tract_to_volume.py',
+        'bin/wm_vtp2vtk.py'
     ]
 )
