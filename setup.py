@@ -88,7 +88,7 @@ setup(
     long_description=open('README.md').read(),
 
     setup_requires = ['cython>=0.22', 'numpy'],
-    install_requires = ['setuptools>=18.0', 'numpy=1.16.2', 'scipy', 'vtk==5.10.1',
+    install_requires = ['setuptools>=18.0', 'numpy==1.16.2', 'scipy', 'vtk==5.10.1',
                         'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib<3.0', 'nibabel'],
     
     ext_modules = [
