@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import os
 import nibabel
@@ -133,3 +135,4 @@ volume_new = nibabel.Nifti1Image(new_voxel_data, volume.affine, volume.header)
 nibabel.save(volume_new, args.outputVol)
 
 print 'Done: save tract map to', args.outputVol
+
