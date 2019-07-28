@@ -38,7 +38,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
         ```
       - You terminal should look like the below image (the username should change according to your computer). Type ```ls``` to list the files in the tutorial data folder on the terminal.
     
-      ![test image](tutorial-pics/fig_terminal_env.png)
+        ![test image](tutorial-pics/fig_terminal_env.png)
     
 ## 4. Initial tractography data quality control
 
