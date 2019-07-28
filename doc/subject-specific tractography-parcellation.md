@@ -16,21 +16,22 @@ On this page, we provide step-by-step instructions to guide a user to run the en
    - Download the tutorial data package ([WMA_tutorial_data.zip](), ~2.5GB)
    - Decompress the downlaoded zip file to *Desktop* of your computer
    - Files in the decompressed data folder should be organized as below, including:
-      - An example tractography dataset
+     - An example tractography dataset (“_example-UKF-data.vtk_”)
         > This tractography data was computed from one [Human Connectome Project (HCP)](https://www.humanconnectome.org/) young adult subject using the two-tensor [Unscented Kalman Filter (UKF)](https://github.com/pnlbwh/ukftractography) fiber tracking method.
-      - The O'Donnell Research Group (ORG) white matter atlas
-        > The ORG atlas contains an 800-cluster parcellation of the entire white matter and an anatomical fiber tract parcellation (see [here](http://dmri.slicer.org/atlases) for more details). 
+     - The O'Donnell Research Group (ORG) white matter atlas (“_ORG-Atlases-1.1.1_”)
+        > The ORG atlas contains an 800-cluster parcellation of the entire white matter and an anatomical fiber tract parcellation (see [here](http://dmri.slicer.org/atlases) for more details).
       
-      ![test image](../wma_small.jpg)
+        ![test image](../wma_small.jpg)
 
 ## 3. Prepare terminal environment to run related commands
-  - MacOS: Open */Applications/Utilities/Terminal.app*
-  - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
-  - Windows: Open *XX*
+   - Open terminal based on the operating system in use
+      - MacOS: Open */Applications/Utilities/Terminal.app*
+      - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
+      - Windows (e.g. Windows 10): Open *XX*
     
       > **_Note_**: The tutorial on this page is based on MacOS. All commands in this tutorial can be directly used on Linux. For Windows, users need to change the commands by using Windows system separator “\”.
 
-1. Go to the tutorial data folder from terminal
+   - Go to the tutorial data folder from terminal
     - From the terminal, type the following command. (Make sure that you have decompressed the tutorial data to your desktop, as mentioned above.)
     
         ```bash
