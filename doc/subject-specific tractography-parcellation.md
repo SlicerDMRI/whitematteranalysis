@@ -29,21 +29,20 @@ On this page, we provide step-by-step instructions to guide a user to run the en
       - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
       - Windows (e.g. Windows 10): Open *XX*
     
-      > **_Note_**: The tutorial on this page is based on MacOS. All commands in this tutorial can be directly used on Linux. For Windows, users need to change the commands by using Windows system separator “\”.
+        > **_Note_**: The tutorial on this page is based on MacOS. All commands in this tutorial can be directly used on Linux. For Windows, users need to change the commands by using Windows system separator “\”.
 
-   - Go to the tutorial data folder from terminal
-    - From the terminal, type the following command. (Make sure that you have decompressed the tutorial data to your desktop, as mentioned above.)
+   - Go to the tutorial data folder from terminal by typing the following command. (Make sure that you have decompressed the tutorial data to your desktop, as mentioned above.)
     
         ```bash
         cd /Users/YOUR_USER_NAME/Desktop/WMA_tutorial_data
         ```
-    - You terminal should look like the below image (the username should change according to your computer). Type ```ls``` to list the files in the tutorial data folder on the terminal.
+      - You terminal should look like the below image (the username should change according to your computer). Type ```ls``` to list the files in the tutorial data folder on the terminal.
     
       ![test image](../wma_small.jpg)
     
-1. Initial tractography data quality control
+## 4. Initial tractography data quality control
 
-    This QC step is important to: 1) verify correct appearance of tract anatomy, and 2) verify tractography is stored using the same spatial coordinate system as the atlas tractography data.
+This QC step is important to: 1) verify correct appearance of tract anatomy, and 2) verify tractography is stored using the same spatial coordinate system as the atlas tractography data.
    
    1. Run QC using “wm_quality_control_tractography.py”
    
