@@ -1,12 +1,15 @@
-This tutorial explains how to perform whole-brain tractography parcellation of a single subject using the whitematteranalysis (WMA) software and the anatomically curated ORG white matter atlas. On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline.
+# Tutorial
 
-> **_Note_**: The commands used on this page outline the major steps in the wrapper script “wm_apply_ORG_atlas_to_subject.sh” in WMA. This wrapper script is provided to run the whole pipeline in one command, and it is useful for batch processing of data from multiple subjects (see here for a tutorial for batch processing).
+This tutorial explains how to perform whole-brain tractography parcellation of a single subject using the [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis) software and the anatomically curated [O'Donnell Research Group (ORG)](https://github.com/SlicerDMRI/ORG-Atlases) white matter atlas. 
 
-1. Software prerequisites
-   - Install the whitematteranalysis software
-   - Install 3D Slicer and SlicerDMRI
+On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline. The commands used on this page outline the major steps in the wrapper script “_wm_apply_ORG_atlas_to_subject.sh_” in WMA. This wrapper script is provided to run the whole pipeline in one command, and it is useful for batch processing of data from multiple subjects (see here for a tutorial for batch processing).
+
+## 1. Software prerequisites
+   - Install [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis#wma-installation)
+   - Install [3D Slicer](https://download.slicer.org/)
+   - Install [SlicerDMRI](http://dmri.slicer.org/download/)
     
-1. Download the tutorial data
+## 2. Download the tutorial data
    - Download the tutorial data package (WMA_tutorial_data.zip, ~2.5GB)
    - Decompress the downlaoded zip file to *Desktop* of your computer
    - Files in the decompressed data folder should be organized as below, including:
@@ -15,10 +18,10 @@ This tutorial explains how to perform whole-brain tractography parcellation of a
       
       ![test image](../wma_small.jpg)
 
-1. Prepare terminal environment to run related commands
-    - MacOS: Open */Applications/Utilities/Terminal.app*
-    - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
-    - Windows: Open *XX*
+## 3. Prepare terminal environment to run related commands
+  - MacOS: Open */Applications/Utilities/Terminal.app*
+  - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
+  - Windows: Open *XX*
     
       > **_Note_**: The tutorial on this page is based on MacOS. All commands in this tutorial can be directly used on Linux. For Windows, users need to change the commands by using Windows system separator “\”.
 
