@@ -1,6 +1,6 @@
 # Tutorial
 
-This tutorial explains how to perform whole-brain tractography parcellation using the [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis) software and the anatomically curated [O'Donnell Research Group (ORG)](https://github.com/SlicerDMRI/ORG-Atlases) white matter atlas.
+This tutorial explains how to perform whole-brain tractography parcellation using the [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis) software and the anatomically curated [O'Donnell Research Group (ORG)](http://dmri.slicer.org/atlases/) white matter atlas.
 
 On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**. Please see another [tutorial]() for batch processing of tractography data from **_multiple subjects_**.
 
@@ -10,14 +10,16 @@ On this page, we provide step-by-step instructions to guide a user to run the en
    - Install [SlicerDMRI](http://dmri.slicer.org/download/)
       > SlicerDMRI is an open-source project to improve and extend diffusion magnetic resonance imaging software in 3D Slicer.
    - Install [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis#wma-installation)
-      > WMA is a software for data-driven white matter parcellation
+      > WMA is a software for data-driven fiber clustering white matter parcellation.
     
-## 2. Download the tutorial data
-   - Download the tutorial data package (WMA_tutorial_data.zip, ~2.5GB)
+## 2. Download tutorial data
+   - Download the tutorial data package ([WMA_tutorial_data.zip](), ~2.5GB)
    - Decompress the downlaoded zip file to *Desktop* of your computer
    - Files in the decompressed data folder should be organized as below, including:
-      - An example tractography dataset (computed from one example Human Connectome Project (HCP) subject using the two-tensor Unscented Kalman Filter (UKF) fiber tracking method)
-      - The ORG white matter atlas (see here for details)
+      - An example tractography dataset
+        > This tractography data was computed from one [Human Connectome Project (HCP)](https://www.humanconnectome.org/) young adult subject using the two-tensor [Unscented Kalman Filter (UKF)](https://github.com/pnlbwh/ukftractography) fiber tracking method.
+      - The O'Donnell Research Group (ORG) white matter atlas
+        > The ORG atlas contains an 800-cluster parcellation of the entire white matter and an anatomical fiber tract parcellation (see [here](http://dmri.slicer.org/atlases) for more details). 
       
       ![test image](../wma_small.jpg)
 
