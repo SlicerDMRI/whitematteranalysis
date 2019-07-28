@@ -21,7 +21,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
      - The O'Donnell Research Group (ORG) white matter atlas (“_ORG-Atlases-1.1.1_”)
         > The ORG atlas contains an 800-cluster parcellation of the entire white matter and an anatomical fiber tract parcellation (see [here](http://dmri.slicer.org/atlases) for more details).
       
-        ![test image](../wma_small.jpg)
+        ![test image](tutorial-pics/fig_tutorial_data.png)
 
 ## 3. Prepare terminal environment to run related commands
    - Open terminal based on the operating system in use
@@ -38,7 +38,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
         ```
       - You terminal should look like the below image (the username should change according to your computer). Type ```ls``` to list the files in the tutorial data folder on the terminal.
     
-      ![test image](../wma_small.jpg)
+      ![test image](tutorial-pics/fig_terminal_env.png)
     
 ## 4. Initial tractography data quality control
 
