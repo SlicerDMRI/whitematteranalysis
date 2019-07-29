@@ -44,7 +44,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
 
 This step performance QC of the input tractography data to: 1) verify correct appearance of tract anatomy, and 2) verify tractography is stored using the same spatial coordinate system as the atlas tractography data.
    
-   - Run QC using “wm_quality_control_tractography.py”
+   - Run QC using “**_wm_quality_control_tractography.py_**”
      
      This script outputs rendered images of the input tractography data (as well as other information such as fiber length distributions and diffusion data fields stored along the tracts). Here, this script to verify correct appearance of tract anatomy of the input tractography dataset. From your terminal, type the following command:
       
@@ -54,14 +54,14 @@ This step performance QC of the input tractography data to: 1) verify correct ap
         
         > **_Note_**: This script also allows for tractography visualization and QC of multiple tractography datasets at the same time. This is useful when you perform a study (e.g. between-population analysis) where you have tractography data from multiple subjects. Please see here for details of batch processing using WMA.
         
-      - A new “QC-TractVisualization” folder is generated, including several types of outputs:
-        - Multiple HTML files to enable tractography visualization from different views. Click on one of them, e.g., “view_left.html”, the HTML file will be opened in your browser to show the tractography from the left view (as displayed below). Click on the “sample_UKF_HCP” image, another HTML page will be opened to show the tractography from 6 different views (as displayed below). These images show that the input tractography has a correct appearance of white matter tract anatomy.
-        - “fiber_length_histograms.pdf” and “quality_control_fibers.txt” to show fiber length distributions. 
-        - “quality_control_data.txt” to show the diffusion data fields stored along the tracts.
+      - A new “_QC-TractVisualization_” folder is generated, including several types of outputs:
+        - Multiple HTML files to enable tractography visualization from different views. Click on one of them, e.g., “_view_left.html_”, the HTML file will be opened in your browser to show the tractography from the left view (as displayed below). Click on the “_sample_UKF_HCP_” image, another HTML page will be opened to show the tractography from 6 different views (as displayed below). These images show that the input tractography has a correct appearance of white matter tract anatomy.
+        - “_fiber_length_histograms.pdf_” and “_quality_control_fibers.txt_” to show fiber length distributions. 
+        - “_quality_control_data.txt_” to show the diffusion data fields stored along the tracts.
         
           ![test image](../wma_small.jpg)
 
-   - Run QC using “wm_quality_control_tract_overlap.py”
+   - Run QC using “**_wm_quality_control_tract_overlap.py_**”
      
      This script outputs rendered images of two input tractography datasets together to show tract overlap. Here, this script is used to check if the input tractography data and the atlas tractography data are stored using the same spatial coordinate system. From your terminal, type the following command:
        
@@ -69,15 +69,15 @@ This step performance QC of the input tractography data to: 1) verify correct ap
      wm_quality_control_tract_overlap.py ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/atlas.vtp ./example-UKF-data.vtk ./QC-TractOverlap-Initial/
      ```
         
-      - A new “QC-TractOverlap-Initial” folder is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “view_left_tract_overlap.jpg”, where the different colors represent the different tractography data (as displayed below). This image shows that the two tractography files are in the same coordinate system, but they are not aligned together.
+      - A new “_QC-TractOverlap-Initial+” folder is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “_view_left_tract_overlap.jpg_”, where the different colors represent the different tractography data (as displayed below). This image shows that the two tractography files are in the same coordinate system, but they are not aligned together.
        
         ![test image](../wma_small.jpg)
         
-## 5. Tractograpy fiber clustering
+## 5. Tractograpy fiber clustering and outlier fiber removal
     
-This step performs fiber clustering of the registered tractography data, resulting in an 800-cluster white matter parcellation according to the ORG atlas. This step includes multiple commands: initial fiber clustering of the registered tractography, outlier removal to filter false positive fibers, and assessment of hemispheric location of each fiber in the obtained clusters.
+This step performs fiber clustering of the registered tractography data, resulting in an 800-cluster white matter parcellation according to the ORG atlas. This includes two sub-steps: 1) initial fiber clustering of the registered tractography, and 2) outlier removal to filter false positive fibers.
     
-   - Run initial fiber clustering using “_wm_cluster_from_atlas.py_” 
+   - Run initial fiber clustering using “**_wm_cluster_from_atlas.py**_” 
     
      This script runs fiber clustering to parcellate the registered tractography into 800 fiber clusters according to the ORG atlas. From your terminal, type the following command:
     
@@ -91,7 +91,7 @@ This step performs fiber clustering of the registered tractography data, resulti
          
          ![test image](../wma_small.jpg)
 
-   - Run QC of initial fiber clustering using “wm_quality_control_tractography.py”
+   - Run QC of initial fiber clustering using “**_wm_quality_control_tractography.py_**”
     
      This script is used here to do a visualization of each individual cluster obtained above. From your terminal, type the following command:
       
@@ -99,13 +99,13 @@ This step performs fiber clustering of the registered tractography data, resulti
      wm_quality_control_tractography.py ./FiberClustering/InitialClusters/example-UKF-data_reg/ ./QC-FiberCluster-Initial
      ```
       
-      - A new folder “_QC-FiberCluster-Initial_” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all fiber clusters (as displayed below). These images show that the initial fiber clustering has been performed successfully.
+      - A new folder “_QC-FiberCluster-Initial_” is generated. Clicking on one of the HTML files, e.g. “_view_left.html_”, will open your browser to show all fiber clusters (as displayed below). These images show that the initial fiber clustering has been performed successfully.
       
-        > **_Note_**: Clicking on one of the displayed cluster images, e.g., cluster_00004, will open another webpage to show this cluster from 6 different views (as displayed below). From the inferior view, we can see there are some outlier fibers that are improbable to other fibers in the cluster. These outlier fibers will be removed in the next step.
+        > **_Note_**: Clicking on one of the displayed cluster images, e.g., _cluster_00004_, will open another webpage to show this cluster from 6 different views (as displayed below). From the inferior view, we can see there are some outlier fibers that are improbable to other fibers in the cluster. These outlier fibers will be removed in the next step.
       
          ![test image](../wma_small.jpg)
 
-   - Run outlier fiber removal using “wm_cluster_remove_outliers.py”
+   - Run outlier fiber removal using “**_wm_cluster_remove_outliers.py_**”
     
      This script identifies and removes outlier fiber of each cluster according to the corresponding atlas fiber cluster [ref]. From your terminal, type the following command:
        
@@ -115,7 +115,7 @@ This step performs fiber clustering of the registered tractography data, resulti
          
       - A new folder “_FiberClustering/OutlierRemovedClusters/example-UKF-data_reg_outlier_removed_” is generated. Inside this folder, there are 800 vtp files, where outlier fibers were removed for each cluster.    
      
-   - Run QC of outlier fiber removal using “wm_quality_control_tractography.py”
+   - Run QC of outlier fiber removal using “**_wm_quality_control_tractography.py_**”
     
      This script is used here to do a visualization of each individual cluster obtained above. From your terminal, type the following command:
        
@@ -123,26 +123,26 @@ This step performs fiber clustering of the registered tractography data, resulti
      wm_quality_control_tractography.py ./FiberClustering/OutlierRemovedClusters/example-UKF-data_reg_outlier_removed/ ./QC-FiberCluster-Outlier-Removed
      ```
           
-      - A new folder “QC-FiberCluster-Outlier-Removed” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all fiber clusters (as displayed below). Then, clicking on one of the displayed cluster images, e.g., cluster_00004, will open another webpage to show this cluster from 6 different views (as displayed below). Comparing the initial fiber clustering results (shown in 5.3) of cluster_0004, outlier fibers have been removed.
+      - A new folder “_QC-FiberCluster-Outlier-Removed_” is generated. Clicking on one of the HTML files, e.g. “_view_left.html_”, will open your browser to show all fiber clusters (as displayed below). Then, clicking on one of the displayed cluster images, e.g., _cluster_00004_, will open another webpage to show this cluster from 6 different views (as displayed below). Comparing the initial fiber clustering results (shown in 5.3) of cluster_0004, outlier fibers have been removed.
         
           ![test image](../wma_small.jpg)
 
-   - Fiber hemisphere location assessment using “wm_assess_cluster_location_by_hemisphere.py”
+## 5. Transform fiber clusters and separate into left/right/commissural
+
+This step 1) assesses the fiber hemispheric location (left, right or commissural) of each fiber cluster in the ORG atlas space, 2) transforms the fiber clusters back to the input tractography space, and 3) separates the transformed clusters into left, right and commissural tracts.
+
+   - Fiber hemisphere location assessment using “**_wm_assess_cluster_location_by_hemisphere.py_**”
        
-     This script assess the hemispheric location (left, right or commissural) of each fiber in each fiber cluster. Each cluster (the vtp file) is updated by adding additional information about hemisphere location, which will be used to separate the clusters after transforming them back to the input tractography space (step 6). From your terminal, type the following command:
+     This script assess the hemispheric location (left, right or commissural) of each fiber in each fiber cluster. Each cluster (the vtp file) is updated by adding additional information about hemisphere location, which will be used to separate the clusters after transforming them back to the input tractography space. From your terminal, type the following command:
 
      ```
      wm_assess_cluster_location_by_hemisphere.py ./FiberClustering/OutlierRemovedClusters/example-UKF-data_reg_outlier_removed/ -clusterLocationFile ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/cluster_hemisphere_location.txt
      ```
-     > **_Note_**: ```-clusterLocationFile``` is used to specify a file that defines the cluster hemisphere location in the ORG atlas. Each atlas cluster is assigned either hemispheric or commissural. This file guides the assessment of hemisphere location of each fiber in the computed fiber clusters.
+        > **_Note_**: ```-clusterLocationFile``` is used to specify a file that defines the cluster hemisphere location in the ORG atlas. Each atlas cluster is assigned either hemispheric or commissural. This file guides the assessment of hemisphere location of each fiber in the computed fiber clusters.
           
-      - A log file “_OutlierRemovedClusters/sample_UKF_HCP_reg_outlier_removed/cluster_location_by_hemisphere.log_” is generated. Opening this log file using a text editor will show a message “<wm_assess_cluster_location_by_hemisphere.py> Done!!!”.
-
-## 5. Transform fiber clusters and separate into left/right/commissural
-
-This step transforms the obtained fiber clusters (in the ORG atlas space) back to the input tractography space, and it separates the transformed clusters into left, right and commissural tracts.
-
-   - Run cluster transform using “wm_harden_transform.py”
+      - A log file “_OutlierRemovedClusters/sample_UKF_HCP_reg_outlier_removed/cluster_location_by_hemisphere.log_” is generated. Opening this log file using a text editor will show a message “**<wm_assess_cluster_location_by_hemisphere.py> Done!!!**”.
+      
+   - Run cluster transform using “**_wm_harden_transform.py_**”
     
      This script applies the inverse transformation matrix (a .tfm file) computed in tractography registration (step 4) to the fiber cluster files. 3D Slicer is needed to do the transform. From your terminal, type the following command:
        
@@ -151,21 +151,21 @@ This step transforms the obtained fiber clusters (in the ORG atlas space) back t
      ```
         > **_Note_**: In this example, we give the path to 3D Slicer under MacOS, which needs to be changed according to your computer.
          
-      - A new folder “FiberClustering/TransformedClusters/example-UKF-data/” is generated. Inside the folder, there are 800 vtp files, which have been transformed in the input tractography space.
+      - A new folder “_FiberClustering/TransformedClusters/example-UKF-data_” is generated. Inside the folder, there are 800 vtp files, which have been transformed in the input tractography space.
        
-        > **_Note_**: If a two-step tractography registration of 'affine+nonrigid' is used (Step 4.1), a two-step transformation is needed, including a first inverse-nonrigid (using the tmf file in the nonrigid registration result folder) and then an inverse-affine (using the tmf file in the affine registration result folder) with the inverse-nonrigid output as input.
+        > **_Note_**: If a two-step tractography registration of ```-mode affine+nonrigid``` is used (Step 4.1), a two-step transformation is needed, including a first inverse-nonrigid (using the tmf file in the nonrigid registration result folder) and then an inverse-affine (using the tmf file in the affine registration result folder) with the inverse-nonrigid output as input.
          
-   - Run hemisphere-based cluster separation using “wm_separate_clusters_by_hemisphere.py”
+   - Run hemisphere-based cluster separation using “**_wm_separate_clusters_by_hemisphere.py_**”
     
-     This script separates the fiber clusters based on the hemisphere location computed in Step 6.v. The output is three directories of fiber bundles according to left hemisphere, right hemisphere, and commissural tracts. From your terminal, type the following command:
+     This script separates the fiber clusters based on the hemisphere location assessment result. The output is three directories of fiber bundles according to left hemisphere, right hemisphere, and commissural tracts. From your terminal, type the following command:
        
      ```bash
      wm_separate_clusters_by_hemisphere.py ./FiberClustering/TransformedClusters/example-UKF-data/ ./FiberClustering/SeparatedClusters/
      ```
          
-      - A new folder “FiberClustering/SeparatedClusters” is generated. Inside the folder, three are sub-folders “tracts_commissural”, “tracts_left_hemisphere”, and “tracts_right_hemisphere” (as displayed below).
+      - A new folder “_FiberClustering/SeparatedClusters_” is generated. Inside the folder, three are sub-folders “_tracts_commissural_”, “_tracts_left_hemisphere_”, and “_tracts_right_hemisphere_” (as displayed below).
        
-        > **_Note_**: For each of these sub-folders, there are 800 fiber clusters. If a cluster is a hemispheric tract as given in ```-clusterLocationFile``` (Step 6.v), there will be no fibers in the vtk file in the “tracts_commissural” folder; otherwise, if a cluster is a commissural tract, there will be no fibers in vtk files in the “tracts_left_hemisphere” and  “tracts_right_hemisphere” folders.
+        > **_Note_**: For each of these sub-folders, there are 800 fiber clusters. If a cluster is a hemispheric tract as given in ```-clusterLocationFile```, there will be no fibers in the vtk file in the “_tracts_commissural_” folder; otherwise, if a cluster is a commissural tract, there will be no fibers in vtk files in the “_tracts_left_hemisphere_” and  “_tracts_right_hemisphere_” folders.
        
          ![test image](../wma_small.jpg)
          
@@ -173,7 +173,7 @@ This step transforms the obtained fiber clusters (in the ORG atlas space) back t
 
 This step computes anatomical fiber tracts based on the obtained fiber clusters and their anatomical definitions (to which anatomical structures they belong). In the atlas, we provide anatomical tract definitions of 58 deep white matter tracts  plus 198 superficial fiber clusters. These are organized in a 3D Slicer scene file (in medical reality modeling language (MRML), an XML format).
     
-   - Run appending clusters using “wm_append_clusters_to_anatomical_tracts.py”
+   - Run appending clusters using “**_wm_append_clusters_to_anatomical_tracts.py_**”
     
      This script finds the clusters defined in a tract MRML file and appends the clusters into one tract. From your terminal, type the following command:
        
@@ -185,7 +185,7 @@ This step computes anatomical fiber tracts based on the obtained fiber clusters 
        
         > **_Note_**: These tracts contains 58 deep white matter tracts including major long range association and projection tracts, commissural tracts, and tracts related to the brainstem and cerebellar connections, plus 198 short and medium range superficial fiber clusters organized into 16 categories according to the brain lobes they connect.
          
-   - Run QC using “wm_quality_control_tractography.py”
+   - Run QC of anatomical tracts using “wm_quality_control_tractography.py”
        
      From your terminal, type the following command:
         
@@ -193,15 +193,15 @@ This step computes anatomical fiber tracts based on the obtained fiber clusters 
      wm_quality_control_tractography.py ./AnatomicalTracts/ ./QC-AnatomicalTracts
      ```
           
-      - A new folder “QC-AnatomicalTracts” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all anatomical tracts (as displayed below). 
+      - A new folder “_QC-AnatomicalTracts_” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all anatomical tracts (as displayed below). 
         
           ![test image](../wma_small.jpg)
         
 ## 6. Fiber tract diffusion measurements
 
-This step computes diffusion measurements of the obtained fiber clusters and anatomical tracts and exports the measurements in CSV files.
+This step computes diffusion measurements of the fiber clusters and the anatomical tracts and exports the measurements in CSV files.
     
-   - Run fiber cluster measurements using “wm_diffusion_measurements.py”
+   - Run fiber cluster diffusion measurements using “**_wm_diffusion_measurements.py_**”
     
      This scripts reads vtk/vtp files in a folder and outputs multiple statistics of the diffusion data fields stored along the tracts. The FiberTractMeasurements module in 3D Slicer is needed to do the transformation. From your terminal, type the following commands (for left, right and commissural clusters separately):
        
@@ -215,13 +215,13 @@ This step computes diffusion measurements of the obtained fiber clusters and ana
        
         > **_Note_**: Here, we give the path to the FiberTractMeasufrements module under MacOS, which needs to be changed based on the operating system you are using.
          
-      - Three new CSV files are generated. Open one of them using Excel to see the diffusion measurements statistics (as displayed below). 
+      - 3 new CSV files are generated. Open one of them using Excel to see the diffusion measurements statistics (as displayed below). 
         
         > **_Note_**: For the empty vtp file (e.g. cluster_00001 is a hemispheric cluster, and it does have fibers in the commissual category), “NAN” will be assigned.
           
           ![test image](../wma_small.jpg)
           
-   - Run anatomical tract diffusion measurements using “wm_diffusion_measurements.py”
+   - Run anatomical tract diffusion measurements using “**_wm_diffusion_measurements.py_**”
     
      This runs this same script as above. But, the input folder is changed to be the anatomical tracts. From your terminal, type the following command:
        
