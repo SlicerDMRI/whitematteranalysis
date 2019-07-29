@@ -138,98 +138,97 @@ This step performs fiber clustering of the registered tractography data, resulti
           
       - A log file “_OutlierRemovedClusters/sample_UKF_HCP_reg_outlier_removed/cluster_location_by_hemisphere.log_” is generated. Opening this log file using a text editor will show a message “<wm_assess_cluster_location_by_hemisphere.py> Done!!!”.
 
-1. Transform fiber clusters and separate into left/right/commissural
+## 5. Transform fiber clusters and separate into left/right/commissural
 
-    This step transforms the obtained fiber clusters (in the ORG atlas space) back to the input tractography space, and it separates the transformed clusters into left, right and commissural tracts.
+This step transforms the obtained fiber clusters (in the ORG atlas space) back to the input tractography space, and it separates the transformed clusters into left, right and commissural tracts.
 
-    1. Run cluster transform using “wm_harden_transform.py”
+   - Run cluster transform using “wm_harden_transform.py”
     
-       - This script applies the inverse transformation matrix (a .tfm file) computed in tractography registration (step 4) to the fiber cluster files. 3D Slicer is needed to do the transform. From your terminal, type the following command:
+     This script applies the inverse transformation matrix (a .tfm file) computed in tractography registration (step 4) to the fiber cluster files. 3D Slicer is needed to do the transform. From your terminal, type the following command:
        
-         ```
-         wm_harden_transform.py -i -t ./TractRegistration/example-UKF-data/output_tractography/itk_txform_example-UKF-data.tfm ./FiberClustering/OutlierRemovedClusters/example-UKF-data_reg_outlier_removed/ ./FiberClustering/TransformedClusters/example-UKF-data /Applications/Slicer.app/Contents/MacOS/Slicer
-         ```
+     ```
+     wm_harden_transform.py -i -t ./TractRegistration/example-UKF-data/output_tractography/itk_txform_example-UKF-data.tfm ./FiberClustering/OutlierRemovedClusters/example-UKF-data_reg_outlier_removed/ ./FiberClustering/TransformedClusters/example-UKF-data /Applications/Slicer.app/Contents/MacOS/Slicer
+     ```
+        > **_Note_**: In this example, we give the path to 3D Slicer under MacOS, which needs to be changed according to your computer.
          
-         > **_Note_**: In this example, we give the path to 3D Slicer under MacOS, which needs to be changed according to your computer.
-         
-       - A new folder “FiberClustering/TransformedClusters/example-UKF-data/” is generated. Inside the folder, there are 800 vtp files, which have been transformed in the input tractography space.
+      - A new folder “FiberClustering/TransformedClusters/example-UKF-data/” is generated. Inside the folder, there are 800 vtp files, which have been transformed in the input tractography space.
        
-         > **_Note_**: If a two-step tractography registration of 'affine+nonrigid' is used (Step 4.1), a two-step transformation is needed, including a first inverse-nonrigid (using the tmf file in the nonrigid registration result folder) and then an inverse-affine (using the tmf file in the affine registration result folder) with the inverse-nonrigid output as input.
+        > **_Note_**: If a two-step tractography registration of 'affine+nonrigid' is used (Step 4.1), a two-step transformation is needed, including a first inverse-nonrigid (using the tmf file in the nonrigid registration result folder) and then an inverse-affine (using the tmf file in the affine registration result folder) with the inverse-nonrigid output as input.
          
-    1. Run hemisphere-based cluster separation using “wm_separate_clusters_by_hemisphere.py”
+   - Run hemisphere-based cluster separation using “wm_separate_clusters_by_hemisphere.py”
     
-       - This script separates the fiber clusters based on the hemisphere location computed in Step 6.v. The output is three directories of fiber bundles according to left hemisphere, right hemisphere, and commissural tracts. From your terminal, type the following command:
+     This script separates the fiber clusters based on the hemisphere location computed in Step 6.v. The output is three directories of fiber bundles according to left hemisphere, right hemisphere, and commissural tracts. From your terminal, type the following command:
        
-         ```bash
-         wm_separate_clusters_by_hemisphere.py ./FiberClustering/TransformedClusters/example-UKF-data/ ./FiberClustering/SeparatedClusters/
-         ```
+     ```bash
+     wm_separate_clusters_by_hemisphere.py ./FiberClustering/TransformedClusters/example-UKF-data/ ./FiberClustering/SeparatedClusters/
+     ```
          
-       - A new folder “FiberClustering/SeparatedClusters” is generated. Inside the folder, three are sub-folders “tracts_commissural”, “tracts_left_hemisphere”, and “tracts_right_hemisphere” (as displayed below).
+      - A new folder “FiberClustering/SeparatedClusters” is generated. Inside the folder, three are sub-folders “tracts_commissural”, “tracts_left_hemisphere”, and “tracts_right_hemisphere” (as displayed below).
        
-         > **_Note_**: For each of these sub-folders, there are 800 fiber clusters. If a cluster is a hemispheric tract as given in ```-clusterLocationFile``` (Step 6.v), there will be no fibers in the vtk file in the “tracts_commissural” folder; otherwise, if a cluster is a commissural tract, there will be no fibers in vtk files in the “tracts_left_hemisphere” and  “tracts_right_hemisphere” folders.
+        > **_Note_**: For each of these sub-folders, there are 800 fiber clusters. If a cluster is a hemispheric tract as given in ```-clusterLocationFile``` (Step 6.v), there will be no fibers in the vtk file in the “tracts_commissural” folder; otherwise, if a cluster is a commissural tract, there will be no fibers in vtk files in the “tracts_left_hemisphere” and  “tracts_right_hemisphere” folders.
        
          ![test image](../wma_small.jpg)
          
-1. Identification of anatomical tracts
+## 5. Identification of anatomical tracts
 
-    This step computes anatomical fiber tracts based on the obtained fiber clusters and their anatomical definitions (to which anatomical structures they belong). In the atlas, we provide anatomical tract definitions of 58 deep white matter tracts  plus 198 superficial fiber clusters. These are organized in a 3D Slicer scene file (in medical reality modeling language (MRML), an XML format).
+This step computes anatomical fiber tracts based on the obtained fiber clusters and their anatomical definitions (to which anatomical structures they belong). In the atlas, we provide anatomical tract definitions of 58 deep white matter tracts  plus 198 superficial fiber clusters. These are organized in a 3D Slicer scene file (in medical reality modeling language (MRML), an XML format).
     
-    1. Run appending clusters using “wm_append_clusters_to_anatomical_tracts.py”
+   - Run appending clusters using “wm_append_clusters_to_anatomical_tracts.py”
     
-       - This script finds the clusters defined in a tract MRML file and appends the clusters into one tract. From your terminal, type the following command:
+     This script finds the clusters defined in a tract MRML file and appends the clusters into one tract. From your terminal, type the following command:
        
-         ```bash
-         wm_append_clusters_to_anatomical_tracts.py ./FiberClustering/SeparatedClusters/ ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/ ./AnatomicalTracts
-         ```
+     ```bash
+     wm_append_clusters_to_anatomical_tracts.py ./FiberClustering/SeparatedClusters/ ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/ ./AnatomicalTracts
+     ```
          
-       - A new folder “AnatomicalTracts” is generated. Inside the folder, there are 74 vtp files, corresponding to the 74 anatomical tracts defined in the ORG atlas.
+      - A new folder “AnatomicalTracts” is generated. Inside the folder, there are 74 vtp files, corresponding to the 74 anatomical tracts defined in the ORG atlas.
        
-         > **_Note_**: These tracts contains 58 deep white matter tracts including major long range association and projection tracts, commissural tracts, and tracts related to the brainstem and cerebellar connections, plus 198 short and medium range superficial fiber clusters organized into 16 categories according to the brain lobes they connect.
+        > **_Note_**: These tracts contains 58 deep white matter tracts including major long range association and projection tracts, commissural tracts, and tracts related to the brainstem and cerebellar connections, plus 198 short and medium range superficial fiber clusters organized into 16 categories according to the brain lobes they connect.
          
-     1. Run QC using “wm_quality_control_tractography.py”
+   - Run QC using “wm_quality_control_tractography.py”
        
-        - From your terminal, type the following command:
+     From your terminal, type the following command:
         
-          ```
-          wm_quality_control_tractography.py ./AnatomicalTracts/ ./QC-AnatomicalTracts
-          ```
+     ```
+     wm_quality_control_tractography.py ./AnatomicalTracts/ ./QC-AnatomicalTracts
+     ```
           
-        - A new folder “QC-AnatomicalTracts” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all anatomical tracts (as displayed below). 
+      - A new folder “QC-AnatomicalTracts” is generated. Clicking on one of the HTML files, e.g. “view_left.html”, will open your browser to show all anatomical tracts (as displayed below). 
         
           ![test image](../wma_small.jpg)
         
-1. Fiber tract diffusion measurements
+## 6. Fiber tract diffusion measurements
 
-    This step computes diffusion measurements of the obtained fiber clusters and anatomical tracts and exports the measurements in CSV files.
+This step computes diffusion measurements of the obtained fiber clusters and anatomical tracts and exports the measurements in CSV files.
     
-    1. Run fiber cluster measurements using “wm_diffusion_measurements.py”
+   - Run fiber cluster measurements using “wm_diffusion_measurements.py”
     
-       - This scripts reads vtk/vtp files in a folder and outputs multiple statistics of the diffusion data fields stored along the tracts. The FiberTractMeasurements module in 3D Slicer is needed to do the transformation. From your terminal, type the following commands (for left, right and commissural clusters separately):
+     This scripts reads vtk/vtp files in a folder and outputs multiple statistics of the diffusion data fields stored along the tracts. The FiberTractMeasurements module in 3D Slicer is needed to do the transformation. From your terminal, type the following commands (for left, right and commissural clusters separately):
        
-         ```bash
-         wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_left_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_left_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+     ```bash
+     wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_left_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_left_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
        
-         wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_right_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_right_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+     wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_right_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_right_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
        
-         wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_right_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_right_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
-         ```
+     wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_right_hemisphere/ ./FiberClustering/SeparatedClusters/diffusion_measurements_right_hemisphere.csv /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+     ```
        
-         > **_Note_**: Here, we give the path to the FiberTractMeasufrements module under MacOS, which needs to be changed based on the operating system you are using.
+        > **_Note_**: Here, we give the path to the FiberTractMeasufrements module under MacOS, which needs to be changed based on the operating system you are using.
          
-        - Three new CSV files are generated. Open one of them using Excel to see the diffusion measurements statistics (as displayed below). 
+      - Three new CSV files are generated. Open one of them using Excel to see the diffusion measurements statistics (as displayed below). 
         
-          > **_Note_**: For the empty vtp file (e.g. cluster_00001 is a hemispheric cluster, and it does have fibers in the commissual category), “NAN” will be assigned.
+        > **_Note_**: For the empty vtp file (e.g. cluster_00001 is a hemispheric cluster, and it does have fibers in the commissual category), “NAN” will be assigned.
           
           ![test image](../wma_small.jpg)
           
-    1. Run anatomical tract diffusion measurements using “wm_diffusion_measurements.py”
+   - Run anatomical tract diffusion measurements using “wm_diffusion_measurements.py”
     
-       - This runs this same script as above. But, the input folder is changed to be the anatomical tracts. From your terminal, type the following command:
+     This runs this same script as above. But, the input folder is changed to be the anatomical tracts. From your terminal, type the following command:
        
-         ```bash
-         wm_diffusion_measurements.py ./AnatomicalTracts/ ./AnatomicalTracts/diffusion_measurements_anatomical_tracts.csv  /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
-         ```
+     ```bash
+     wm_diffusion_measurements.py ./AnatomicalTracts/ ./AnatomicalTracts/diffusion_measurements_anatomical_tracts.csv  /Applications/Slicer.app/Contents/Extensions-28266/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
+     ```
          
-       - A new csv file “diffusion_measurements_anatomical_tracts.csv” is generated. Open this file using Excel to see the diffusion measurements statistics (as displayed below).
+      - A new csv file “diffusion_measurements_anatomical_tracts.csv” is generated. Open this file using Excel to see the diffusion measurements statistics (as displayed below).
        
           ![test image](../wma_small.jpg)
