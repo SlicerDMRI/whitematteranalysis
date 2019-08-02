@@ -73,10 +73,12 @@ This step performance QC of the input tractography data to: 1) verify correct ap
        
         ![test image](../wma_small.jpg)
         
-## 5. Tractograpy fiber clustering and outlier fiber removal
+## 5. Tractography registration
+
+## 6. Tractograpy fiber clustering
     
-This step performs fiber clustering of the registered tractography data, resulting in an 800-cluster white matter parcellation according to the ORG atlas. This includes two sub-steps: 1) initial fiber clustering of the registered tractography, and 2) outlier removal to filter false positive fibers.
-    
+This step performs fiber clustering of the registered tractography data, resulting in an 800-cluster white matter parcellation according to the ORG atlas. This includes the following sub-steps: 1) initial fiber clustering of the registered tractography, and 2) outlier removal to filter false positive fiber, 3) assessesment of the hemispheric location (left, right or commissural) of each fiber cluster in the ORG atlas space, 4) transforms the fiber clusters back to the input tractography space, and 5) separates the transformed clusters into left, right and commissural tracts.
+
    - Run initial fiber clustering using “**_wm_cluster_from_atlas.py**_” 
     
      This script runs fiber clustering to parcellate the registered tractography into 800 fiber clusters according to the ORG atlas. From your terminal, type the following command:
@@ -126,10 +128,6 @@ This step performs fiber clustering of the registered tractography data, resulti
       - A new folder “_QC-FiberCluster-Outlier-Removed_” is generated. Clicking on one of the HTML files, e.g. “_view_left.html_”, will open your browser to show all fiber clusters (as displayed below). Then, clicking on one of the displayed cluster images, e.g., _cluster_00004_, will open another webpage to show this cluster from 6 different views (as displayed below). Comparing the initial fiber clustering results (shown in 5.3) of cluster_0004, outlier fibers have been removed.
         
           ![test image](../wma_small.jpg)
-
-## 5. Transform fiber clusters and separate into left/right/commissural
-
-This step 1) assesses the fiber hemispheric location (left, right or commissural) of each fiber cluster in the ORG atlas space, 2) transforms the fiber clusters back to the input tractography space, and 3) separates the transformed clusters into left, right and commissural tracts.
 
    - Fiber hemisphere location assessment using “**_wm_assess_cluster_location_by_hemisphere.py_**”
        
