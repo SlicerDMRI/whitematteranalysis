@@ -167,7 +167,7 @@ This step performs fiber clustering of the registered tractography data, resulti
        
          ![test image](../wma_small.jpg)
          
-## 5. Identification of anatomical tracts
+## 7. Identification of anatomical tracts
 
 This step computes anatomical fiber tracts based on the obtained fiber clusters and their anatomical definitions (to which anatomical structures they belong). In the atlas, we provide anatomical tract definitions of 58 deep white matter tracts  plus 198 superficial fiber clusters. These are organized in a 3D Slicer scene file (in medical reality modeling language (MRML), an XML format).
     
@@ -195,7 +195,7 @@ This step computes anatomical fiber tracts based on the obtained fiber clusters 
         
           ![test image](../wma_small.jpg)
         
-## 6. Fiber tract diffusion measurements
+## 8. Fiber tract diffusion measurements
 
 This step computes diffusion measurements of the fiber clusters and the anatomical tracts and exports the measurements in CSV files.
     
