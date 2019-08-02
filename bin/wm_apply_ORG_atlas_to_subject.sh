@@ -378,9 +378,9 @@ echo ""
 
 numfiles=($AnatomicalTractsFolder/*vtp)
 numfiles=${#numfiles[@]}
-if [ $numfiles -lt 74 ]; then
+if [ $numfiles -lt 73 ]; then
 	echo ""
-	echo "ERROR: Appending clusters into anatomical tracts failed. There should be 74 resulting fiber clusters, but only $numfiles generated."
+	echo "ERROR: Appending clusters into anatomical tracts failed. There should be 73 resulting fiber clusters, but only $numfiles generated."
 	echo ""
 	exit
 fi
