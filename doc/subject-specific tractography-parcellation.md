@@ -75,11 +75,40 @@ This step performance QC of the input tractography data to: 1) verify correct ap
         
 ## 5. Tractography registration
 
+This steps registers the input tractography data to the ORG atlas tractography data.
+
+   - Run tractography registration using “**_wm_register_to_atlas_new.py_**”
+     
+     This script performs a tractography-based registration to align the input example tractography data to the ORG atlas space. From your terminal, type the following command:
+     
+     ```bash
+     wm_register_to_atlas_new.py -mode rigid_affine_fast ./example-UKF-data.vtk ./ORG-Atlases-1.1.1/ORG-RegAtlas-100HCP/registration_atlas.vtk ./TractRegistration
+     ```
+        > **_Note_**: This script performs an entropy-based tractography registration based on the pairwise fiber trajectory distances between the input tractography and the atlas tractography ([ref]). The registration relies on only tractography data, without requiring any voxel-based images (such as b0 and FA images).
+        
+        > **_Note_**: In this tutorial, we give an example of rigid registration (```-mode rigid_affine_fast```), which in general applicable to tractography data generated from different dMRI acquisitions and different populations (such as a brain tumor patient and a very young child). In addition to this mode, the script also enables a two-step registration of “affine + nonrigid”. This is recommended when the input tractography data that has relatively similar shape to the atlas, e.g., two-tensor UKF tractography computed from a healthy adult dataset. To do so, first run ```-mode affine``` then run ```-mode nonrigid``` afterwards with the affine output as input.
+
+      - A new folder “_TractRegistration_” is generated. Inside this folder, you can find the registered tractography data: “example-UKF-data/output_tractography/example-UKF-data_reg.vtk” and the transform matrix: “example-UKF-data/output_tractography/itk_txform_example-UKF-data.tfm” (as displayed below).
+      
+         ![test image](../wma_small.jpg)
+
+   - Run QC using “**_wm_quality_control_tract_overlap.py_**”
+
+     This step is to check the registration result by visualizing tract overlap of the registered tractography and the atlas tractography. From your terminal, type the following command:
+     
+     ```bash
+     wm_quality_control_tract_overlap.py ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/atlas.vtp ./TractRegistration/example-UKF-data/output_tractography/example-UKF-data_reg.vtk ./QC/RegTractOverlap/
+     ```
+   
+      - A new folder “QC-TractOverlap-After-Registration” is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “view_left_tract_overlap.jpg”, where the different colors represent the different tractography data (as displayed below). This image shows the input tractography data is now registered in the atlas space (overlapping well with the atlas tractography data; see 3.2 of the tract overlap before registration).
+
+         ![test image](../wma_small.jpg)
+
 ## 6. Tractograpy fiber clustering
     
 This step performs fiber clustering of the registered tractography data, resulting in an 800-cluster white matter parcellation according to the ORG atlas. This includes the following sub-steps: 1) initial fiber clustering of the registered tractography, and 2) outlier removal to filter false positive fiber, 3) assessesment of the hemispheric location (left, right or commissural) of each fiber cluster in the ORG atlas space, 4) transforms the fiber clusters back to the input tractography space, and 5) separates the transformed clusters into left, right and commissural tracts.
 
-   - Run initial fiber clustering using “**_wm_cluster_from_atlas.py**_” 
+   - Run initial fiber clustering using “**_wm_cluster_from_atlas.py_**” 
     
      This script runs fiber clustering to parcellate the registered tractography into 800 fiber clusters according to the ORG atlas. From your terminal, type the following command:
     
