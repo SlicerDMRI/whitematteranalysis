@@ -13,7 +13,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
       > WMA is an open source software package for data-driven fiber clustering white matter parcellation.
     
 ## 2. Download tutorial data
-   - Download the tutorial data package ([WMA_tutorial_data.zip](), ~2.5GB)
+   - Download the tutorial data package ([WMA_tutorial_data.zip](https://www.dropbox.com/s/beju3c0g9jqw5uj/WMA_tutorial_data.zip?dl=0), ~2.5GB)
    - Decompress the downlaoded zip file to *Desktop* of your computer
    - Files in the decompressed data folder should be organized as below, including:
      - The O'Donnell Research Group (ORG) white matter atlas (“_ORG-Atlases-1.1.1_”)
