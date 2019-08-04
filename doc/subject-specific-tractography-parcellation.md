@@ -70,7 +70,7 @@ This step performs QC of the input tractography data (“_example-UKF-data.vtk_�
      wm_quality_control_tract_overlap.py ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/atlas.vtp ./example-UKF-data.vtk ./QC/InputTractOverlap/
      ```
         
-      - A new “_QC/InputTractOverlap_” folder is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “_view_left_tract_overlap.jpg_”, where the different colors represent the different tractography data. The red tract is from the altas, and the yellow tract shows the input tractography. This image shows that the two tractography files are in the same coordinate system, but they are not aligned together.
+      - A new “_QC/InputTractOverlap_” folder is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “_view_left_tract_overlap.jpg_”, where the different colors represent the different tractography data. The yellow tract is from the altas, and the red tract shows the input tractography. This image shows that the two tractography files are in the same coordinate system, but they are not aligned together.
        
         ![test image](tutorial-pics/fig_qc_input_overlap.jpg)
         
@@ -90,7 +90,7 @@ This steps registers the input tractography data to the ORG atlas tractography d
 
       - A new folder “_TractRegistration/example-UKF-data_” is generated. Inside this folder, you can find the registered tractography data: “output_tractography/example-UKF-data_reg.vtk” and the transform matrix: “output_tractography/itk_txform_example-UKF-data.tfm” (as displayed below).
       
-         ![test image](tutorial-pics/fig_tract_reg_folder.jpg)
+         ![test image](tutorial-pics/fig_tract_reg_folder.png)
 
    - Run QC to check tract registration using “**_wm_quality_control_tract_overlap.py_**”
 
@@ -100,7 +100,7 @@ This steps registers the input tractography data to the ORG atlas tractography d
      wm_quality_control_tract_overlap.py ./ORG-Atlases-1.1.1/ORG-800FC-100HCP/atlas.vtp ./TractRegistration/example-UKF-data/output_tractography/example-UKF-data_reg.vtk ./QC/RegTractOverlap/
      ```
    
-      - A new folder “_QC/RegTractOverlap_” is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “_view_left_tract_overlap.jpg_”, where the different colors represent the different tractography data (as displayed below). The red tract is from the altas, and the yellow tract shows the input tractography. This image shows the input tractography data has been registered into the atlas space (overlapping well with the atlas tractography data; see above for the tract overlap before registration).
+      - A new folder “_QC/RegTractOverlap_” is generated, including multiple JPG files to enable visualization of tract overlap from different views. Open one of them, e.g., “_view_left_tract_overlap.jpg_”, where the different colors represent the different tractography data (as displayed below). The yellow tract is from the altas, and the red tract shows the input tractography. This image shows the input tractography data has been registered into the atlas space (overlapping well with the atlas tractography data; see above for the tract overlap before registration).
 
          ![test image](tutorial-pics/fig_qc_reg_overlap.jpg)
 
