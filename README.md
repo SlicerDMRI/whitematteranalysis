@@ -5,12 +5,6 @@ whitematteranalysis
 
 WhiteMatterAnalysis (WMA) provides fiber clustering and tractography analysis tools.
 
-- WMA implements algorithms from publications listed here:
-http://projects.iq.harvard.edu/whitematteranalysis/publications
-
-- Instructions and tutorials can be found here:
-http://slicerdmri.github.io/whitematteranalysis/
-
 # WMA Installation
 ## 1. Install Python 2:
 
@@ -30,13 +24,12 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
 # Documentation
 
-* Please see the wiki for usage instructions of whitematteranalysis.
-
-    https://github.com/SlicerDMRI/whitematteranalysis/wiki
-
 * Please see the following page for instructions of applying a pre-provided anatomically curated white matter atlas, along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation.
 
-    https://dmri.slicer.org/atlases
+    https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md
+
+* WMA implements algorithms from publications listed here:
+http://projects.iq.harvard.edu/whitematteranalysis/publications
 
 # References
 
