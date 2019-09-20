@@ -2,7 +2,7 @@
 
 This tutorial explains how to perform whole-brain tractography parcellation using the [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis) software and the anatomically curated [O'Donnell Research Group (ORG)](http://dmri.slicer.org/atlases/) white matter atlas.
 
-On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**. Please see another [tutorial]() for batch processing of tractography data from **_multiple subjects_**.
+On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**. <!-- Please see another [tutorial]() for batch processing of tractography data from **_multiple subjects_**. -->
 
 ## 1. Software prerequisites
    - Install [3D Slicer](https://download.slicer.org/)
@@ -28,7 +28,7 @@ On this page, we provide step-by-step instructions to guide a user to run the en
    - Open terminal from the operating system that you are using
       - MacOS: Open */Applications/Utilities/Terminal.app*
       - Linux (e.g. Red Hat): Open */Applications/System Tools/Terminal*
-      - Windows (e.g. Windows 10): Open *XX*
+      - Windows (e.g. Windows 10): TBD
     
         > **_Note_**: This tutorial is based on MacOS. All commands listed can be directly used on Linux. For Windows, users need to change the commands by using Windows system separator “\”.
 
