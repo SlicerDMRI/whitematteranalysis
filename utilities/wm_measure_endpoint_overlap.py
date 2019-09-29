@@ -7,7 +7,7 @@ from joblib import Parallel, delayed
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_measure_endpoint_overlap> Error importing white matter analysis package\n"
+    print("<wm_measure_endpoint_overlap> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -40,15 +40,15 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputTractDirectory):
-    print "Error: Input directory", args.inputTractDirectory, "does not exist."
+    print(("Error: Input directory", args.inputTractDirectory, "does not exist."))
     exit()
 
 if not os.path.isdir(args.inputLabelMapDirectory):
-    print "Error: Input label map directory", args.inputLabelMapDirectory, "does not exist."
+    print(("Error: Input label map directory", args.inputLabelMapDirectory, "does not exist."))
     exit()
 
 if not os.path.exists(args.modulePath):
-    print "Error: FiberEndPointFromLabelMap", args.modulePath, "does not exist."
+    print(("Error: FiberEndPointFromLabelMap", args.modulePath, "does not exist."))
     exit()
 
 if args.numberOfJobs is not None:
@@ -57,21 +57,21 @@ else:
     number_of_jobs = 1
 
 if not os.path.exists(args.outputDirectory):
-    print "Output directory", args.outputDirectory, "does not exist, creating it."
+    print(("Output directory", args.outputDirectory, "does not exist, creating it."))
     os.makedirs(args.outputDirectory)
 
-print "<wm_endpoint_analysis>. Starting processing."
-print ""
-print "=====input fiber cluster directory======\n", args.inputTractDirectory
-print "=====input label map directory======\n", args.inputLabelMapDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=====module path====\n", args.modulePath
-print '=====using N jobs:', number_of_jobs, "====\n"
+print("<wm_endpoint_analysis>. Starting processing.")
+print("")
+print(("=====input fiber cluster directory======\n", args.inputTractDirectory))
+print(("=====input label map directory======\n", args.inputLabelMapDirectory))
+print(("=====output directory=====\n", args.outputDirectory))
+print(("=====module path====\n", args.modulePath))
+print(('=====using N jobs:', number_of_jobs, "====\n"))
 
 tract_dir_list = os.listdir(args.inputTractDirectory)
 tract_dir_list = sorted(tract_dir_list)
 
-print "<wm_endpoint_analysis> found", len(tract_dir_list), "subjects."
+print(("<wm_endpoint_analysis> found", len(tract_dir_list), "subjects."))
 
 def list_label_map_files(input_dir):
     # Find input files
@@ -83,18 +83,18 @@ def list_label_map_files(input_dir):
 
 label_map_file_list = list_label_map_files(args.inputLabelMapDirectory)
 
-print "<wm_endpoint_analysis> found", len(label_map_file_list), "label maps. \n"
+print(("<wm_endpoint_analysis> found", len(label_map_file_list), "label maps. \n"))
 
 if len(tract_dir_list) != len(label_map_file_list):
-    print "Error: The number of subjects", len(tract_dir_list), "should be equal to the number of label maps", len(label_map_file_list)
+    print(("Error: The number of subjects", len(tract_dir_list), "should be equal to the number of label maps", len(label_map_file_list)))
     exit()
 
 def extract_endpoint(tract_dir, lalel_map_file, args):
 
     pds = wma.io.list_vtk_files(os.path.join(args.inputTractDirectory, tract_dir))
-    print "<wm_endpoint_analysis> Computing:", os.path.join(args.inputTractDirectory, tract_dir)
-    print "                            using", lalel_map_file
-    print "                            with:", len(pds), "vtk/vtp files."
+    print(("<wm_endpoint_analysis> Computing:", os.path.join(args.inputTractDirectory, tract_dir)))
+    print(("                            using", lalel_map_file))
+    print(("                            with:", len(pds), "vtk/vtp files."))
 
     sub_name = os.path.split(tract_dir)[1]
     os.system(args.modulePath + ' ' +  lalel_map_file + ' ' + os.path.join(args.inputTractDirectory, tract_dir) + ' ' + \
@@ -114,9 +114,9 @@ def list_txt_files(input_dir):
     return input_fnames
 
 endpoint_txt_list = list_txt_files(args.outputDirectory)
-print "<wm_endpoint_analysis> Endpoint analysis were measured for", len(endpoint_txt_list), "subjects."
+print(("<wm_endpoint_analysis> Endpoint analysis were measured for", len(endpoint_txt_list), "subjects."))
 
 if len(tract_dir_list) != len(endpoint_txt_list):
-    print "Error: The numbers of inputs and outputs are different. Check the log file of each subeject."
+    print("Error: The numbers of inputs and outputs are different. Check the log file of each subeject.")
 else:
     os.system("rm -rf "+os.path.join(args.outputDirectory, 'log*'))

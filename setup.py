@@ -77,6 +77,7 @@ class LazyCommandClass(dict):
 ########################################################################
 
 
+setup_requires = ['cython>=0.22', 'numpy']
 setup(
     name='WhiteMatterAnalysis',
     version='0.3.0',
@@ -87,8 +88,8 @@ setup(
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
 
-    setup_requires = ['cython>=0.22', 'numpy==1.16.2'],
-    install_requires = ['setuptools>=18.0', 'scipy', 'vtk',
+    setup_requires = setup_requires,
+    install_requires = setup_requires + ['setuptools>=18.0', 'scipy', 'vtk',
                         'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib<3.0', 'nibabel'],
     
     ext_modules = [
@@ -122,6 +123,7 @@ setup(
         'bin/wm_remove_data_along_tracts.py',
         'bin/wm_separate_clusters_by_hemisphere.py',
         'bin/wm_tract_to_volume.py',
-        'bin/wm_vtp2vtk.py'
+        'bin/wm_vtp2vtk.py',
+        'testing/test_run.py'
     ]
 )

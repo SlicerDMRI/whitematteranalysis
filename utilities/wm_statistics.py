@@ -45,16 +45,16 @@ parser.set_defaults(one_tailed=False)
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "<wm_statistics> Error: Input directory", args.inputDirectory, "does not exist."
+    print("<wm_statistics> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.subjectsInformationFile):
-    print "<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist."
+    print("<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist.")
     exit()
 
 if args.atlasDirectory:
     if not os.path.isdir(args.atlasDirectory):
-        print "<wm_statistics> Error: Input directory", args.atlasDirectory, "does not exist."
+        print("<wm_statistics> Error: Input directory", args.atlasDirectory, "does not exist.")
         exit()
 
 measurement = args.measure
@@ -65,50 +65,50 @@ atlas_directory = args.atlasDirectory
 
 # Read and check data
 measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')
-print "Measurement directory:", args.inputDirectory
+print("Measurement directory:", args.inputDirectory)
 number_of_subjects = len(measurement_list)
-print "Number of subjects data found:", number_of_subjects
+print("Number of subjects data found:", number_of_subjects)
 if number_of_subjects < 1:
-    print "ERROR, no measurement files found in directory:", args.inputDirectory
+    print("ERROR, no measurement files found in directory:", args.inputDirectory)
     exit()
 header = measurement_list[0].measurement_header
 #print "Measurement header is:", header
 #print "Clusters found:",  measurement_list[0].cluster_path
 number_of_clusters = measurement_list[0].measurement_matrix[:,0].shape[0]
-print "Number of measurement regions (clusters and hierarchy groups) is:", number_of_clusters
+print("Number of measurement regions (clusters and hierarchy groups) is:", number_of_clusters)
 
 # Read and check subject ID and other information
 dg = wma.tract_measurement.load_demographics(args.subjectsInformationFile)
 case_id_list = dg.case_id_list
 group_id_list = dg.group_id_list
 age_list = dg.get_demographics_by_header('Age')
-age_list = map(float, age_list)
+age_list = list(map(float, age_list))
 
 # Check subject IDs from excel versus the input directory.
-print "Checking subject information in input file and directory."
+print("Checking subject information in input file and directory.")
 if len(case_id_list) == len(group_id_list) & len(group_id_list) == number_of_subjects:
-        print "Subject counts in excel subject ID list, group list, and measurement directory match."
+        print("Subject counts in excel subject ID list, group list, and measurement directory match.")
 else:
-    print "ERROR: Subject counts in excel subject ID list, group list, and measurement directory don't match:",
-    print len(case_id_list), len(group_id_list), number_of_subjects
+    print("ERROR: Subject counts in excel subject ID list, group list, and measurement directory don't match:", end=' ')
+    print(len(case_id_list), len(group_id_list), number_of_subjects)
     exit()
 for subject_measured, subj_id, group in zip(measurement_list, case_id_list, group_id_list):
     #print subject_measured.case_id, subj_id, group
     if not str(subj_id) in subject_measured.case_id:
-        print "ERROR: id list and input data mismatch."
-        print "ERROR at:", subject_measured.case_id, subj_id, group
+        print("ERROR: id list and input data mismatch.")
+        print("ERROR at:", subject_measured.case_id, subj_id, group)
         exit()
-print "Dataset passed. Subject IDs in subject information file match subject IDs in measurement directory."
+print("Dataset passed. Subject IDs in subject information file match subject IDs in measurement directory.")
 
 # Figure out what the groups are
 study_groups = list(set(group_id_list))
-print "Study groups found:", study_groups
+print("Study groups found:", study_groups)
 if len(study_groups) > 2:
-    print "ERROR: this code can currently only handle two study groups."
+    print("ERROR: this code can currently only handle two study groups.")
     exit()
-print "Subjects per group:", numpy.sum(numpy.array(group_id_list)==study_groups[0]), numpy.sum(numpy.array(group_id_list)==study_groups[1])
+print("Subjects per group:", numpy.sum(numpy.array(group_id_list)==study_groups[0]), numpy.sum(numpy.array(group_id_list)==study_groups[1]))
 
-print "Performing statistics for measure:", measurement
+print("Performing statistics for measure:", measurement)
 
 # Note this hierarchy code will be removed/simplified when the Slicer measurement file is simplified
 # ------
@@ -147,7 +147,7 @@ for region in measurement_list[0].cluster_path:
 #print hierarchy_region_name_list
 #print hierarchy_region_list
 
-print "Toplevel:"
+print("Toplevel:")
 #print hierarchy_toplevel_name_list
 
 # TODO: use this only if hierarchy
@@ -169,7 +169,7 @@ elif mode == "clusters":
     names_for_stats = hierarchy_cluster_name_list
 elif mode == "all":
     # we are measuring using cluster_*.vtp not a hierarchy
-    regions_for_stats = numpy.array(range(number_of_clusters))
+    regions_for_stats = numpy.array(list(range(number_of_clusters)))
     names_for_stats = []
     for fname in measurement_list[0].cluster_path:
         #print os.path.splitext(fname)
@@ -196,7 +196,7 @@ for subject_measured, group in zip(measurement_list, group_id_list):
 plt.title(measurement+' measurements by group')
 plt.savefig(fname)
 plt.close()
-print "Saved data plot:", fname
+print("Saved data plot:", fname)
 
 # get data by group to perform stats on measurement of interest
 vidx = list(header).index(measurement)
@@ -213,7 +213,7 @@ data_0 = numpy.array(data_0)
 data_1 = numpy.array(data_1)
 
 # Statistical test in each cluster or input region
-print "Doing t-tests in each cluster or region."
+print("Doing t-tests in each cluster or region.")
 p_val_list = []
 data_list = []
 for c in range(number_of_tests):
@@ -229,11 +229,11 @@ for c in range(number_of_tests):
     shape_after = numpy.array([c_data_0.shape[0], c_data_1.shape[0]])
     # warn if any cluster is totally absent
     if len(c_data_0) == 0 | len(c_data_1) == 0:
-        print "Empty cluster across all subjects indicates data issue:", c
+        print("Empty cluster across all subjects indicates data issue:", c)
     # warn if empty clusters
     nan_count = shape_before - shape_after
     if numpy.sum(nan_count) > 0:
-        print "\tCluster", c, ": Warning. Empty/nan found in :", nan_count, "subjects."
+        print("\tCluster", c, ": Warning. Empty/nan found in :", nan_count, "subjects.")
     t, p = scipy.stats.ttest_ind(c_data_0, c_data_1)
     #print c_data_0.shape, c_data_1.shape
     if args.one_tailed:
@@ -242,7 +242,7 @@ for c in range(number_of_tests):
         p_val_list.append(p)
 
 uncorrected_significant = numpy.sum(numpy.array(p_val_list) < 0.05)
-print "Uncorrected:", uncorrected_significant, "/", number_of_tests, ":", 100*uncorrected_significant/float(number_of_tests), "%"
+print("Uncorrected:", uncorrected_significant, "/", number_of_tests, ":", 100*uncorrected_significant/float(number_of_tests), "%")
 
 ## if analyze_hierarchy:
 ##     for name, p_val in zip(names_for_stats, p_val_list):
@@ -251,13 +251,13 @@ print "Uncorrected:", uncorrected_significant, "/", number_of_tests, ":", 100*un
 # bonferroni
 threshold = 0.05 / number_of_clusters
 corrected_significant = numpy.sum(numpy.array(p_val_list) < threshold)
-print "Bonferroni:", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%"
+print("Bonferroni:", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%")
 
 # FDR
 reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(numpy.array(p_val_list), alpha=fdr_q, method='indep')
 #reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(numpy.array(p_val_list), alpha=fdr_q, method='negcorr')
 corrected_significant = numpy.sum(reject_null)
-print "FDR at alpha/q =", fdr_q, ":", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%"
+print("FDR at alpha/q =", fdr_q, ":", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%")
 
 ## # plot the data we tested, sorted by p-value
 ## cluster_order = numpy.argsort(numpy.array(p_val_list))
@@ -269,7 +269,7 @@ print "FDR at alpha/q =", fdr_q, ":", corrected_significant, "/", number_of_test
 ## plt.close()
 
 fname = 'plot_region_means_'+measurement+'.pdf'
-print "Plotting mean values per cluster:", fname
+print("Plotting mean values per cluster:", fname)
 cluster_mean_0 = numpy.nanmean(data_0, axis=0)
 cluster_mean_1 = numpy.nanmean(data_1, axis=0)
 # Plot the mean values of the groups against each other in each cluster
@@ -295,12 +295,12 @@ plt.savefig(fname)
 plt.close()
 
 fname = 'plot_boxplot_'+measurement+'.pdf'
-print "Plotting complete boxplot of all data:", fname
+print("Plotting complete boxplot of all data:", fname)
 # Get information to plot all significant and non-significant data in a boxplot.
 label_list = []
 text_list = []
 text_pos_list = []
-for p_val, region, c in zip(corrected_p, names_for_stats, range(number_of_tests)):
+for p_val, region, c in zip(corrected_p, names_for_stats, list(range(number_of_tests))):
     #print region
     label_list.append(region[-4:]+'_0')
     label_list.append(region[-4:]+'_1')
@@ -313,7 +313,7 @@ for p_val, region, c in zip(corrected_p, names_for_stats, range(number_of_tests)
 # Make the boxplot    
 # try to make it big enough to fit all the data
 plt.figure(figsize=(20,20))
-x_pos_list = range(len(data_list))
+x_pos_list = list(range(len(data_list)))
 #plt.boxplot(data_list, labels=label_list, showmeans=True, positions=x_pos_list)
 plt.boxplot(data_list, showmeans=True, positions=x_pos_list)
 plt.title(measurement+' all regions')
@@ -325,14 +325,14 @@ plt.savefig(fname)
 plt.close()
 
 fname = 'plot_boxplot_sig_'+measurement+'.pdf'
-print "Plotting significant boxplot:", fname
+print("Plotting significant boxplot:", fname)
 # Now make a boxplot of only the significant ones
 # The data list length is number of clusters * number of groups, which must be 2 for now
 significant_data_list = []
 significant_labels_list = []
 significant_groups_list = []
 idx = 0
-for c, sig in zip(range(number_of_clusters), reject_null):
+for c, sig in zip(list(range(number_of_clusters)), reject_null):
     for g in study_groups:
         if sig:
             significant_data_list.append(data_list[idx])
@@ -342,12 +342,12 @@ for c, sig in zip(range(number_of_clusters), reject_null):
 # try to make it big enough to fit all the data
 plt.figure(figsize=(20,20))
 if len(significant_data_list) > 0:
-        positions = range(len(significant_data_list))
+        positions = list(range(len(significant_data_list)))
         # regular boxplot
         plt.boxplot(significant_data_list, positions=positions)
         plt.xticks(positions, significant_labels_list, rotation='vertical')
         # also plot means in per-group color
-        print len(significant_data_list), len(significant_groups_list), len(positions)
+        print(len(significant_data_list), len(significant_groups_list), len(positions))
         for d, g, p in zip(significant_data_list, significant_groups_list, positions):
             if g == study_groups[0]:
                 color = 'bo'
@@ -367,7 +367,7 @@ output_p_val_list = corrected_p
 if atlas_directory:
     # save a MRML file with tracts colored by p-value
     fname = './test_'+measurement+'.mrml'
-    print "Saving MRML visualization:", fname
+    print("Saving MRML visualization:", fname)
     # find clusters in subject and atlas input directories
     input_mask = "{0}/cluster_*.vtp".format(atlas_directory)
     atlas_clusters = sorted(glob.glob(input_mask))
@@ -394,5 +394,5 @@ if atlas_directory:
         #wma.mrml.write(atlas_clusters, colors, './test_'+str(vidx)+'.mrml', ratio=1.0)
         wma.mrml.write(significant_clusters, colors, fname, ratio=1.0)
     else:
-        print "Error: atlas directory and measurements have different cluster numbers:", number_of_files, number_of_clusters
+        print("Error: atlas directory and measurements have different cluster numbers:", number_of_files, number_of_clusters)
 

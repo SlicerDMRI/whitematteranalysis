@@ -11,13 +11,13 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print "Error importing white matter analysis package\n"
+    print("Error importing white matter analysis package\n")
     raise
 
 try:
     from joblib import Parallel, delayed
 except:
-    print "Error importing joblib package\n"
+    print("Error importing joblib package\n")
     raise
 
 
@@ -55,28 +55,28 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print(("Error: Input directory", args.inputDirectory, "does not exist."))
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "Output directory", outdir, "does not exist, creating it."
+    print(("Output directory", outdir, "does not exist, creating it."))
     os.makedirs(outdir)
 
-print ""
-print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=========================="
+print("")
+print(("=====input directory======\n", args.inputDirectory))
+print(("=====output directory=====\n", args.outputDirectory))
+print("==========================")
 
-print 'CPUs detected:', multiprocessing.cpu_count()
+print(('CPUs detected:', multiprocessing.cpu_count()))
 if args.numberOfJobs is not None:
     parallel_jobs = args.numberOfJobs
 else:
     parallel_jobs = multiprocessing.cpu_count()
-print 'Using N jobs:', parallel_jobs
+print(('Using N jobs:', parallel_jobs))
 
 
-print "=========================="
+print("==========================")
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -86,21 +86,21 @@ print "=========================="
 # Loop over input DWIs
 inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
-print "<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)
+print(("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)))
 
 # Read in the transform to print its contents for the user
 reader = vtk.vtkMNITransformReader()
 reader.SetFileName(args.transformFile)
 reader.Update()
 transform = reader.GetTransform()
-print transform
+print(transform)
     
 def pipeline(inputPolyDatas, sidx, args):
     # get subject identifier from unique input filename
     # -------------------
     #subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
     fname = os.path.basename(inputPolyDatas[sidx])
-    print "<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)
+    print(("<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)))
 
     # read input vtk data
     # -------------------
@@ -126,10 +126,10 @@ def pipeline(inputPolyDatas, sidx, args):
     # -------------------
     fname = os.path.join(args.outputDirectory, fname)
     try:
-        print "Writing output polydata", fname, "..."
+        print(("Writing output polydata", fname, "..."))
         wma.io.write_polydata(outpd, fname)
     except:
-        print "Unknown exception in IO"
+        print("Unknown exception in IO")
         raise
     del outpd
     del inpd
@@ -139,5 +139,5 @@ Parallel(n_jobs=parallel_jobs, verbose=0)(
         delayed(pipeline)(inputPolyDatas, sidx, args)
         for sidx in range(0, len(inputPolyDatas)))
 
-print "Launched all jobs"
+print("Launched all jobs")
 exit()

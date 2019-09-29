@@ -9,7 +9,7 @@ import argparse
 try:
     import whitematteranalysis as wma
 except:
-    print "<wm_laterality.py> Error importing white matter analysis package\n"
+    print("<wm_laterality.py> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -53,50 +53,50 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "Error: Input directory", args.inputDirectory, "does not exist."
+    print(("Error: Input directory", args.inputDirectory, "does not exist."))
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print "<wm_laterality.py> Output directory", outdir, "does not exist, creating it."
+    print(("<wm_laterality.py> Output directory", outdir, "does not exist, creating it."))
     os.makedirs(outdir)
     
-print "<wm_laterality.py> Starting white matter laterality computation."
-print ""
-print "=====input directory======\n", args.inputDirectory
-print "=====output directory=====\n", args.outputDirectory
-print "=========================="
+print("<wm_laterality.py> Starting white matter laterality computation.")
+print("")
+print(("=====input directory======\n", args.inputDirectory))
+print(("=====output directory=====\n", args.outputDirectory))
+print("==========================")
 
 if args.numberOfFibers is not None:
-    print "fibers to analyze per subject: ", args.numberOfFibers
+    print(("fibers to analyze per subject: ", args.numberOfFibers))
 else:
-    print "fibers to analyze per subject: ALL"
+    print("fibers to analyze per subject: ALL")
 
 if args.fiberLength is not None:
-    print "minimum length of fibers to analyze (in mm): ", args.fiberLength
+    print(("minimum length of fibers to analyze (in mm): ", args.fiberLength))
 
 if args.sigma is not None:
-    print "sigma for laterality index computation: ", args.sigma
+    print(("sigma for laterality index computation: ", args.sigma))
 
 if args.threshold is not None:
-    print "intra-fiber distance threshold (in mm): ", args.threshold
+    print(("intra-fiber distance threshold (in mm): ", args.threshold))
 
 if args.flag_removeOutliers:
-    print "Automatic outlier removal is ON."
+    print("Automatic outlier removal is ON.")
 else:
-    print "Automatic outlier removal is OFF."
+    print("Automatic outlier removal is OFF.")
 
 if args.flag_equalFibers:
-    print "Use equal fiber number from each hemisphere is ON."
+    print("Use equal fiber number from each hemisphere is ON.")
 else:
-    print "Use equal fiber number from each hemisphere is OFF. Using input fiber number."
+    print("Use equal fiber number from each hemisphere is OFF. Using input fiber number.")
 
 if args.numberOfFibersPerHem is not None:
-    print "fibers to analyze per hemisphere: ", args.numberOfFibersPerHem
+    print(("fibers to analyze per hemisphere: ", args.numberOfFibersPerHem))
 else:
-    print "fibers to analyze per hemisphere: all or equal"
+    print("fibers to analyze per hemisphere: all or equal")
 
-print "=========================="
+print("==========================")
 
 # =======================================================================
 # Above this line is argument parsing. Below this line is the pipeline.
@@ -104,7 +104,7 @@ print "=========================="
 
 inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
-print "<wm_laterality.py> Input number of files: ", len(inputPolyDatas)
+print(("<wm_laterality.py> Input number of files: ", len(inputPolyDatas)))
 
 # loop over all inputs
 for sidx in range(0, len(inputPolyDatas)):
@@ -114,12 +114,12 @@ for sidx in range(0, len(inputPolyDatas)):
     subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
     id_msg = "<wm_laterality.py> ", sidx + 1, "/", len(inputPolyDatas)  
     msg = "**Starting subject:", subjectID
-    print id_msg, msg
+    print((id_msg, msg))
 
     # read input vtk data
     # -------------------
     msg = "**Reading input:", subjectID
-    print id_msg, msg
+    print((id_msg, msg))
 
     wm = wma.io.read_polydata(inputPolyDatas[sidx])
 
@@ -127,23 +127,23 @@ for sidx in range(0, len(inputPolyDatas)):
     # -------------------
     if args.fiberLength is not None:
         msg = "**Preprocessing:", subjectID
-        print id_msg, msg
+        print((id_msg, msg))
 
         wm = wma.filter.preprocess(wm, args.fiberLength, remove_u=True, remove_u_endpoint_dist=50, remove_brainstem=True)
-        print "Number of fibers retained: ", wm.GetNumberOfLines()
+        print(("Number of fibers retained: ", wm.GetNumberOfLines()))
 
     # remove outlier fibers
     # -------------------
     if args.flag_removeOutliers:
         msg = "**Removing outliers:", subjectID
-        print id_msg, msg
+        print((id_msg, msg))
 
         # if it's huge downsample to twice requested size first
         if args.numberOfFibers is not None:
             if (wm.GetNumberOfLines() > args.numberOfFibers * 2):
                 wm = wma.filter.downsample(
                     wm, args.numberOfFibers * 2)
-                print wm.GetNumberOfLines()
+                print((wm.GetNumberOfLines()))
 
         outlierThreshold = 10
         wm = wma.filter.remove_outliers(wm, outlierThreshold)
@@ -152,7 +152,7 @@ for sidx in range(0, len(inputPolyDatas)):
     # -------------------
     if args.numberOfFibers is not None:
         msg = "**Downsampling input:", subjectID
-        print id_msg, msg
+        print((id_msg, msg))
 
         wm = wma.filter.downsample(wm, args.numberOfFibers)
 
@@ -162,7 +162,7 @@ for sidx in range(0, len(inputPolyDatas)):
     # compute laterality on each dataset
     # -------------------
     msg = "**Computing laterality:", subjectID
-    print id_msg, msg
+    print((id_msg, msg))
 
     laterality = wma.laterality.WhiteMatterLaterality()
     if args.sigma is not None:
@@ -184,15 +184,15 @@ for sidx in range(0, len(inputPolyDatas)):
     # outputs
     # -------------------
     msg = "**Writing output data for subject:", subjectID
-    print id_msg, msg
+    print((id_msg, msg))
 
     outdir = os.path.join(args.outputDirectory, subjectID)
     try:
         #print "Writing output files..."
         laterality_results.write(outdir)
-        print "wrote output"
+        print("wrote output")
     except:
-        print "Unknown exception in IO"
+        print("Unknown exception in IO")
         raise
 
 exit()
