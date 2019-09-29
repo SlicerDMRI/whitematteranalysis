@@ -1,5 +1,8 @@
 # emacs autosave
 *~
+# vim
+.swp
+.swo
 # Mac files
 .DS_Store
 # python bytecode compiled files
