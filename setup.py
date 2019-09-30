@@ -122,6 +122,7 @@ setup(
         'bin/wm_remove_data_along_tracts.py',
         'bin/wm_separate_clusters_by_hemisphere.py',
         'bin/wm_tract_to_volume.py',
-        'bin/wm_vtp2vtk.py'
+        'bin/wm_vtp2vtk.py',
+        'testing/test_run.py'
     ]
 )
