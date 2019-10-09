@@ -107,7 +107,7 @@ class ClusterAtlas:
             print("Error: Atlas file", fname_polydata, "does not exist.")
             raise "<cluster.py> I/O error"
 
-        atlas = pickle.load(open(fname_atlas,'rb'), encoding="latin1")
+        atlas = pickle.load(open(fname_atlas,'rb'))
         atlas.nystrom_polydata = io.read_polydata(fname_polydata)
         print("<cluster.py> Loaded atlas", atlas_name, "from", directory, ".")
         print("<cluster.py> Atlas Nystrom polydata sample:", atlas.nystrom_polydata.GetNumberOfLines(), \
