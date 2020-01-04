@@ -5,6 +5,7 @@ import os
 import multiprocessing
 import vtk
 import time
+import nibabel
 
 try:
     import whitematteranalysis as wma
@@ -27,6 +28,9 @@ parser.add_argument("-v", "--version",
 parser.add_argument(
     'inputDirectory',
     help='A directory of (already registered) whole-brain tractography as vtkPolyData (.vtk or .vtp).')
+parser.add_argument(
+    'freesurfer',
+    help='freesurfer file in nifti (default for freesurfer result), e.g. /Users/Desktop/xxx.nii.gz')
 parser.add_argument(
     'outputDirectory',
     help='The output directory will be created if it does not exist.')
@@ -103,6 +107,10 @@ args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
     print "<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."
+    exit()
+    
+if not os.path.exists(args.freesurfer):
+    print "Freesurfer file", args.freesurfer, "does not exist."
     exit()
 
 outdir = args.outputDirectory
@@ -368,6 +376,8 @@ appender.Update()
 input_data = appender.GetOutput()
 del input_pds
 
+input_freesurfer = nibabel.load(args.freesurfer)
+
 # figure out which subject each fiber was from in the input to the clustering
 subject_fiber_list = list()
 for sidx in range(number_of_subjects):
@@ -414,7 +424,7 @@ for iteration in range(cluster_iterations):
     # Run clustering on the polydata
     print '<wm_cluster_atlas.py> Starting clustering.'
     output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_idx = \
-        wma.cluster.spectral(input_data, number_of_clusters=number_of_clusters, \
+        wma.cluster.spectral(input_data, input_freesurfer, number_of_clusters=number_of_clusters, \
                                  number_of_jobs=number_of_jobs, use_nystrom=use_nystrom, \
                                  nystrom_mask = nystrom_mask, \
                                  number_of_eigenvectors=number_of_eigenvectors, \
@@ -440,7 +450,8 @@ for iteration in range(cluster_iterations):
         print "<wm_cluster_atlas.py> Output directory", outdir1, "does not exist, creating it."
         os.makedirs(outdir1)    
     print '<wm_cluster_atlas.py> Saving output files in directory:', outdir1
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, input_freesurfer, number_of_subjects,\
+                                                         outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
 
     # Remove outliers from this iteration and save atlas again                                                 
     print "Starting local cluster outlier removal"
@@ -498,7 +509,7 @@ for iteration in range(cluster_iterations):
         farray = wma.fibers.FiberArray()
         farray.hemispheres = True
         farray.hemisphere_percent_threshold = 0.90
-        farray.convert_from_polydata(pd_c, points_per_fiber=50)
+        farray.convert_from_polydata(pd_c, input_freesurfer, points_per_fiber=50)
         fiber_hemisphere[fiber_indices] = farray.fiber_hemisphere
         cluster_left_hem.append(farray.number_left_hem)
         cluster_right_hem.append(farray.number_right_hem)
@@ -506,11 +517,11 @@ for iteration in range(cluster_iterations):
 
         # Compute distances and fiber probabilities
         if distance_method == 'StrictSimilarity':
-            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
+            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, input_freesurfer, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method, sigmasq = cluster_local_sigma * cluster_local_sigma)
             cluster_similarity = cluster_distances
         else:
-            cluster_distances = wma.cluster._pairwise_distance_matrix(pd_c, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
-            cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
+            cluster_distances, cluster_freeinfo = wma.cluster._pairwise_distance_matrix(pd_c, input_freesurfer, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
+            cluster_similarity = wma.similarity.distance_to_similarity(cluster_distances, cluster_freeinfo, cluster_local_sigma * cluster_local_sigma)
 
         #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
         # by using sample we estimate expected value of the above
@@ -651,7 +662,7 @@ for iteration in range(cluster_iterations):
     # NOTE: compute and save mean fibers per cluster (add these into the atlas as another polydata)
 
     # Save the current atlas
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, input_freesurfer, number_of_subjects, outdir2, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
 
     # now make the outlier clusters have positive numbers with -cluster_numbers_s so they can be saved also
     outdir3 = os.path.join(outdir2, 'outlier_tracts')
@@ -661,7 +672,7 @@ for iteration in range(cluster_iterations):
     print '<wm_cluster_atlas.py> Saving outlier fiber files in directory:', outdir3
     mask = cluster_numbers_s < 0
     cluster_numbers_outliers = -numpy.multiply(cluster_numbers_s, mask) - 1
-    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=False)
+    wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, input_freesurfer, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=False)
 
     test = subject_fiber_list[numpy.nonzero(mask)]
 

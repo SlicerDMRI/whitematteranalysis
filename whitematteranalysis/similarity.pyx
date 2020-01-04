@@ -6,10 +6,12 @@ import sys
 
 sys.setrecursionlimit(1000000)
 
-def distance_to_similarity(distance, sigmasq=100):
+def distance_to_similarity(distance, freeinfo, sigmasq=100):
 
     # compute the similarities using Gaussian kernel
-    similarities = numpy.exp(-distance / (sigmasq))
+#    similarities = numpy.exp(-distance / (sigmasq)) * freeinfo
+    similarities = 0.8 * numpy.exp(-distance / (sigmasq)) + 0.2 * numpy.exp(-1 / freeinfo)
+#    similarities = freeinfo
 
     return similarities
 
@@ -27,8 +29,8 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
     fiber_equiv = fiber.get_equivalent_fiber()
 
     # compute pairwise fiber distances along fibers
-    distance_1 = _fiber_distance_internal_use(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
-    distance_2 = _fiber_distance_internal_use(fiber_equiv, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
+    distance_1, freeinfo_1 = _fiber_distance_internal_use(fiber, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
+    distance_2, freeinfo_2 = _fiber_distance_internal_use(fiber_equiv, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq)
         
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
@@ -36,22 +38,26 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
         # for use in laterality
         # this is the product of all similarity values along the fiber
         distance = numpy.maximum(distance_1, distance_2)
+        freeinfo = numpy.minimun(freeinfo_1, freeinfo_2)
     else:
         distance = numpy.minimum(distance_1, distance_2)
+        freeinfo = numpy.maximum(freeinfo_1, freeinfo_2)
 
     if bilateral:
         fiber_reflect = fiber.get_reflected_fiber()
         # call this function again with the reflected fiber. Do NOT reflect again (bilateral=False) to avoid infinite loop.
-        distance_reflect = fiber_distance(fiber_reflect, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq, bilateral=False)
+        distance_reflect, freeinfo_reflect = fiber_distance(fiber_reflect, fiber_array, threshold, distance_method, fiber_landmarks, landmarks, sigmasq, bilateral=False)
         # choose the best distance, corresponding to the optimal fiber
         # representation (either reflected or not)
         if distance_method == 'StrictSimilarity':
             # this is the product of all similarity values along the fiber
             distance = numpy.maximum(distance, distance_reflect)
+            freeinfo = numpy.minimun(freeinfo, freeinfo_reflect)
         else:
             distance = numpy.minimum(distance, distance_reflect)
+            freeinfo = numpy.maximum(freeinfo, freeinfo_reflect)
         
-    return distance
+    return distance, freeinfo
 
 def fiber_distance_oriented(fiber, fiber_array, threshold=0, distance_method='MeanSquared', fiber_landmarks=None, landmarks=None, sigmasq=6400, bilateral=False):
     """Find pairwise fiber distance from fiber to all fibers in fiber_array, without testing both fiber orders.
@@ -102,6 +108,10 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     dx = numpy.square(ddx)
     dy = numpy.square(ddy)
     dz = numpy.square(ddz)
+    
+    freeinfo = fiber_array.H * fiber.H
+    freeinfo = numpy.sum(numpy.sum(freeinfo != 0, 2) * numpy.sum(freeinfo, 2), 1)
+    
 
     # sum dx dx dz at each point on the fiber and sqrt for threshold
     #distance = numpy.sqrt(dx + dy + dz)
@@ -184,7 +194,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         raise Exception("unknown distance method")
         
     
-    return distance
+    return distance, freeinfo
 
 def rectangular_frechet_distances(input_vtk_polydata_m,input_vtk_polydata_n):
     # Computes distance matrix (nxm) for all n+m fibers in input

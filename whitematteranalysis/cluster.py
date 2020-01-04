@@ -176,7 +176,7 @@ def nearPSD(A,epsilon=0):
    out = B*B.T
    return(numpy.asarray(out))
    
-def spectral(input_polydata, number_of_clusters=200,
+def spectral(input_polydata, input_freesurfer, number_of_clusters=200,
              number_of_eigenvectors=20, sigma=60, threshold=0.0,
              number_of_jobs=3, use_nystrom=False, nystrom_mask=None,
              landmarks=None, distance_method='Mean', normalized_cuts=True,
@@ -252,11 +252,12 @@ def spectral(input_polydata, number_of_clusters=200,
 
         # Calculate fiber similarities
         A = \
-            _pairwise_similarity_matrix(polydata_m, threshold,
+            _pairwise_similarity_matrix(polydata_m, input_freesurfer, threshold,
                                         sigma, number_of_jobs, landmarks_m, distance_method, bilateral)
         B = \
-            _rectangular_similarity_matrix(polydata_n, polydata_m, threshold,
+            _rectangular_similarity_matrix(polydata_n, polydata_m, input_freesurfer, threshold,
                                            sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method, bilateral)
+        
 
         # sanity check
         print "<cluster.py> Range of values in A:", numpy.min(A), numpy.max(A)
@@ -265,7 +266,7 @@ def spectral(input_polydata, number_of_clusters=200,
     else:
         # Calculate all fiber similarities
         A = \
-            _pairwise_similarity_matrix(input_polydata, threshold,
+            _pairwise_similarity_matrix(input_polydata, input_freesurfer, threshold,
                                     sigma, number_of_jobs, landmarks, distance_method, bilateral)
 
         atlas.nystrom_polydata = input_polydata
@@ -301,9 +302,7 @@ def spectral(input_polydata, number_of_clusters=200,
 
     A = numpy.delete(A,reject_A,0)
     A = numpy.delete(A,reject_A,1)
-    #print A.shape, B.shape
     B = numpy.delete(B,reject_A,0)
-    #print A.shape, B.shape, reorder_embedding.shape
                     
     # Ensure that A is positive definite.
     if pos_def_approx:
@@ -315,9 +314,9 @@ def spectral(input_polydata, number_of_clusters=200,
         testval = numpy.max(A-A2) 
         if not testval == 0.0:
             print "<cluster.py> A matrix differs by PSD matrix by maximum of:", testval
-            if testval > 0.25:
-                print "<cluster.py> ERROR: A matrix changed by more than 0.25."
-                raise AssertionError
+#            if testval > 0.25:
+#                print "<cluster.py> ERROR: A matrix changed by more than 0.25."
+#                raise AssertionError
         A = A2
         
     # 2) Do Normalized Cuts transform of similarity matrix.
@@ -493,7 +492,7 @@ def spectral(input_polydata, number_of_clusters=200,
     cluster_metric = None
     if centroid_finder == 'K-means':
         print '<cluster.py> K-means clustering in embedding space.'
-        centroids, cluster_metric = scipy.cluster.vq.kmeans2(embed, number_of_clusters, minit='points')
+        centroids, cluster_metric = scipy.cluster.vq.kmeans2(embed, number_of_clusters, iter =50, minit='points')
         # sort centroids by first eigenvector order
         # centroid_order = numpy.argsort(centroids[:,0])
         # sort centroids according to colormap and save them in this order in atlas
@@ -635,7 +634,7 @@ def spectral_atlas_label(input_polydata, atlas, number_of_jobs=2):
 
     return output_polydata, cluster_idx, color, embed
 
-def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
+def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, input_freesurfer, threshold,
                               number_of_jobs=3, landmarks_n=None, landmarks_m=None,
                               distance_method='Hausdorff', bilateral=False):
 
@@ -657,31 +656,44 @@ def _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
     else:
         
         fiber_array_n = fibers.FiberArray()
-        fiber_array_n.convert_from_polydata(input_polydata_n, points_per_fiber=15)
+        fiber_array_n.convert_from_polydata(input_polydata_n, input_freesurfer, points_per_fiber=15)
         fiber_array_m = fibers.FiberArray()
-        fiber_array_m.convert_from_polydata(input_polydata_m, points_per_fiber=15)
+        fiber_array_m.convert_from_polydata(input_polydata_m, input_freesurfer, points_per_fiber=15)
 
         if landmarks_n is None:
             landmarks_n = numpy.zeros((fiber_array_n.number_of_fibers,3))
     
         # pairwise distance matrix
-        all_fibers_n = range(0, fiber_array_n.number_of_fibers)
-
-        distances = Parallel(n_jobs=number_of_jobs,
-                             verbose=0)(
-            delayed(similarity.fiber_distance)(
+#        all_fibers_n = range(0, fiber_array_n.number_of_fibers)
+#
+#        distances = Parallel(n_jobs=number_of_jobs,
+#                             verbose=0)(
+#            delayed(similarity.fiber_distance)(
+#                fiber_array_n.get_fiber(lidx),
+#                fiber_array_m,
+#                threshold, distance_method=distance_method,
+#                fiber_landmarks=landmarks_n[lidx,:], 
+#                landmarks=landmarks_m, bilateral=bilateral)
+#            for lidx in all_fibers_n)
+#
+#        distances = numpy.array(distances).T
+        distances = numpy.zeros([fiber_array_n.number_of_fibers,fiber_array_m.number_of_fibers])
+        freeinfo = numpy.zeros([fiber_array_n.number_of_fibers,fiber_array_m.number_of_fibers])
+        for lidx in xrange(0,fiber_array_n.number_of_fibers):
+            distances[lidx,:], freeinfo[lidx,:] = similarity.fiber_distance(
                 fiber_array_n.get_fiber(lidx),
                 fiber_array_m,
                 threshold, distance_method=distance_method,
                 fiber_landmarks=landmarks_n[lidx,:], 
                 landmarks=landmarks_m, bilateral=bilateral)
-            for lidx in all_fibers_n)
 
         distances = numpy.array(distances).T
+        freeinfo = numpy.array(freeinfo).T
+#        numpy.save('freeinfo.npy',freeinfo)
 
-    return distances
+    return distances, freeinfo
 
-def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold, sigma,
+def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, input_freesurfer, threshold, sigma,
                                 number_of_jobs=3, landmarks_n=None, landmarks_m=None, distance_method='Hausdorff',
                                 bilateral=False):
 
@@ -696,7 +708,7 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
 
     """
 
-    distances = _rectangular_distance_matrix(input_polydata_n, input_polydata_m, threshold,
+    distances, freeinfo = _rectangular_distance_matrix(input_polydata_n, input_polydata_m, input_freesurfer, threshold,
                                              number_of_jobs, landmarks_n, landmarks_m, distance_method, bilateral=bilateral)
 
     if distance_method == 'StrictSimilarity':
@@ -704,11 +716,11 @@ def _rectangular_similarity_matrix(input_polydata_n, input_polydata_m, threshold
     else:
         # similarity matrix
         sigmasq = sigma * sigma
-        similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
+        similarity_matrix = similarity.distance_to_similarity(distances, freeinfo, sigmasq)
 
     return similarity_matrix
 
-def _pairwise_distance_matrix(input_polydata, threshold,
+def _pairwise_distance_matrix(input_polydata, input_freesurfer, threshold,
                               number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
                               bilateral=False, sigmasq=6400):
 
@@ -728,33 +740,44 @@ def _pairwise_distance_matrix(input_polydata, threshold,
     else:
 
         fiber_array = fibers.FiberArray()
-        fiber_array.convert_from_polydata(input_polydata, points_per_fiber=15)
+        fiber_array.convert_from_polydata(input_polydata, input_freesurfer, points_per_fiber=15)
 
         # pairwise distance matrix
-        all_fibers = range(0, fiber_array.number_of_fibers)
+#        all_fibers = range(0, fiber_array.number_of_fibers)
 
         if landmarks is None:
             landmarks2 = numpy.zeros((fiber_array.number_of_fibers,3))
         else:
             landmarks2 = landmarks
 
-        distances = Parallel(n_jobs=number_of_jobs,
-                             verbose=0)(
-            delayed(similarity.fiber_distance)(
+#        distances = Parallel(n_jobs=number_of_jobs,
+#                             verbose=0)(
+#            delayed(similarity.fiber_distance)(
+#                fiber_array.get_fiber(lidx),
+#                fiber_array,
+#                threshold, distance_method=distance_method, 
+#                fiber_landmarks=landmarks2[lidx,:], 
+#                landmarks=landmarks, bilateral=bilateral, sigmasq=sigmasq)
+#            for lidx in all_fibers)
+        distances = numpy.zeros([fiber_array.number_of_fibers,fiber_array.number_of_fibers])
+        freeinfo = numpy.zeros([fiber_array.number_of_fibers,fiber_array.number_of_fibers])
+        for lidx in xrange(0,fiber_array.number_of_fibers):
+            distances[lidx,:], freeinfo[lidx,:] = similarity.fiber_distance(
                 fiber_array.get_fiber(lidx),
                 fiber_array,
                 threshold, distance_method=distance_method, 
                 fiber_landmarks=landmarks2[lidx,:], 
                 landmarks=landmarks, bilateral=bilateral, sigmasq=sigmasq)
-            for lidx in all_fibers)
+#        numpy.save('distances.npy',distances)
+#        numpy.save('freeinfo.npy',freeinfo)
 
-        distances = numpy.array(distances)
+#        distances = numpy.array(distances)
 
         # remove outliers if desired????
 
-    return distances
+    return distances, freeinfo
 
-def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
+def _pairwise_similarity_matrix(input_polydata, input_freesurfer, threshold, sigma,
                                 number_of_jobs=3, landmarks=None, distance_method='Hausdorff',
                                 bilateral=False):
 
@@ -769,7 +792,7 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
 
     """
 
-    distances = _pairwise_distance_matrix(input_polydata, threshold,
+    distances, freeinfo = _pairwise_distance_matrix(input_polydata, input_freesurfer, threshold,
                                           number_of_jobs, landmarks, distance_method, bilateral=bilateral)
     
     if distance_method == 'StrictSimilarity':
@@ -777,21 +800,21 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
     else:
         # similarity matrix
         sigmasq = sigma * sigma
-        similarity_matrix = similarity.distance_to_similarity(distances, sigmasq)
+        similarity_matrix = similarity.distance_to_similarity(distances, freeinfo, sigmasq)
 
     # sanity check that on-diagonal elements are all 1
     #print "This should be 1.0: ", numpy.min(numpy.diag(similarity_matrix))
     #print  numpy.min(numpy.diag(similarity_matrix)) == 1.0
     # test
-    if __debug__:
-        # this tests that on-diagonal elements are all 1
-        test = numpy.min(numpy.diag(similarity_matrix)) == 1.0
-        if not test:
-            print "<cluster.py> ERROR: On-diagonal elements are not all 1.0."
-            print" Minimum on-diagonal value:", numpy.min(numpy.diag(similarity_matrix))
-            print" Maximum on-diagonal value:", numpy.max(numpy.diag(similarity_matrix))
-            print" Mean value:", numpy.mean(numpy.diag(similarity_matrix))
-            raise AssertionError
+#    if __debug__:
+#        # this tests that on-diagonal elements are all 1
+#        test = numpy.min(numpy.diag(similarity_matrix)) == 1.0
+#        if not test:
+#            print "<cluster.py> ERROR: On-diagonal elements are not all 1.0."
+#            print" Minimum on-diagonal value:", numpy.min(numpy.diag(similarity_matrix))
+#            print" Maximum on-diagonal value:", numpy.max(numpy.diag(similarity_matrix))
+#            print" Mean value:", numpy.mean(numpy.diag(similarity_matrix))
+#            raise AssertionError
 
     return similarity_matrix
 
@@ -899,7 +922,7 @@ def _embed_to_rgb(embed):
     return color
 
 
-def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=False, verbose=False, render_images=True):
+def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, input_freesurfer, number_of_subjects, outdir, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=False, verbose=False, render_images=True):
 
     """Save the output in our atlas format for automatic labeling of clusters.
 
@@ -1022,7 +1045,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         farray = fibers.FiberArray()
         farray.hemispheres = True
         farray.hemisphere_percent_threshold = 0.90
-        farray.convert_from_polydata(pd_c, points_per_fiber=50)
+        farray.convert_from_polydata(pd_c, input_freesurfer, points_per_fiber=50)
         filter.add_point_data_array(pd_c, farray.fiber_hemisphere, "Hemisphere")
         # The clusters are stored starting with 1, not 0, for user friendliness.
         fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
