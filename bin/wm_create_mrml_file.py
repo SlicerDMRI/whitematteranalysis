@@ -18,8 +18,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Create a MRML file that includes all vtk and vtp files in the input directory. Color tracts with different colors in the scene.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
     
     parser.add_argument(
         'inputDirectory',

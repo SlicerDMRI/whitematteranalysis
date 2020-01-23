@@ -25,8 +25,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Applies preprocessing to input directory. Downsamples, removes short fibers. Preserves tensors and scalar point data along retained fibers.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
     
     parser.add_argument(
         'inputDirectory',

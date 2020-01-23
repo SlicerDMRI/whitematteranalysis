@@ -18,8 +18,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Converts all vtp files in input directory to vtk files, which are saved in output directory.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
     
     parser.add_argument(
         'inputDirectory',

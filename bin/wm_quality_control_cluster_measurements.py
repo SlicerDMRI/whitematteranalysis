@@ -14,8 +14,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Perform quality control steps (check if all subjects have matching data) for .csv or txt measurement files in the input directory.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
     
     parser.add_argument(
         'inputDirectory',

@@ -15,8 +15,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Download a pre-provided anatomically curated fiber clustering white matter atlas.",
-        epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu",
-        version='1.0')
+        epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
     
     parser.add_argument(
         'outputDirectory',
