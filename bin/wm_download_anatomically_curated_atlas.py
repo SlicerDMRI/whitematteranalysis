@@ -30,11 +30,11 @@ def main():
     def download_file(url, output_file):
     
         try:
-            print(("* Downloading: {0}".format(url)))
+            print("* Downloading: {0}".format(url))
             url_file = urllib.request.urlopen(url)
             meta = url_file.info()
             file_size = int(meta.getheaders("Content-Length")[0])
-            print(("File size: {0} MB".format(file_size/1024.0/1024.0)))
+            print("File size: {0} MB".format(file_size/1024.0/1024.0))
     
             output = open(output_file, 'wb')
             file_size_dl = 0

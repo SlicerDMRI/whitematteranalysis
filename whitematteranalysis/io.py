@@ -36,7 +36,7 @@ def read_polydata(filename):
     """Read whole-brain tractography as vtkPolyData format."""
 
     if VERBOSE:
-        print(("Reading in data from", filename, "..."))
+        print("Reading in data from", filename, "...")
 
     basename, extension = os.path.splitext(filename)
 
@@ -53,8 +53,8 @@ def read_polydata(filename):
     outpd = reader.GetOutput()
     del reader
     if VERBOSE:
-        print(("Done reading in data from", filename))
-        print(("Number of lines found:", outpd.GetNumberOfLines()))
+        print("Done reading in data from", filename)
+        print("Number of lines found:", outpd.GetNumberOfLines())
 
     return outpd
 
@@ -82,8 +82,8 @@ def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fi
     num_pd = len(input_pd_fnames)
     
     print("<io.py> =======================================")
-    print(("<io.py> Reading vtk and vtp files from directory: ", input_dir))
-    print(("<io.py> Total number of files found: ", num_pd))
+    print("<io.py> Reading vtk and vtp files from directory: ", input_dir)
+    print("<io.py> Total number of files found: ", num_pd)
     print("<io.py> =======================================")
 
     input_pds = list()
@@ -93,20 +93,20 @@ def read_and_preprocess_polydata_directory(input_dir, fiber_length, number_of_fi
     for fname in input_pd_fnames:
         subject_id = os.path.splitext(os.path.basename(fname))[0]
         subject_ids.append(subject_id)
-        print(("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Reading ", fname, "..."))
+        print("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Reading ", fname, "...")
         pd = read_polydata(fname)
-        print(("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Input number of fibers:", pd.GetNumberOfLines()))
+        print("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Input number of fibers:", pd.GetNumberOfLines())
         pd2 = filter.preprocess(pd, min_length_mm=fiber_length, verbose=False, max_length_mm=fiber_length_max)
-        print(("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Length threshold", fiber_length, "mm. Number of fibers retained:", pd2.GetNumberOfLines()))
+        print("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Length threshold", fiber_length, "mm. Number of fibers retained:", pd2.GetNumberOfLines())
         pd3 = filter.downsample(pd2, number_of_fibers, verbose=False, random_seed=random_seed)
-        print(("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Downsample to", number_of_fibers, "fibers. Number of fibers retained:", pd3.GetNumberOfLines()))        
+        print("<io.py>  ", sidx + 1, "/",  num_pd, subject_id, " Downsample to", number_of_fibers, "fibers. Number of fibers retained:", pd3.GetNumberOfLines())        
         input_pds.append(pd3)
         sidx += 1
         print("<io.py> =======================================")
 
     print("<io.py> =======================================")
-    print(("<io.py> Done reading vtk and vtp files from directory: ", input_dir))
-    print(("<io.py> Total number of files read: ", len(input_pds)))
+    print("<io.py> Done reading vtk and vtp files from directory: ", input_dir)
+    print("<io.py> Total number of files read: ", len(input_pds))
     print("<io.py> =======================================")
         
     return input_pds, subject_ids
@@ -117,7 +117,7 @@ def write_polydata(polydata, filename):
     """Write polydata as vtkPolyData format, according to extension."""
 
     if VERBOSE:
-        print(("Writing ", filename, "..."))
+        print("Writing ", filename, "...")
 
     basename, extension = os.path.splitext(filename)
 
@@ -141,15 +141,15 @@ def write_polydata(polydata, filename):
     del writer
 
     if VERBOSE:
-        print(("Done writing ", filename))
+        print("Done writing ", filename)
 
 def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     # Read it in.
-    print(("<io.py> Transforming ", in_filename, "->", out_filename, "..."))
+    print("<io.py> Transforming ", in_filename, "->", out_filename, "...")
 
     # Read the transform from disk because we cannot pickle it
     (root, ext) = os.path.splitext(transform_filename)
-    print((root, ext))
+    print(root, ext)
     if ext == '.xfm':
         reader = vtk.vtkMNITransformReader()
         reader.SetFileName(transform_filename)
@@ -178,7 +178,7 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     start_time = time.time()
     pd = read_polydata(in_filename)
     elapsed_time = time.time() - start_time
-    print(("READ:", elapsed_time))
+    print("READ:", elapsed_time)
     # Transform it.
     start_time = time.time()
     transformer = vtk.vtkTransformPolyDataFilter()
@@ -189,14 +189,14 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
     transformer.SetTransform(transform)
     transformer.Update()
     elapsed_time = time.time() - start_time
-    print(("TXFORM:", elapsed_time))
+    print("TXFORM:", elapsed_time)
 
     # Write it out.
     start_time = time.time()
     pd2 = transformer.GetOutput()
     write_polydata(pd2, out_filename)
     elapsed_time = time.time() - start_time
-    print(("WRITE:", elapsed_time))
+    print("WRITE:", elapsed_time)
 
     # Clean up.
     del transformer
@@ -206,11 +206,11 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
 
 def transform_polydata_from_disk_using_transform_object(in_filename, transform, out_filename):
     # Read it in.
-    print(("<io.py> Transforming ", in_filename, "->", out_filename, "..."))
+    print("<io.py> Transforming ", in_filename, "->", out_filename, "...")
     start_time = time.time()
     pd = read_polydata(in_filename)
     elapsed_time = time.time() - start_time
-    print(("READ:", elapsed_time))
+    print("READ:", elapsed_time)
     # Transform it.
     start_time = time.time()
     transformer = vtk.vtkTransformPolyDataFilter()
@@ -221,14 +221,14 @@ def transform_polydata_from_disk_using_transform_object(in_filename, transform, 
     transformer.SetTransform(transform)
     transformer.Update()
     elapsed_time = time.time() - start_time
-    print(("TXFORM:", elapsed_time))
+    print("TXFORM:", elapsed_time)
 
     # Write it out.
     start_time = time.time()
     pd2 = transformer.GetOutput()
     write_polydata(pd2, out_filename)
     elapsed_time = time.time() - start_time
-    print(("WRITE:", elapsed_time))
+    print("WRITE:", elapsed_time)
 
     # Clean up.
     del transformer
@@ -247,9 +247,9 @@ def transform_polydatas_from_disk(input_dir, transforms, output_dir):
     input_pd_fnames = list_vtk_files(input_dir)
     num_pd = len(input_pd_fnames)
     print("<io.py> =======================================")
-    print(("<io.py> Transforming vtk and vtp files from directory: ", input_dir))
-    print(("<io.py> Total number of files found: ", num_pd))
-    print(("<io.py> Writing output to directory: ", output_dir))
+    print("<io.py> Transforming vtk and vtp files from directory: ", input_dir)
+    print("<io.py> Total number of files found: ", num_pd)
+    print("<io.py> Writing output to directory: ", output_dir)
     print("<io.py> =======================================")
 
     if not os.path.exists(output_dir):
@@ -279,9 +279,9 @@ def transform_polydatas_from_diskUNSAFE(input_dir, transforms, output_dir, paral
     input_pd_fnames = list_vtk_files(input_dir)
     num_pd = len(input_pd_fnames)
     print("<io.py> =======================================")
-    print(("<io.py> Transforming vtk and vtp files from directory: ", input_dir))
-    print(("<io.py> Total number of files found: ", num_pd))
-    print(("<io.py> Writing output to directory: ", output_dir))
+    print("<io.py> Transforming vtk and vtp files from directory: ", input_dir)
+    print("<io.py> Total number of files found: ", num_pd)
+    print("<io.py> Writing output to directory: ", output_dir)
     print("<io.py> =======================================")
 
     if not os.path.exists(output_dir):
@@ -362,9 +362,9 @@ def transform_polydatas_from_diskOLD(input_dir, transforms, output_dir):
     input_pd_fnames = list_vtk_files(input_dir)
     num_pd = len(input_pd_fnames)
     print("<io.py> =======================================")
-    print(("<io.py> Transforming vtk and vtp files from directory: ", input_dir))
-    print(("<io.py> Total number of files found: ", num_pd))
-    print(("<io.py> Writing output to directory: ", output_dir))
+    print("<io.py> Transforming vtk and vtp files from directory: ", input_dir)
+    print("<io.py> Total number of files found: ", num_pd)
+    print("<io.py> Writing output to directory: ", output_dir)
     print("<io.py> =======================================")
 
     if not os.path.exists(output_dir):
@@ -379,7 +379,7 @@ def transform_polydatas_from_diskOLD(input_dir, transforms, output_dir):
         fname = input_pd_fnames[idx]
         subject_id = os.path.splitext(os.path.basename(fname))[0]
         out_fname = os.path.join(output_dir, subject_id + '_reg.vtk')
-        print(("<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", fname, "->", out_fname, "..."))
+        print("<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", fname, "->", out_fname, "...")
         pd = read_polydata(fname)
         # Transform it.
         transformer = vtk.vtkTransformPolyDataFilter()
@@ -518,7 +518,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
 
             displacements_LPS = list()
 
-            print(("LPS grid for storing transform:", grid_points_LPS[0], grid_points_LPS[-1], grid_spacing))
+            print("LPS grid for storing transform:", grid_points_LPS[0], grid_points_LPS[-1], grid_spacing)
 
             lps_points = vtk.vtkPoints()
             lps_points2 = vtk.vtkPoints()
@@ -724,7 +724,7 @@ class LateralityResults:
         """Read output (class laterality.LateralityResults) for one subject."""
 
         if not os.path.isdir(dirname):
-            print(("<io.py> error: directory does not exist.", dirname))
+            print("<io.py> error: directory does not exist.", dirname)
 
         if readpd:
             # input polydata

@@ -114,7 +114,7 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print(("<wm_assess_cluster_location_by_hemisphere.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory."))
+        print("<wm_assess_cluster_location_by_hemisphere.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
         exit()
     
     clusterLocationFile = args.clusterLocationFile
@@ -122,7 +122,7 @@ def main():
     if clusterLocationFile is not None:
         print(clusterLocationFile)
         if not os.path.exists(clusterLocationFile):
-            print(("<wm_assess_cluster_location_by_hemisphere.py> Cluster location file is assigned but the file", clusterLocationFile, "does not exist."))
+            print("<wm_assess_cluster_location_by_hemisphere.py> Cluster location file is assigned but the file", clusterLocationFile, "does not exist.")
             exit()
         else:
             location_data = numpy.loadtxt(open(clusterLocationFile, "rb"),
@@ -135,14 +135,14 @@ def main():
         if (args.hemispherePercentThreshold > 0.5) & (args.hemispherePercentThreshold <= 1.0):
             hemisphere_percent_threshold = args.hemispherePercentThreshold
         else:
-            print(("<wm_assess_cluster_location_by_hemisphere.py> Hemisphere fiber percent threshold", args.hemispherePercentThreshold, "must be between 0.5 and 1. (0.6 is recommended)."))
+            print("<wm_assess_cluster_location_by_hemisphere.py> Hemisphere fiber percent threshold", args.hemispherePercentThreshold, "must be between 0.5 and 1. (0.6 is recommended).")
             exit()
     
     outdir = args.outputDirectory
     if outdir is not None:
         print("<wm_assess_cluster_location_by_hemisphere.py> Separated clusters will be ouput.")
         if not os.path.exists(outdir):
-            print(("<wm_assess_cluster_location_by_hemisphere.py> Output directory", outdir, "does not exist, creating it."))
+            print("<wm_assess_cluster_location_by_hemisphere.py> Output directory", outdir, "does not exist, creating it.")
             os.makedirs(outdir)
     
         outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')
@@ -158,14 +158,14 @@ def main():
     
     print("<wm_assess_cluster_location_by_hemisphere.py> Starting computation.")
     print("")
-    print(("=====input directory ======\n", args.inputDirectory))
+    print("=====input directory ======\n", args.inputDirectory)
     print("==========================")
     print("")
     
     if location_data is None:
-        print(("<wm_assess_cluster_location_by_hemisphere.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold))
+        print("<wm_assess_cluster_location_by_hemisphere.py> Hemisphere fiber percent threshold", hemisphere_percent_threshold)
     else:
-        print(("<wm_assess_cluster_location_by_hemisphere.py> Separating clusters using location file:", clusterLocationFile))
+        print("<wm_assess_cluster_location_by_hemisphere.py> Separating clusters using location file:", clusterLocationFile)
     print("")
     
     # relatively high number of points for accuracy
@@ -176,10 +176,10 @@ def main():
     number_of_clusters = len(input_polydatas)
     
     if location_data is not None and number_of_clusters != len(location_data):
-        print(("<wm_assess_cluster_location_by_hemisphere.py> Error: Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_clusters, len(location_data))))
+        print("<wm_assess_cluster_location_by_hemisphere.py> Error: Number of clusters (%d) is not the same as in the location file (%d)." % (number_of_clusters, len(location_data)))
         exit()
     
-    print(("<wm_assess_cluster_location_by_hemisphere.py> Input number of vtk/vtp files: ", number_of_clusters))
+    print("<wm_assess_cluster_location_by_hemisphere.py> Input number of vtk/vtp files: ", number_of_clusters)
     
     # midsagittal alignment step to get transform to apply to each polydata
     # alternatively could use the transform into atlas space that is found
@@ -193,7 +193,7 @@ def main():
         fname_base = os.path.basename(fname)
     
         # read data
-        print(("<wm_assess_cluster_location_by_hemisphere.py> Separating input file:", fname))
+        print("<wm_assess_cluster_location_by_hemisphere.py> Separating input file:", fname)
         pd = wma.io.read_polydata(fname)
     
         flag_location, mask_location = read_mask_location_from_vtk(pd)
@@ -257,7 +257,7 @@ def main():
     
         # for sanity check 
         if len(numpy.where(mask_location ==0)[0]) > 1:
-            print(("Error: Not all fibers in", fname, "is labeled with hemisphere location infromation."))
+            print("Error: Not all fibers in", fname, "is labeled with hemisphere location infromation.")
             exit()
     
         if outdir is not None:

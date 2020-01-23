@@ -28,19 +28,19 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print(("<create_mrml> Error: Input directory", args.inputDirectory, "does not exist."))
+        print("<create_mrml> Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
     mrml_filename = "scene.mrml"
     
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_files = len(input_polydatas)
-    print(("<quality_control> Found ", number_of_files, "vtk files in input directory:", args.inputDirectory))
+    print("<quality_control> Found ", number_of_files, "vtk files in input directory:", args.inputDirectory)
     
     # define R, G, B colors
     # hack a colormap. 0..255 values for each
     step = int(100*255.0 / (number_of_files-1))
-    print((step, number_of_files))
+    print(step, number_of_files)
     R = numpy.array(list(range(0,100*255+1, step))) / 100.0
     G = numpy.abs(list(range(100*-127,100*128+1, step)))* 2.0 / 100.0
     B = numpy.array(list(range(100*255+1,0, -step))) / 100.0

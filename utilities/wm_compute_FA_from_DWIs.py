@@ -40,16 +40,16 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectoryDWI):
-    print(("Error: Input directory", args.inputDirectory, "does not exist."))
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.isdir(args.inputDirectoryMask):
-    print(("Error: Input directory", args.inputDirectory, "does not exist."))
+    print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print(("<register> Output directory", outdir, "does not exist, creating it."))
+    print("<register> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
 # get inputs
@@ -62,7 +62,7 @@ for (dwi, mask) in zip(dwi_list, mask_list):
     fname_out_dti = os.path.join(args.outputDirectory, subject_id + '_DTI.nhdr')
     fname_out_b0 = os.path.join(args.outputDirectory, subject_id + '_B0.nhdr')
     fname_out_fa = os.path.join(args.outputDirectory, subject_id + '_FA.nhdr')
-    print(("/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DWIToDTIEstimation -m ", mask, dwi, fname_out_dti, fname_out_b0))
-    print(("/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DiffusionTensorScalarMeasurements", fname_out_dti, fname_out_fa, "-e FractionalAnisotropy &"))
+    print("/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DWIToDTIEstimation -m ", mask, dwi, fname_out_dti, fname_out_b0)
+    print("/Applications/Slicer.app/Contents/lib/Slicer-4.4/cli-modules/DiffusionTensorScalarMeasurements", fname_out_dti, fname_out_fa, "-e FractionalAnisotropy &")
 
     

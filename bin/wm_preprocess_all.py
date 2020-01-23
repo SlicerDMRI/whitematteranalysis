@@ -50,36 +50,36 @@ def main()
     
     
     if not os.path.isdir(args.inputDirectory):
-        print(("Error: Input directory", args.inputDirectory, "does not exist."))
+        print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print(("Output directory", outdir, "does not exist, creating it."))
+        print("Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     print("wm_laterality. Starting white matter laterality computation.")
     print("")
-    print(("=====input directory======\n", args.inputDirectory))
-    print(("=====output directory=====\n", args.outputDirectory))
+    print("=====input directory======\n", args.inputDirectory)
+    print("=====output directory=====\n", args.outputDirectory)
     print("==========================")
     
     if args.numberOfFibers is not None:
-        print(("fibers to retain per subject: ", args.numberOfFibers))
+        print("fibers to retain per subject: ", args.numberOfFibers)
     else:
         print("fibers to retain per subject: ALL")
     
     if args.fiberLength is not None:
-        print(("minimum length of fibers to retain (in mm): ", args.fiberLength))
+        print("minimum length of fibers to retain (in mm): ", args.fiberLength)
     else:
         print("minimum length of fibers to retain (in mm): 0")
     
-    print(('CPUs detected:', multiprocessing.cpu_count()))
+    print('CPUs detected:', multiprocessing.cpu_count())
     if args.numberOfJobs is not None:
         parallel_jobs = args.numberOfJobs
     else:
         parallel_jobs = multiprocessing.cpu_count()
-    print(('Using N jobs:', parallel_jobs))
+    print('Using N jobs:', parallel_jobs)
     
     if args.flag_retaindata:
         print("Retain all data stored along the tractography.")
@@ -96,7 +96,7 @@ def main()
     # Loop over input DWIs
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
     
-    print(("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas)))
+    print("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas))
     
     # for testing
     #inputPolyDatas = inputPolyDatas[0:2]
@@ -107,12 +107,12 @@ def main()
         subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
         id_msg = "<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)  
         msg = "**Starting subject:", subjectID
-        print((id_msg + msg))
+        print(id_msg + msg)
     
         # read input vtk data
         # -------------------
         msg = "**Reading input:", subjectID
-        print((id_msg + msg))
+        print(id_msg + msg)
     
         wm = wma.io.read_polydata(inputPolyDatas[sidx])
     
@@ -124,9 +124,9 @@ def main()
         wm2 = None
         if args.fiberLength is not None:
             msg = "**Preprocessing:", subjectID
-            print((id_msg + msg))
+            print(id_msg + msg)
             wm2 = wma.filter.preprocess(wm, args.fiberLength, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
-            print(("Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines))
+            print("Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines)
     
         if wm2 is None:
             wm2 = wm
@@ -138,11 +138,11 @@ def main()
         wm3 = None
         if args.numberOfFibers is not None:
             msg = "**Downsampling input:", subjectID, " number of fibers: ", args.numberOfFibers
-            print((id_msg + msg))
+            print(id_msg + msg)
     
             # , preserve_point_data=True needs editing of preprocess function to use mask function
             wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
-            print(("Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines))
+            print("Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines)
     
         if wm3 is None:
             wm3 = wm2
@@ -152,13 +152,13 @@ def main()
         # outputs
         # -------------------
         msg = "**Writing output data for subject:", subjectID
-        print((id_msg, msg))
+        print(id_msg, msg)
     
         fname = os.path.join(args.outputDirectory, subjectID+'_pp.vtp')
         try:
-            print(("Writing output polydata", fname, "..."))
+            print("Writing output polydata", fname, "...")
             wma.io.write_polydata(wm3, fname)
-            print(("Wrote output", fname, "."))
+            print("Wrote output", fname, "."
         except:
             print("Unknown exception in IO")
             raise

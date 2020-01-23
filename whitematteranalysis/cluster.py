@@ -107,7 +107,10 @@ class ClusterAtlas:
             print("Error: Atlas file", fname_polydata, "does not exist.")
             raise "<cluster.py> I/O error"
 
-        atlas = pickle.load(open(fname_atlas,'rb'))
+        try:
+            atlas = pickle.load(open(fname_atlas,'rb'))
+        except UnicodeDecodeError:
+            atlas = pickle.load(open(fname_atlas,'rb'), encoding="latin1")
         atlas.nystrom_polydata = io.read_polydata(fname_polydata)
         print("<cluster.py> Loaded atlas", atlas_name, "from", directory, ".")
         print("<cluster.py> Atlas Nystrom polydata sample:", atlas.nystrom_polydata.GetNumberOfLines(), \
@@ -505,7 +508,7 @@ def spectral(input_polydata, number_of_clusters=200,
         if 0:
             # This is extremely slow, but leave code here if ever wanted for testing
             cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
-            print(("Silhouette Coefficient: %0.3f" % cluster_metric))
+            print("Silhouette Coefficient: %0.3f" % cluster_metric)
  
     else:
         print("ERROR: Unknown centroid finder", centroid_finder)

@@ -47,16 +47,16 @@ def main():
     print("<quality_control> Starting...")
     
     if not os.path.exists(args.inputTract1):
-        print(("<quality_control> Error: Input tract 1", args.inputTract1, "does not exist."))
+        print("<quality_control> Error: Input tract 1", args.inputTract1, "does not exist.")
         exit()
     
     if not os.path.exists(args.inputTract2):
-        print(("<quality_control> Error: Input tract 2", args.inputTract2, "does not exist."))
+        print("<quality_control> Error: Input tract 2", args.inputTract2, "does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print(("<quality_control> Output directory", output_dir, "does not exist, creating it."))
+        print("<quality_control> Output directory", output_dir, "does not exist, creating it.")
         os.makedirs(output_dir)
     
     input_polydatas = []
@@ -73,7 +73,7 @@ def main():
     appender = vtk.vtkAppendPolyData()
     for fname in input_polydatas:
         subject_id = os.path.splitext(os.path.basename(fname))[0]
-        print(("Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id))
+        print("Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id)
     
         # Read data
         pd = wma.io.read_polydata(fname)

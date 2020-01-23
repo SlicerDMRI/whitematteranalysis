@@ -20,13 +20,13 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
         
     if number_of_fibers is not None:
         if verbose:
-            print(("<render.py> Downsampling vtkPolyData:", number_of_fibers))
+            print("<render.py> Downsampling vtkPolyData:", number_of_fibers)
         # downsample if requested
         input_polydata = filter.downsample(input_polydata, number_of_fibers, preserve_point_data=True, preserve_cell_data=True, verbose=verbose)
 
     if data_name is not None:
         if verbose:
-            print(("<render.py> Visualizing data:", data_name))
+            print("<render.py> Visualizing data:", data_name)
         if data_mode == "Cell":
             input_polydata.GetCellData().SetActiveScalars(data_name)
         if data_mode == "Point":
@@ -210,7 +210,7 @@ class RenderPolyData:
                 self.render_RGB = True
                 self.renderer.RemoveActor2D(self.scalarbar)
         if verbose:
-            print(("<render.py> RGB: ", self.render_RGB))
+            print("<render.py> RGB: ", self.render_RGB)
 
         if data_mode == "Cell":
             mapper.SetScalarModeToUseCellData()
@@ -377,10 +377,10 @@ class RenderPolyData:
     def save_views(self, directory=".", subjectID=None,  verbose=True):
 
         if verbose:
-            print(("<render.py> Saving rendered views to disk:", directory))
+            print("<render.py> Saving rendered views to disk:", directory)
         
         if not os.path.isdir(directory):
-            print(("<render.py> ERROR: directory does not exist.", directory))
+            print("<render.py> ERROR: directory does not exist.", directory)
             return
 
         #ext = ".png"

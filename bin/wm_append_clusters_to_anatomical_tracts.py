@@ -32,7 +32,7 @@ args = parser.parse_args()
 
 inputdir = os.path.abspath(args.inputDirectory)
 if not os.path.isdir(args.inputDirectory):
-    print(("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", args.inputDirectory, "does not exist."))
+    print("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 inputdir_left = os.path.join(inputdir, 'tracts_left_hemisphere')
@@ -40,18 +40,18 @@ inputdir_right = os.path.join(inputdir, 'tracts_right_hemisphere')
 inputdir_comm = os.path.join(inputdir, 'tracts_commissural')
 
 if not os.path.isdir(inputdir_left):
-    print(("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_left, "does not exist."))
+    print("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_left, "does not exist.")
     exit()
 if not os.path.isdir(inputdir_right):
-    print(("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_right, "does not exist."))
+    print("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_right, "does not exist.")
     exit()
 if not os.path.isdir(inputdir_comm):
-    print(("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_comm, "does not exist."))
+    print("<wm_append_clusters_to_anatomical_tracts> Error: Input directory", inputdir_comm, "does not exist.")
     exit()
 
 atlasdir = os.path.abspath(args.atlasDirectory)
 if not os.path.isdir(args.atlasDirectory):
-    print(("<wm_append_clusters_to_anatomical_tracts> Error: Atlas directory", args.atlasDirectory, "does not exist."))
+    print("<wm_append_clusters_to_anatomical_tracts> Error: Atlas directory", args.atlasDirectory, "does not exist.")
     exit()
 
 def list_mrml_files(input_dir):
@@ -65,11 +65,11 @@ mrml_files = list_mrml_files(atlasdir)
 if len(mrml_files) == 0:
     print("<wm_append_clusters_to_anatomical_tracts> Error: There is no mrml files in the input atlas folder.")
 else:
-    print(("<wm_append_clusters_to_anatomical_tracts>", len(mrml_files)-1, "mrml files are detected."))
+    print("<wm_append_clusters_to_anatomical_tracts>", len(mrml_files)-1, "mrml files are detected.")
 
 outdir = os.path.abspath(args.outputDirectory)
 if not os.path.exists(args.outputDirectory):
-    print(("<wm_append_clusters_to_anatomical_tracts> Output directory", args.outputDirectory, "does not exist, creating it."))
+    print("<wm_append_clusters_to_anatomical_tracts> Output directory", args.outputDirectory, "does not exist, creating it.")
     os.makedirs(outdir)
 
 def output_appended_tract(cluster_vtp_list, outputfile):
@@ -108,12 +108,12 @@ print("<wm_append_clusters_to_anatomical_tracts> hemispheric tracts (left and ri
 tract_idx = 1
 for tract in hemispheric_tracts:
 
-    print((" *", tract_idx, "-", tract))
+    print(" *", tract_idx, "-", tract)
     tract_idx = tract_idx + 1
     mrml = os.path.join(atlasdir, tract+".mrml")
     
     if not os.path.exists(mrml):
-        print(("<wm_append_clusters_to_anatomical_tracts> Error: Cannot locate", mrml))
+        print("<wm_append_clusters_to_anatomical_tracts> Error: Cannot locate", mrml)
         exit()
 
     cluster_vtp_list_left = list()
@@ -126,13 +126,13 @@ for tract in hemispheric_tracts:
 
             cluster_vtp_filename_left = os.path.join(inputdir_left, cluster_vtp_filename);
             if not os.path.exists(cluster_vtp_filename_left):
-                print(("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_left, "does not exist."))
+                print("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_left, "does not exist.")
                 exit()
             cluster_vtp_list_left.append(cluster_vtp_filename_left)
 
             cluster_vtp_filename_right = os.path.join(inputdir_right, cluster_vtp_filename);
             if not os.path.exists(cluster_vtp_filename_right):
-                print(("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_right, "does not exist."))
+                print("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_right, "does not exist.")
                 exit()
             cluster_vtp_list_right.append(cluster_vtp_filename_right)
 
@@ -145,13 +145,13 @@ for tract in hemispheric_tracts:
 print("<wm_append_clusters_to_anatomical_tracts> commissural tracts: ")
 for tract in commissural_tracts:
 
-    print((" *", tract_idx, "-", tract))
+    print(" *", tract_idx, "-", tract)
     tract_idx = tract_idx + 1
     
     mrml = os.path.join(atlasdir, tract+".mrml")
     
     if not os.path.exists(mrml):
-        print(("<wm_append_clusters_to_anatomical_tracts> Error: Cannot locate", mrml))
+        print("<wm_append_clusters_to_anatomical_tracts> Error: Cannot locate", mrml)
         exit()
 
     cluster_vtp_list_comm = list()
@@ -163,7 +163,7 @@ for tract in commissural_tracts:
 
             cluster_vtp_filename_comm = os.path.join(inputdir_comm, cluster_vtp_filename);
             if not os.path.exists(cluster_vtp_filename_comm):
-                print(("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_comm, "does not exist."))
+                print("<wm_append_clusters_to_anatomical_tracts> Error:", cluster_vtp_filename_comm, "does not exist.")
                 exit()
             cluster_vtp_list_comm.append(cluster_vtp_filename_comm)
 
@@ -182,6 +182,6 @@ def list_cluster_files(input_dir):
 list_tracts= list_cluster_files(outdir)
 
 print('')
-print(('<wm_append_clusters_to_anatomical_tracts> Appended tracts can be found at', outdir, '\n'))
-print(('<wm_append_clusters_to_anatomical_tracts> A total of', len(list_tracts), 'tracts\n'))
+print('<wm_append_clusters_to_anatomical_tracts> Appended tracts can be found at', outdir, '\n')
+print('<wm_append_clusters_to_anatomical_tracts> A total of', len(list_tracts), 'tracts\n')
 
