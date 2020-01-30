@@ -88,8 +88,8 @@ setup(
     long_description=open('README.md').read(),
 
     setup_requires = ['cython>=0.22', 'numpy==1.16.2'],
-    install_requires = ['setuptools>=18.0', 'scipy', 'vtk',
-                        'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib<3.0', 'nibabel'],
+    install_requires = ['setuptools', 'scipy', 'vtk',
+                        'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib', 'nibabel'],
     
     ext_modules = [
         Extension('whitematteranalysis.fibers', sources=['whitematteranalysis/fibers.pyx']),
