@@ -87,9 +87,9 @@ setup(
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
 
-    setup_requires = ['cython>=0.22', 'numpy==1.16.2'],
+    setup_requires = ['cython>=0.22', 'numpy'],
     install_requires = ['setuptools', 'scipy', 'vtk',
-                        'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib', 'nibabel'],
+                        'joblib', 'statsmodels', 'xlrd', 'matplotlib', 'nibabel'],
     
     ext_modules = [
         Extension('whitematteranalysis.fibers', sources=['whitematteranalysis/fibers.pyx']),
