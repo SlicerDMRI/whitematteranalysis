@@ -15,8 +15,7 @@ except:
 #-----------------
 parser = argparse.ArgumentParser(
     description="Append multiple fiber clusters into anatomical tracts based on the ORG atlas.",
-    epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu",
-    version='1.0')
+    epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
 
 parser.add_argument(
     'inputDirectory',

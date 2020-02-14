@@ -220,11 +220,11 @@ def main():
                 mask_location[fibers.index_right_hem] = 2
                 mask_location[fibers.index_commissure] = 3
             else:
-                if location_data[c_idx][1] == 'c' or location_data[c_idx][1] == 'ng':
+                if location_data[c_idx][1] == b'c' or location_data[c_idx][1] == b'ng':
     
                     mask_location[:] = 3
     
-                elif location_data[c_idx][1] == 'h':
+                elif location_data[c_idx][1] == b'h':
                     hemisphere_percent_threshold = 0.5001
     
                     # internal representation for fast similarity computation
