@@ -14,7 +14,7 @@ except:
 
 import matplotlib.pyplot as plt
 
-def main()
+def main():
     #-----------------
     # Parse arguments
     #-----------------

@@ -13,7 +13,7 @@ except:
     print("Error importing white matter analysis package\n")
     raise
 
-def main()
+def main():
     #-----------------
     # Parse arguments
     #-----------------

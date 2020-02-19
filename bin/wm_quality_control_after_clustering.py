@@ -20,7 +20,7 @@ except:
     print("<wm_cluster.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0
 
-def main()
+def main():
     #-----------------
     # Parse arguments
     #-----------------
