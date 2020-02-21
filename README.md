@@ -10,7 +10,7 @@ WhiteMatterAnalysis (WMA) provides fiber clustering and tractography analysis to
 
 Miniconda is a nice option becuase it includes pip, setuptools, and all library dependencies (such as VTK and scipy).
 
-  - Download and install Miniconda (**Python 4.7**) from https://conda.io/miniconda.html
+  - Download and install Miniconda (**Python 3.7**) from https://conda.io/miniconda.html
 
 ## 2. Install whitematteranalysis with pip:
 
