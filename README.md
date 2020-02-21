@@ -6,17 +6,18 @@ whitematteranalysis
 WhiteMatterAnalysis (WMA) provides fiber clustering and tractography analysis tools.
 
 # WMA Installation
-## 1. Install Python 2:
+## 1. Install Python 3:
 
 Miniconda is a nice option becuase it includes pip, setuptools, and all library dependencies (such as VTK and scipy).
 
-  - Download and install Miniconda (**Python 2.7**) from https://conda.io/miniconda.html
+  - Download and install Miniconda (**Python 4.7**) from https://conda.io/miniconda.html
 
 ## 2. Install whitematteranalysis with pip:
 
 The following command will use pip to install whitematteranalysis from this source repository and all library dependencies:
 
-      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
+      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git@python2to3
+
 
   (Note: On MacOS, to able to use pip, X-code needs to be installed using `xcode-select --install`.)
 
