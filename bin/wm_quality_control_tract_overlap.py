@@ -29,8 +29,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Perform quality control to render the overlap of two tracts.",
-        epilog="Written by Fan Zhang (fzhang@bwh.harvard.edu).",
-        version='1.0')
+        epilog="Written by Fan Zhang (fzhang@bwh.harvard.edu).")
     
     parser.add_argument(
         'inputTract1',
