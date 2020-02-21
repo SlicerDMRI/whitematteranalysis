@@ -23,12 +23,12 @@ class TractMeasurement:
 
     def load(self):
         if not os.path.isfile(self.measurement_file):
-            print "<tract_measurement.py> Error: Input file", self.measurement_file , "does not exist."
+            print("<tract_measurement.py> Error: Input file", self.measurement_file , "does not exist.")
             raise AssertionError
 
         separator_list = ['Comma', 'Tab', 'Space'] 
         if not any(self.separator in s for s in separator_list):
-            print "<tract_measurement.py> Error: Separator should be one of Comma, Tab or Space. "
+            print("<tract_measurement.py> Error: Separator should be one of Comma, Tab or Space. ")
             raise AssertionError
         if self.separator == 'Comma':
             separator_char = ','
@@ -39,20 +39,20 @@ class TractMeasurement:
 
         hierarchy_list = ['Row', 'Column'] 
         if not any(self.hierarchy in s for s in hierarchy_list):
-            print "<tract_measurement.py> Error: Hierarchy should be one of Row or Column. "
+            print("<tract_measurement.py> Error: Hierarchy should be one of Row or Column. ")
             raise AssertionError
 
         txt_matrix = []
         with open(self.measurement_file, 'r') as txtfile:
             reader = csv.reader(txtfile, delimiter=separator_char, skipinitialspace=True,  quoting=csv.QUOTE_NONE)
             for row in reader:
-                row = map(str.strip, row)
+                row = list(map(str.strip, row))
                 row = [('NAN' if (len(r)==0) else r) for r in row] # Replace '' to NAN
                 txt_matrix.append(row)
 
         if self.hierarchy == 'Row':
             # TODO: transfer Row output into list
-            print "<tract_measurement.py> Error: Only support Column currently. "
+            print("<tract_measurement.py> Error: Only support Column currently. ")
             raise AssertionError
 
         tmp_matrix = numpy.array(txt_matrix)
@@ -67,12 +67,12 @@ class TractMeasurement:
         # Simple check if the first two fields are Num_Point and Num_Fiber
         header = self.measurement_header
         if not (header[0] == 'Num_Fibers' or header[1] == 'Num_Fibers'):
-            print "<tract_measurement.py> Error: Measurement loading failed. One of three first fields should contain Num_Fibers. "
+            print("<tract_measurement.py> Error: Measurement loading failed. One of three first fields should contain Num_Fibers. ")
             raise AssertionError
 
     def get_measurements_by_name(self, query_header_name):
         if not numpy.sum(self.measurement_header == query_header_name) == 1:
-            print " Error: Header", query_header_name, "cannot be found. Select from:\n", self.measurement_header
+            print(" Error: Header", query_header_name, "cannot be found. Select from:\n", self.measurement_header)
             return None
 
         header_index = numpy.where(self.measurement_header == query_header_name)[0][0]
@@ -80,7 +80,7 @@ class TractMeasurement:
 
     def get_measurements_by_index(self, query_index):
         if query_index >= self.measurement_header.shape[0]:
-            print " Error: Index", query_index, "should range from 0 to", self.measurement_header.shape[0]
+            print(" Error: Index", query_index, "should range from 0 to", self.measurement_header.shape[0])
 
         return self.measurement_matrix[:, query_index]
 
@@ -129,25 +129,25 @@ class Demographics:
 
     def load(self):
         if not os.path.isfile(self.demographics_file):
-            print "<tract_measurement.py> Error: Input file", self.demographics_file , "does not exist."
+            print("<tract_measurement.py> Error: Input file", self.demographics_file , "does not exist.")
             raise AssertionError
 
         if os.path.splitext(self.demographics_file)[1] != '.xls' and os.path.splitext(self.demographics_file)[1] != '.xlsx':
-            print "<tract_measurement.py> Error: Either .xls or .xlsx file format is required."
+            print("<tract_measurement.py> Error: Either .xls or .xlsx file format is required.")
             raise AssertionError
 
         try:
             wb = xlrd.open_workbook(self.demographics_file)
             sh = wb.sheet_by_index(0)
-            self.demographics_header = map(str, sh.row_values(0))
+            self.demographics_header = list(map(str, sh.row_values(0)))
         except:
-            print "<tract_measurement.py> Error: Fail to load:", self.demographics_file
-            print "                       Please make sure the file has the demographics in the first sheet."
+            print("<tract_measurement.py> Error: Fail to load:", self.demographics_file)
+            print("                       Please make sure the file has the demographics in the first sheet.")
             raise AssertionError
 
         self.demographics = list()
         for h in range(len(self.demographics_header)):
-            col = map(str, sh.col_values(h)[1:])
+            col = list(map(str, sh.col_values(h)[1:]))
             self.demographics.append(col)
 
         self.case_id_list = self.demographics[0]
@@ -157,13 +157,13 @@ class Demographics:
         # Simple check if the first two fields are subjectID and groupID
         header = self.demographics_header
         if header[0] != 'subjectID' or header[1] != 'groupID':
-            print "<tract_measurement.py> Error: Demographics loading failed. \n" \
-                  "                       First two fields extracted are [", header[0], "] and [", header[1], "], which are expected to be [ subjectID ] and [ groupID ]."
+            print("<tract_measurement.py> Error: Demographics loading failed. \n" \
+                  "                       First two fields extracted are [", header[0], "] and [", header[1], "], which are expected to be [ subjectID ] and [ groupID ].")
             raise AssertionError
 
     def get_demographics_by_index(self, query_index):
         if query_index >= len(self.demographics_header):
-            print " Error: Index", query_index, "should range from 0 to", len(self.demographics_header)
+            print(" Error: Index", query_index, "should range from 0 to", len(self.demographics_header))
 
         return self.demographics[query_index]
 
@@ -172,7 +172,7 @@ class Demographics:
             if query_header_name == self.demographics_header[h]:
                 return self.demographics[h]
 
-        print " Error: Header", query_header_name, "cannot be found. Select from:\n", self.demographics_header
+        print(" Error: Header", query_header_name, "cannot be found. Select from:\n", self.demographics_header)
         return None
 
 def load_demographics(xlsx):

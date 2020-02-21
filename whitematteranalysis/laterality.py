@@ -26,13 +26,12 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<laterality.py> Failed to import joblib, cannot multiprocess."
-    print "<laterality.py> Please install joblib for this functionality."
+    print("<laterality.py> Failed to import joblib, cannot multiprocess.")
+    print("<laterality.py> Please install joblib for this functionality.")
 
-from fibers import FiberArray
-import similarity
-from io import LateralityResults
-import filter
+from .fibers import FiberArray
+from .io import LateralityResults
+from . import filter, similarity
 
 def compute_laterality_index(left, right, idx=None):
     ''' Compute laterality index from left and right hemisphere quantities.'''
@@ -140,7 +139,7 @@ class WhiteMatterLaterality:
             # Now convert to array with points and hemispheres as above
             self.fibers.convert_from_polydata(input_vtk_polydata)
             if self.verbose:
-                print "<laterality.py> Using ", num_fibers , " fibers per hemisphere."
+                print("<laterality.py> Using ", num_fibers , " fibers per hemisphere.")
                 
         # square sigma for later Gaussian
         sigmasq = self.sigma * self.sigma
@@ -160,17 +159,17 @@ class WhiteMatterLaterality:
 
         # tell user we are doing something
         if self.verbose:
-            print "<laterality.py> Fibers in each hemisphere.", \
+            print("<laterality.py> Fibers in each hemisphere.", \
                 "L:", self.fibers.number_left_hem, \
                 "R:", self.fibers.number_right_hem, \
-                "/ Total:", self.fibers.number_of_fibers
-            print "<laterality.py> Starting to compute laterality indices"
+                "/ Total:", self.fibers.number_of_fibers)
+            print("<laterality.py> Starting to compute laterality indices")
 
         # run the computation, either in parallel or not
         if (USE_PARALLEL & (self.parallel_jobs > 1)):
             if self.verbose:
-                print "<laterality.py> Starting parallel code. Processes:", \
-                    self.parallel_jobs
+                print("<laterality.py> Starting parallel code. Processes:", \
+                    self.parallel_jobs)
 
             # compare to right hemisphere (reflect fiber first if in left hem)
             ret = Parallel(
