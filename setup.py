@@ -77,7 +77,7 @@ class LazyCommandClass(dict):
 ########################################################################
 
 
-setup_requires = ['cython>=0.22', 'numpy']
+setup_requires = ['cython', 'numpy']
 setup(
     name='WhiteMatterAnalysis',
     version='0.3.0',
@@ -89,8 +89,8 @@ setup(
     long_description=open('README.md').read(),
   
     setup_requires = setup_requires,
-    install_requires = setup_requires + ['setuptools>=18.0', 'scipy', 'vtk',
-                        'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib<3.0', 'nibabel'],
+    install_requires = setup_requires + ['setuptools', 'scipy', 'vtk',
+                        'joblib', 'statsmodels', 'xlrd', 'matplotlib', 'nibabel'],
     
     ext_modules = [
         Extension('whitematteranalysis.fibers', sources=['whitematteranalysis/fibers.pyx']),
