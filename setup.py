@@ -87,7 +87,7 @@ setup(
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
-
+  
     setup_requires = setup_requires,
     install_requires = setup_requires + ['setuptools>=18.0', 'scipy', 'vtk',
                         'joblib', 'statsmodels==0.8', 'xlrd', 'matplotlib<3.0', 'nibabel'],
