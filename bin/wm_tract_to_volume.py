@@ -137,5 +137,5 @@ def main():
     
     print('Done: save tract map to', args.outputVol)
 
-if __main__ == '__main__':
+if __name__ == '__main__':
     main()
