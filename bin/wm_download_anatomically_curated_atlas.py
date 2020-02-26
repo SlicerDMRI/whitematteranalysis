@@ -159,4 +159,4 @@ def main():
     print('<wm_download_org_atlas> Successfully downloaded to', outdir)
 
 if __name__ == '__main__':
-    print()
+    main()
