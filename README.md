@@ -16,7 +16,7 @@ Miniconda is a nice option becuase it includes pip, setuptools, and all library 
 
 The following command will use pip to install whitematteranalysis from this source repository and all library dependencies:
 
-      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git@python2to3
+      pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
 
 
   (Note: On MacOS, to able to use pip, X-code needs to be installed using `xcode-select --install`.)
