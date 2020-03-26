@@ -2,7 +2,9 @@
 
 This tutorial explains how to perform whole-brain tractography parcellation using the [whitematteranalysis (WMA)](https://github.com/SlicerDMRI/whitematteranalysis) software and the anatomically curated [O'Donnell Research Group (ORG)](http://dmri.slicer.org/atlases/) white matter atlas.
 
-On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**. <!-- Please see another [tutorial]() for batch processing of tractography data from **_multiple subjects_**. -->
+On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**.
+
+   > We also provide a master shell script ```wm_apply_ORG_atlas_to_subject.sh``` that enables running the whole pipeline in one command. However, we recommend the users to run through the following step-by-step tutorial first to get familiar with the whole fiber clustering pipeline.
 
 ## 1. Software prerequisites
    - Install [3D Slicer](https://download.slicer.org/)
