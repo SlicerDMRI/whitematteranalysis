@@ -12,8 +12,8 @@ try:
     USE_SCIPY = 1
 except ImportError:
     USE_SCIPY = 0
-    print "<congeal.py> Failed to import  scipy.optimize, cannot align or register."
-    print "<congeal.py> Please install  scipy.optimize for this functionality."
+    print("<congeal.py> Failed to import  scipy.optimize, cannot align or register.")
+    print("<congeal.py> Please install  scipy.optimize for this functionality.")
 
 import numpy
 import sys
@@ -24,8 +24,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<congeal.py> Failed to import joblib, cannot multiprocess."
-    print "<congeal.py> Please install joblib for this functionality."
+    print("<congeal.py> Failed to import joblib, cannot multiprocess.")
+    print("<congeal.py> Please install joblib for this functionality.")
 
 import whitematteranalysis as wma
 
@@ -106,7 +106,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
         #self.optimizer = "Powell"
         self.optimizer = "Cobyla"
         #self.optimizer = "BFGS"
-        print "OPTIMIZER:", self.optimizer
+        print("OPTIMIZER:", self.optimizer)
 
     def initialize_nonrigid_grid(self):
         self.target_landmarks = list()
@@ -129,7 +129,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
             grid = self.nonrigid_grid_10
             grid_order = self.grid_order_10
         else:
-            print "<congeal_multisubject.py> Error: Unknown nonrigid grid mode:", self.nonrigid_grid_resolution
+            print("<congeal_multisubject.py> Error: Unknown nonrigid grid mode:", self.nonrigid_grid_resolution)
         tmp = list()
         for r in grid:
             for a in grid:
@@ -163,7 +163,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print "O:",  obj, "X:", current_x
+            print("O:",  obj, "X:", current_x)
         #print "X:", self._x_opt
         return obj
 
@@ -255,7 +255,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
         self.final_transform = numpy.zeros(self.initial_transform.shape)
 
         if self.verbose:
-            print "<congeal.py> Initial value for X:", self.initial_transform
+            print("<congeal.py> Initial value for X:", self.initial_transform)
 
         if self.optimizer == "Cobyla":
 
@@ -298,7 +298,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
                                                                            factr=1e12,
                                                                            epsilon=self.final_step,
                                                                            iprint=0)
-            print f, dict
+            print(f, dict)
 
         elif self.optimizer == "Powell":
             # Test optimization with Powell's method
@@ -312,13 +312,13 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print "TRANS:", self.final_transform, "FLAG:", warnflag
+            print("TRANS:", self.final_transform, "FLAG:", warnflag)
 
         else:
-            print "Unknown optimizer."
+            print("Unknown optimizer.")
 
         if self.verbose:
-            print "O:", self.objective_function_values
+            print("O:", self.objective_function_values)
 
         # Return output transforms from this iteration
         return self.final_transform
