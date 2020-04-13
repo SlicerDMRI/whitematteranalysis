@@ -15,8 +15,7 @@ def main():
     #-----------------
     parser = argparse.ArgumentParser(
         description="Append multiple fiber clusters into one fiber tract.",
-        epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu",
-        version='1.0')
+        epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
     
     parser.add_argument(
         'inputDirectory',
