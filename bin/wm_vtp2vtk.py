@@ -34,6 +34,7 @@ def main():
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
+    outdir = args.outputDirectory
     if not os.path.exists(args.outputDirectory):
         print("Output directory", outdir, "does not exist, creating it.")
         os.makedirs(args.outputDirectory)
