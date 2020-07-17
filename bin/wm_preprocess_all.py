@@ -39,6 +39,9 @@ def main():
         '-l', action="store", dest="fiberLength", type=int,
         help='Minimum length (in mm) of fibers to keep.')
     parser.add_argument(
+        '-lmax', action="store", dest="maxFiberLength", type=int,
+        help='Maximum length (in mm) of fibers to keep.')
+    parser.add_argument(
         '-j', action="store", dest="numberOfJobs", type=int,
         help='Number of processors to use.')
     parser.add_argument(
@@ -121,10 +124,21 @@ def main():
         # remove short fibers
         # -------------------
         wm2 = None
-        if args.fiberLength is not None:
+        if args.fiberLength is not None or args.maxFiberLength is not None:
             msg = "**Preprocessing:", subjectID
             print(id_msg + msg)
-            wm2 = wma.filter.preprocess(wm, args.fiberLength, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
+
+            if args.fiberLength is not None:
+                minlen = args.fiberLength
+            else:
+                minlen = 0
+
+            if args.maxFiberLength is not None:
+                maxlen = args.maxFiberLength
+            else:
+                maxlen = None
+
+            wm2 = wma.filter.preprocess(wm, minlen, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False, max_length_mm=maxlen)
             print("Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines)
     
         if wm2 is None:
