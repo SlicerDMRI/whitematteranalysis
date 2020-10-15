@@ -4,7 +4,9 @@ This tutorial explains how to perform whole-brain tractography parcellation usin
 
 On this page, we provide step-by-step instructions to guide a user to run the entire tractography parcellation pipeline for **_an individual subject_**.
 
-   > We also provide a master shell script ```wm_apply_ORG_atlas_to_subject.sh``` that enables running the whole pipeline in one command. However, we recommend the users to run through the following step-by-step tutorial first to get familiar with the whole fiber clustering pipeline.
+   > We also provide a master shell script ```wm_apply_ORG_atlas_to_subject.sh``` (see documentation [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) that enables running the whole pipeline in one command. However, we recommend the users to run through the following step-by-step tutorial first to get familiar with the whole fiber clustering pipeline.
+   
+   > Note: ```wm_apply_ORG_atlas_to_subject.sh``` provides options to remove intermediate files to save disk space.
 
 ## 1. Software prerequisites
    - Install [3D Slicer](https://download.slicer.org/)
