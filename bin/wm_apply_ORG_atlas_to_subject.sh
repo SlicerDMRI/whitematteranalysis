@@ -452,3 +452,4 @@ elif [ $CleanFiles == 2 ]; then
 	rm -rf $OutputCaseFolder/FiberClustering/TransformedClusters/*
 fi
 
+exit
