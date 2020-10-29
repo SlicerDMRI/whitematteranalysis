@@ -77,8 +77,8 @@ def main():
     
     requested_atlas = args.requested_atlas
     
-    repo = 'https://zenodo.org/record/2648292/'
-    version = 'v1.1.1'
+    repo = 'https://zenodo.org/record/4156927/'
+    version = 'v1.2'
     
     org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
     org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
