@@ -139,9 +139,6 @@ def main():
     atlas_clusters = sorted(glob.glob(input_mask))
     input_mask = "{0}/cluster_*.vtp".format(args.inputDirectory)
     subject_clusters = sorted(glob.glob(input_mask))
-    
-    atlas_clusters = atlas_clusters[0:10]
-    subject_clusters = subject_clusters[0:10]
 
     # check these lists are the same length
     number_ac = len(atlas_clusters)
