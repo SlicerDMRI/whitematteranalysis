@@ -390,19 +390,19 @@ if [ $DiffMeasure == 1 ]; then
 	echo "<wm_apply_ORG_atlas_to_subject> Report diffusion measurements of fiber clusters."
 	if [ ! -f $SeparatedClustersFolder/diffusion_measurements_commissural.csv ]; then
 		wm_diffusion_measurements.py \
-			$SeparatedClustersFolder/tracts_commissural $SeparatedClustersFolder/diffusion_measurements_commissural.csv $FiberTractMeasurementsCLI
+			$SeparatedClustersFolder/tracts_commissural $SeparatedClustersFolder/diffusion_measurements_commissural.csv "$FiberTractMeasurementsCLI"
 	else
 		echo " - diffusion measurements of commissural clusters has been done."
 	fi
 	if [ ! -f $SeparatedClustersFolder/diffusion_measurements_left_hemisphere.csv ]; then
 		wm_diffusion_measurements.py \
-			$SeparatedClustersFolder/tracts_left_hemisphere $SeparatedClustersFolder/diffusion_measurements_left_hemisphere.csv $FiberTractMeasurementsCLI
+			$SeparatedClustersFolder/tracts_left_hemisphere $SeparatedClustersFolder/diffusion_measurements_left_hemisphere.csv "$FiberTractMeasurementsCLI"
 	else
 		echo " - diffusion measurements of left hemisphere clusters has been done."
 	fi
 	if [ ! -f $SeparatedClustersFolder/diffusion_measurements_right_hemisphere.csv ]; then
 		wm_diffusion_measurements.py \
-			$SeparatedClustersFolder/tracts_right_hemisphere $SeparatedClustersFolder/diffusion_measurements_right_hemisphere.csv $FiberTractMeasurementsCLI
+			$SeparatedClustersFolder/tracts_right_hemisphere $SeparatedClustersFolder/diffusion_measurements_right_hemisphere.csv "$FiberTractMeasurementsCLI"
 	else
 		echo " - diffusion measurements of right hemisphere clusters has been done."
 	fi
@@ -423,7 +423,7 @@ if [ $DiffMeasure == 1 ]; then
 	echo "<wm_apply_ORG_atlas_to_subject> Report diffusion measurements of the anatomical tracts."
 	if [ ! -f $AnatomicalTractsFolder/diffusion_measurements_anatomical_tracts.csv ]; then
 		wm_diffusion_measurements.py \
-			$AnatomicalTractsFolder $AnatomicalTractsFolder/diffusion_measurements_anatomical_tracts.csv $FiberTractMeasurementsCLI
+			$AnatomicalTractsFolder $AnatomicalTractsFolder/diffusion_measurements_anatomical_tracts.csv "$FiberTractMeasurementsCLI"
 	else
 		echo " - diffusion measurements of anatomical tracts has been done."
 	fi
@@ -453,3 +453,4 @@ elif [ $CleanFiles == 2 ]; then
 fi
 
 exit
+ 
