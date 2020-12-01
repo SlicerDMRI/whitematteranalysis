@@ -18,8 +18,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<relative_distance.py> Failed to import joblib, cannot multiprocess."
-    print "<relative_distance.py> Please install joblib for this functionality."
+    print("<relative_distance.py> Failed to import joblib, cannot multiprocess.")
+    print("<relative_distance.py> Please install joblib for this functionality.")
 
 
 import whitematteranalysis.fibers

@@ -33,54 +33,54 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print "<register> Error: Input directory", args.inputDirectory, "does not exist."
+    print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.subjectsInformationFile):
-    print "<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist."
+    print("<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist.")
     exit()
 
 measurements = args.measures
 
 # Read and check data
 measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')
-print "Measurement directory:", args.inputDirectory
+print("Measurement directory:", args.inputDirectory)
 number_of_subjects = len(measurement_list)
-print "Number of subjects data found:", number_of_subjects
+print("Number of subjects data found:", number_of_subjects)
 if number_of_subjects < 1:
-    print "ERROR, no measurement files found in directory:", args.inputDirectory
+    print("ERROR, no measurement files found in directory:", args.inputDirectory)
     exit()
 header = measurement_list[0].measurement_header
 region_list = measurement_list[0].cluster_path
 #print "Measurement header is:", header
 #print "Clusters found:",  measurement_list[0].cluster_path
 number_of_clusters = measurement_list[0].measurement_matrix[:,0].shape[0]
-print "Number of measurement regions (clusters and hierarchy groups) is:", number_of_clusters
+print("Number of measurement regions (clusters and hierarchy groups) is:", number_of_clusters)
 
 # Read and check subject ID list
 dg = wma.tract_measurement.load_demographics(args.subjectsInformationFile)
 case_id_list = dg.case_id_list
 
 # Check subject IDs from excel versus the input directory.
-print "Checking subject IDs match in excel file and measurement directory."
+print("Checking subject IDs match in excel file and measurement directory.")
 if len(case_id_list) ==  number_of_subjects:
-        print "Subject counts in excel subject ID list and measurement directory match."
+        print("Subject counts in excel subject ID list and measurement directory match.")
 else:
-    print "ERROR: Subject counts in excel subject ID list and measurement directory don't match:",
-    print len(case_id_list), number_of_subjects
+    print("ERROR: Subject counts in excel subject ID list and measurement directory don't match:", end=' ')
+    print(len(case_id_list), number_of_subjects)
     exit()
 for subject_measured, subject_id in zip(measurement_list, case_id_list):
     if not str(subject_id) in subject_measured.case_id:
-        print "ERROR: id list and input data mismatch."
-        print "ERROR at:", subject_measured.case_id, subject_id
+        print("ERROR: id list and input data mismatch.")
+        print("ERROR at:", subject_measured.case_id, subject_id)
         exit()
-print "Dataset passed. Subject IDs in subject information excel file match subject IDs in measurement directory."
+print("Dataset passed. Subject IDs in subject information excel file match subject IDs in measurement directory.")
 
 # get data for export
 vidx_list = []; # index of values of interest
 for measure in measurements:
     vidx_list.append(list(header).index(measure))
-print "Column indices of measures for export:", vidx_list
+print("Column indices of measures for export:", vidx_list)
 
 # reformat this information for export.
 # export format for header is subject ID, region1.measure1, region1.measure2, ..., regionN.measureN
@@ -89,12 +89,12 @@ print "Column indices of measures for export:", vidx_list
 output_header = []
 output_header.append('SubjectID')
 for region in region_list:
-    print region
+    print(region)
     for vidx in vidx_list:
         measure_name = header[vidx]
         output_header.append(region+'.'+measure_name)
 
-print output_header
+print(output_header)
 with open(args.outputFileName, 'wb') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter='\t')
     spamwriter.writerow(output_header)

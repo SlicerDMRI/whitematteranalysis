@@ -12,8 +12,8 @@ try:
     USE_SCIPY = 1
 except ImportError:
     USE_SCIPY = 0
-    print "<congeal.py> Failed to import  scipy.optimize, cannot align or register."
-    print "<congeal.py> Please install  scipy.optimize for this functionality."
+    print("<congeal.py> Failed to import  scipy.optimize, cannot align or register.")
+    print("<congeal.py> Please install  scipy.optimize for this functionality.")
 
 import numpy
 import sys
@@ -30,8 +30,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print "<congeal.py> Failed to import joblib, cannot multiprocess."
-    print "<congeal.py> Please install joblib for this functionality."
+    print("<congeal.py> Failed to import joblib, cannot multiprocess.")
+    print("<congeal.py> Please install joblib for this functionality.")
 
 import whitematteranalysis as wma
 
@@ -54,7 +54,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             self.total_time = time.time() - self.start_time
             #print iters, "/", self.maxfun, "Total time:", self.total_time, "Last iters:", elapsed_time, "Per iter:", elapsed_time / print_every, "Memory:", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
             progress_file = open(self.progress_filename, 'a')
-            print >> progress_file, iters, "/", self.maxfun, "Total time:", self.total_time, "Last iters:", elapsed_time, "Per iter:", elapsed_time / print_every, "Memory:", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            print(iters, "/", self.maxfun, "Total time:", self.total_time, "Last iters:", elapsed_time, "Per iter:", elapsed_time / print_every, "Memory:", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, file=progress_file)
             progress_file.close()    
         return penalty
     
@@ -151,7 +151,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             self.constraint(current_x)
 
         if self.verbose:
-            print "O:",  obj, "X:", scaled_current_x
+            print("O:",  obj, "X:", scaled_current_x)
         #print "X:", self._x_opt
 
         # Stop the optimizer if needed
@@ -207,13 +207,13 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         compute). Then call compute several times, using different
         parameters for the class, for example first just for
         translation."""
-        print "OPTIMIZER:", self.optimizer
+        print("OPTIMIZER:", self.optimizer)
         self.start_time = time.time()
         self.total_time = 0.0
         self.progress_filename = os.path.join(self.output_directory, "log"+self.process_id_string+".log")
-        print self.progress_filename
+        print(self.progress_filename)
         progress_file = open(self.progress_filename, 'w')
-        print >> progress_file, "Starting computation, time:", self.start_time
+        print("Starting computation, time:", self.start_time, file=progress_file)
         progress_file.close()
         # subject data must be input first. No check here for speed
         #self.fixed = None
@@ -255,11 +255,11 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         self.final_transform = numpy.zeros(self.initial_transform.shape)
 
         if self.verbose:
-            print "<congeal.py> Initial value for X:", self.initial_transform
+            print("<congeal.py> Initial value for X:", self.initial_transform)
 
         progress_file = open(self.progress_filename, 'a')
         self.total_time = time.time() - self.start_time
-        print >> progress_file, "INITIAL transform shape", self.initial_transform.shape, "Init time:", self.total_time
+        print("INITIAL transform shape", self.initial_transform.shape, "Init time:", self.total_time, file=progress_file)
         progress_file.close()
 
         # initialize time for objective function computations
@@ -267,7 +267,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
         if self.optimizer == "Cobyla":
 
-            print "INITIAL transform shape", self.initial_transform.shape
+            print("INITIAL transform shape", self.initial_transform.shape)
             # Optimize using cobyla. Allows definition of initial and
             # final step size scales (rhos), as well as constraints.  Here
             # we use the constraints to encourage that the transform stays a transform.
@@ -311,7 +311,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
                                                                            epsilon=self.final_step * self.scaling,
                                                                            iprint=1)
             except:
-                print "EXCEPTION WAS CAUGHT, total objectives:", self.objective_computations
+                print("EXCEPTION WAS CAUGHT, total objectives:", self.objective_computations)
             #print f, dict
 
         elif self.optimizer == "Powell":
@@ -326,18 +326,18 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print "TRANS:", self.final_transform, "FLAG:", warnflag
+            print("TRANS:", self.final_transform, "FLAG:", warnflag)
 
         else:
-            print "Unknown optimizer."
+            print("Unknown optimizer.")
 
         progress_file = open(self.progress_filename, 'a')
         self.total_time = time.time() - self.start_time
-        print >> progress_file, "Done optimizing. TOTAL TIME:", self.total_time
+        print("Done optimizing. TOTAL TIME:", self.total_time, file=progress_file)
         progress_file.close()
 
         if self.verbose:
-            print "O:", self.objective_function_values
+            print("O:", self.objective_function_values)
 
         # Return output transforms from this iteration
         return self.final_transform
