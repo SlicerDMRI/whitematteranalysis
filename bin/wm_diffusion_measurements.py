@@ -36,7 +36,7 @@ def main():
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
-    if not os.path.exists(args.Slicer):
+    if not os.path.exists(args.Slicer.split()[0]):
         print("Error: 3D Slicer", args.Slicer, "does not exist.")
         exit()
     
