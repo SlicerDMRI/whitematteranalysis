@@ -295,10 +295,10 @@ if [ "$RegMode" == "rig" ]; then
 	if [ ! -f $FiberClustersInTractographySpace/cluster_00800.vtp ]; then
 		if [ $VX == 0 ]; then
 			wm_harden_transform.py -i -t $tfm \
-				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace $SlicerPath
+				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace "$SlicerPath"
 		else
 			xvfb-run wm_harden_transform.py -i -t $tfm \
-				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace $SlicerPath
+				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace "$SlicerPath"
 		fi
 	else
 		echo " - transform has been done."
@@ -310,10 +310,10 @@ elif [ "$RegMode" == "nonrig" ]; then
 	if [ ! -f $FiberClustersInTractographySpace/tmp/cluster_00800.vtp ]; then
 		if [ $VX == 0 ]; then
 			wm_harden_transform.py -i -t $tfm \
-				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace/tmp $SlicerPath
+				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace/tmp "$SlicerPath"
 		else
 			xvfb-run wm_harden_transform.py -i -t $tfm \
-				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace/tmp $SlicerPath
+				$FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed $FiberClustersInTractographySpace/tmp "$SlicerPath"
 		fi
 	else
 		echo " - transform has been done."
@@ -324,10 +324,10 @@ elif [ "$RegMode" == "nonrig" ]; then
 	if [ ! -f $FiberClustersInTractographySpace/cluster_00800.vtp ]; then
 		if [ $VX == 0 ]; then
 			wm_harden_transform.py -i -t $tfm \
-				$FiberClustersInTractographySpace/tmp $FiberClustersInTractographySpace $SlicerPath
+				$FiberClustersInTractographySpace/tmp $FiberClustersInTractographySpace "$SlicerPath"
 		else
 			xvfb-run wm_harden_transform.py -i -t $tfm \
-				$FiberClustersInTractographySpace/tmp $FiberClustersInTractographySpace $SlicerPath
+				$FiberClustersInTractographySpace/tmp $FiberClustersInTractographySpace "$SlicerPath"
 		fi
 	else
 		echo " - transform has been done."
