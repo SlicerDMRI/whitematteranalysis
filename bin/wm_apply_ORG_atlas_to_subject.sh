@@ -132,7 +132,7 @@ if [ $DiffMeasure == 1 ]; then
 		echo "ERROR: -m path to FiberTractMeasurements Module must be provided."
 		echo ""
 		Usage
-	elif [ ! -f $FiberTractMeasurementsCLI ]; then
+	elif [ ! -f "$FiberTractMeasurementsCLI" ]; then
 		echo "ERROR: FiberTractMeasurements Module does not exist."
 		echo ""
 		Usage
