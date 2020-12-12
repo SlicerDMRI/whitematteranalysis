@@ -13,6 +13,14 @@ except:
     print("<wm_cluster_from_atlas.py> Error importing white matter analysis package\n")
     raise
 
+try:
+    from joblib import Parallel, delayed
+    USE_PARALLEL = 1
+except ImportError:
+    USE_PARALLEL = 0
+    print("<cluster.py> Failed to import joblib, cannot multiprocess.")
+    print("<cluster.py> Please install joblib for this functionality.")
+
 def main():
     #-----------------
     # Parse arguments
@@ -42,7 +50,10 @@ def main():
     parser.add_argument(
         '-advanced_only_outlier_sigma', action='store', dest="outlierSigma", type=float, default=20.0,
         help='(Advanced parameter that probably should not be changed.) Local sigma used to compute fiber probability in cluster-based outlier removal. The default is 20mm. For stricter clustering, this may be reduced to 15mm.')
-    
+    parser.add_argument(
+        '-j', action="store", dest="numberOfJobs", type=int,
+        help='Number of processors to use.')
+
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
@@ -70,6 +81,15 @@ def main():
         print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
+    if args.numberOfJobs is not None:
+        number_of_jobs = args.numberOfJobs
+    else:
+        # default to 1 job for usage on compute clusters. Also, the
+        # multiprocessing is not used efficiently in our code and should
+        # be avoided for large clustering problems, for now.
+        number_of_jobs = 1
+    print('Using N jobs:', number_of_jobs)
+
     print("\n==========================")
     print("input directory:", args.inputDirectory)
     print("atlas directory:", args.atlasDirectory)
@@ -119,7 +139,7 @@ def main():
     atlas_clusters = sorted(glob.glob(input_mask))
     input_mask = "{0}/cluster_*.vtp".format(args.inputDirectory)
     subject_clusters = sorted(glob.glob(input_mask))
-    
+
     # check these lists are the same length
     number_ac = len(atlas_clusters)
     number_sc = len(subject_clusters)
@@ -141,36 +161,33 @@ def main():
     cluster_outlier_std_threshold = args.clusterOutlierStandardDeviation
     print("Standard deviation for fiber outlier removal after clustering (accurate local probability): ", cluster_outlier_std_threshold)
     
-    c = 1
-    for ca, cs in zip(atlas_clusters,subject_clusters):
-        # grab the cluster as polydata
+
+    def outlier_removal_one_cluster(ca, cs, outdir, c):
+        
         pd_atlas = wma.io.read_polydata(ca)
         pd_subject = wma.io.read_polydata(cs)
         pd_out_fname = os.path.join(outdir, os.path.basename(cs))
         
         number_fibers_in_atlas_cluster = pd_atlas.GetNumberOfLines()
         number_fibers_in_subject_cluster = pd_subject.GetNumberOfLines()
-    
+
         # if either cluster is empty, we have to skip outlier removal
         if number_fibers_in_subject_cluster == 0:
             wma.io.write_polydata(pd_subject, pd_out_fname)
             print("cluster", c, "empty in subject")
-            log_file = open(fname_progress, 'a')
-            print(c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0, file=log_file)
-            log_file.close()
-            c += 1
-            continue
-    
+            log_str = str(c) + '\t' + str(number_fibers_in_subject_cluster)+'\t 0 \t 0 \t 0 \t 0 \t 0 \t 0 \t 0'
+            
+            return log_str
+
         if number_fibers_in_atlas_cluster == 0:
             # this should not ever happen. Note that "outlier removed" atlas is temporary and should not be used for classification.
             # (Note the other option is to remove this cluster as it was removed at the end of the iteration for the atlas.)
+            wma.io.write_polydata(pd_subject, pd_out_fname)
             print("cluster", c, "empty in atlas")
             print("ERROR: An atlas should not contain empty clusters. Please use the initial_clusters atlas for this outlier removal script and for subject clustering.")
-            log_file = open(fname_progress, 'a')
-            print(c,'\t', number_fibers_in_subject_cluster,'\t', 0,'\t', 0,'\t', 0, '\t', 0, '\t', 0, '\t', 0, '\t', 0, file=log_file)
-            log_file.close()
-            c += 1
-            continue
+            log_str = str(c) + '\t' + str(number_fibers_in_subject_cluster)+'\t 0 \t 0 \t 0 \t 0 \t 0 \t 0 \t 0'
+
+            return log_str
         
         # for the future, in case this can be integrated here and use atlas information for hemisphere separation 
         ## # figure out hemisphere labels for this cluster
@@ -182,7 +199,7 @@ def main():
         ## cluster_left_hem.append(farray.number_left_hem)
         ## cluster_right_hem.append(farray.number_right_hem)
         ## cluster_commissure.append(farray.number_commissure)
-    
+
         # Compute distances and fiber probabilities FOR ATLAS to form a basis for comparison
         # Note that ideally this could be done once and stored, rather than computed for each subject
         if distance_method == 'StrictSimilarity':
@@ -198,7 +215,7 @@ def main():
         else:
             cluster_distances = wma.cluster._rectangular_distance_matrix(pd_subject, pd_atlas, 0.0, number_of_jobs=1, bilateral=bilateral, distance_method=distance_method)
             cluster_similarity_subject = wma.similarity.distance_to_similarity(cluster_distances, cluster_local_sigma * cluster_local_sigma)
-    
+
         #print "SHAPE cluster similarity:",  cluster_similarity_atlas.shape, cluster_similarity_subject.shape
         
         #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
@@ -206,9 +223,9 @@ def main():
         #  get total similarity (probability) based on the atlas, and normalize by the number of fibers used in the comparison for easier comparison across clusters
         total_similarity_atlas = (numpy.sum(cluster_similarity_atlas, axis=1) - 1.0) / number_fibers_in_atlas_cluster
         total_similarity_subject = numpy.sum(cluster_similarity_subject, axis=0)/ number_fibers_in_atlas_cluster
-    
+
         #print "SHAPE total similarity:", total_similarity_atlas.shape, total_similarity_subject.shape
-    
+
         if verbose:
             print("cluster", c, "tsim_atlas:", numpy.min(total_similarity_atlas), numpy.mean(total_similarity_atlas), numpy.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster)
             print("cluster", c, "tsim_subject:", numpy.min(total_similarity_subject), numpy.mean(total_similarity_subject), numpy.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster)
@@ -224,27 +241,39 @@ def main():
         for (fidx, sim) in zip(fiber_indices, total_similarity_subject):
             if sim < cutoff:
                 reject_idx.append(fidx)
-    
+
         number_rejected =  len(reject_idx)
         
         print("cluster", c, "rejecting cluster outlier fibers:", number_rejected, "/", number_fibers_in_subject_cluster, "=", float(number_rejected)/number_fibers_in_subject_cluster)
-    
+
         # Output a new polydata with the outliers removed.
         mask = numpy.ones([number_fibers_in_subject_cluster])
         mask[reject_idx] = 0
         #print mask, number_fibers_in_subject_cluster, mask.shape, pd_subject.GetNumberOfLines()
         pd_c = wma.filter.mask(pd_subject, mask, verbose=False, preserve_point_data=True, preserve_cell_data=True)
         wma.io.write_polydata(pd_c, pd_out_fname)
-    
+
         cluster_distances = numpy.sqrt(cluster_distances)
         cluster_mean_distances = numpy.mean(cluster_distances, axis=0)
         mask = mask == 1
+
+        log_str = str(c) + '\t' + str(number_fibers_in_subject_cluster) + '\t' + str(number_fibers_in_subject_cluster-number_rejected) + '\t' + str(number_rejected) + '\t' + str(float(number_rejected)/number_fibers_in_subject_cluster) + '\t' + str(numpy.mean(cluster_mean_distances)) + '\t' + str(numpy.mean(cluster_mean_distances[mask])) + '\t' + str(numpy.mean(total_similarity_subject)) + '\t' + str(numpy.mean(total_similarity_subject[mask]))
+
+        return log_str
+
+    logtrs = Parallel(n_jobs=number_of_jobs, verbose=0)(
+            delayed(outlier_removal_one_cluster)(
+                ca,
+                cs,
+                outdir, 
+                c)
+            for c, ca, cs in zip(range(1, number_ac+1), atlas_clusters, subject_clusters))
+
     
-        log_file = open(fname_progress, 'a')
-        print(c,'\t', number_fibers_in_subject_cluster,'\t', number_fibers_in_subject_cluster-number_rejected,'\t', number_rejected,'\t', float(number_rejected)/number_fibers_in_subject_cluster, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_distances[mask]), '\t', numpy.mean(total_similarity_subject), '\t', numpy.mean(total_similarity_subject[mask]), file=log_file)
-        log_file.close()
-    
-        c += 1
+    log_file = open(fname_progress, 'a')
+    for logstr in logtrs:
+        print(logstr, file=log_file)
+    log_file.close()
 
 if __name__ == '__main__':
     main()
