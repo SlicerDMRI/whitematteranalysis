@@ -128,14 +128,16 @@ else
 fi
 
 if [ $DiffMeasure == 1 ]; then
+    tmp=($FiberTractMeasurementsCLI)
 	if [ -z "$FiberTractMeasurementsCLI" ] ; then
 		echo "ERROR: -m path to FiberTractMeasurements Module must be provided."
 		echo ""
 		Usage
-	elif [ ! -f "$FiberTractMeasurementsCLI" ]; then
-		echo "ERROR: FiberTractMeasurements Module does not exist."
-		echo ""
-		Usage
+	
+    # check existence of the last string in $FiberTractMeasurementsCLI
+    elif [ ! -f ${tmp[-1]} ]; then
+        echo "WARN: FiberTractMeasurements could not be found, program may fail."
+        echo ""
 	fi
 fi
 
