@@ -3,6 +3,7 @@ import argparse
 import slicer
 import os
 import glob
+import shutil
 
 def harden_transform(polydata, transform, inverse, outdir):
     
@@ -20,6 +21,11 @@ def harden_transform(polydata, transform, inverse, outdir):
     check_load, transform_node = slicer.util.loadTransform(str(transform), 1)
     if not check_load:
         print('Could not load transform file:', transform)
+        return
+
+    if polydata_node.GetPolyData().GetNumberOfCells() == 0:
+        print('Empty cluster:', polydata)
+        shutil.copyfile(polydata, output_name)
         return
 
     if inverse == "1":
