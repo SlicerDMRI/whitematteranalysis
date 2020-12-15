@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import os
+from warnings import warn
 
 try:
     import whitematteranalysis as wma
@@ -36,9 +37,10 @@ def main():
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
-    if not os.path.exists(args.Slicer):
-        print("Error: 3D Slicer", args.Slicer, "does not exist.")
-        exit()
+    cli= args.Slicer.split()[-1]
+    if not os.path.exists(cli):
+        warn(f"{cli} module could not be found, program may fail.")
+    
     
     module_FTSM = args.Slicer + ' '
     
