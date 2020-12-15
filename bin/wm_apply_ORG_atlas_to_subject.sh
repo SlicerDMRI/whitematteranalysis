@@ -64,32 +64,32 @@ REPORTMAPPINGPARAMETERS
 }
 
 while getopts ":hi:i:o:a:s:n:r:x:d:m:c:" opt; do
-  case $opt in
-  	h) Usage; exit 0
-    ;;
-    i) InputTractography="$OPTARG"
-    ;;
-    o) OutputDir="$OPTARG"
-    ;;
-    a) AtlasBaseFolder="$OPTARG"
-    ;;
-    s) SlicerPath="$OPTARG"
-    ;;
-    r) RegMode="$OPTARG"
-	;;
-    n) NumThreads="$OPTARG"
-	;;
-    x) VX="$OPTARG"
-    ;;
-    d) DiffMeasure="$OPTARG"
-    ;;
-    m) FiberTractMeasurementsCLI="$OPTARG"
-    ;;
-    c) CleanFiles="$OPTARG"
-    ;;
-    \?) echo "\nERROR: Invalid option -$OPTARG"; echo ""; Usage
-    ;;
-  esac
+	case $opt in
+		h) Usage; exit 0
+		;;
+		i) InputTractography="$OPTARG"
+		;;
+		o) OutputDir="$OPTARG"
+		;;
+		a) AtlasBaseFolder="$OPTARG"
+		;;
+		s) SlicerPath="$OPTARG"
+		;;
+		r) RegMode="$OPTARG"
+		;;
+		n) NumThreads="$OPTARG"
+		;;
+		x) VX="$OPTARG"
+		;;
+		d) DiffMeasure="$OPTARG"
+		;;
+		m) FiberTractMeasurementsCLI="$OPTARG"
+		;;
+		c) CleanFiles="$OPTARG"
+		;;
+		\?) echo "\nERROR: Invalid option -$OPTARG"; echo ""; Usage
+		;;
+	esac
 done
 
 if ! [[ ! "$RegMode" ]] ; then
@@ -110,7 +110,7 @@ if [ -z "$VX" ] ; then
 	VX=0
 else
 	if [[ $VX -lt 1 ]]; then
-	    VX=0
+		VX=0
 	else
 		VX=1
 	fi
@@ -121,23 +121,23 @@ if [ -z "$DiffMeasure" ] ; then
 	FiberTractMeasurementsCLI=None
 else
 	if [[ $DiffMeasure -lt 1 ]]; then
-	    DiffMeasure=0
+		DiffMeasure=0
 	else
 		DiffMeasure=1
 	fi
 fi
 
 if [ $DiffMeasure == 1 ]; then
-    tmp=($FiberTractMeasurementsCLI)
+	tmp=($FiberTractMeasurementsCLI)
 	if [ -z "$FiberTractMeasurementsCLI" ] ; then
 		echo "ERROR: -m path to FiberTractMeasurements Module must be provided."
 		echo ""
 		Usage
 	
-    # check existence of the last string in $FiberTractMeasurementsCLI
-    elif [ ! -f ${tmp[-1]} ]; then
-        echo "WARN: FiberTractMeasurements could not be found, program may fail."
-        echo ""
+	# check existence of the last string in $FiberTractMeasurementsCLI
+	elif [ ! -f ${tmp[-1]} ]; then
+		echo "WARNING: FiberTractMeasurements could not be found, program may fail."
+		echo ""
 	fi
 fi
 
