@@ -237,7 +237,7 @@ echo "<wm_apply_ORG_atlas_to_subject> Fiber clustering for whole-brain 800 fiber
 FiberClusteringInitialFolder=$OutputCaseFolder/FiberClustering/InitialClusters
 if [ ! -f $FiberClusteringInitialFolder/$FCcaseID/cluster_00800.vtp ]; then
 	wm_cluster_from_atlas.py -j $NumThreads \
-		$RegTractography $FCAtlasFolder $FiberClusteringInitialFolder
+		$RegTractography $FCAtlasFolder $FiberClusteringInitialFolder -norender
 else
 	echo " - initial fiber clustering has been done."
 fi
