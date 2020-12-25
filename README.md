@@ -40,7 +40,7 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
     using a high-dimensional white matter atlas. Medical Imaging,
     IEEE Transactions on 26.11 (2007): 1562-1575.
 
-    O’Donnell LJ, Wells III WM, Golby AJ, Westin CF. 
+    O'Donnell LJ, Wells III WM, Golby AJ, Westin CF. 
     Unbiased groupwise registration of white matter tractography.
     In MICCAI, 2012, pp. 123-130.
 
