@@ -255,7 +255,7 @@ fi
 echo "<wm_apply_ORG_atlas_to_subject> Outlier fiber removal."
 FiberClusteringOutlierRemFolder=$OutputCaseFolder/FiberClustering/OutlierRemovedClusters
 if [ ! -f $FiberClusteringOutlierRemFolder/${FCcaseID}_outlier_removed/cluster_00800.vtp ]; then
-	wm_cluster_remove_outliers.py \
+	wm_cluster_remove_outliers.py -j $NumThreads \
 		$FiberClusteringInitialFolder/$FCcaseID $FCAtlasFolder $FiberClusteringOutlierRemFolder
 else
 	echo " - outlier fiber removal has been done."
