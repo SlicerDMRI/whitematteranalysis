@@ -122,6 +122,7 @@ class FiberArray:
         # output arrays indicating hemisphere/callosal (L,C,R= -1, 0, 1)
         self.fiber_hemisphere = None
         self.hemispheres = False
+        self.hemisphere_percent_threshold = 0.95
         
         # output boolean arrays for each hemisphere and callosal fibers
         self.is_left_hem = None
