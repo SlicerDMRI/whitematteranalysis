@@ -501,8 +501,8 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             grid_size = [105, 105, 105]
             grid_spacing = 2
 
-            extent_0 = [-(grid_size[0] - 1)/2, -(grid_size[1] - 1)/2, -(grid_size[2] - 1)/2]
-            extent_1 = [ (grid_size[0] - 1)/2,  (grid_size[1] - 1)/2,  (grid_size[2] - 1)/2]
+            extent_0 = [-int((grid_size[0] - 1)/2), -int((grid_size[1] - 1)/2), -int((grid_size[2] - 1)/2)]
+            extent_1 = [ int((grid_size[0] - 1)/2),  int((grid_size[1] - 1)/2),  int((grid_size[2] - 1)/2)]
 
             origin = -grid_spacing * (numpy.array(extent_1) - numpy.array(extent_0))/2.0
 
