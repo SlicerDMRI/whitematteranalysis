@@ -200,7 +200,7 @@ class MultiSubjectRegistration:
             os.makedirs(outdir_render)
 
         # Calculate how many fibers are needed to sample from each subject to compute the mean brain at the requested size
-        fibers_per_subject = self.mean_brain_size / (len(self.polydatas) - 1)
+        fibers_per_subject = int(self.mean_brain_size / (len(self.polydatas) - 1))
         if self.verbose:
             print("Fibers per subject for computing mean brain:", fibers_per_subject, "=", self.mean_brain_size, "/",  len(self.polydatas) -1)
 
