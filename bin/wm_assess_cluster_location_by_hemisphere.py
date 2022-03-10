@@ -128,6 +128,13 @@ def main():
             location_data = numpy.loadtxt(open(clusterLocationFile, "rb"),
                                           dtype={'names': ('Cluster Index', 'Location Label'), 'formats': ('S17', 'S1')},
                                           delimiter="\t", skiprows=1)
+
+            # change CPC to be hemispheric
+            location_data[145][1] = b'h'
+            location_data[159][1] = b'h'
+            location_data[557][1] = b'h'
+            location_data[677][1] = b'h'
+            location_data[770][1] = b'h'
     
     # default to be changed if user input is there
     hemisphere_percent_threshold = 0.6
