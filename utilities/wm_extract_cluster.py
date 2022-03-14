@@ -40,13 +40,13 @@ if not os.path.exists(outdir):
     os.makedirs(outdir)
 
 # cluster filename we want
-fname_c = 'cluster_{0:05d}.vtp'.format(args.cluster)
+fname_c = f'cluster_{args.cluster:05d}.vtp'
 # output MRML filename
-fname_mrml = 'all_clusters_{0:05d}.mrml'.format(args.cluster)
+fname_mrml = f'all_clusters_{args.cluster:05d}.mrml'
 fname_mrml = os.path.join(outdir, fname_mrml)
 
 # Find input directories that may contain clusters
-input_mask = "{0}/*".format(args.inputDirectory)
+input_mask = f"{args.inputDirectory}/*"
 input_directories = sorted(glob.glob(input_mask))
 
 # Loop over inputs and try to find clusters

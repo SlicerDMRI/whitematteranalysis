@@ -244,7 +244,7 @@ def main():
         lengths = numpy.array(lengths)
         fibers_qc_file = open(fibers_qc_fname, 'a')
         outstr = str(subject_id) +  '\t'
-        outstr = outstr + '{0:.4f}'.format(step_size) + '\t'
+        outstr = outstr + f'{step_size:.4f}' + '\t'
         # total points in the dataset
         outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
         # mean fiber length

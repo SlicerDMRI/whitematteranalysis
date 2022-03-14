@@ -29,11 +29,11 @@ def main():
     def download_file(url, output_file):
     
         try:
-            print("* Downloading: {0}".format(url))
+            print(f"* Downloading: {url}")
             url_file = urllib.request.urlopen(url)
             meta = url_file.info()
             file_size = int(meta.get_all("Content-Length")[0])
-            print("File size: {0} MB".format(file_size/1024.0/1024.0))
+            print(f"File size: {file_size/1024.0/1024.0} MB")
     
             output = open(output_file, 'wb')
             file_size_dl = 0
@@ -45,7 +45,7 @@ def main():
                 file_size_dl += len(buffer)
                 output.write(buffer)
                 p = float(file_size_dl) / file_size
-                status = r"{0} bytes [{1:.2%}]".format(file_size_dl, p)
+                status = fr"{file_size_dl} bytes [{p:.2%}]"
                 status = status + chr(8)*(len(status)+1)
                 sys.stdout.write(status)
     

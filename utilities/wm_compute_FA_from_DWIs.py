@@ -11,8 +11,8 @@ except:
 
 def list_nhdr_files(input_dir):
     # Find input files
-    input_mask = "{0}/*.nhdr".format(input_dir)
-    input_mask2 = "{0}/*.nrrd".format(input_dir)
+    input_mask = f"{input_dir}/*.nhdr"
+    input_mask2 = f"{input_dir}/*.nrrd"
     input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)

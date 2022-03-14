@@ -133,8 +133,8 @@ for sub_id, subject_measured, region_index in zip(subject_id_list, measurement_l
     percent_str = sub_id + '(' + str(subject_measured.measurement_header[region_index]) + ')'
     title_str = ("{:<"+str(len(sub_id)+len(region)+2)+"}").format('Percentage:')
     for p in percentage_range:
-        percent_str = percent_str + ', ' + "{:<4}".format(str(sum(subject_percentage_distribution > p)))
-        title_str = title_str + ', ' + "{:<4}".format(str(p))
+        percent_str = percent_str + ', ' + f"{str(sum(subject_percentage_distribution > p)):<4}"
+        title_str = title_str + ', ' + f"{str(p):<4}"
 
     if not print_title:
         print(title_str)

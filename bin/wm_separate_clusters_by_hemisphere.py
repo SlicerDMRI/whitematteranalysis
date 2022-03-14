@@ -65,8 +65,8 @@ def main():
     
     def list_cluster_files(input_dir):
         # Find input files
-        input_mask = "{0}/cluster_*.vtk".format(input_dir)
-        input_mask2 = "{0}/cluster_*.vtp".format(input_dir)
+        input_mask = f"{input_dir}/cluster_*.vtk"
+        input_mask2 = f"{input_dir}/cluster_*.vtp"
         input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
         input_pd_fnames = sorted(input_pd_fnames)
         return(input_pd_fnames)

@@ -103,8 +103,8 @@ print("==========================")
 # =======================================================================
 
 # Loop over input DWIs
-inputMask1 = "{0}/*.vtk".format(args.inputDirectory)
-inputMask2 = "{0}/*.vtp".format(args.inputDirectory)
+inputMask1 = f"{args.inputDirectory}/*.vtk"
+inputMask2 = f"{args.inputDirectory}/*.vtp"
 
 inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
 

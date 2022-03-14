@@ -36,17 +36,17 @@ class LazyCommandClass(dict):
     def __contains__(self, key):
         return (
             key == 'build_ext'
-            or super(LazyCommandClass, self).__contains__(key)
+            or super().__contains__(key)
         )
 
     def __setitem__(self, key, value):
         if key == 'build_ext':
             raise AssertionError("build_ext overridden!")
-        super(LazyCommandClass, self).__setitem__(key, value)
+        super().__setitem__(key, value)
 
     def __getitem__(self, key):
         if key != 'build_ext':
-            return super(LazyCommandClass, self).__getitem__(key)
+            return super().__getitem__(key)
 
         from Cython.Distutils import build_ext as cython_build_ext
 
