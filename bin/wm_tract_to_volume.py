@@ -35,6 +35,9 @@ def main():
     parser.add_argument(
         'outputVol',
         help='Output volume image, where the value of each voxel represents the number of fibers passing though the voxel.')
+    parser.add_argument(
+        '-m', action="store", dest="measure", type=str,
+        help="diffusion measure; if not provided, the output will be density map")
     
     args = parser.parse_args()
     
@@ -44,7 +47,7 @@ def main():
     
     def convert_cluster_to_volume_with_sz(inpd, volume, sampling_size=0.5):
     
-        volume_shape = volume.get_data().shape
+        volume_shape = volume.get_fdata().shape
         new_voxel_data = numpy.zeros(volume_shape)
     
         resampler = vtk.vtkPolyDataPointSampler()
@@ -101,13 +104,19 @@ def main():
         return new_voxel_data
     
     
-    def convert_cluster_to_volume(inpd, volume):
+    def convert_cluster_to_volume(inpd, volume, measure=None):
     
-        volume_shape = volume.get_data().shape
+        volume_shape = volume.get_fdata().shape
         new_voxel_data = numpy.zeros(volume_shape)
+        new_voxel_measure = numpy.zeros(volume_shape)
     
         inpoints = inpd.GetPoints()
-    
+        if measure is not None:
+            label_array = inpd.GetPointData().GetArray(measure)
+            if label_array is None:
+                print("Error: Check if the input measure (-m) is stored in the vtk file.")
+                exit()
+
         inpd.GetLines().InitTraversal()
         for lidx in range(0, inpd.GetNumberOfLines()):
     
@@ -119,17 +128,26 @@ def main():
     
                 point_ijk = apply_affine(numpy.linalg.inv(volume.affine), point)
                 point_ijk = numpy.rint(point_ijk).astype(numpy.int32)
-    
+
+                if measure is not None:
+                    count = new_voxel_data[(point_ijk[0], point_ijk[1], point_ijk[2])]
+                    pre_val = new_voxel_measure[(point_ijk[0], point_ijk[1], point_ijk[2])]
+                    val = label_array.GetTuple(ptids.GetId(pidx))[0]
+                    new_voxel_measure[(point_ijk[0], point_ijk[1], point_ijk[2])] = (pre_val * count + val) / (count + 1)
+
                 new_voxel_data[(point_ijk[0], point_ijk[1], point_ijk[2])] += 1
-    
+
+        if measure is not None:
+            new_voxel_data = new_voxel_measure
+            
         return new_voxel_data
     
     volume = nibabel.load(args.refvolume)
-    print('<wm_tract_to_volume>', args.refvolume, ', input volume shape: ', volume.get_data().shape)
+    print('<wm_tract_to_volume>', args.refvolume, ', input volume shape: ', volume.get_fdata().shape)
     
     inpd = wma.io.read_polydata(args.inputVTK)
     
-    new_voxel_data = convert_cluster_to_volume_with_sz(inpd, volume)
+    new_voxel_data = convert_cluster_to_volume(inpd, volume, measure=args.measure)
     
     volume_new = nibabel.Nifti1Image(new_voxel_data, volume.affine, volume.header)
     
