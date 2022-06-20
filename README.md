@@ -34,15 +34,12 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 
 # References
 
-**Please cite the following papers:**
-
-    O'Donnell, LJ., and Westin, CF. Automatic tractography segmentation
-    using a high-dimensional white matter atlas. Medical Imaging,
-    IEEE Transactions on 26.11 (2007): 1562-1575.
-
-    O'Donnell LJ, Wells III WM, Golby AJ, Westin CF. 
-    Unbiased groupwise registration of white matter tractography.
-    In MICCAI, 2012, pp. 123-130.
+**Please cite the following papers for using the code and/or the training data :**
+  
+  
+    Xue, Tengfei, Fan Zhang, Chaoyi Zhang, Yuqian Chen, Yang Song, Nikos Makris, Yogesh Rathi, Weidong Cai, and Lauren J. O’Donnell. 
+    Supwma: Consistent and Efficient Tractography Parcellation of Superficial White Matter with Deep Learning.
+    In 2022 IEEE 19th International Symposium on Biomedical Imaging (ISBI), IEEE, 2022.
 
     Zhang, F., Wu, Y., Norton, I., Rathi, Y., Makris, N., O'Donnell, LJ. 
     An anatomically curated fiber clustering white matter atlas for consistent white matter tract parcellation across the lifespan. 
@@ -55,4 +52,9 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 
     "We performed diffusion MRI tractography and/or analysis and/or visualization in 3D Slicer (www.slicer.org) via the SlicerDMRI project (dmri.slicer.org) (Norton et al. 2017)."
     
-    - [Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.](http://cancerres.aacrjournals.org/content/77/21/e101)
+    Fan Zhang, Thomas Noh, Parikshit Juvekar, Sarah F Frisken, Laura Rigolo, Isaiah Norton, Tina Kapur, Sonia Pujol, William Wells III, Alex Yarmarkovich, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Ron Kikinis, Hans J Johnson, Carl-Fredrik Westin, Steve Pieper, Alexandra J Golby, Lauren J O’Donnell. 
+    SlicerDMRI: Diffusion MRI and Tractography Research Software for Brain Cancer Surgery Planning and Visualization. 
+    JCO Clinical Cancer Informatics 4, e299-309, 2020.
+
+    Isaiah Norton, Walid Ibn Essayed, Fan Zhang, Sonia Pujol, Alex Yarmarkovich, Alexandra J. Golby, Gordon Kindlmann, Demian Wassermann, Raul San Jose Estepar, Yogesh Rathi, Steve Pieper, Ron Kikinis, Hans J. Johnson, Carl-Fredrik Westin and Lauren J. O'Donnell. 
+    SlicerDMRI: Open Source Diffusion MRI Software for Brain Cancer Research. Cancer Research 77(21), e101-e103, 2017.
