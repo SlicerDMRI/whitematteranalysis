@@ -35,15 +35,18 @@ http://projects.iq.harvard.edu/whitematteranalysis/publications
 # References
 
 **Please cite the following papers for using the code and/or the training data :**
-  
-  
-    Xue, Tengfei, Fan Zhang, Chaoyi Zhang, Yuqian Chen, Yang Song, Nikos Makris, Yogesh Rathi, Weidong Cai, and Lauren J. O’Donnell. 
-    Supwma: Consistent and Efficient Tractography Parcellation of Superficial White Matter with Deep Learning.
-    In 2022 IEEE 19th International Symposium on Biomedical Imaging (ISBI), IEEE, 2022.
-
+ 
     Zhang, F., Wu, Y., Norton, I., Rathi, Y., Makris, N., O'Donnell, LJ. 
     An anatomically curated fiber clustering white matter atlas for consistent white matter tract parcellation across the lifespan. 
     NeuroImage, 2018 (179): 429-447
+
+    O'Donnell LJ, Wells III WM, Golby AJ, Westin CF. 
+    Unbiased groupwise registration of white matter tractography.
+    In MICCAI, 2012, pp. 123-130.
+
+    O'Donnell, LJ., and Westin, CF. Automatic tractography segmentation
+    using a high-dimensional white matter atlas. Medical Imaging,
+    IEEE Transactions on 26.11 (2007): 1562-1575.
 
 **For projects using Slicer and SlicerDMRI please also include the following text (or similar) and citations:**
 
