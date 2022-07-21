@@ -68,7 +68,7 @@ for line in contents:
             val = float(dirs[2])
             if val != 0:
                 val = -val
-                dirs[2] = str(val)
+                dirs[2] = str(val) + '\n'
 
         tmpstr = strs[0] + ':=' + dirs[0] + ' ' + dirs[1] + ' ' + dirs[2]
 
