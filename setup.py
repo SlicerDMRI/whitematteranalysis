@@ -124,6 +124,7 @@ setup(
         'bin/wm_separate_clusters_by_hemisphere.py',
         'bin/wm_tract_to_volume.py',
         'bin/wm_vtp2vtk.py',
+        'bin/wm_change_nrrd_dir.py',
         'testing/test_run.py'
     ]
 )
