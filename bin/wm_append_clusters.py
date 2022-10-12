@@ -68,7 +68,7 @@ def main():
     
     elif args.tractMRML is not None:
         cluster_vtp_list = list()
-        f = open(args.tractMRML, 'r') 
+        f = open(args.tractMRML) 
         for line in f:
             idx = line.find('.vtp')
             if idx > 0:

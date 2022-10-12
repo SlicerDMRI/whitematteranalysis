@@ -369,7 +369,7 @@ if atlas_directory:
     fname = './test_'+measurement+'.mrml'
     print("Saving MRML visualization:", fname)
     # find clusters in subject and atlas input directories
-    input_mask = "{0}/cluster_*.vtp".format(atlas_directory)
+    input_mask = f"{atlas_directory}/cluster_*.vtp"
     atlas_clusters = sorted(glob.glob(input_mask))
     number_of_files = len(atlas_clusters)
     if number_of_files == number_of_clusters:

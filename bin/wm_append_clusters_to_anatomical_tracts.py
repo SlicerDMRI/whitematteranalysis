@@ -55,7 +55,7 @@ if not os.path.isdir(args.atlasDirectory):
 
 def list_mrml_files(input_dir):
     # Find input files
-    input_mask = "{0}/T*.mrml".format(input_dir)
+    input_mask = f"{input_dir}/T*.mrml"
     input_mrml_fnames = glob.glob(input_mask)
     return (input_mrml_fnames)
 
@@ -117,7 +117,7 @@ for tract in hemispheric_tracts:
 
     cluster_vtp_list_left = list()
     cluster_vtp_list_right = list()
-    f = open(mrml, 'r') 
+    f = open(mrml) 
     for line in f:
         idx = line.find('.vtp')
         if idx > 0:
@@ -154,7 +154,7 @@ for tract in commissural_tracts:
         exit()
 
     cluster_vtp_list_comm = list()
-    f = open(mrml, 'r') 
+    f = open(mrml) 
     for line in f:
         idx = line.find('.vtp')
         if idx > 0:
@@ -172,8 +172,8 @@ for tract in commissural_tracts:
 
 def list_cluster_files(input_dir):
     # Find input files
-    input_mask = "{0}/T_*.vtk".format(input_dir)
-    input_mask2 = "{0}/T_*.vtp".format(input_dir)
+    input_mask = f"{input_dir}/T_*.vtk"
+    input_mask2 = f"{input_dir}/T_*.vtp"
     input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)

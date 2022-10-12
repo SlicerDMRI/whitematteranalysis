@@ -43,7 +43,7 @@ class TractMeasurement:
             raise AssertionError
 
         txt_matrix = []
-        with open(self.measurement_file, 'r') as txtfile:
+        with open(self.measurement_file) as txtfile:
             reader = csv.reader(txtfile, delimiter=separator_char, skipinitialspace=True,  quoting=csv.QUOTE_NONE)
             for row in reader:
                 row = list(map(str.strip, row))
@@ -104,8 +104,8 @@ def load_measurement_in_folder(measurement_folder, hierarchy = 'Column', separat
     """
 
     # txt of csv files will be handled
-    input_mask = "{0}/*.txt".format(measurement_folder)
-    input_mask2 = "{0}/*.csv".format(measurement_folder)
+    input_mask = f"{measurement_folder}/*.txt"
+    input_mask2 = f"{measurement_folder}/*.csv"
 
     measurement_files = glob.glob(input_mask) + glob.glob(input_mask2)
     measurement_files = sorted(measurement_files)

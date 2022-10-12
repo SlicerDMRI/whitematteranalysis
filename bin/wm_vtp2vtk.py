@@ -61,7 +61,7 @@ def main():
     def list_vtp_files(input_dir):
         # Find input files (JUST vtp)
         #input_mask = "{0}/*.vtk".format(input_dir)
-        input_mask2 = "{0}/*.vtp".format(input_dir)
+        input_mask2 = f"{input_dir}/*.vtp"
         #input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
         input_pd_fnames = glob.glob(input_mask2)
         input_pd_fnames = sorted(input_pd_fnames)

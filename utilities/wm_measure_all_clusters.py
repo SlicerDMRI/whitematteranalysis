@@ -107,7 +107,7 @@ f = open(args.outputFile, 'w')
 for row in output_rows:
     outstr = ''
     for item in row:
-        if outstr is not '':
+        if outstr != '':
             outstr = outstr + '\t'
         outstr = outstr + str(item)
     outstr = outstr + '\n'

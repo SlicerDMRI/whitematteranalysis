@@ -60,15 +60,15 @@ def read_polydata(filename):
 
 def list_vtk_files(input_dir):
     # Find input files
-    input_mask = "{0}/*.vtk".format(input_dir)
-    input_mask2 = "{0}/*.vtp".format(input_dir)
+    input_mask = f"{input_dir}/*.vtk"
+    input_mask2 = f"{input_dir}/*.vtp"
     input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)
 
 def list_transform_files(input_dir):
     # Find input files
-    input_mask = "{0}/*.tfm".format(input_dir)
+    input_mask = f"{input_dir}/*.tfm"
     input_tf_fnames = glob.glob(input_mask)
     input_tf_fnames = sorted(input_tf_fnames)
     return (input_tf_fnames)
@@ -165,7 +165,7 @@ def transform_polydata_from_disk(in_filename, transform_filename, out_filename):
         print(coeffs)
         print(transform)
     else:
-        f = open(transform_filename, 'r')
+        f = open(transform_filename)
         transform = vtk.vtkTransform()
         matrix = vtk.vtkMatrix4x4()
         for i in range(0,4):
@@ -423,7 +423,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             if subject_ids is not None:
                 fname = 'vtk_txform_' + str(subject_ids[idx]) + '.xfm'
             else:
-                fname = 'vtk_txform_{0:05d}.xfm'.format(idx)
+                fname = f'vtk_txform_{idx:05d}.xfm'
             writer.SetFileName(os.path.join(outdir, fname))
             writer.Write()
 
@@ -431,7 +431,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
         if subject_ids is not None:
             fname = 'itk_txform_' + str(subject_ids[idx]) + '.tfm'
         else:
-            fname = 'itk_txform_{0:05d}.tfm'.format(idx)
+            fname = f'itk_txform_{idx:05d}.tfm'
         fname = os.path.join(outdir, fname)
         tx_fnames.append(fname)
 
@@ -566,18 +566,18 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             # all grid nodes."
             for block in [0, 1, 2]:
                 for diff in displacements_LPS:
-                    f.write('{0} '.format(diff[block]))
+                    f.write(f'{diff[block]} ')
 
             #FixedParameters: size size size origin origin origin origin spacing spacing spacing (then direction cosines: 1 0 0 0 1 0 0 0 1)
             f.write('\nFixedParameters:')
             #f.write(' {0} {0} {0}'.format(2*sz+1))
-            f.write(' {0}'.format(grid_size[0]))
-            f.write(' {0}'.format(grid_size[1]))
-            f.write(' {0}'.format(grid_size[2]))
+            f.write(f' {grid_size[0]}')
+            f.write(f' {grid_size[1]}')
+            f.write(f' {grid_size[2]}')
 
-            f.write(' {0}'.format(origin[0]))
-            f.write(' {0}'.format(origin[1]))
-            f.write(' {0}'.format(origin[2]))
+            f.write(f' {origin[0]}')
+            f.write(f' {origin[1]}')
+            f.write(f' {origin[2]}')
             f.write(' {0} {0} {0}'.format(grid_spacing))
             f.write(' 1 0 0 0 1 0 0 0 1\n')
 
@@ -610,9 +610,9 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             f.write('Transform: AffineTransform_double_3_3\n')
             f.write('Parameters: ')
             for el in three_by_three:
-                f.write('{0} '.format(el))
+                f.write(f'{el} ')
             for el in translation:
-                f.write('{0} '.format(el))
+                f.write(f'{el} ')
             f.write('\nFixedParameters: 0 0 0\n')
             f.close()
 
@@ -736,28 +736,28 @@ class LateralityResults:
 
         # input LI and other data values using pickle
         fname = os.path.join(dirname, 'pickle_laterality_index.txt')
-        fid = open(fname, 'r')
+        fid = open(fname)
         self.laterality_index = pickle.load(fid)
         fid.close()
 
         fname = os.path.join(dirname, 'pickle_left_hem_similarity.txt')
-        fid = open(fname, 'r')
+        fid = open(fname)
         self.left_hem_similarity = pickle.load(fid)
         fid.close()
         fname = os.path.join(dirname, 'pickle_right_hem_similarity.txt')
-        fid = open(fname, 'r')
+        fid = open(fname)
         self.right_hem_similarity = pickle.load(fid)
         fid.close()
         fname = os.path.join(dirname, 'pickle_hemisphere.txt')
-        fid = open(fname, 'r')
+        fid = open(fname)
         self.hemisphere = pickle.load(fid)
         fid.close()
 
         if readdist:
-            fid = open(os.path.join(dirname, 'pickle_right_hem_distance.txt'), 'r')
+            fid = open(os.path.join(dirname, 'pickle_right_hem_distance.txt'))
             self.right_hem_distance = pickle.load(fid)
             fid.close()
-            fid = open(os.path.join(dirname, 'pickle_left_hem_distance.txt'), 'r')
+            fid = open(os.path.join(dirname, 'pickle_left_hem_distance.txt'))
             self.left_hem_distance = pickle.load(fid)
             fid.close()
 

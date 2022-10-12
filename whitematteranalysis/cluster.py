@@ -174,8 +174,8 @@ def nearPSD(A,epsilon=0):
    val = numpy.matrix(numpy.maximum(eigval,epsilon))
    vec = numpy.matrix(eigvec)
    T = 1/(numpy.multiply(vec,vec) * val.T)
-   T = numpy.matrix(numpy.sqrt(numpy.diag(numpy.array(T).reshape((n)) )))
-   B = T * vec * numpy.diag(numpy.array(numpy.sqrt(val)).reshape((n)))
+   T = numpy.matrix(numpy.sqrt(numpy.diag(numpy.array(T).reshape(n) )))
+   B = T * vec * numpy.diag(numpy.array(numpy.sqrt(val)).reshape(n))
    out = B*B.T
    return(numpy.asarray(out))
    
@@ -1028,7 +1028,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         farray.convert_from_polydata(pd_c, points_per_fiber=50)
         filter.add_point_data_array(pd_c, farray.fiber_hemisphere, "Hemisphere")
         # The clusters are stored starting with 1, not 0, for user friendliness.
-        fname_c = 'cluster_{0:05d}.vtp'.format(c+1)
+        fname_c = f'cluster_{c+1:05d}.vtp'
         # save the filename for writing into the MRML file
         fnames.append(fname_c)
         # prepend the output directory
