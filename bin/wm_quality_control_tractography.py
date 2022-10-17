@@ -193,6 +193,7 @@ def main():
         if not os.path.exists(output_dir_subdir):
             os.makedirs(output_dir_subdir)
         ren.save_views(output_dir_subdir, subject_id)
+        del ren
     
         print('Multiple views for individual subject')
         html_individual_multiviews = os.path.join(output_dir_subdir, 'view_multiple_'+subject_id+'.html')
