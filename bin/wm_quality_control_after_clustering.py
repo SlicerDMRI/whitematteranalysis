@@ -60,8 +60,8 @@ def main():
     for sidx in range(0, num_of_subjects):
         sub = subject_list[sidx]
         sub_dir = os.path.join(args.inputDirectory, sub)
-        input_mask = "{0}/cluster_*.vtk".format(sub_dir)
-        input_mask2 = "{0}/cluster_*.vtp".format(sub_dir)
+        input_mask = f"{sub_dir}/cluster_*.vtk"
+        input_mask2 = f"{sub_dir}/cluster_*.vtp"
         cluster_polydatas = glob.glob(input_mask) + glob.glob(input_mask2)
         cluster_polydatas = sorted(cluster_polydatas)
         print("  ", sub, "has", len(cluster_polydatas), "clusters.")
@@ -82,8 +82,8 @@ def main():
         sub = subject_list[sidx]
         print("   loading", sub)
         sub_dir = os.path.join(args.inputDirectory, sub)
-        input_mask = "{0}/cluster_*.vtk".format(sub_dir)
-        input_mask2 = "{0}/cluster_*.vtp".format(sub_dir)
+        input_mask = f"{sub_dir}/cluster_*.vtk"
+        input_mask2 = f"{sub_dir}/cluster_*.vtp"
         cluster_polydatas = glob.glob(input_mask) + glob.glob(input_mask2)
         cluster_polydatas = sorted(cluster_polydatas)
         for cidx in range(0, num_of_clusters):

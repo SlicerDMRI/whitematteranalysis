@@ -75,8 +75,8 @@ print("<wm_endpoint_analysis> found", len(tract_dir_list), "subjects.")
 
 def list_label_map_files(input_dir):
     # Find input files
-    input_mask = "{0}/*.nrrd".format(input_dir)
-    input_mask2 = "{0}/*.nhdr".format(input_dir)
+    input_mask = f"{input_dir}/*.nrrd"
+    input_mask2 = f"{input_dir}/*.nhdr"
     input_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
     input_fnames = sorted(input_fnames)
     return(input_fnames)
@@ -107,7 +107,7 @@ Parallel(n_jobs=number_of_jobs, verbose=1)(
 
 def list_txt_files(input_dir):
     # Find input files
-    input_mask = "{0}/*.txt".format(input_dir)
+    input_mask = f"{input_dir}/*.txt"
     input_fnames = glob.glob(input_mask)
     input_fnames = sorted(input_fnames)
     

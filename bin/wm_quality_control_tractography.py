@@ -193,6 +193,7 @@ def main():
         if not os.path.exists(output_dir_subdir):
             os.makedirs(output_dir_subdir)
         ren.save_views(output_dir_subdir, subject_id)
+        del ren
     
         print('Multiple views for individual subject')
         html_individual_multiviews = os.path.join(output_dir_subdir, 'view_multiple_'+subject_id+'.html')
@@ -244,7 +245,7 @@ def main():
         lengths = numpy.array(lengths)
         fibers_qc_file = open(fibers_qc_fname, 'a')
         outstr = str(subject_id) +  '\t'
-        outstr = outstr + '{0:.4f}'.format(step_size) + '\t'
+        outstr = outstr + f'{step_size:.4f}' + '\t'
         # total points in the dataset
         outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
         # mean fiber length

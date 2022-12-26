@@ -108,7 +108,7 @@ def main():
     # =======================================================================
     
     # Copy all MRML files to the new subject directory
-    input_mask = "{0}/clustered_tracts*.mrml".format(args.inputDirectory)
+    input_mask = f"{args.inputDirectory}/clustered_tracts*.mrml"
     mrml_files = sorted(glob.glob(input_mask))
     for fname_src in mrml_files:
         fname_base = os.path.basename(fname_src)
@@ -135,9 +135,9 @@ def main():
     ## atlas.brain_std_similarity = brain_std_sim
     
     # find clusters in subject and atlas input directories
-    input_mask = "{0}/cluster_*.vtp".format(args.atlasDirectory)
+    input_mask = f"{args.atlasDirectory}/cluster_*.vtp"
     atlas_clusters = sorted(glob.glob(input_mask))
-    input_mask = "{0}/cluster_*.vtp".format(args.inputDirectory)
+    input_mask = f"{args.inputDirectory}/cluster_*.vtp"
     subject_clusters = sorted(glob.glob(input_mask))
 
     # check these lists are the same length

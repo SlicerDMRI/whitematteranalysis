@@ -255,7 +255,7 @@ class RenderPolyData:
         else:
             lut.SetRange(scalar_range)
 
-        if opacity is not 1:
+        if opacity != 1:
             actor.GetProperty().SetOpacity(opacity)
 
         if depth_peeling is not False:
