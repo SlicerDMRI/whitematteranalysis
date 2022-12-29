@@ -20,7 +20,7 @@ parser.add_argument(
     'outoutmeasure',
     help='Output csv file.')
 parser.add_argument(
-    '-appendedTractName', action="store", type=str,
+    '-appendedTractName', action="store", type=str, default="",
     help="Name of the appended tracts.")
 parser.add_argument(
     '-tractList', action="store", type=str, nargs='+',
@@ -88,7 +88,7 @@ for m_idx, m_name in enumerate(append_measures):
         weight = stats.to_numpy()[:, append_list[:, 0]]
         val = stats.to_numpy()[:, append_list[:, m_idx]]
 
-        val_weighted_sum = numpy.sum(val * weight, axis=1)
+        val_weighted_sum = numpy.sum(val.astype(numpy.double) * weight.astype(numpy.double), axis=1)
         weight_sum = numpy.sum(weight, axis=1)
 
         empty_indices = numpy.where(weight_sum == 0)[0]
