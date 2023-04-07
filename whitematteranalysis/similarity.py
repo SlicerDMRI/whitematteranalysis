@@ -1,6 +1,6 @@
 import numpy
 import vtk
-import fibers
+from . import fibers
 import math
 import sys
 
