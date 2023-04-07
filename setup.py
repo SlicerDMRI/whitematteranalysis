@@ -92,10 +92,6 @@ setup(
     install_requires = setup_requires + ['setuptools', 'scipy', 'vtk',
                         'joblib', 'statsmodels', 'xlrd', 'matplotlib', 'nibabel'],
     
-    ext_modules = [
-        Extension('whitematteranalysis.fibers', sources=['whitematteranalysis/fibers.pyx']),
-        Extension('whitematteranalysis.similarity', sources=['whitematteranalysis/similarity.pyx']),
-        ],
     cmdclass=LazyCommandClass(),
 
     scripts = [ 
