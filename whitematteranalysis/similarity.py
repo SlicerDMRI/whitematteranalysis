@@ -92,7 +92,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     if distance_method == 'Landmarks':
         return _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, landmarks)
     if landmarks is not None:
-        print "ERROR: Please use distance method Landmarks to compute landmark distances"
+        print("ERROR: Please use distance method Landmarks to compute landmark distances")
         
     # compute the distance from this fiber to the array of other fibers
     ddx = fiber_array.fiber_array_r - fiber.r
@@ -180,7 +180,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         distance = 0.5*d + 0.4*d/(0.5+0.5*(1-angle*angle)) + 0.1*distance_endpoints
         
     else:
-        print "<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method
+        print("<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method)
         raise Exception("unknown distance method")
         
     
