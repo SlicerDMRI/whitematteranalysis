@@ -31,6 +31,8 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
 * A step-by-step tutorial to explain the detailed computional process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
 
+* The names of the anatomical bundles WMA extracts can be found in the [bundles](doc/bundles.md) page.
+
 # References
 
 **Please cite the following papers for using the code and/or the training data :**
