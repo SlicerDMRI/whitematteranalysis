@@ -13,7 +13,7 @@ def harden_transform(polydata, transform, inverse, outdir):
     if os.path.exists(output_name):
         return
     
-    check_load, polydata_node = slicer.util.loadModel(str(polydata), 1)
+    check_load, polydata_node = slicer.util.loadFiberBundle(str(polydata), 1)
     if not check_load:
         print('Could not load polydata file:', polydata)
         return
