@@ -4,7 +4,6 @@ import argparse
 import os
 import multiprocessing
 import time
-
 import vtk
 
 try:
@@ -40,7 +39,7 @@ def main():
         '-l', action="store", dest="fiberLength", type=int, default=40,
         help='Minimum length (in mm) of fibers to analyze. 60mm is default.')
     parser.add_argument(
-        '-j', action="store", dest="numberOfJobs", type=int, default=1,
+        '-j', action="store", dest="numberOfJobs", type=str, default='1',
         help='Number of processors to use.')
     parser.add_argument(
         '-verbose', action='store_true', dest="flag_verbose",
@@ -92,7 +91,7 @@ def main():
     fiber_length = args.fiberLength
     print("minimum length of fibers to analyze (in mm): ", fiber_length)
     
-    number_of_jobs = args.numberOfJobs
+    number_of_jobs = int(args.numberOfJobs)
     print('Using N jobs:', number_of_jobs)
     
     if args.flag_verbose:
@@ -303,6 +302,7 @@ def main():
     
     print("\n==========================")
     print('<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n')
-
+    
+    
 if __name__ == '__main__':
     main()

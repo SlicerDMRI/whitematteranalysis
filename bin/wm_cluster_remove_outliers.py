@@ -51,7 +51,7 @@ def main():
         '-advanced_only_outlier_sigma', action='store', dest="outlierSigma", type=float, default=20.0,
         help='(Advanced parameter that probably should not be changed.) Local sigma used to compute fiber probability in cluster-based outlier removal. The default is 20mm. For stricter clustering, this may be reduced to 15mm.')
     parser.add_argument(
-        '-j', action="store", dest="numberOfJobs", type=int,
+        '-j', action="store", dest="numberOfJobs", type=str,
         help='Number of processors to use.')
 
     args = parser.parse_args()
@@ -82,7 +82,7 @@ def main():
         os.makedirs(outdir)
     
     if args.numberOfJobs is not None:
-        number_of_jobs = args.numberOfJobs
+        number_of_jobs = int(args.numberOfJobs)
     else:
         # default to 1 job for usage on compute clusters. Also, the
         # multiprocessing is not used efficiently in our code and should
