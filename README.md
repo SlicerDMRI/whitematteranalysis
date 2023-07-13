@@ -25,7 +25,7 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
 ## 3. Documentation
 
-* A master shell script ```wm_apply_ORG_atlas_to_subject.sh``` (see documentation [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) is provided to apply an anatomically curated white matter atlas ([the ORG atlas](http://dmri.slicer.org/atlases/)), along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation. Step-by-step tutorial to explain detailed computional process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
+* A master shell script ```wm_apply_ORG_atlas_to_subject.sh``` (see documentation [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) is provided to apply an anatomically curated white matter atlas ([the ORG atlas](http://dmri.slicer.org/atlases/)), along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation. A step-by-step tutorial to explain the detailed computional process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
 
 # References
 
