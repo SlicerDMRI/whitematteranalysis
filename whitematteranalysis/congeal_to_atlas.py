@@ -37,7 +37,7 @@ class SubjectToAtlasRegistration:
         self.mode = "Affine"
 
         self.fiber_length = 40
-        self.fiber_length_max = 300
+        self.fiber_length_max = 260
 
         # internal stuff
         self.subject_polydata = None
