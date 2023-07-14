@@ -36,9 +36,6 @@ def main():
         '-mode', action="store", dest="mode", type=str, default="affine",
         help='The mode can be affine or nonrigid. Affine is the default. It should be run first before nonrigid.')
     parser.add_argument(
-        '-f', action="store", dest="numberOfFibers", type=int, default=20000,
-        help='Total number of fibers to analyze from each dataset. During registration, at each iteration fibers are randomly sampled from within this data. 20000 is the default number of total fibers.')
-    parser.add_argument(
         '-l', action="store", dest="fiberLength", type=int, default=40,
         help='Minimum length (in mm) of fibers to analyze. The default is 40mm.')
     parser.add_argument(
@@ -86,9 +83,6 @@ def main():
     if not os.path.exists(subject_outdir):
         print("<register> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(subject_outdir)
-    
-    number_of_fibers = args.numberOfFibers
-    print("<register> Number of fibers to analyze per subject: ", number_of_fibers)
     
     fiber_length = args.fiberLength
     print("<register> Minimum length of fibers to analyze (in mm): ", fiber_length)
@@ -295,6 +289,9 @@ def main():
     register = wma.congeal_to_atlas.SubjectToAtlasRegistration()
     register.output_directory = subject_outdir
     register.input_polydata_filename = args.inputSubject
+    register.fiber_length = args.fiberLength
+    register.fiber_length_max = args.fiberLengthMax
+
     if nonrigid:
         register.mode = "Nonrigid"
     # We have to add polydatas after setting nonrigid in the register object

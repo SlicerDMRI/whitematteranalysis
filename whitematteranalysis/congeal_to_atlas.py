@@ -17,7 +17,7 @@ class SubjectToAtlasRegistration:
     def __init__(self):
         # parameters that can be set by user
         self.output_directory = "."
-        self.random_seed = None
+        self.random_seed = 1000
         self.input_polydata_filename = None
         
         # performance options set by user
@@ -35,6 +35,9 @@ class SubjectToAtlasRegistration:
         self.subject_brain_size = 1000
         # options are Affine, Rigid, Nonrigid
         self.mode = "Affine"
+
+        self.fiber_length = 40
+        self.fiber_length_max = 300
 
         # internal stuff
         self.subject_polydata = None
@@ -105,12 +108,18 @@ class SubjectToAtlasRegistration:
         if not os.path.exists(outdir):
             os.makedirs(outdir)
 
-        mean_brain = wma.filter.downsample(self.atlas_polydata, self.mean_brain_size, verbose=False, random_seed=self.random_seed)
+        print("filtering and downsampling atlas")
+        mean_brain = wma.filter.preprocess(self.atlas_polydata, self.fiber_length, max_length_mm=self.fiber_length_max, return_indices=False, preserve_point_data=False, preserve_cell_data=False, verbose=False)
+        mean_brain, tmp = wma.filter.downsample(mean_brain, self.mean_brain_size, return_indices=True, verbose=False, random_seed=self.random_seed+self.total_iterations) 
+
         mean_fibers = wma.fibers.FiberArray()
         mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
         fixed = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
         
-        subject_brain = wma.filter.downsample(self.subject_polydata, self.subject_brain_size, verbose=False, random_seed=self.random_seed)
+        print("filtering and downsampling subject")
+        subject_brain = wma.filter.preprocess(self.subject_polydata, self.fiber_length, max_length_mm=self.fiber_length_max, return_indices=False, preserve_point_data=False, preserve_cell_data=False, verbose=False)
+        subject_brain, tmp = wma.filter.downsample(subject_brain, self.subject_brain_size, return_indices=True, verbose=False, random_seed=self.random_seed+self.total_iterations)
+
         fibers = wma.fibers.FiberArray()
         fibers.convert_from_polydata(subject_brain, self.points_per_fiber)
         moving = numpy.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
