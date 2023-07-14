@@ -1,12 +1,37 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import enum
 import os
 import argparse
 import urllib.request, urllib.error, urllib.parse
 import zipfile
 import sys
 import ssl
+
+
+ORG_ATLAS_DATA_HOST_ROOT_URL = "https://zenodo.org/record/"
+
+
+class ORGAtlasVersion(enum.Enum):
+    V1_1 = ("v1.1", str(2648284))
+    V1_1_1 = ("v1.1.1", str(2648292))
+    V1_2 = ("v1.2", str(4156927))
+    V1_3_A = ("v1.3a", str(5109770))
+    V1_3_B = ("v1.3b", str(7784967))
+    V1_4 = ("v1.4", str(8082481))
+
+    @staticmethod
+    def get_version(name):
+        return ORGAtlasVersion(name).value[0]
+
+    @staticmethod
+    def get_record(name):
+        return ORGAtlasVersion(name).value[1]
+
+
+def build_download_url(version):
+    return urllib.parse.urljoin(ORG_ATLAS_DATA_HOST_ROOT_URL, ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(version)))
 
 
 def _build_arg_parser():
@@ -20,6 +45,8 @@ def _build_arg_parser():
     parser.add_argument(
         '-atlas', action="store", dest="requested_atlas", type=str, 
         help='Name of the atlas. Currently, \'ORG-800FC-100HCP\' and \'ORG-2000FC-100HCP\' are available to download.')
+    parser.add_argument(
+        '--version', choices=ORGAtlasVersion._member_names_, default=ORGAtlasVersion.V1_2.name, help="Atlas version.")
 
     return parser
 
@@ -87,10 +114,11 @@ def main():
         os.makedirs(outdir)
     
     requested_atlas = args.requested_atlas
-    
-    repo = 'https://zenodo.org/record/4156927/'
-    version = 'v1.2'
-    
+
+    repo = build_download_url(args.version)
+    repo = repo + "/"
+    version = ORGAtlasVersion.get_version(ORGAtlasVersion.__getitem__(args.version))
+
     org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
     org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
     if not os.path.exists(org_atlases_version_folder):
