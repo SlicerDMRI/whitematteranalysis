@@ -10,7 +10,14 @@ import sys
 import ssl
 
 
-ORG_ATLAS_DATA_HOST_ROOT_URL = "https://zenodo.org/record/"
+ZENODO_RECORD_ROOT_URL = "https://zenodo.org/record/"
+ZENODO_API_RECORD_ROOT_URL = "https://zenodo.org/api/records/"
+
+fname_sep = "."
+
+
+class DataExchangeFormatFileExtension(enum.Enum):
+    JSON = "json"
 
 
 class ORGAtlasVersion(enum.Enum):
@@ -30,8 +37,12 @@ class ORGAtlasVersion(enum.Enum):
         return ORGAtlasVersion(name).value[1]
 
 
-def build_download_url(version):
-    return urllib.parse.urljoin(ORG_ATLAS_DATA_HOST_ROOT_URL, ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(version)))
+def build_download_url(root_url, version):
+    return urllib.parse.urljoin(root_url, ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(version)))
+
+
+def build_suffix(extension):
+    return fname_sep + extension.value
 
 
 def _build_arg_parser():
@@ -39,6 +50,7 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Download a pre-provided anatomically curated fiber clustering white matter atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
+    
     parser.add_argument(
         'outputDirectory',
         help='The output directory, where the atlas will be downloaded, should be a new empty directory. It will be created if needed.')
@@ -115,15 +127,25 @@ def main():
     
     requested_atlas = args.requested_atlas
 
-    repo = build_download_url(args.version)
+    repo = build_download_url(ZENODO_RECORD_ROOT_URL, args.version)
     repo = repo + "/"
     version = ORGAtlasVersion.get_version(ORGAtlasVersion.__getitem__(args.version))
+
+    metadata_url = build_download_url(ZENODO_API_RECORD_ROOT_URL, args.version)
+    metadata_local_file_rootname = ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(args.version))
+    metadata_local_file_basename = metadata_local_file_rootname + build_suffix(
+        DataExchangeFormatFileExtension.JSON)
 
     org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
     org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
     if not os.path.exists(org_atlases_version_folder):
         os.makedirs(org_atlases_version_folder)
-    
+
+    metadata_local_fname = os.path.join(
+        org_atlases_version_folder,
+        metadata_local_file_basename,
+    )
+
     if requested_atlas == 'ORG-800FC-100HCP' or requested_atlas == 'ORG-2000FC-100HCP':
         FC_atlas_url = repo + 'files/' + requested_atlas + '.zip?download=1'
         REG_atlas_url = repo + 'files/' + 'ORG-RegAtlas-100HCP.zip?download=1'
@@ -193,7 +215,12 @@ def main():
         else:
             print(f'<{os.path.basename(__file__)}> Skip downloading: There is an existing \'100HCP-population-mean-b0.nii.gz\' in the output folder.', end=' ')
             print('')
-    
+        if not os.path.exists(metadata_local_fname):
+            download_file(metadata_url, metadata_local_fname)
+        else:
+            print(f"<wm_download_org_atlas> Skip downloading: There is an existing \'{metadata_local_file_basename}\' in the output folder.", end=" ")
+            print("")
+
     print('')
     print(f'<{os.path.basename(__file__)}> Successfully downloaded to', outdir)
 
