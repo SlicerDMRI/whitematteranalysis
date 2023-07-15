@@ -1,0 +1,83 @@
+id,short_name,long_name
+
+101,AF_left,arcuate fasciculus left
+102,AF_right,arcuate fasciculus right
+103,CB_left,cingulum bundle left
+104,CB_right,cingulum bundle right
+105,EmC_left,extreme capsule left
+106,EmC_right,extreme capsule right
+107,ILF_left,inferior longitudinal fasciculus left
+108,ILF_right,inferior longitudinal fasciculus left
+109,IOFF_left,inferior occipito-frontal fasciculus left
+110,IOFF_right,inferior occipito-frontal fasciculus left
+111,MdLF_left,middle longitudinal fasciculus left
+112,MdLF_right,middle longitudinal fasciculus right
+113,SLF-I_left,superior longitudinal fasciculus I left
+114,SLF-I_right,superior longitudinal fasciculus I right
+115,SLF-II_left,superior longitudinal fasciculus II left
+116,SLF-II_right,superior longitudinal fasciculus II right
+117,SLF-III_left,superior longitudinal fasciculus III left
+118,SLF-III_right,superior longitudinal fasciculus III right
+119,UF_left,uncinate fasciculus left
+120,UF_right,uncinate fasciculus right
+
+201,CPC_left,cortico - ponto - cerebellar left
+202,CPC_right,cortico - ponto - cerebellar right
+203,ICP_left,inferior cerebellar peduncle left
+204,ICP_right,inferior cerebellar peduncle right
+205,Intra-CBLM-I&P_left,intracerebellar input and Purkinje tract left
+206,Intra-CBLM-I&P_right,intracerebellar input and Purkinje tract right
+207,Intra-CBLM-PaT_left,intracerebellar parallel tract left
+208,Intra-CBLM-PaT_right,intracerebellar parallel tract right
+209,MCP,middle cerebellar peduncle
+
+301,CC1,corpus callosum 1
+302,CC2,corpus callosum 2
+303,CC3,corpus callosum 3
+304,CC4,corpus callosum 4
+305,CC5,corpus callosum 5
+306,CC6,corpus callosum 6
+307,CC7,corpus callosum 7
+
+401,CR-F_left,corona-radiata-frontal left
+402,CR-F_right,corona-radiata-frontal right
+403,CR-P_left,corona-radiata-parietal left
+404,CR-P_right,corona-radiata-parietal right
+405,CST_left,corticospinal tract left
+406,CST_right,corticospinal tract right
+407,PLIC_left,posterior limb of internal capsule left
+408,PLIC_right,posterior limb of internal capsule right
+409,SF_left,striato-frontal left
+410,SF_right,striato-frontal right
+411,SO_left,striato-occipital left
+412,SO_right,striato-occipital right
+413,SP_left,striato-parietal left
+414,SP_right,striato-parietal right
+415,TF_left,thalamo-frontal left
+416,TF_right,thalamo-frontal right
+417,TO_left,thalamo-occipital left
+418,TO_right,thalamo-occipital right
+419,TP_left,thalamo-parietal left
+420,TP_right,thalamo-parietal right
+421,TT_left,thalamo-temporal left
+422,TT_right,thalamo-temporal right
+
+501,EC_left,external capsule left
+502,EC_right,external capsule right
+
+601,Sup-F_left,superficial-frontal left
+602,Sup-F_right,superficial-frontal right
+603,Sup-FP_left,superficial-frontal-parietal left
+604,Sup-FP_right,superficial-frontal-parietal right
+605,Sup-O_left,superficial-occipital left
+606,Sup-O_right,superficial-occipital right
+607,Sup-OT_left,superficial-occipital-temporal left
+608,Sup-OT_right,superficial-occipital-temporal right
+609,Sup-P_left,superficial-parietal left
+610,Sup-P_right,superficial-parietal right
+611,Sup-PO_left,superficial-parietal-occipital left
+612,Sup-PO_right,superficial-parietal-occipital right
+613,Sup-PT_left,superficial-parietal-temporal left
+614,Sup-PT_right,superficial-parietal-temporal right
+615,Sup-T_left,superficial-temporal left
+616,Sup-T_right,superficial-temporal right
