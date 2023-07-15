@@ -1,6 +1,8 @@
 whitematteranalysis
 ===================
 
+[![test, package](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml/badge.svg?branch=master)](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml?query=branch%3Amaster)
+
 # Synopsis
 
 WhiteMatterAnalysis (WMA) provides fiber clustering and tractography analysis tools.
