@@ -43,12 +43,12 @@ def main():
              'Default number is 0.6, where a higher number will tend to label fewer fibers as hemispheric and more fibers as commissural (not strictly in one hemisphere or the other), '
              'while a lower number will be stricter about what is classified as commissural. '
              'This parameter is not applicable if -clusterLocationFile was provided. '
-             'Note: performing hemisphere separation uinsg -pthresh needs the input clusters are in the ATLAS space.')
+             'Note: performing hemisphere separation using -pthresh needs the input clusters be in the ATLAS space.')
     parser.add_argument(
         '-clusterLocationFile', action="store", dest="clusterLocationFile",
         help='A csv file defining the location of each cluster, i.e., hemispheric or commissural. '
              'The hemispherePercentThreshold will be varied across the clusters if their locations are already known.'
-             'Note: performing hemisphere separation uinsg -clusterLocationFile needs the input clusters are in the ATLAS space.')
+             'Note: performing hemisphere separation using -clusterLocationFile needs the input clusters be in the ATLAS space.')
     parser.add_argument(
         '-outputDirectory',
         help='If this is given, separated clusters will be output under this folder. The output directory will be created if it does not exist.')

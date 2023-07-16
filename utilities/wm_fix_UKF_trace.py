@@ -33,7 +33,7 @@ def fix_trace(inpd):
                 inpd.GetLines().GetNextCell(ptids)
                 for pidx in range(0, ptids.GetNumberOfIds()):
                     trace_val = array.GetTuple(ptids.GetId(pidx))[0]
-                    # inverse funcion of https://github.com/pnlbwh/ukftractography/blob/fcf83e290de9feb38e6592c2fcacc107cdc029fe/ukf/tractography.cc#L1902
+                    # inverse function of https://github.com/pnlbwh/ukftractography/blob/fcf83e290de9feb38e6592c2fcacc107cdc029fe/ukf/tractography.cc#L1902
                     trace_correct = 1 / ( numpy.tan(trace_val / 2 * 3.14) ) / 1.0e6 
 
                     if array.GetName() == 'trace1':

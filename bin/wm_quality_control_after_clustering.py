@@ -34,7 +34,7 @@ def main():
         help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
-        help='Directory of fiber clustering results obtained by <wm_cluster_from_altas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
+        help='Directory of fiber clustering results obtained by <wm_cluster_from_atlas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
     parser.add_argument(
         'outputDirectory',
         help='Quality control information will be stored in the output directory, which will be created if it does not exist.')
