@@ -8,7 +8,7 @@ WhiteMatterAnalysis (WMA) provides fiber clustering and tractography analysis to
 # WMA Installation and Usage
 ## 1. Install Python 3:
 
-Miniconda is a nice option becuase it includes pip, setuptools, and all library dependencies (such as VTK and scipy).
+Miniconda is a nice option because it includes pip, setuptools, and all library dependencies (such as VTK and scipy).
 
   - Download and install Miniconda from https://conda.io/miniconda.html
 
@@ -19,7 +19,7 @@ The following command will use pip to install whitematteranalysis from this sour
       pip install git+https://github.com/SlicerDMRI/whitematteranalysis.git
 
 
-  (Note: On MacOS, to able to use pip, X-code needs to be installed using `xcode-select --install`.)
+  (Note: On macOS, to be able to use pip, X-code needs to be installed using `xcode-select --install`.)
 
 Run `wm_quality_control_tractography.py --help` to test if the installation is successful.
 
@@ -29,7 +29,7 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
     ```bash wm_apply_ORG_atlas_to_subject.sh -i input_tractography.vtk -o output_dir -a path_to_atlas/ORG-Atlases-v1.x -s /Applications/Slicer5.2.2.app/Contents/MacOS/Slicer -d 1 -m /Applications/Slicer5.2.2.app/Contents/Extensions-31382/SlicerDMRI/lib/Slicer-5.2/cli-modules/FiberTractMeasurements```
 
-* A step-by-step tutorial to explain the detailed computional process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
+* A step-by-step tutorial to explain the detailed computational process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
 
 # References
 
