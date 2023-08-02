@@ -51,7 +51,7 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
 **For projects using Slicer and SlicerDMRI please also include the following text (or similar) and citations:**
 
-* How to cite the [Slicer platform](http://wiki.slicer.org/slicerWiki/index.php/CitingSlicer)
+* How to cite the [Slicer platform](https://slicer.readthedocs.io/en/latest/user_guide/about.html#how-to-cite)
 * An example of how to cite SlicerDMRI (modify the first part of the sentence according to your use case):
 
     "We performed diffusion MRI tractography and/or analysis and/or visualization in 3D Slicer (https://www.slicer.org/) via the SlicerDMRI project (https://dmri.slicer.org/) (Norton et al. 2017)."
