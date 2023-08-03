@@ -23,7 +23,7 @@ parser.add_argument("-v", "--version",
     help="Show program's version number and exit")
 parser.add_argument(
     'inputTractDirectory',
-    help='Directory of fiber clustering results obtained by <wm_cluster_from_altas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
+    help='Directory of fiber clustering results obtained by <wm_cluster_from_atlas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
 parser.add_argument(
     'inputLabelMapDirectory',
     help='Contains the parcellation or functional areas as label map files. Make sure that the input tract files and the label map files match each other in alphabetical order.')
@@ -117,6 +117,6 @@ endpoint_txt_list = list_txt_files(args.outputDirectory)
 print("<wm_endpoint_analysis> Endpoint analysis were measured for", len(endpoint_txt_list), "subjects.")
 
 if len(tract_dir_list) != len(endpoint_txt_list):
-    print("Error: The numbers of inputs and outputs are different. Check the log file of each subeject.")
+    print("Error: The numbers of inputs and outputs are different. Check the log file of each subject.")
 else:
     os.system("rm -rf "+os.path.join(args.outputDirectory, 'log*'))

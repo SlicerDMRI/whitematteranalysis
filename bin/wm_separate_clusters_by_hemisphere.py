@@ -153,12 +153,12 @@ def main():
            
          # If HemisphereLocataion is not defined in the input vtk file, the location of each fiber in the cluster is decided.
         if not flag_location:
-            print("Error:", fname, "has no hemisphere location infromation")
+            print("Error:", fname, "has no hemisphere location information")
             exit()
     
         # for sanity check 
         if len(numpy.where(mask_location ==0)[0]) > 1:
-            print("Error: Not all fibers in", fname, "is labeled with hemisphere location infromation.")
+            print("Error: Not all fibers in", fname, "is labeled with hemisphere location information.")
             exit()
     
         # output separated clusters

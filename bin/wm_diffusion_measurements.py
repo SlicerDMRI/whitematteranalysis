@@ -23,7 +23,7 @@ def main():
         help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
-        help='Directory of fiber clustering results obtained by <wm_cluster_from_altas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
+        help='Directory of fiber clustering results obtained by <wm_cluster_from_atlas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')
     parser.add_argument(
         'outputCSV',
         help='Directory of output CSV files of fiber scalar measurement (computed using Slicer FiberTractMeasurements module).')

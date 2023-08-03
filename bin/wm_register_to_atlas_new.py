@@ -197,7 +197,7 @@ def main():
         initial_step_per_scale = [5, 4, 3, 2, 1.5]
         final_step_per_scale = [3, 3, 2, 1, 1]
         # use only very local information (small sigma)
-        # sigma 1.25 is apparently not useful: stick with a minumum of 2mm
+        # sigma 1.25 is apparently not useful: stick with a minimum of 2mm
         sigma_per_scale = [5, 3, 2, 2, 2]
         # how many times to repeat the process at each scale
         iterations_per_scale = [10, 10, 8, 5, 2]
@@ -231,7 +231,7 @@ def main():
         initial_step_per_scale = [5, 4, 3, 2, 1.5, 1.5, 1.5]
         final_step_per_scale = [3, 3, 2, 1, 1, 1, 1]
         # use only very local information (small sigma)
-        # sigma 1.25 is apparently not useful: stick with a minumum of 2mm
+        # sigma 1.25 is apparently not useful: stick with a minimum of 2mm
         sigma_per_scale = [5, 3, 2, 2, 2, 2, 2]
         # how many times to repeat the process at each scale
         iterations_per_scale = [10, 10, 8, 5, 4, 3, 2]

@@ -9,28 +9,28 @@ Compulsory arguments:
      -o:  Output directory to save all fiber clustering outputs.
      -a:  Path to the ORG atlas (the anatomically curated atlas ORG-800FC-100HCP), within which there should be 
           two folders named: ORG-RegAtlas-100HCP and ORG-800FC-100HCP 
-     -s:  Path to 3D Slicer, e.g., under MacOS, it is /Applications/Slicer.app/Contents/MacOS/Slicer
+     -s:  Path to 3D Slicer, e.g., under macOS, it is /Applications/Slicer.app/Contents/MacOS/Slicer
 Optional arguments:
      -r:  whole brain tractography registration mode (default = 'rig')
-            rig: rigid_affine_fast : this enables a rough tractography registraion. This mode in general 
+            rig: rigid_affine_fast : this enables a rough tractography registration. This mode in general
                                    applicable to tractography data generated from different dMRI 
                                    acquisitions and different populations (such as babies)
             nonrig: affine + nonrigid (2 stages) : this enables nonrigid deformations of the fibers. This mode
-                                              needs the input tractography to be similar to the atals tractography, 
-                                              e.g. two-tensor UKF tractography + HCP dMRI acquisiton. 
-     -n:  Number of threads (default = 1). If mutiple cores are available, recommended setting is 4. 
+                                              needs the input tractography to be similar to the atlas tractography,
+                                              e.g. two-tensor UKF tractography + HCP dMRI acquisition.
+     -n:  Number of threads (default = 1). If multiple cores are available, recommended setting is 4.
           Increasing the number of threads does not speed up too much, but it requires more computational resources.) 
      -x:  If the job is being run in an environment without a X client, a virtual X server environment is needed (for 
            transforming fiber clusters in the atlas space back to the tractography space using 3D Slicer). Use value 1 
            to indicate the usage of a virtual X server (default 0).
      -d: Export diffusion tensor measurements for each fiber cluster (or fiber tract). Note that diffusion tensor 
          (or other diffusion measurements) must be stored in the input VTK file. If this is specified, -m needs to be provided.
-     -m: Path to the FiberTractMeasurements module in SlicerDMRI. For example, in 3D Slicer 4.11 stable release under MacOS, 
+     -m: Path to the FiberTractMeasurements module in SlicerDMRI. For example, in 3D Slicer 4.11 stable release under macOS,
          the CLI module path is:
            /Applications/Slicer.app/Contents/Extensions-28264/SlicerDMRI/lib/Slicer-4.11/cli-modules/FiberTractMeasurements
      -c Clean the internal temporary files (default : 0)
             0 : keep all files
-            1 : mininal removal : initial bilateral clusters, transformed bilateral clusters
+            1 : minimal removal : initial bilateral clusters, transformed bilateral clusters
             2 : maximal removal : remove registration temp files, initial bilateral clusters, outlier removed bilateral clusters, transformed bilateral clusters
 
 Example:
@@ -51,8 +51,8 @@ function reportMappingParameters {
  Input tractography:          $InputTractography
  Output directory:            $OutputDir
  ORG atlas folder:            $AtlasBaseFolder
- 3D Slier:                    $SlicerPath
- Registraion mode:            $RegMode
+ 3D Slicer:                   $SlicerPath
+ Registration mode:           $RegMode
  Number of threads:           $NumThreads
  virtual X server:            $VX
  Export dMRI measures:        $DiffMeasure
@@ -174,7 +174,7 @@ else
 	numfiles=${#numfiles[@]}
 	if [ $numfiles -gt 1 ] ;then
 		echo ""
-		echo "** Anantomical tracts ($numfiles tracts) are detected in the output folder. Manually remove all files to rerun."
+		echo "** Anatomical tracts ($numfiles tracts) are detected in the output folder. Manually remove all files to rerun."
 		echo ""
 		#exit
 	fi
@@ -193,7 +193,7 @@ echo " - fiber clustering atlas:" $FCAtlasFolder
 echo ""
 
 
-echo "<wm_apply_ORG_atlas_to_subject> Tractography registraion with mode [" $RegMode "]"
+echo "<wm_apply_ORG_atlas_to_subject> Tractography registration with mode [" $RegMode "]"
 RegistrationFolder=$OutputCaseFolder/TractRegistration
 if [ "$RegMode" == "rig" ]; then
 	RegTractography=$RegistrationFolder/${caseID}/output_tractography/${caseID}_reg.vtk
@@ -441,7 +441,7 @@ fi
 echo ""
 
 if [ $CleanFiles == 1 ]; then
-	echo "<wm_apply_ORG_atlas_to_subject> Clean files using mininal removal."
+	echo "<wm_apply_ORG_atlas_to_subject> Clean files using minimal removal."
 	rm -rf $OutputCaseFolder/FiberClustering/InitialClusters
 	rm -rf $OutputCaseFolder/FiberClustering/TransformedClusters
 

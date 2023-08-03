@@ -32,7 +32,7 @@ def main():
     
     parser.add_argument(
         'inputVolumetricMap',
-        help='Path to input volumetric map, e.g. an FA image. Note: this input image needs to be a nifti (nii or nii.gz) file. To read and writ this format, NiBabel package is needed, by runing: pip install nibabel ')
+        help='Path to input volumetric map, e.g. an FA image. Note: this input image needs to be a nifti (nii or nii.gz) file. To read and write this format, NiBabel package is needed, by running: pip install nibabel ')
     
     parser.add_argument(
         'outputDirectory',
@@ -59,7 +59,7 @@ def main():
     
     inputvol = os.path.abspath(args.inputVolumetricMap)
     if not os.path.exists(inputvol):
-        print("Error: Input volumetri map", inputvol, "does not exist.")
+        print("Error: Input volumetric map", inputvol, "does not exist.")
         exit()
     
     outdir = os.path.abspath(args.outputDirectory)

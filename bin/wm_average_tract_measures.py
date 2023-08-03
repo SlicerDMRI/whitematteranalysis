@@ -11,7 +11,7 @@ import re
 # Parse arguments
 #-----------------
 parser = argparse.ArgumentParser(
-    description="Compute averged statistics of the anatomical tracts. For diffusion measure with multiple statistics, only the Mean will be outputted.",
+    description="Compute averaged statistics of the anatomical tracts. For diffusion measure with multiple statistics, only the Mean will be outputted.",
     epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu.")
 parser.add_argument(
     'inputmeasure',
@@ -37,7 +37,7 @@ fields = numpy.array(fields)
 
 print(fields)
 
-print('All avaiable tracts:')
+print('All available tracts:')
 all_tracts = [f_name.replace('.Num_Points', '') for f_name in fields if f_name.endswith('.Num_Points')]
 print('N = ', str(len(all_tracts)), ':')
 print(all_tracts)
