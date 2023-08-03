@@ -25,7 +25,7 @@ Run `wm_quality_control_tractography.py --help` to test if the installation is s
 
 ## 3. Documentation
 
-* A master shell script ```wm_apply_ORG_atlas_to_subject.sh``` (see code [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) is provided to apply an anatomically curated white matter atlas ([the ORG atlas](http://dmri.slicer.org/atlases/)), along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation.
+* A master shell script ```wm_apply_ORG_atlas_to_subject.sh``` (see code [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) is provided to apply an anatomically curated white matter atlas ([the ORG atlas](https://dmri.slicer.org/atlases/)), along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation.
 
     ```bash wm_apply_ORG_atlas_to_subject.sh -i input_tractography.vtk -o output_dir -a path_to_atlas/ORG-Atlases-v1.x -s /Applications/Slicer5.2.2.app/Contents/MacOS/Slicer -d 1 -m /Applications/Slicer5.2.2.app/Contents/Extensions-31382/SlicerDMRI/lib/Slicer-5.2/cli-modules/FiberTractMeasurements```
 
