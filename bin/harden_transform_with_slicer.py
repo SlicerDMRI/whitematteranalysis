@@ -67,8 +67,8 @@ def main():
     if os.path.isfile(args.polydata):
         harden_transform(args.polydata, args.transform, args.inverse, args.outdir)
     elif os.path.isdir(args.polydata):
-        input_mask = f"{args.polydata}/*.vtk"
-        input_mask2 = f"{args.polydata}/*.vtp"
+        input_mask = os.path.join(args.polydata, "*.vtk")
+        input_mask2 = os.path.join(args.polydata, "*.vtp")
         input_pd_fnames = glob.glob(input_mask) + glob.glob(input_mask2)
         input_polydatas = sorted(input_pd_fnames)
     
