@@ -41,10 +41,10 @@ On this page, we provide step-by-step instructions to guide a user to run the en
         ```bash
         cd /Users/YOUR_USER_NAME/Desktop/WMA_tutorial_data
         ```
-      - You terminal should look like the below image (the username should change according to your computer). Type ```ls``` to display the files in the tutorial data folder on the terminal.
+      - Your terminal should look like the below image (the username should change according to your computer). Type ```ls``` to display the files in the tutorial data folder on the terminal.
     
         ![test image](tutorial-pics/fig_terminal_env.png)
-    
+
 ## 4. Initial tractography data quality control (QC)
 
 This step performs QC of the input tractography data (“_example-UKF-data.vtk_”) to: 1) verify correct appearance of tract anatomy, and 2) verify tractography is stored using the same spatial coordinate system as the atlas tractography data.
