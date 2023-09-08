@@ -1,9 +1,5 @@
-import os, glob
-from distutils.core import setup
-
-import setuptools
-from setuptools import setup, Extension, Command
-from setuptools.command.build_ext import build_ext as _build_ext
+import os
+from setuptools import setup
 from pkg_resources import resource_filename
 
 #    url='http://pypi.python.org/pypi/WhiteMatterAnalysis/',
