@@ -1,0 +1,11 @@
+cython==0.29.*
+joblib==1.1.*
+matplotlib==3.6.*
+nibabel==3.0.*
+numpy==1.20.*
+pandas==2.0.3
+setuptools==44.0.*
+scipy==1.4.*
+statsmodels==0.10.*
+vtk==9.1.*
+xlrd

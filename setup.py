@@ -74,6 +74,18 @@ class LazyCommandClass(dict):
 ########################################################################
 
 
+with open("requirements.txt") as f:
+    required_dependencies = f.read().splitlines()
+    external_dependencies = []
+    for dependency in required_dependencies:
+        if dependency[0:2] == "-e":
+            repo_name = dependency.split("=")[-1]
+            repo_url = dependency[3:]
+            external_dependencies.append("f{repo_name} @ {repo_url}")
+        else:
+            external_dependencies.append(dependency)
+
+
 setup_requires = ['cython==0.29.*', 'numpy==1.20.*']
 setup(
     name='WhiteMatterAnalysis',
@@ -85,9 +97,7 @@ setup(
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
     setup_requires=setup_requires,
-    install_requires=setup_requires + ['setuptools==44.0.*', 'scipy==1.4.*', 'vtk==9.1.*',
-                        'joblib==1.1.*', 'statsmodels==0.10.*', 'xlrd', 'matplotlib==3.6.*', 'nibabel==3.0.*',
-                        'pandas==2.0.3'],
+    install_requires=setup_requires + external_dependencies,
     cmdclass=LazyCommandClass(),
     scripts=[
         'bin/harden_transform_with_slicer.py',
