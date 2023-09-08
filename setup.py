@@ -88,14 +88,14 @@ setup(
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
   
-    setup_requires = setup_requires,
-    install_requires = setup_requires + ['setuptools==44.0.*', 'scipy==1.4.*', 'vtk==9.1.*',
+    setup_requires=setup_requires,
+    install_requires=setup_requires + ['setuptools==44.0.*', 'scipy==1.4.*', 'vtk==9.1.*',
                         'joblib==1.1.*', 'statsmodels==0.10.*', 'xlrd', 'matplotlib==3.6.*', 'nibabel==3.0.*',
                         'pandas==2.0.3'],
     
     cmdclass=LazyCommandClass(),
 
-    scripts = [ 
+    scripts=[
         'bin/harden_transform_with_slicer.py',
         'bin/wm_append_clusters.py',
         'bin/wm_append_clusters_to_anatomical_tracts.py',
