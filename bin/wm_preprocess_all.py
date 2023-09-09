@@ -47,6 +47,9 @@ def main():
     parser.add_argument(
         '-retaindata', action='store_true', dest="flag_retaindata",
         help='If given, all point and cell data stored along the tractography will be retained.')
+    parser.add_argument(
+        '--nonidentical', action='store_true',
+        help='Obtain nonidentical results across runs for downsampling.')
     
     args = parser.parse_args()
     
@@ -88,7 +91,11 @@ def main():
     else:
         print("Remove all data stored along the tractography and only keep fiber streamlines.")
     retaindata = args.flag_retaindata
-    
+
+    random_seed = 1234
+    if args.nonidentical:
+        random_seed = None
+
     print("==========================")
     
     # =======================================================================
@@ -154,7 +161,7 @@ def main():
             print(id_msg + msg)
     
             # , preserve_point_data=True needs editing of preprocess function to use mask function
-            wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False)
+            wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False, random_seed=random_seed)
             print("Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines)
     
         if wm3 is None:
