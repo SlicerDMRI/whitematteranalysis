@@ -5,6 +5,7 @@ import glob
 import os
 import argparse
 import multiprocessing
+from pathlib import Path
 
 import whitematteranalysis as wma
 
@@ -171,7 +172,9 @@ def main():
         msg = "**Writing output data for subject:", subjectID
         print(id_msg, msg)
 
-        fname = os.path.join(args.outputDirectory, subjectID+'_pp.vtp')
+        ext = Path(inputPolyDatas[sidx]).suffixes[0][1:]
+        fname = os.path.join(args.outputDirectory, subjectID+'_pp'+'.'+ext)
+
         try:
             print("Writing output polydata", fname, "...")
             wma.io.write_polydata(wm3, fname)
