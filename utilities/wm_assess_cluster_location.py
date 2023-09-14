@@ -7,7 +7,7 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_assess_cluster_location> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -37,7 +37,7 @@ if not os.path.isdir(args.inputAtlasDirectory):
     print("Error: Input directory", args.inputTractDirectory, "does not exist.")
     exit()
 
-print("<wm_assess_cluster_location>. Starting processing.")
+print(f"<{os.path.basename(__file__)}>. Starting processing.")
 print("")
 print("=====input atlas directory======\n", args.inputAtlasDirectory)
 print("=====pthresh====\n", args.hemispherePercentThreshold)

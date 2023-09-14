@@ -17,6 +17,8 @@ remove_outliers
 
 """
 
+import os
+
 import vtk
 import numpy
 
@@ -25,8 +27,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print("<filter.py> Failed to import joblib, cannot multiprocess.")
-    print("<filter.py> Please install joblib for this functionality.")
+    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
+    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
 from . import fibers, similarity
 
@@ -105,7 +107,7 @@ def compute_lengths(inpd):
 
     # Make sure we have lines and points.
     if (inpd.GetNumberOfLines() == 0) or (inpd.GetNumberOfPoints() == 0):
-        print("<filter.py> No fibers found in input polydata.")
+        print(f"<{os.path.basename(__file__)}> No fibers found in input polydata.")
         return 0, 0
     
     # measure step size (using first line that has >=5 points)
@@ -165,7 +167,7 @@ def preprocess(inpd, min_length_mm,
 
     # Make sure we have lines and points.
     if (inpd.GetNumberOfLines() == 0) or (inpd.GetNumberOfPoints() == 0):
-        print("<filter.py> No fibers found in input polydata.")
+        print(f"<{os.path.basename(__file__)}> No fibers found in input polydata.")
         if return_indices:
             if return_lengths:
                 return inpd, 0, 0, 0
@@ -184,7 +186,7 @@ def preprocess(inpd, min_length_mm,
 
     min_length_pts = round(min_length_mm / float(step_size))
     if verbose:
-        print("<filter.py> Minimum length", min_length_mm, \
+        print(f"<{os.path.basename(__file__)}> Minimum length", min_length_mm, \
             "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")")
 
     # set up processing and output objects
@@ -264,7 +266,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     # use the input random seed every time for code testing experiments
     if random_seed is not None:
         if verbose:
-            print("<filter.py> Setting random seed to", random_seed)
+            print(f"<{os.path.basename(__file__)}> Setting random seed to", random_seed)
         numpy.random.seed(seed=random_seed)
 
     # randomly pick the lines that we will keep
@@ -425,7 +427,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
 
             if verbose:
                 if lidx % 100 == 0:
-                    print("<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines())
+                    print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
 
             # get points for each ptid and add to output polydata
             cellptids = vtk.vtkIdList()
@@ -464,7 +466,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
         outpd.GetCellData().SetScalars(outcolors)
 
     if verbose:
-        print("<filter.py> Fibers sampled:", outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines())
+        print(f"<{os.path.basename(__file__)}> Fibers sampled:", outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines())
 
     return outpd
 
@@ -493,14 +495,14 @@ def symmetrize(inpd):
 
     # index into end of point array
     lastidx = outpoints.GetNumberOfPoints()
-    print("<filter.py> Input number of points: ", lastidx)
+    print(f"<{os.path.basename(__file__)}> Input number of points: ", lastidx)
 
     # loop over all lines, insert line and reflected copy into output pd
     for lidx in range(0, inpd.GetNumberOfLines()):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print("<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines())
+                print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -551,7 +553,7 @@ def remove_hemisphere(inpd, hemisphere=-1):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print("<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines())
+                print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -634,7 +636,7 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
 
     if True:
         num_fibers = len(numpy.nonzero(fiber_mask)[0]), "/", len(fiber_mask)
-        print("<filter.py> Number retained after outlier removal: ", num_fibers)
+        print(f"<{os.path.basename(__file__)}> Number retained after outlier removal: ", num_fibers)
 
     outpd = mask(inpd, fiber_mask, mindist)
     outpd_reject = mask(inpd, ~fiber_mask, mindist)
@@ -671,7 +673,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
     # compare squared distances to squared distance threshold
     upper_thresh = upper_thresh*upper_thresh
     
-    print("<filter.py> Computing pairwise distances...")
+    print(f"<{os.path.basename(__file__)}> Computing pairwise distances...")
     
     # pairwise distance matrix
     if USE_PARALLEL:
@@ -782,8 +784,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     iteration_count = 0
     
     while not converged:
-        print("<filter.py> ITERATION:", iteration_count, "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)))
-        print("<filter.py> number indices", len(curr_indices))
+        print(f"<{os.path.basename(__file__)}> ITERATION:", iteration_count, "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)))
+        print(f"<{os.path.basename(__file__)}> number indices", len(curr_indices))
         
         # fiber data structures for output of this iteration
         next_fibers = list()
@@ -825,17 +827,17 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         distances_flat = distances.flatten()
         pair_order = numpy.argsort(distances_flat)
 
-        print("<filter.py> DISTANCE MIN:", distances_flat[pair_order[0]], \
+        print(f"<{os.path.basename(__file__)}> DISTANCE MIN:", distances_flat[pair_order[0]], \
             "DISTANCE COUNT:", distances.shape)
 
         # if the smallest distance is greater or equal to the
         # threshold, we have converged
         if distances_flat[pair_order[0]] >= fiber_distance_threshold:
             converged = True
-            print("<filter.py> CONVERGED")
+            print(f"<{os.path.basename(__file__)}> CONVERGED")
             break
         else:
-            print("<filter.py> NOT CONVERGED")
+            print(f"<{os.path.basename(__file__)}> NOT CONVERGED")
             
         # loop variables
         idx = 0
@@ -900,8 +902,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
             current_fiber_array.fiber_array_s[curr_fidx] = curr_fib.s
             curr_fidx += 1
 
-        print("<filter.py> SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)), "SUM DONE FIBERS:", numpy.sum(done))
-        print("<filter.py> MAX COUNT:" , numpy.max(numpy.array(curr_count)), "AVGS THIS ITER:", number_averages)
+        print(f"<{os.path.basename(__file__)}> SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)), "SUM DONE FIBERS:", numpy.sum(done))
+        print(f"<{os.path.basename(__file__)}> MAX COUNT:" , numpy.max(numpy.array(curr_count)), "AVGS THIS ITER:", number_averages)
 
     # when converged, convert output to polydata
     outpd = current_fiber_array.convert_to_polydata()
@@ -1122,7 +1124,7 @@ def pd_to_array(inpd, dims=225):
         data_vol = numpy.ndarray([dims,dims,dims])
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print("<filter.py> Input number of points: ",\
+    print(f"<{os.path.basename(__file__)}> Input number of points: ",\
         points.GetNumberOfPoints(),\
         "lines:", inpd.GetNumberOfLines()) 
     # loop over all lines
@@ -1164,7 +1166,7 @@ def measure_line_lengths(inpd):
     output_lengths = numpy.zeros(inpd.GetNumberOfLines())
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print("<filter.py> Input number of points: ",\
+    print(f"<{os.path.basename(__file__)}> Input number of points: ",\
         points.GetNumberOfPoints(),\
         "lines:", inpd.GetNumberOfLines()) 
     # loop over all lines

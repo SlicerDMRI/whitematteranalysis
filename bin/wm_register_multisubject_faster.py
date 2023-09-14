@@ -12,14 +12,14 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 try:
     import scipy.optimize
 except ImportError:
     print("")
-    print("<wm_register_multisubject.py> ERROR: Failed to import scipy.optimize, cannot run registration.")
+    print(f"<{os.path.basename(__file__)}> ERROR: Failed to import scipy.optimize, cannot run registration.")
     print("Please install scipy.")
     print("")
     exit()
@@ -73,39 +73,39 @@ def main():
     args = parser.parse_args()
     
     print("\n\n<register> =========GROUP REGISTRATION============")
-    print("<register> Performing unbiased group registration.")
-    print("<register> Input  directory: ", args.inputDirectory)
-    print("<register> Output directory: ", args.outputDirectory)
+    print(f"<{os.path.basename(__file__)}> Performing unbiased group registration.")
+    print(f"<{os.path.basename(__file__)}> Input  directory: ", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Output directory: ", args.outputDirectory)
     print("\n<register> ============PARAMETERS=================")
     
     mode = args.mode
-    print("<register> Registration mode:", mode)
+    print(f"<{os.path.basename(__file__)}> Registration mode:", mode)
     
     if not os.path.isdir(args.inputDirectory):
-        print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<register> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     number_of_fibers = args.numberOfFibers
-    print("<register> Number of fibers to analyze per subject: ", number_of_fibers)
+    print(f"<{os.path.basename(__file__)}> Number of fibers to analyze per subject: ", number_of_fibers)
     
     fiber_length = args.fiberLength
-    print("<register> Minimum length of fibers to analyze (in mm): ", fiber_length)
+    print(f"<{os.path.basename(__file__)}> Minimum length of fibers to analyze (in mm): ", fiber_length)
     
     fiber_length_max = args.fiberLengthMax
-    print("<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
+    print(f"<{os.path.basename(__file__)}> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
     
     parallel_jobs = args.numberOfJobs
-    print("<register> Number of jobs to use:", parallel_jobs)
+    print(f"<{os.path.basename(__file__)}> Number of jobs to use:", parallel_jobs)
     
     if args.flag_verbose:
-        print("<register> Verbose display and intermediate image saving ON.")
+        print(f"<{os.path.basename(__file__)}> Verbose display and intermediate image saving ON.")
     else:
-        print("<register> Verbose display and intermediate image saving OFF.")
+        print(f"<{os.path.basename(__file__)}> Verbose display and intermediate image saving OFF.")
     verbose = args.flag_verbose
     
     
@@ -113,19 +113,19 @@ def main():
     #print "<register> Number of points for fiber representation: ", points_per_fiber
     
     if args.flag_norender:
-        print("<register> No rendering (for compute servers without X connection).")
+        print(f"<{os.path.basename(__file__)}> No rendering (for compute servers without X connection).")
     else:
-        print("<register> Rendering. For intermediate image saving to check progress.")
+        print(f"<{os.path.basename(__file__)}> Rendering. For intermediate image saving to check progress.")
     no_render = args.flag_norender
     
     if args.flag_midsag_symmetric:
-        print("<register> Midsag_Symmetric registration ON.")
+        print(f"<{os.path.basename(__file__)}> Midsag_Symmetric registration ON.")
     else:
-        print("<register> Midsag_Symmetric registration OFF.")
+        print(f"<{os.path.basename(__file__)}> Midsag_Symmetric registration OFF.")
     midsag_symmetric = args.flag_midsag_symmetric
     
     if args.randomSeed is not None:
-        print("<register> Setting random seed to: ", args.randomSeed)
+        print(f"<{os.path.basename(__file__)}> Setting random seed to: ", args.randomSeed)
     random_seed = args.randomSeed
     
     # -------------
@@ -301,7 +301,7 @@ def main():
     # Test the input files exist
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
-    print("<register> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
     if number_of_subjects < 1:
         print("\n<register> Error: No .vtk or .vtp files were found in the input directory.\n")
         exit()
@@ -346,7 +346,7 @@ def main():
     # We have to add polydatas after setting nonrigid in the register object
     for (pd, id) in zip(input_pds, subject_ids):
         register.add_polydata(pd, id)
-    print("<register> Number of points for fiber representation: ", points_per_fiber)
+    print(f"<{os.path.basename(__file__)}> Number of points for fiber representation: ", points_per_fiber)
     register.points_per_fiber = points_per_fiber
     
     # output summary file to save information about what was run

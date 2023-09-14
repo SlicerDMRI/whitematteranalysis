@@ -68,10 +68,10 @@ def main():
         os.makedirs(outdir)
     
     input_volume = nibabel.load(inputvol)
-    print('<wm_cluster_volumetric_measurements.py> Input volume shape:', input_volume.get_data().shape)
+    print(f'<{os.path.basename(__file__)}> Input volume shape:', input_volume.get_data().shape)
     
     input_vtk_list = wma.io.list_vtk_files(inputdir)
-    print('<wm_cluster_volumetric_measurements.py> Number of input clusters:', len(input_vtk_list))
+    print(f'<{os.path.basename(__file__)}> Number of input clusters:', len(input_vtk_list))
     
     output_stats_file = os.path.join(outdir, args.outputStatFile)
     
@@ -170,7 +170,7 @@ def main():
         input_vtk = wma.io.read_polydata(input_vtk_path)
     
         vtk_file_name = os.path.split(input_vtk_path)[1][:-4]
-        print("<wm_cluster_volumetric_measurements.py> Working on", vtk_file_name)
+        print(f"<{os.path.basename(__file__)}> Working on", vtk_file_name)
     
         new_voxel_data, mean_v, var_v, max_v, min_v, median_v, num_voxels, volume_size = compute_stat(input_vtk, input_volume, args.sampleSize)
     
@@ -190,7 +190,7 @@ def main():
     output_file.close()
     
     print('')
-    print('<wm_cluster_volumetric_measurements.py> Done! Result is in', output_stats_file)
+    print(f'<{os.path.basename(__file__)}> Done! Result is in', output_stats_file)
 
 if __name__ == '__main__':
     main()

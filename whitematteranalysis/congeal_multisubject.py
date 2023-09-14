@@ -20,7 +20,7 @@ try:
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 except:
-    print("<wm_congeal_multisubject.py> Error importing matplotlib.pyplot package, can't plot objectives.\n")
+    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot objectives.\n")
     HAVE_PLT = 0
 
 import whitematteranalysis as wma
@@ -162,9 +162,9 @@ class MultiSubjectRegistration:
             transforms_array = numpy.array(self.transforms_as_array)
             meantrans = numpy.mean(transforms_array, 0)
             if self.verbose:
-                print("<congeal.py> TRANSFORMS")
+                print(f"<{os.path.basename(__file__)}> TRANSFORMS")
                 print(numpy.round(transforms_array * 100) / 100)
-                print("<congeal.py> Removing current (accumulated) mean transform before computing objective:")
+                print(f"<{os.path.basename(__file__)}> Removing current (accumulated) mean transform before computing objective:")
                 print(numpy.round(meantrans * 1000) / 1000)        
 
             for transform in self.transforms_as_array:

@@ -6,7 +6,7 @@ from warnings import warn
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_diffusion_measurements> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -49,7 +49,7 @@ def main():
         print("Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
-    print("<wm_diffusion_measurements>. Starting scalar measurement extraction.")
+    print(f"<{os.path.basename(__file__)}>. Starting scalar measurement extraction.")
     print("")
     print("=====input directory======\n", args.inputDirectory)
     print("=====output directory=====\n", outdir)
@@ -61,7 +61,7 @@ def main():
               ' --inputdirectory ' + args.inputDirectory + \
               ' --outputfile ' + args.outputCSV)
     
-    print("<wm_diffusion_measurements> Measurements done at:", args.outputCSV)
+    print(f"<{os.path.basename(__file__)}> Measurements done at:", args.outputCSV)
 
 if __name__ == '__main__':
     main()

@@ -26,7 +26,7 @@ class WriteMRML:
             col = str(colors[cidx,0]/256.0) + " " + str(colors[cidx,1]/256.0) + " " + str(colors[cidx,2]/256.0)
             color_list.append(col)
         #print color_list
-        print("<mrml.py> Writing", len(pd_filenames), " filenames in MRML scene:", filename)
+        print(f"<{os.path.basename(__file__)}> Writing", len(pd_filenames), " filenames in MRML scene:", filename)
         f = open(filename, "w")
         f.write(self.header)
         for pidx in range(len(pd_filenames)):

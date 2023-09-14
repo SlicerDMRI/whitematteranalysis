@@ -143,7 +143,7 @@ def main():
         return new_voxel_data
     
     volume = nibabel.load(args.refvolume)
-    print('<wm_tract_to_volume>', args.refvolume, ', input volume shape: ', volume.get_fdata().shape)
+    print(f'<{os.path.basename(__file__)}>', args.refvolume, ', input volume shape: ', volume.get_fdata().shape)
     
     inpd = wma.io.read_polydata(args.inputVTK)
     

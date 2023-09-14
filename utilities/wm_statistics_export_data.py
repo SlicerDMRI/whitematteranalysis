@@ -33,11 +33,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
+    print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.subjectsInformationFile):
-    print("<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist.")
+    print(f"<{os.path.basename(__file__)}> Error: Input file", args.subjectsInformationFile, "does not exist.")
     exit()
 
 measurements = args.measures

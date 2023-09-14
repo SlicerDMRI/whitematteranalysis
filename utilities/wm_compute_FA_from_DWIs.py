@@ -6,7 +6,7 @@ import glob
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_label_from_atlas.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def list_nhdr_files(input_dir):
@@ -49,7 +49,7 @@ if not os.path.isdir(args.inputDirectoryMask):
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print("<register> Output directory", outdir, "does not exist, creating it.")
+    print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
 # get inputs

@@ -10,7 +10,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_cluster_from_atlas.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 try:
@@ -18,8 +18,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print("<cluster.py> Failed to import joblib, cannot multiprocess.")
-    print("<cluster.py> Please install joblib for this functionality.")
+    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
+    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
 def main():
     #-----------------
@@ -57,16 +57,16 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print("<wm_cluster_from_atlas.py> Error: Input subject directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input subject directory", args.inputDirectory, "does not exist.")
         exit()
     
     if not os.path.isdir(args.atlasDirectory):
-        print("<wm_cluster_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Atlas directory", args.atlasDirectory, "does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
         
     subject_id = os.path.basename(args.inputDirectory)
@@ -78,7 +78,7 @@ def main():
     
     outdir = os.path.join(outdir, subject_id + '_outlier_removed')
     if not os.path.exists(outdir):
-        print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     if args.numberOfJobs is not None:
@@ -122,7 +122,7 @@ def main():
     log_file.close()
     
     # read atlas
-    print("<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory)
+    print(f"<{os.path.basename(__file__)}> Loading input atlas:", args.atlasDirectory)
     atlas = wma.cluster.load_atlas(args.atlasDirectory, 'atlas')
     bilateral = atlas.bilateral
     
@@ -147,7 +147,7 @@ def main():
     print("Number of atlas and subject clusters:", number_ac, number_sc)
     
     if number_ac != number_sc:
-        print("<wm_cluster_from_atlas.py> Error: Cluster number mismatch. \nAtlas directory (", args.atlasDirectory, ") has", number_ac, "clusters but subject directory (", args.inputDirectory, ") has", number_sc, "clusters.")
+        print(f"<{os.path.basename(__file__)}> Error: Cluster number mismatch. \nAtlas directory (", args.atlasDirectory, ") has", number_ac, "clusters but subject directory (", args.inputDirectory, ") has", number_sc, "clusters.")
         exit()
     
     

@@ -1,3 +1,5 @@
+import os
+
 import numpy
 import vtk
 from . import fibers
@@ -180,7 +182,7 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         distance = 0.5*d + 0.4*d/(0.5+0.5*(1-angle*angle)) + 0.1*distance_endpoints
         
     else:
-        print("<similarity.py> throwing Exception. Unknown input distance method (typo?):", distance_method)
+        print(f"<{os.path.basename(__file__)}> throwing Exception. Unknown input distance method (typo?):", distance_method)
         raise Exception("unknown distance method")
         
     

@@ -7,6 +7,8 @@ class FiberArray
 
 """
 
+import os
+
 import numpy
 import vtk
 import time
@@ -173,7 +175,7 @@ class FiberArray:
             #test = ((output_line_length - 1) * step == input_line_length - 1)
             test = (round(ptidx*step) == input_line_length-1)
             if not test:
-                print("<fibers.py> ERROR: fiber numbers don't add up.")
+                print(f"<{os.path.basename(__file__)}> ERROR: fiber numbers don't add up.")
                 print(step)
                 print(input_line_length)
                 print(output_line_length)
@@ -249,7 +251,7 @@ class FiberArray:
                     (fibers.number_left_hem + fibers.number_right_hem \
                          + fibers.number_commissure)
                 if not test:
-                    print("<fibers.py> ERROR: fiber numbers don't add up.")
+                    print(f"<{os.path.basename(__file__)}> ERROR: fiber numbers don't add up.")
                     raise AssertionError
 
         return fibers
@@ -311,7 +313,7 @@ class FiberArray:
                     (fibers.number_left_hem + fibers.number_right_hem \
                          + fibers.number_commissure)
                 if not test:
-                    print("<fibers.py> ERROR: fiber numbers don't add up.")
+                    print(f"<{os.path.basename(__file__)}> ERROR: fiber numbers don't add up.")
                     raise AssertionError
 
         return fibers
@@ -336,7 +338,7 @@ class FiberArray:
         self.number_of_fibers = input_vtk_polydata.GetNumberOfLines()
 
         if self.verbose:
-            print("<fibers.py> Converting polydata to array representation. Lines:", self.number_of_fibers)
+            print(f"<{os.path.basename(__file__)}> Converting polydata to array representation. Lines:", self.number_of_fibers)
 
         # allocate array number of lines by line length
         self.fiber_array_r = numpy.zeros((self.number_of_fibers,
@@ -358,8 +360,8 @@ class FiberArray:
 
             if self.verbose:
                 if lidx % 100 == 0:
-                    print("<fibers.py> Line:", lidx, "/", self.number_of_fibers)
-                    print("<fibers.py> number of points:", line_length)
+                    print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", self.number_of_fibers)
+                    print(f"<{os.path.basename(__file__)}> number of points:", line_length)
 
             # loop over the indices that we want and get those points
             pidx = 0
@@ -428,7 +430,7 @@ class FiberArray:
                 (self.number_left_hem + self.number_right_hem \
                      + self.number_commissure)
             if not test:
-                print("<fibers.py> ERROR: fiber numbers don't add up.")
+                print(f"<{os.path.basename(__file__)}> ERROR: fiber numbers don't add up.")
                 raise AssertionError
 
     def convert_to_polydata(self):

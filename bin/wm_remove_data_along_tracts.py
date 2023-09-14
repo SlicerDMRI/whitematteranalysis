@@ -10,13 +10,13 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_laterality.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 try:
     from joblib import Parallel, delayed
 except:
-    print("<wm_laterality.py> Error importing joblib package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing joblib package\n")
     raise
 
 def main():
@@ -77,7 +77,7 @@ def main():
     # Loop over input DWIs
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
     
-    print("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas))
+    print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))
     
     # for testing
     #inputPolyDatas = inputPolyDatas[0:2]
@@ -87,7 +87,7 @@ def main():
         # -------------------
         #subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
         fname = os.path.basename(inputPolyDatas[sidx])
-        print("<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas))
+        print(f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas))
     
         # read input vtk data
         # -------------------

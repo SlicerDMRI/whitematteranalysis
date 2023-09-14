@@ -13,14 +13,14 @@ import sys
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 HAVE_PLT = 1
 try:
     import matplotlib.pyplot as plt
 except:
-    print("<wm_quality_control.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
+    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0    
 
 def main():
@@ -44,27 +44,27 @@ def main():
      
     args = parser.parse_args()
     
-    print("<quality_control> Starting...")
+    print(f"<{os.path.basename(__file__)}> Starting...")
     
     if not os.path.isdir(args.inputDirectory):
-        print("<register> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print("<register> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
         os.makedirs(output_dir)
     
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
-    print("<quality_control> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
     
     if number_of_subjects < 1:
         print("\n<quality_control> Error: No .vtk or .vtp files were found in the input directory.\n")
         exit()
     
-    print("<quality_control> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok).")
-    print("<quality_control> See the README.txt file in the output directory for more overview information.")
+    print(f"<{os.path.basename(__file__)}> Testing all files for quality control (computing fiber length measurements and rendering to make sure header and gradient orientations are ok).")
+    print(f"<{os.path.basename(__file__)}> See the README.txt file in the output directory for more overview information.")
     
     # output summary files to save information about what was run
     readme_fname = os.path.join(output_dir, 'README.txt')
@@ -338,7 +338,7 @@ def main():
             print("Groupwise tract length histogram save failed. Check if the input datasets have any fibers--all may be empty.")
         plt.close()
     
-    print("<quality_control> Final step: rendering all vtk files together.")
+    print(f"<{os.path.basename(__file__)}> Final step: rendering all vtk files together.")
     appender.Update()
     pd_all = appender.GetOutput()
     ren = wma.render.render(pd_all, verbose=False)

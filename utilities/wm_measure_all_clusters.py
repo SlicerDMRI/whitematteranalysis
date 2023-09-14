@@ -6,7 +6,7 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_label_from_atlas.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -32,7 +32,7 @@ if not os.path.isdir(args.inputDirectory):
     print("Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
-print("<wm_measure_all_clusters.py> Starting computation.")
+print(f"<{os.path.basename(__file__)}> Starting computation.")
 print("")
 print("=====input directory ======\n", args.inputDirectory)
 print("=====output file =====\n", args.outputFile)
@@ -77,7 +77,7 @@ number_of_clusters = len(input_polydatas)
 
 input_polydatas = input_polydatas[0:10]
 
-print("<wm_measure_all_clusters.py> Input number of vtk/vtp files: ", number_of_clusters)
+print(f"<{os.path.basename(__file__)}> Input number of vtk/vtp files: ", number_of_clusters)
 
 scalars = ['FA', 'Trace', 'FA1', 'FA2', 'Trace1', 'Trace2']
 
@@ -88,10 +88,10 @@ input_pds = list()
 for fname in input_polydatas:
     print(fname)
     # read data
-    print("<wm_cluster_atlas.py> Reading input file:", fname)
+    print(f"<{os.path.basename(__file__)}> Reading input file:", fname)
     pd = wma.io.read_polydata(fname)
     # preprocessing step: minimum length
-    print("<wm_cluster_atlas.py> Computing stats for input file:", fname)
+    print(f"<{os.path.basename(__file__)}> Computing stats for input file:", fname)
     output_row = list()
     output_row.append(fname)
     for sc in scalars:
