@@ -17,6 +17,8 @@ remove_outliers
 
 """
 
+import os
+
 import vtk
 import numpy
 
@@ -249,6 +251,62 @@ def preprocess(inpd, min_length_mm,
             return outpd, fiber_lengths, step_size
         else:
             return outpd
+
+
+def concatenate(polydatas, _verbose=False):
+    """Concatenate a list of polydatas.
+
+    Parameters
+    ----------
+    polydatas : list
+        vtkPolyData objects.
+    _verbose : bool, optional
+        True if processing needs to be printed.
+
+    Returns
+    -------
+    out_polydata : vtkPolyData
+        Concatenated polydata.
+    """
+
+    out_polydata = vtk.vtkPolyData()
+    out_lines = vtk.vtkCellArray()
+    out_points = vtk.vtkPoints()
+
+    for polydata in polydatas:
+
+        # Loop over lines
+        polydata.GetLines().InitTraversal()
+        out_lines.InitTraversal()
+
+        in_points = polydata.GetPoints()
+
+        for line_id in range(polydata.GetNumberOfLines()):
+
+            point_ids = vtk.vtkIdList()
+            polydata.GetLines().GetNextCell(point_ids)
+
+            if _verbose:
+                if line_id % 100 == 0:
+                    print(f"<{os.path.basename(__file__)}> Line: {line_id} / {polydata.GetNumberOfLines()}")
+
+            # Get points for each point id and add to output polydata
+            cell_point_ids = vtk.vtkIdList()
+
+            for point_id in range(point_ids.GetNumberOfIds()):
+
+                point = in_points.GetPoint(point_ids.GetId(point_id))
+                idx = out_points.InsertNextPoint(point)
+                cell_point_ids.InsertNextId(idx)
+
+            out_lines.InsertNextCell(cell_point_ids)
+
+    # Put data into output polydata
+    out_polydata.SetLines(out_lines)
+    out_polydata.SetPoints(out_points)
+
+    return out_polydata
+
 
 def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None, verbose=True, random_seed=None):
     """ Random (down)sampling of fibers without replacement. """
