@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-print("wm_extract_cluster.py importing packages")
 
 import glob
 import argparse
