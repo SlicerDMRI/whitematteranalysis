@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
 import argparse
 import os
