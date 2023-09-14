@@ -66,7 +66,7 @@ if not os.path.exists(outdir):
     print("Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
-print(f"{os.path.basename(__file__)}. Starting white matter laterality computation.")
+print(f"{os.path.basename(__file__)}. Starting streamline length distribution flattening.")
 print("")
 print("=====input directory======\n", args.inputDirectory)
 print("=====output directory=====\n", args.outputDirectory)

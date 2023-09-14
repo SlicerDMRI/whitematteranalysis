@@ -63,7 +63,7 @@ def main():
         print("Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
-    print(f"{os.path.basename(__file__)}. Starting white matter laterality computation.")
+    print(f"{os.path.basename(__file__)}. Starting white matter preprocessing.")
     print("")
     print("=====input directory======\n", args.inputDirectory)
     print("=====output directory=====\n", args.outputDirectory)
