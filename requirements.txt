@@ -4,6 +4,8 @@ matplotlib==3.6.*
 nibabel==3.0.*
 numpy==1.20.*
 pandas==2.0.3
+pytest
+pytest_console_scripts
 setuptools==44.0.*
 scipy==1.4.*
 statsmodels==0.10.*

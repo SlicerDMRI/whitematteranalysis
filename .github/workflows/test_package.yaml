@@ -48,6 +48,7 @@ jobs:
         python setup.py install
         python -c 'import whitematteranalysis'
         # coverage run --source whitematteranalysis -m pytest whitematteranalysis -o junit_family=xunit2 -v --doctest-modules --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        pytest
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
@@ -68,6 +69,6 @@ jobs:
         # python -m tox
 
     # - name: Statistics
-      # if: success()
-      # run: |
-      #   coverage report
+     # if: success()
+     # run: |
+     #    coverage report
