@@ -42,6 +42,7 @@ setup(
     long_description=open('README.md').read(),
     setup_requires=setup_requires,
     install_requires=setup_requires + external_dependencies,
+    extras_require={'doc': ['sphinx', 'sphinx-argparse', 'sphinx_rtd_theme']},
     scripts=list(chain.from_iterable([
         glob.glob("bin/[a-zA-Z]*.py"),
         glob.glob("utilities/[a-zA-Z]*.py"),
