@@ -250,7 +250,7 @@ def preprocess(inpd, min_length_mm,
         else:
             return outpd
 
-def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None, verbose=True, random_seed=None):
+def downsample(inpd, output_number_of_lines, return_indices=False, preserve_point_data=False, preserve_cell_data=True, initial_indices=None, verbose=True, random_seed=1234):
     """ Random (down)sampling of fibers without replacement. """
 
     if initial_indices is None:
