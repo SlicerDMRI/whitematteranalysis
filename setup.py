@@ -1,9 +1,5 @@
-import os, glob
-from distutils.core import setup
-
-import setuptools
-from setuptools import setup, Extension, Command
-from setuptools.command.build_ext import build_ext as _build_ext
+import os
+from setuptools import setup
 from pkg_resources import resource_filename
 
 #    url='http://pypi.python.org/pypi/WhiteMatterAnalysis/',
@@ -18,6 +14,7 @@ if sys.platform == 'win32':
     # otherwise it will check version for VC9, and error out
     os.environ['MSSdk'] = '1'
     os.environ['DISTUTILS_USE_SDK'] = '1'
+
 
 ########################################################################
 # Begin attribution section
@@ -77,6 +74,18 @@ class LazyCommandClass(dict):
 ########################################################################
 
 
+with open("requirements.txt") as f:
+    required_dependencies = f.read().splitlines()
+    external_dependencies = []
+    for dependency in required_dependencies:
+        if dependency[0:2] == "-e":
+            repo_name = dependency.split("=")[-1]
+            repo_url = dependency[3:]
+            external_dependencies.append("f{repo_name} @ {repo_url}")
+        else:
+            external_dependencies.append(dependency)
+
+
 setup_requires = ['cython==0.29.*', 'numpy==1.20.*']
 setup(
     name='WhiteMatterAnalysis',
@@ -87,15 +96,10 @@ setup(
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
-  
-    setup_requires = setup_requires,
-    install_requires = setup_requires + ['setuptools==44.0.*', 'scipy==1.4.*', 'vtk==9.1.*',
-                        'joblib==1.1.*', 'statsmodels==0.10.*', 'xlrd', 'matplotlib==3.6.*', 'nibabel==3.0.*',
-                        'pandas==2.0.3'],
-    
+    setup_requires=setup_requires,
+    install_requires=setup_requires + external_dependencies,
     cmdclass=LazyCommandClass(),
-
-    scripts = [ 
+    scripts=[
         'bin/harden_transform_with_slicer.py',
         'bin/wm_append_clusters.py',
         'bin/wm_append_clusters_to_anatomical_tracts.py',
