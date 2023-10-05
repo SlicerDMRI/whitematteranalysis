@@ -7,7 +7,7 @@ import glob
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_quality_control_after_clustering> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 HAVE_PLT = 1
@@ -17,7 +17,7 @@ try:
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 except:
-    print("<wm_cluster.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
+    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0
 
 def main():
@@ -47,11 +47,11 @@ def main():
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print("<register> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
         os.makedirs(output_dir)
     
     subject_list = os.listdir(args.inputDirectory)
-    print("<wm_quality_control_after_clustering> found", len(subject_list), "subjects.")
+    print(f"<{os.path.basename(__file__)}> found", len(subject_list), "subjects.")
     
     # Check if all subjects have the same number of clusters.
     # This can also help find the sub folders that are not the fiber clustering results.
@@ -76,7 +76,7 @@ def main():
         exit()
     
     # Read number of fibers per cluster per subject
-    print("<wm_quality_control_after_clustering.py> calculate the number of fibers per cluster per subject.")
+    print(f"<{os.path.basename(__file__)}> calculate the number of fibers per cluster per subject.")
     num_fibers_per_subject = numpy.zeros([num_of_subjects, num_of_clusters])
     for sidx in range(0, num_of_subjects):
         sub = subject_list[sidx]
@@ -97,7 +97,7 @@ def main():
     percent_subjects_per_cluster = numpy.divide(subjects_per_cluster, float(num_of_subjects))
     
     clusters_qc_fname = os.path.join(output_dir, 'cluster_quality_control.txt')
-    print("<wm_quality_control_after_clustering.py> Saving cluster quality control information file.")
+    print(f"<{os.path.basename(__file__)}> Saving cluster quality control information file.")
     clusters_qc_file = open(clusters_qc_fname, 'w')
     print('cluster_idx','\t', 'number_subjects', 'percent_subjects', file=clusters_qc_file)
     for cidx in range(0, num_of_clusters):
@@ -105,7 +105,7 @@ def main():
     clusters_qc_file.close()
     
     if HAVE_PLT:
-        print("<wm_quality_control_after_clustering.py> Saving subjects per cluster histogram.")
+        print(f"<{os.path.basename(__file__)}> Saving subjects per cluster histogram.")
         fig, ax = plt.subplots()
         counts = numpy.zeros(num_of_subjects+1)
         counts[:numpy.max(subjects_per_cluster)+1] = numpy.bincount(subjects_per_cluster)

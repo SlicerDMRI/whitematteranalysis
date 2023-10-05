@@ -9,13 +9,13 @@ import multiprocessing
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_laterality.py> Error importing white matter analysis package\n")
+    print(f"{os.path.basename(__file__)} Error importing white matter analysis package\n")
     raise
 
 try:
     from joblib import Parallel, delayed
 except:
-    print("<wm_laterality.py> Error importing joblib package\n")
+    print(f"{os.path.basename(__file__)} Error importing joblib package\n")
     raise
 
 def main():
@@ -25,7 +25,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Applies preprocessing to input directory. Downsamples, removes short fibers. Preserves tensors and scalar point data along retained fibers.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
-    
+
     parser.add_argument(
         'inputDirectory',
         help='Contains whole-brain tractography as vtkPolyData file(s).')
@@ -50,35 +50,34 @@ def main():
     parser.add_argument(
         '--nonidentical', action='store_true',
         help='Obtain nonidentical results across runs for downsampling.')
-    
+
     args = parser.parse_args()
-    
-    
+
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
-    
+
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
         print("Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
-    
-    print("wm_laterality. Starting white matter laterality computation.")
+
+    print(f"{os.path.basename(__file__)}. Starting white matter preprocessing.")
     print("")
     print("=====input directory======\n", args.inputDirectory)
     print("=====output directory=====\n", args.outputDirectory)
     print("==========================")
-    
+
     if args.numberOfFibers is not None:
         print("fibers to retain per subject: ", args.numberOfFibers)
     else:
         print("fibers to retain per subject: ALL")
-    
+
     if args.fiberLength is not None:
         print("minimum length of fibers to retain (in mm): ", args.fiberLength)
     else:
         print("minimum length of fibers to retain (in mm): 0")
-    
+
     print('CPUs detected:', multiprocessing.cpu_count())
     if args.numberOfJobs is not None:
         parallel_jobs = args.numberOfJobs
@@ -97,37 +96,37 @@ def main():
         random_seed = None
 
     print("==========================")
-    
+
     # =======================================================================
     # Above this line is argument parsing. Below this line is the pipeline.
     # =======================================================================
-    
+
     # Loop over input DWIs
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
-    
-    print("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas))
-    
+
+    print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))
+
     # for testing
     #inputPolyDatas = inputPolyDatas[0:2]
-    
+
     def pipeline(inputPolyDatas, sidx, args):
         # get subject identifier from unique input filename
         # -------------------
         subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
-        id_msg = "<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas)  
+        id_msg = f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas)
         msg = "**Starting subject:", subjectID
         print(id_msg + msg)
-    
+
         # read input vtk data
         # -------------------
         msg = "**Reading input:", subjectID
         print(id_msg + msg)
-    
+
         wm = wma.io.read_polydata(inputPolyDatas[sidx])
-    
+
         num_lines = wm.GetNumberOfLines()
         #print "Input number of fibers", num_lines
-        
+
         # remove short fibers
         # -------------------
         wm2 = None
@@ -147,33 +146,33 @@ def main():
 
             wm2 = wma.filter.preprocess(wm, minlen, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False, max_length_mm=maxlen)
             print("Number of fibers retained (length threshold", args.fiberLength, "): ", wm2.GetNumberOfLines(), "/", num_lines)
-    
+
         if wm2 is None:
             wm2 = wm
         else:
             del wm
-            
-        # downsample 
+
+        # downsample
         # -------------------
         wm3 = None
         if args.numberOfFibers is not None:
             msg = "**Downsampling input:", subjectID, " number of fibers: ", args.numberOfFibers
             print(id_msg + msg)
-    
+
             # , preserve_point_data=True needs editing of preprocess function to use mask function
             wm3 = wma.filter.downsample(wm2, args.numberOfFibers, preserve_point_data=retaindata, preserve_cell_data=retaindata, verbose=False, random_seed=random_seed)
             print("Number of fibers retained: ", wm3.GetNumberOfLines(), "/", num_lines)
-    
+
         if wm3 is None:
             wm3 = wm2
         else:
             del wm2
-            
+
         # outputs
         # -------------------
         msg = "**Writing output data for subject:", subjectID
         print(id_msg, msg)
-    
+
         fname = os.path.join(args.outputDirectory, subjectID+'_pp.vtp')
         try:
             print("Writing output polydata", fname, "...")
@@ -183,12 +182,12 @@ def main():
             print("Unknown exception in IO")
             raise
         del wm3
-    
+
     # loop over all inputs
     Parallel(n_jobs=parallel_jobs, verbose=0)(
             delayed(pipeline)(inputPolyDatas, sidx, args)
             for sidx in range(0, len(inputPolyDatas)))
-    
+
     exit()
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@ class RelativeDistanceModel
 
 """
 
+import os
 
 import numpy
 
@@ -18,8 +19,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print("<relative_distance.py> Failed to import joblib, cannot multiprocess.")
-    print("<relative_distance.py> Please install joblib for this functionality.")
+    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
+    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
 
 import whitematteranalysis.fibers

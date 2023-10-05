@@ -9,7 +9,7 @@ import time
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -27,14 +27,14 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print("<create_mrml> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
     
     mrml_filename = "scene.mrml"
     
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_files = len(input_polydatas)
-    print("<quality_control> Found ", number_of_files, "vtk files in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found ", number_of_files, "vtk files in input directory:", args.inputDirectory)
     
     # define R, G, B colors
     # hack a colormap. 0..255 values for each

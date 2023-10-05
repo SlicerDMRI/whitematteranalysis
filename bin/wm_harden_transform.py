@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_harden_transform_with_slicer> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -94,7 +94,7 @@ def main():
             print("Error: The number of input VTK/VTP files", number_of_polydatas,"should be equal to the number of transform files", number_of_transforms)
             exit()
     
-    print("<wm_harden_transform_with_slicer> Starting harden transforms.")
+    print(f"<{os.path.basename(__file__)}> Starting harden transforms.")
     print("")
     print("=====input directory======\n", inputdir)
     print("=====output directory=====\n", outdir)
@@ -110,7 +110,7 @@ def main():
         else:
             str_inverse = 0
     
-        print("<wm_harden_transform_with_slicer> Transforming:", polydata)
+        print(f"<{os.path.basename(__file__)}> Transforming:", polydata)
         cmd = slicer_path + " --no-main-window --python-script $(which harden_transform_with_slicer.py) " + \
               polydata + " " + transform + " " + str(str_inverse) + " " + outdir + " --python-code 'slicer.app.quit()' " + \
               ' >> ' + os.path.join(outdir, 'log.txt 2>&1')
@@ -135,7 +135,7 @@ def main():
     
     output_polydatas = wma.io.list_vtk_files(outdir)
     number_of_results = len(output_polydatas)
-    print("<wm_harden_transform_with_slicer> Transform were conducted for", number_of_results, "subjects.")
+    print(f"<{os.path.basename(__file__)}> Transform were conducted for", number_of_results, "subjects.")
     
     if number_of_results != number_of_polydatas:
         print("Error: The numbers of inputs and outputs are different. Check log file for errors.")

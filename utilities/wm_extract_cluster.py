@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-print("wm_extract_cluster.py importing packages")
 
 import glob
 import argparse
@@ -31,12 +30,12 @@ args = parser.parse_args()
 
 
 if not os.path.isdir(args.inputDirectory):
-    print("<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+    print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
     exit()
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print("<wm_cluster_atlas.py> Output directory", outdir, "does not exist, creating it.")
+    print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
 
 # cluster filename we want

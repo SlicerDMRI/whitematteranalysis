@@ -19,7 +19,7 @@ import glob
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_assess_cluster_location_by_hemisphere.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -44,12 +44,12 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print("<wm_separate_clusters_by_hemisphere.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<wm_separate_clusters_by_hemisphere.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')
@@ -121,7 +121,7 @@ def main():
     
         return flag_location, mask_location
     
-    print("<wm_separate_clusters_by_hemisphere.py> Starting computation.")
+    print(f"<{os.path.basename(__file__)}> Starting computation.")
     print("")
     print("=====input directory ======\n", args.inputDirectory)
     print("=====output directory =====\n", args.outputDirectory)
@@ -132,7 +132,7 @@ def main():
     
     number_of_clusters = len(input_polydatas)
     
-    print("<wm_separate_clusters_by_hemisphere.py> Input number of vtk/vtp files: ", number_of_clusters)
+    print(f"<{os.path.basename(__file__)}> Input number of vtk/vtp files: ", number_of_clusters)
     
     # midsagittal alignment step to get transform to apply to each polydata
     # alternatively could use the transform into atlas space that is found
@@ -146,7 +146,7 @@ def main():
         fname_base = os.path.basename(fname)
     
         # read data
-        print("<wm_separate_clusters_by_hemisphere.py> Separating input file:", fname)
+        print(f"<{os.path.basename(__file__)}> Separating input file:", fname)
         pd = wma.io.read_polydata(fname)
     
         flag_location, mask_location = read_mask_location_from_vtk(pd)
@@ -182,7 +182,7 @@ def main():
         wma.io.write_polydata(pd_commissure, fname_output)
     
     print("")
-    print("<wm_separate_clusters_by_hemisphere.py> Done!!!")
+    print(f"<{os.path.basename(__file__)}> Done!!!")
 
 if __name__ == '__main__':
     main()

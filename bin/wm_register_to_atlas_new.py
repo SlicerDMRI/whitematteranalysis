@@ -11,7 +11,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -51,21 +51,21 @@ def main():
     args = parser.parse_args()
     
     print("\n\n<register> =========GROUP REGISTRATION============")
-    print("<register> Registering to atlas.")
-    print("<register> Input  subject file: ", args.inputSubject)
-    print("<register> Input  atlas file: ", args.inputAtlas)
-    print("<register> Output directory: ", args.outputDirectory)
+    print(f"<{os.path.basename(__file__)}> Registering to atlas.")
+    print(f"<{os.path.basename(__file__)}> Input  subject file: ", args.inputSubject)
+    print(f"<{os.path.basename(__file__)}> Input  atlas file: ", args.inputAtlas)
+    print(f"<{os.path.basename(__file__)}> Output directory: ", args.outputDirectory)
     print("\n<register> ============PARAMETERS=================")
     
     mode = args.mode
-    print("<register> Registration mode:", mode)
+    print(f"<{os.path.basename(__file__)}> Registration mode:", mode)
     
     if not os.path.isfile(args.inputSubject):
-        print("<register> Error: Input subject data", args.inputSubject, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input subject data", args.inputSubject, "does not exist.")
         exit()
     
     if not os.path.isfile(args.inputAtlas):
-        print("<register> Error: Input atlas", args.inputAtlas, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input atlas", args.inputAtlas, "does not exist.")
         exit()
     
     fname = args.inputSubject
@@ -77,23 +77,23 @@ def main():
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<register> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     subject_outdir = os.path.join(outdir, subject_id)
     if not os.path.exists(subject_outdir):
-        print("<register> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(subject_outdir)
     
     fiber_length = args.fiberLength
-    print("<register> Minimum length of fibers to analyze (in mm): ", fiber_length)
+    print(f"<{os.path.basename(__file__)}> Minimum length of fibers to analyze (in mm): ", fiber_length)
     
     fiber_length_max = args.fiberLengthMax
-    print("<register> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
+    print(f"<{os.path.basename(__file__)}> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
     
     if args.flag_verbose:
-        print("<register> Verbose display and intermediate image saving ON.")
+        print(f"<{os.path.basename(__file__)}> Verbose display and intermediate image saving ON.")
     else:
-        print("<register> Verbose display and intermediate image saving OFF.")
+        print(f"<{os.path.basename(__file__)}> Verbose display and intermediate image saving OFF.")
     verbose = args.flag_verbose
     
     print("\n<register> Starting registration...\n")

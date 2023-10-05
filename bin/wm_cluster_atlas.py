@@ -9,7 +9,7 @@ import time
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_cluster_atlas.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 import matplotlib.pyplot as plt
@@ -103,16 +103,16 @@ def main():
     args = parser.parse_args()
     
     if not os.path.isdir(args.inputDirectory):
-        print("<wm_cluster_atlas.py> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<wm_cluster_atlas.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
         
     print("\n==========================")
-    print("<wm_cluster_atlas.py> Clustering parameters")
+    print(f"<{os.path.basename(__file__)}> Clustering parameters")
     print("input directory:\n", args.inputDirectory)
     print("output directory:\n", args.outputDirectory)
     
@@ -270,7 +270,7 @@ def main():
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
     
-    print("<wm_cluster_atlas.py> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
     if number_of_subjects < 1:
         print("\n<wm_cluster_atlas.py> Error: No .vtk or .vtp files were found in the input directory.\n")
         exit()
@@ -279,7 +279,7 @@ def main():
     
     print("Input number of subjects (number of vtk/vtp files): ", number_of_subjects)
     print("==========================\n")
-    print("<wm_cluster_atlas.py> Starting file I/O and computation.")
+    print(f"<{os.path.basename(__file__)}> Starting file I/O and computation.")
     
     # output summary file to save information about what was run
     readme_fname = os.path.join(outdir, 'README.txt')
@@ -337,17 +337,17 @@ def main():
     input_pds = list()
     for fname in input_polydatas:
         # read data
-        print("<wm_cluster_atlas.py> Reading input file:", fname)
+        print(f"<{os.path.basename(__file__)}> Reading input file:", fname)
         pd = wma.io.read_polydata(fname)
         # preprocessing step: minimum length
-        #print "<wm_cluster_atlas.py> Preprocessing by length:", fiber_length, "mm."
+        #print f"<{os.path.basename(__file__)}> Preprocessing by length:", fiber_length, "mm."
         pd2 = wma.filter.preprocess(pd, fiber_length,verbose=verbose)
         # preprocessing step: fibers to analyze
         if number_of_fibers_per_subject is not None:
-            print("<wm_cluster_atlas.py> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, ".")
+            print(f"<{os.path.basename(__file__)}> Downsampling to", number_of_fibers_per_subject, "fibers from",  pd2.GetNumberOfLines(),"fibers over length", fiber_length, ".")
             pd3 = wma.filter.downsample(pd2, number_of_fibers_per_subject, verbose=verbose, random_seed=random_seed)
             if pd3.GetNumberOfLines() != number_of_fibers_per_subject:
-                print("<wm_cluster_atlas.py> Fibers found:", pd3.GetNumberOfLines(), "Fibers requested:", number_of_fibers_per_subject)
+                print(f"<{os.path.basename(__file__)}> Fibers found:", pd3.GetNumberOfLines(), "Fibers requested:", number_of_fibers_per_subject)
                 print("\n<wm_cluster_atlas.py> ERROR: too few fibers over length threshold in subject:", fname)
                 exit()
         else:
@@ -382,7 +382,7 @@ def main():
     
     # Check there are enough fibers for requested analysis
     if number_of_sampled_fibers >= input_data.GetNumberOfLines():
-        print("<wm_cluster_atlas.py> Error: Nystrom sample size is larger than number of fibers available.")
+        print(f"<{os.path.basename(__file__)}> Error: Nystrom sample size is larger than number of fibers available.")
         print("number_of_subjects:", number_of_subjects)
         print("number_of_fibers_per_subject:", number_of_fibers_per_subject)
         print("total_number_of_fibers:", total_number_of_fibers)
@@ -391,7 +391,7 @@ def main():
     
     # Set up random seed
     if random_seed is not None:
-        print("<wm_cluster_atlas.py> Setting random seed to", random_seed)
+        print(f"<{os.path.basename(__file__)}> Setting random seed to", random_seed)
         numpy.random.seed(seed=random_seed)
     
     # Overall progress/outlier removal info file
@@ -413,7 +413,7 @@ def main():
         print("BEFORE cluster: Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape)
     
         # Run clustering on the polydata
-        print('<wm_cluster_atlas.py> Starting clustering.')
+        print(f'<{os.path.basename(__file__)}> Starting clustering.')
         output_polydata_s, cluster_numbers_s, color, embed, distortion, atlas, reject_idx = \
             wma.cluster.spectral(input_data, number_of_clusters=number_of_clusters, \
                                      number_of_jobs=number_of_jobs, use_nystrom=use_nystrom, \
@@ -438,9 +438,9 @@ def main():
         
         outdir1 = os.path.join(outdir_current, 'initial_clusters')
         if not os.path.exists(outdir1):
-            print("<wm_cluster_atlas.py> Output directory", outdir1, "does not exist, creating it.")
+            print(f"<{os.path.basename(__file__)}> Output directory", outdir1, "does not exist, creating it.")
             os.makedirs(outdir1)    
-        print('<wm_cluster_atlas.py> Saving output files in directory:', outdir1)
+        print(f'<{os.path.basename(__file__)}> Saving output files in directory:', outdir1)
         wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir1, cluster_numbers_s, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=render)
     
         # Remove outliers from this iteration and save atlas again                                                 
@@ -600,9 +600,9 @@ def main():
     
         outdir2 = os.path.join(outdir_current, 'remove_outliers')
         if not os.path.exists(outdir2):
-            print("<wm_cluster_atlas.py> Output directory", outdir2, "does not exist, creating it.")
+            print(f"<{os.path.basename(__file__)}> Output directory", outdir2, "does not exist, creating it.")
             os.makedirs(outdir2)
-        print('<wm_cluster_atlas.py> Saving output files in directory:', outdir2)
+        print(f'<{os.path.basename(__file__)}> Saving output files in directory:', outdir2)
     
         plt.figure(0)
         plt.savefig( os.path.join(outdir2, 'fiber_distances_per_cluster_histogram.pdf'))
@@ -657,9 +657,9 @@ def main():
         # now make the outlier clusters have positive numbers with -cluster_numbers_s so they can be saved also
         outdir3 = os.path.join(outdir2, 'outlier_tracts')
         if not os.path.exists(outdir3):
-            print("<wm_cluster_atlas.py> Output directory", outdir3, "does not exist, creating it.")
+            print(f"<{os.path.basename(__file__)}> Output directory", outdir3, "does not exist, creating it.")
             os.makedirs(outdir3)
-        print('<wm_cluster_atlas.py> Saving outlier fiber files in directory:', outdir3)
+        print(f'<{os.path.basename(__file__)}> Saving outlier fiber files in directory:', outdir3)
         mask = cluster_numbers_s < 0
         cluster_numbers_outliers = -numpy.multiply(cluster_numbers_s, mask) - 1
         wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=False)
@@ -683,7 +683,7 @@ def main():
     
     
     print("==========================\n")
-    print('<wm_cluster_atlas.py> Done clustering atlas. See output in directory:\n ', outdir, '\n')
+    print(f'<{os.path.basename(__file__)}> Done clustering atlas. See output in directory:\n ', outdir, '\n')
 
 if __name__ == '__main__':
     main()

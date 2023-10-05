@@ -86,7 +86,7 @@ print("==========================")
 # Loop over input DWIs
 inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
-print("<wm_preprocess.py> Input number of files: ", len(inputPolyDatas))
+print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))
 
 # Read in the transform to print its contents for the user
 reader = vtk.vtkMNITransformReader()
@@ -100,7 +100,7 @@ def pipeline(inputPolyDatas, sidx, args):
     # -------------------
     #subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
     fname = os.path.basename(inputPolyDatas[sidx])
-    print("<wm_preprocess.py> ", sidx + 1, "/", len(inputPolyDatas))
+    print(f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas))
 
     # read input vtk data
     # -------------------

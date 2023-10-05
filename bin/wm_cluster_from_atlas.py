@@ -9,7 +9,7 @@ import vtk
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_cluster_from_atlas.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():
@@ -58,23 +58,23 @@ def main():
     
     
     if not os.path.exists(args.inputFile):
-        print("<wm_cluster_from_atlas.py> Error: Input file", args.inputFile, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input file", args.inputFile, "does not exist.")
         exit()
     
     if not os.path.isdir(args.atlasDirectory):
-        print("<wm_cluster_from_atlas.py> Error: Atlas directory", args.atlasDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Atlas directory", args.atlasDirectory, "does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     fname = args.inputFile
     subject_id = os.path.splitext(os.path.basename(fname))[0]
     outdir = os.path.join(outdir, subject_id)
     if not os.path.exists(outdir):
-        print("<wm_cluster_from_atlas.py> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
         os.makedirs(outdir)
     
     print("\n==========================")
@@ -126,20 +126,20 @@ def main():
     # =======================================================================
     
     # read atlas
-    print("<wm_cluster_from_atlas.py> Loading input atlas:", args.atlasDirectory)
+    print(f"<{os.path.basename(__file__)}> Loading input atlas:", args.atlasDirectory)
     atlas = wma.cluster.load_atlas(args.atlasDirectory, 'atlas')
     
     # read data
-    print("<wm_cluster_from_atlas.py> Reading input file:", args.inputFile)
+    print(f"<{os.path.basename(__file__)}> Reading input file:", args.inputFile)
     pd = wma.io.read_polydata(args.inputFile)
         
     # preprocessing step: minimum length
-    print("<wm_cluster_from_atlas.py> Preprocessing by length:", fiber_length, "mm.")
+    print(f"<{os.path.basename(__file__)}> Preprocessing by length:", fiber_length, "mm.")
     pd2 = wma.filter.preprocess(pd, fiber_length, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
     
     # preprocessing step: fibers to analyze
     if number_of_fibers is not None:
-        print("<wm_cluster_from_atlas.py> Downsampling to ", number_of_fibers, "fibers.")
+        print(f"<{os.path.basename(__file__)}> Downsampling to ", number_of_fibers, "fibers.")
         input_data = wma.filter.downsample(pd2, number_of_fibers, return_indices=False, preserve_point_data=True, preserve_cell_data=True,verbose=False)
     else:
         input_data = pd2
@@ -237,10 +237,10 @@ def main():
     ##first_cluster = numpy.min(cluster_numbers_s)
     # Get the number of clusters directly from the atlas to ensure we output files for all clusters.
     [number_of_clusters, number_of_eigenvectors] = atlas.centroids.shape
-    print("<wm_cluster_from_atlas.py> Cluster indices range from:", 0, "to", number_of_clusters)
+    print(f"<{os.path.basename(__file__)}> Cluster indices range from:", 0, "to", number_of_clusters)
     pd_c_list = wma.cluster.mask_all_clusters(output_polydata_s, cluster_numbers_s, number_of_clusters, preserve_point_data=True, preserve_cell_data=True,verbose=True)
     
-    print('<wm_cluster_atlas.py> Saving output cluster files in directory:', outdir)
+    print(f'<{os.path.basename(__file__)}> Saving output cluster files in directory:', outdir)
     cluster_sizes = list()
     cluster_fnames = list()
     for c in range(number_of_clusters):
@@ -265,13 +265,13 @@ def main():
             cluster_colors.append(color[0,:])
             
     # Notify user if some clusters empty
-    print("<wm_cluster_atlas.py> Checking for empty clusters (can be due to anatomical variability or too few fibers analyzed).")
+    print(f"<{os.path.basename(__file__)}> Checking for empty clusters (can be due to anatomical variability or too few fibers analyzed).")
     for sz, fname in zip(cluster_sizes,cluster_fnames):
         if sz == 0:
             print(sz, ":", fname)
         
     cluster_sizes = numpy.array(cluster_sizes)
-    print("<wm_cluster_from_atlas.py> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes))
+    print(f"<{os.path.basename(__file__)}> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes))
     
     # Estimate subsampling ratio to display approx. show_fibers total fibers
     number_fibers = len(cluster_numbers_s)
@@ -279,7 +279,7 @@ def main():
         ratio = 1.0
     else:
         ratio = show_fibers / number_fibers
-    print("<wm_cluster_atlas.py> Subsampling ratio for display of", show_fibers, "total fibers estimated as:", ratio)
+    print(f"<{os.path.basename(__file__)}> Subsampling ratio for display of", show_fibers, "total fibers estimated as:", ratio)
     
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir, 'clustered_tracts.mrml')
@@ -293,15 +293,15 @@ def main():
     if render:
     
         try:
-            print('<wm_cluster_from_atlas.py> Rendering and saving images of clustered subject.')
+            print(f'<{os.path.basename(__file__)}> Rendering and saving images of clustered subject.')
             ren = wma.render.render(output_polydata_s, 1000, data_mode='Cell', data_name='EmbeddingColor',verbose=False)
             ren.save_views(outdir)
             del ren
         except:
-            print('<wm_cluster_from_atlas.py> No X server available.')
+            print(f'<{os.path.basename(__file__)}> No X server available.')
     
     print("\n==========================")
-    print('<wm_cluster_from_atlas.py> Done clustering subject.  See output in directory:\n ', outdir, '\n')
+    print(f'<{os.path.basename(__file__)}> Done clustering subject.  See output in directory:\n ', outdir, '\n')
     
     
 if __name__ == '__main__':

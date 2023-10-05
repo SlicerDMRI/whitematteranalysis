@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
 # Run registration on the test dataset.
 
@@ -12,7 +11,7 @@ import time
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 HAVE_PLT = 1
@@ -20,7 +19,7 @@ HAVE_PLT = 1
 try:
     import matplotlib.pyplot as plt
 except:
-    print("<wm_quality_control.py> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
+    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0    
 
 def main():
@@ -43,19 +42,19 @@ def main():
      
     args = parser.parse_args()
     
-    print("<quality_control> Starting...")
+    print(f"<{os.path.basename(__file__)}> Starting...")
     
     if not os.path.exists(args.inputTract1):
-        print("<quality_control> Error: Input tract 1", args.inputTract1, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input tract 1", args.inputTract1, "does not exist.")
         exit()
     
     if not os.path.exists(args.inputTract2):
-        print("<quality_control> Error: Input tract 2", args.inputTract2, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input tract 2", args.inputTract2, "does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print("<quality_control> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
         os.makedirs(output_dir)
     
     input_polydatas = []
@@ -95,7 +94,7 @@ def main():
         del pd3
         subject_idx += 1
     
-    print("<quality_control> Final step: rendering two vtk files together.")
+    print(f"<{os.path.basename(__file__)}> Final step: rendering two vtk files together.")
     appender.Update()
     pd_all = appender.GetOutput()
     ren = wma.render.render(pd_all, colormap='hot', verbose=False)

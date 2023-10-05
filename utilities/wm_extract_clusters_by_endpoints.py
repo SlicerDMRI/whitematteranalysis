@@ -6,7 +6,7 @@ import numpy
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_endpoint_analysis> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 #-----------------

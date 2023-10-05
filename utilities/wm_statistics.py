@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
 import numpy
 import scipy.stats
@@ -45,16 +44,16 @@ parser.set_defaults(one_tailed=False)
 args = parser.parse_args()
 
 if not os.path.isdir(args.inputDirectory):
-    print("<wm_statistics> Error: Input directory", args.inputDirectory, "does not exist.")
+    print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
     exit()
 
 if not os.path.exists(args.subjectsInformationFile):
-    print("<wm_statistics> Error: Input file", args.subjectsInformationFile, "does not exist.")
+    print(f"<{os.path.basename(__file__)}> Error: Input file", args.subjectsInformationFile, "does not exist.")
     exit()
 
 if args.atlasDirectory:
     if not os.path.isdir(args.atlasDirectory):
-        print("<wm_statistics> Error: Input directory", args.atlasDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.atlasDirectory, "does not exist.")
         exit()
 
 measurement = args.measure

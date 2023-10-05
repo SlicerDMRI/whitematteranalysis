@@ -7,13 +7,15 @@ class RegisterTractography
 
 """
 
+import os
+
 try:
     import scipy.optimize
     USE_SCIPY = 1
 except ImportError:
     USE_SCIPY = 0
-    print("<congeal.py> Failed to import  scipy.optimize, cannot align or register.")
-    print("<congeal.py> Please install  scipy.optimize for this functionality.")
+    print(f"<{os.path.basename(__file__)}> Failed to import  scipy.optimize, cannot align or register.")
+    print(f"<{os.path.basename(__file__)}> Please install  scipy.optimize for this functionality.")
 
 import numpy
 import sys
@@ -24,8 +26,8 @@ try:
     USE_PARALLEL = 1
 except ImportError:
     USE_PARALLEL = 0
-    print("<congeal.py> Failed to import joblib, cannot multiprocess.")
-    print("<congeal.py> Please install joblib for this functionality.")
+    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
+    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
 import whitematteranalysis as wma
 
@@ -214,7 +216,7 @@ class RegisterTractography:
         self.iterations += 1
 
         if self.verbose:
-            print("<congeal.py> Initial value for X:", self.initial_transform)
+            print(f"<{os.path.basename(__file__)}> Initial value for X:", self.initial_transform)
 
 
         if self.optimizer == "Cobyla":

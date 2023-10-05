@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/Library/Frameworks/EPD64.framework/Versions/Current/bin/ipython
 
 # Run registration on the test dataset.
 
@@ -12,7 +11,7 @@ import time
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_register.py> Error importing white matter analysis package\n")
+    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 def main():

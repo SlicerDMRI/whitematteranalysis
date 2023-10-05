@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 
 
 import glob
@@ -9,7 +8,7 @@ import argparse
 try:
     import whitematteranalysis as wma
 except:
-    print("<wm_laterality.py> Error importing white matter analysis package\n")
+    print(f"{os.path.basename(__file__)}> Error importing white matter analysis package\n")
     raise
 
 #-----------------
@@ -58,10 +57,10 @@ if not os.path.isdir(args.inputDirectory):
 
 outdir = args.outputDirectory
 if not os.path.exists(outdir):
-    print("<wm_laterality.py> Output directory", outdir, "does not exist, creating it.")
+    print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
     os.makedirs(outdir)
     
-print("<wm_laterality.py> Starting white matter laterality computation.")
+print("f<{os.path.basename(__file__)}> Starting white matter laterality computation.")
 print("")
 print("=====input directory======\n", args.inputDirectory)
 print("=====output directory=====\n", args.outputDirectory)
@@ -104,7 +103,7 @@ print("==========================")
 
 inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
-print("<wm_laterality.py> Input number of files: ", len(inputPolyDatas))
+print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))
 
 # loop over all inputs
 for sidx in range(0, len(inputPolyDatas)):
@@ -112,7 +111,7 @@ for sidx in range(0, len(inputPolyDatas)):
     # get subject identifier from unique input filename
     # -------------------
     subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
-    id_msg = "<wm_laterality.py> ", sidx + 1, "/", len(inputPolyDatas)  
+    id_msg = f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas)
     msg = "**Starting subject:", subjectID
     print(id_msg, msg)
 
