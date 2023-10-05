@@ -16,64 +16,6 @@ if sys.platform == 'win32':
     os.environ['DISTUTILS_USE_SDK'] = '1'
 
 
-########################################################################
-# Begin attribution section
-########################################################################
-#
-# License: BSD
-#       Created: August 16, 2012
-#       Author:  Francesc Alted - francesc@blosc.org
-#
-########################################################################
-class LazyCommandClass(dict):
-    """
-    Lazy command class that defers operations requiring Cython and numpy until
-    they've actually been downloaded and installed by setup_requires.
-    """
-    def __contains__(self, key):
-        return (
-            key == 'build_ext'
-            or super().__contains__(key)
-        )
-
-    def __setitem__(self, key, value):
-        if key == 'build_ext':
-            raise AssertionError("build_ext overridden!")
-        super().__setitem__(key, value)
-
-    def __getitem__(self, key):
-        if key != 'build_ext':
-            return super().__getitem__(key)
-
-        from Cython.Distutils import build_ext as cython_build_ext
-
-        class build_ext(cython_build_ext):
-            """
-            Custom build_ext command that lazily adds numpy's include_dir to
-            extensions.
-            """
-            def build_extensions(self):
-                """
-                Lazily append numpy's include directory to Extension includes.
-                This is done here rather than at module scope because setup.py
-                may be run before numpy has been installed, in which case
-                importing numpy and calling `numpy.get_include()` will fail.
-                """
-                numpy_incl = resource_filename('numpy', 'core/include')
-                for ext in self.extensions:
-                    ext.include_dirs.append(numpy_incl)
-
-                # This explicitly calls the superclass method rather than the
-                # usual super() invocation because distutils' build_class, of
-                # which Cython's build_ext is a subclass, is an old-style class
-                # in Python 2, which doesn't support `super`.
-                cython_build_ext.build_extensions(self)
-        return build_ext
-########################################################################
-# End attribution section
-########################################################################
-
-
 with open("requirements.txt") as f:
     required_dependencies = f.read().splitlines()
     external_dependencies = []
@@ -86,7 +28,7 @@ with open("requirements.txt") as f:
             external_dependencies.append(dependency)
 
 
-setup_requires = ['cython==0.29.*', 'numpy==1.20.*']
+setup_requires = ['numpy==1.20.*']
 setup(
     name='WhiteMatterAnalysis',
     version='0.3.0',
@@ -98,7 +40,6 @@ setup(
     long_description=open('README.md').read(),
     setup_requires=setup_requires,
     install_requires=setup_requires + external_dependencies,
-    cmdclass=LazyCommandClass(),
     scripts=[
         'bin/harden_transform_with_slicer.py',
         'bin/wm_append_clusters.py',
