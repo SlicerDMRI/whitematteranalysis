@@ -97,5 +97,3 @@ print(all_TAP_str)
 f = open(os.path.join(args.inputDirectory, 'TAP.csv'), 'a')
 f.write(all_TAP_str)
 f.close()
-
-# w
