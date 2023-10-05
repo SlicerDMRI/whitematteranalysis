@@ -283,7 +283,17 @@ This step computes diffusion measurements of the fiber clusters and the anatomic
      ```
        
         > **_Note_**: Here, we give the path to the FiberTractMeasurements module under macOS. The path needs to be changed based on the operating system you are using.
-         
+        > If using a Linux OS, the script should be called as e.g.
+
+        ```bash
+        wm_diffusion_measurements.py ./FiberClustering/SeparatedClusters/tracts_left_hemisphere/ ./DiffusionMeasurements/left_hemisphere_clusters.csv "/path/to/slicer/binary --launch /path/to/slicer/cli-modules/FiberTractMeasurements"
+        ```
+
+        where `/path/to/slicer/binary` can be e.g. `/opt/Slicer-5.2.2-linux-amd64/Slicer`, and where
+        `/path/to/slicer/cli-modules/FiberTractMeasurements` can be e.g.
+        `/opt/Slicer-5.2.2-linux-amd64/NA-MIC/Extensions-31382/SlicerDMRI/lib/Slicer-5.2/cli-modules/FiberTractMeasurements`
+        if using `Slicer 5.2.2` and having it installed in `/opt/`.
+
       - A new folder “_DiffusionMeasurements_” is generated, containing three CSV files. Open one of them using Excel to see the diffusion measurements statistics. 
         
         > **_Note_**: For the empty vtp file (e.g. cluster_00001 is a hemispheric cluster, and it does have fibers in the commissural category), “NAN” will be assigned.
