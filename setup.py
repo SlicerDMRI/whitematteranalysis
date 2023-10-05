@@ -2,7 +2,7 @@ import os
 from setuptools import setup
 from pkg_resources import resource_filename
 
-#    url='http://pypi.python.org/pypi/WhiteMatterAnalysis/',
+#    url='http://pypi.python.org/pypi/whitematteranalysis/',
 #    scripts=['bin/test1.py','bin/test2.py'],
 
 # ext_modules work-around: https://stackoverflow.com/a/38057196
@@ -30,7 +30,7 @@ with open("requirements.txt") as f:
 
 setup_requires = ['numpy==1.20.*']
 setup(
-    name='WhiteMatterAnalysis',
+    name='whitematteranalysis',
     version='0.3.0',
     author='Fan Zhang and Lauren O\'Donnell',
     author_email='fzhang@bwh.harvard.edu; odonnell@bwh.harvard.edu',
