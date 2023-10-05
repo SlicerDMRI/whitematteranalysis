@@ -11,6 +11,7 @@ Compulsory arguments:
           two folders named: ORG-RegAtlas-100HCP and ORG-800FC-100HCP 
      -s:  Path to 3D Slicer, e.g., under macOS, it is /Applications/Slicer.app/Contents/MacOS/Slicer
 Optional arguments:
+     -t:  apply a transformation file to match the data to the adult brain size of the atlas.
      -r:  whole brain tractography registration mode (default = 'rig')
             rig: rigid_affine_fast : this enables a rough tractography registration. This mode in general
                                    applicable to tractography data generated from different dMRI 
@@ -63,7 +64,7 @@ function reportMappingParameters {
 REPORTMAPPINGPARAMETERS
 }
 
-while getopts ":hi:i:o:a:s:n:r:x:d:m:c:" opt; do
+while getopts ":hi:i:o:a:s:n:r:t:x:d:m:c:" opt; do
 	case $opt in
 		h) Usage; exit 0
 		;;
@@ -76,6 +77,8 @@ while getopts ":hi:i:o:a:s:n:r:x:d:m:c:" opt; do
 		s) SlicerPath="$OPTARG"
 		;;
 		r) RegMode="$OPTARG"
+		;;
+		t) TfmFile="$OPTARG"
 		;;
 		n) NumThreads="$OPTARG"
 		;;
@@ -192,15 +195,42 @@ echo " - tractography registration atlas:" $RegAtlasFolder
 echo " - fiber clustering atlas:" $FCAtlasFolder
 echo ""
 
+# Apply transformation if provided
+InTractographyDirname="$(dirname "$InputTractography")"
+OutTfmTractography=$OutputCaseFolder/TransformedTracts
+if [ "$TfmFile" ]; then
+  if [ ! -f "$TfmFile" ]; then
+    echo ""
+    echo "ERROR: Transformation file not found."
+    echo ""
+    exit
+  else
+    echo "<wm_harden_transform.py> Apply transformation with file: " "$TfmFile"
+    if [ $VX == 0 ]; then
+      wm_harden_transform.py -t "$TfmFile" \
+        "$InTractographyDirname" "$OutTfmTractography" "$SlicerPath"
+    else
+      xvfb-run wm_harden_transform.py -t "$TfmFile" \
+        "$InTractographyDirname" "$OutTfmTractography" "$SlicerPath"
+    fi
+    echo ""
+  fi
+fi
 
 echo "<wm_apply_ORG_atlas_to_subject> Tractography registration with mode [" $RegMode "]"
 RegistrationFolder=$OutputCaseFolder/TractRegistration
+if [ "$TfmFile" ]; then
+  TractographyData=$(find $OutTfmTractography -type f)
+else
+  TractographyData=$InputTractography
+fi
+
 if [ "$RegMode" == "rig" ]; then
 	RegTractography=$RegistrationFolder/${caseID}/output_tractography/${caseID}_reg.vtk
 	
 	if [ ! -f $RegTractography ]; then
 		wm_register_to_atlas_new.py -mode rigid_affine_fast \
-			$InputTractography $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
+			$TractographyData $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
 	else
 		echo " - registration has been done."
 	fi
@@ -209,7 +239,7 @@ elif [ "$RegMode" == "nonrig" ]; then
 	
 	if [ ! -f $RegTractography ]; then
 		wm_register_to_atlas_new.py -mode affine \
-			$InputTractography $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
+			$TractographyData $RegAtlasFolder/registration_atlas.vtk $RegistrationFolder/
 
 		affineRegTract=$RegistrationFolder/${caseID}/output_tractography/${caseID}_reg.vtk
 		
@@ -366,12 +396,45 @@ if [ $numfiles -lt 800 ]; then
 	exit
 fi
 
-echo "<wm_apply_ORG_atlas_to_subject> Append clusters into anatomical tracts."
+# Apply the inverse transformation if provided
+ClusterDirnames=($(find "$SeparatedClustersFolder" -mindepth 1 -type d | sort))
+OutInvTfmTractographyDirnameRoot=$OutputCaseFolder/InvTransformedTracts
+if [ "$TfmFile" ]; then
+  if [ ! -f "$TfmFile" ]; then
+    echo ""
+    echo "ERROR: Transformation file not found."
+    echo ""
+    exit
+  else
+    echo "<wm_harden_transform.py> Apply inverse transformation with file: " "$TfmFile"
+    mkdir $OutInvTfmTractographyDirnameRoot
+    for ClusterDirname in "${ClusterDirnames[@]}"; do
+      GroupName=($(basename $ClusterDirname))
+      OutInvTfmTractographyDirname=$OutInvTfmTractographyDirnameRoot/$GroupName
+      mkdir $OutInvTfmTractographyDirname
+      if [ $VX == 0 ]; then
+        wm_harden_transform.py -i -t "$TfmFile" \
+          "$ClusterDirname" "$OutInvTfmTractographyDirname" "$SlicerPath"
+      else
+        xvfb-run wm_harden_transform.py -i -t "$TfmFile" \
+          "$ClusterDirname" "$OutInvTfmTractographyDirname" "$SlicerPath"
+      fi
+    done
+    echo ""
+  fi
+fi
 
+echo "<wm_apply_ORG_atlas_to_subject> Append clusters into anatomical tracts."
 AnatomicalTractsFolder=$OutputCaseFolder/AnatomicalTracts
+if [ "$TfmFile" ]; then
+  TractographyData=$OutInvTfmTractographyDirnameRoot
+else
+  TractographyData=$SeparatedClustersFolder
+fi
+
 if [ ! -f $AnatomicalTractsFolder/T_UF_right.vtp ]; then
 	
-	wm_append_clusters_to_anatomical_tracts.py $SeparatedClustersFolder/ $FCAtlasFolder $AnatomicalTractsFolder
+	wm_append_clusters_to_anatomical_tracts.py $TractographyData/ $FCAtlasFolder $AnatomicalTractsFolder
 
 else
 	echo " - Appending clusters into anatomical tracts has been done."

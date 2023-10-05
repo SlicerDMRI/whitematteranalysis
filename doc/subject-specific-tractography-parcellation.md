@@ -78,6 +78,44 @@ This step performs QC of the input tractography data (â€œ_example-UKF-data.vtk_â
        
         ![test image](tutorial-pics/fig_qc_input_overlap.jpg)
         
+### 4.1. Optional: approximate brain size matching
+
+The ORG atlas was designed to work with adult's brain data. When working with infant data, you may need to apply a
+transformation to them so that the relevant data gets scaled to approximately match an adult's brain size. The purpose
+of this transformation is to ensure a good fit for the registration process.
+
+The transform file can be obtained using `Slicer`'s `Transform` module. The transformation used for scaling purposes
+is a linear transform. The scaling factor (i.e. the diagonal components of the generated transformation matrix) is the
+value that needs to be adjusted. Typically, a 1.5 value (across all three components) has been found to provide
+reasonably good results. Once the `.tfm` file has been saved, it is used as the transform filename for the
+`wm_harden_transform.py` script.
+
+A `.tfm` file containing a linear transform will look like this:
+```
+#Insight Transform File V1.0
+#Transform 0
+Transform: AffineTransform_double_3_3
+Parameters: 0.6666666666666666 0 0 0 0.6666666666666666 0 0 0 0.6666666666666666 0 0 0
+FixedParameters: 0 0 0
+```
+
+Whether the chosen scaling factor is a reasonably good estimate can be assessed by applying it to a diffusion scalar
+map (e.g. the FA image) in `Slicer` and seeing if it provides a brain that has the approximate same size brain as the
+ORG atlas FA image.
+
+Thus, prior to feeding the obtained tractography data to the pipeline, the transformation would be applied to the
+tractography `vtk` file so that it can be scaled to approximately the size of an adult brain data.
+
+After obtaining the tracts and the clusters, using the same script and the transform file, the inverse transformation
+must be applied to scale back the tractography data to the original size.
+
+In order to apply a transform file, the `-t` option followed by the filename containing the transformation must be
+provided to the `wm_apply_ORG_atlas_to_subject.sh` script, e.g.
+
+```shell
+wm_apply_ORG_atlas_to_subject.sh -i InputTractography -o OutputDirectory -a ORGAtlasFolder -s PathTo3DSlicer -t TransformFile
+```
+
 ## 5. Tractography registration
 
 This steps registers the input tractography data to the ORG atlas tractography data.
