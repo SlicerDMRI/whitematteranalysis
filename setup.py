@@ -28,7 +28,7 @@ with open("requirements.txt") as f:
             external_dependencies.append(dependency)
 
 
-setup_requires = ['numpy==1.20.*']
+setup_requires = ['numpy>=1.20.0']
 setup(
     name='whitematteranalysis',
     version='0.3.0',
