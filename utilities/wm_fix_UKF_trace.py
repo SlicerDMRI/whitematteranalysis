@@ -52,19 +52,27 @@ def fix_trace(inpd):
     return inpd
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Fix the incorrect trace value stored by UKF.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    
     parser.add_argument(
         'inputDirectory',
         help='Contains fiber clusters as vtkPolyData file(s).')
-    
-    args = parser.parse_args()
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     fixed_log = os.path.join(args.inputDirectory, 'fixed.log')
     if os.path.exists(fixed_log):

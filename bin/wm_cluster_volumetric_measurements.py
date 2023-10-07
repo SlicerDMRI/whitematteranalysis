@@ -10,45 +10,48 @@ from nibabel.affines import apply_affine
 
 import whitematteranalysis as wma
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compute measurements of a cluster based on a provided volumetric scalar map (e.g. an FA image).",
         epilog="Written by Fan Zhang")
-    
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
         help="Show program's version number and exit")
-    
     parser.add_argument(
         'inputDirectory',
         help='Directory of input VTK/VTP files.')
-    
     parser.add_argument(
         'inputVolumetricMap',
         help='Path to input volumetric map, e.g. an FA image. Note: this input image needs to be a nifti (nii or nii.gz) file. To read and write this format, NiBabel package is needed, by running: pip install nibabel ')
-    
     parser.add_argument(
         'outputDirectory',
         help='Directory of output statistics.')
-    
     parser.add_argument(
         'outputStatFile', action="store", type=str,
         help="File name of the output statistics.")
-    
     parser.add_argument(
         '-sampleSize', action="store", type=float,
         help='Fiber sample size')
-    
     parser.add_argument(
         '-outputLabelmap', action='store_true',
         help='Generate a label map of each input cluster if given.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")

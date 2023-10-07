@@ -8,14 +8,12 @@ from joblib import Parallel, delayed
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Harden transform with Slicer.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -41,9 +39,20 @@ def main():
     parser.add_argument(
         '-j', action="store", dest="numberOfJobs", type=int,
         help='Number of processors to use.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")

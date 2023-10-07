@@ -21,10 +21,9 @@ import glob
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Separate each cluster into left/right/commissural tracts based on the fiber location information computed by <wm_assess_cluster_location_by_hemisphere.py>. "
                     "The output is three directories of fiber bundles according to left hemisphere, right hemisphere, and commissural tracts. ",
@@ -39,9 +38,20 @@ def main():
     parser.add_argument(
         'outputDirectory',
         help='The output directory will be created if it does not exist.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
         exit()

@@ -8,10 +8,8 @@ import os
 import re
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compute averaged statistics of the anatomical tracts. For diffusion measure with multiple statistics, only the Mean will be outputted.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu.")
@@ -28,7 +26,18 @@ def main():
         '-tractList', action="store", type=str, nargs='+',
         help='A list of tracts to be appended, e.g., AF_left AF_right.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     stats = pandas.read_table(args.inputmeasure, delimiter=',')
 

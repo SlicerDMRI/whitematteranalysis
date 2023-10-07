@@ -21,10 +21,9 @@ import glob
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Assess if a fiber within the clusters belongs to left hemispheric, right hemispheric, or commissural tracts. "
                     "This code needs to be run in the ATLAS space, where the brain is clustered at the RAS origin. ",
@@ -51,7 +50,17 @@ def main():
     parser.add_argument(
         '-outputDirectory',
         help='If this is given, separated clusters will be output under this folder. The output directory will be created if it does not exist.')
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
     def list_cluster_files(input_dir):
         # Find input files
         input_mask = f"{input_dir}/cluster_*.vtk"
@@ -109,9 +118,10 @@ def main():
                     break
     
         return flag_location, mask_location
-    
-    args = parser.parse_args()
-    
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
         exit()

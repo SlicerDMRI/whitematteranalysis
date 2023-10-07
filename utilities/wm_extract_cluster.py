@@ -9,7 +9,8 @@ import numpy
 import whitematteranalysis as wma
 
 
-def main():
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Grab one cluster from within all subject directories and rename to include subject ID. Output all clusters into the output directory",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
@@ -27,10 +28,18 @@ def main():
         'outputDirectory',
         help='The output directory will be created if it does not exist.')
 
+    return parser
 
 
-    args = parser.parse_args()
+def _parse_args(parser):
 
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")

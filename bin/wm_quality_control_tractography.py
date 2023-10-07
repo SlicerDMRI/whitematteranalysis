@@ -16,16 +16,15 @@ try:
     import matplotlib.pyplot as plt
 except:
     print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
-    HAVE_PLT = 0    
+    HAVE_PLT = 0
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Perform quality control steps (rendering images and fiber length testing) for all vtk and vtp files in the input directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    
+
     parser.add_argument(
         'inputDirectory',
         help='A directory of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
@@ -33,11 +32,22 @@ def main():
         'outputDirectory',
         help='Quality control information will be stored in the output directory, which will be created if it does not exist.')
     # for now this is not parallelized. that would complicate summary info about group.
-    #parser.add_argument(
+    # parser.add_argument(
     #    '-j', action="store", dest="numberOfJobs", type=int,
     #    help='Number of processors to use.')
-     
-    args = parser.parse_args()
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
     
     print(f"<{os.path.basename(__file__)}> Starting...")
     

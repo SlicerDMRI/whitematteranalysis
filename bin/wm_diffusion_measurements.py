@@ -8,14 +8,12 @@ from warnings import warn
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compute diffusion scalar measurements (such as FA, MD, etc). This script reports the mean statistics of each fiber cluster (or fiber tract) within the input folder.",
         epilog="Written by Fan Zhang (fzhang@bwh.harvard.edu)")
-    
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -29,9 +27,20 @@ def main():
     parser.add_argument(
         'Slicer',
         help='Path of 3D Slicer.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()

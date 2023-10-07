@@ -10,14 +10,11 @@ import whitematteranalysis as wma
 
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Measure overlaps of fiber clusters with cortical parcellation or fMRI functional areas. This is based on the 3D Slicer module FiberEndPointFromLabelMap.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -38,7 +35,18 @@ def main():
         '-j', action="store", dest="numberOfJobs", type=int,
         help='Number of processors to use.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputTractDirectory):
         print("Error: Input directory", args.inputTractDirectory, "does not exist.")

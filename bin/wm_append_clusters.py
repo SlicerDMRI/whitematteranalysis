@@ -7,10 +7,9 @@ import vtk
 
 import whitematteranalysis as wma
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Append multiple fiber clusters into one fiber tract.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
@@ -30,9 +29,20 @@ def main():
     parser.add_argument(
         '-tractMRML', action="store", type=str,
         help='A MRML file that contains the fiber clusters to be appended. If neither -clusterList nor -tractMRML are provided, all vtk/vtp files in the input folder will be appended.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")

@@ -9,10 +9,8 @@ import whitematteranalysis as wma
 
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Measures mean FA, etc. in tractography clusters in a directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
@@ -27,7 +25,18 @@ def main():
         'outputFile',
         help='Output measurements will be recorded here.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")

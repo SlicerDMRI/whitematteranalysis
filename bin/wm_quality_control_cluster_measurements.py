@@ -8,14 +8,12 @@ import scipy.stats
 
 import whitematteranalysis as wma
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Perform quality control steps (check if all subjects have matching data) for .csv or txt measurement files in the input directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    
     parser.add_argument(
         'inputDirectory',
         help='A directory of .csv or txt measurement files from Slicer tractography measurements.')
@@ -26,9 +24,20 @@ def main():
     parser.add_argument(
         '-outlier_std', action="store", dest="OutlierStandardDeviation", type=float, default=2.0,
         help='Standard deviation for outlier detection of subjects.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()

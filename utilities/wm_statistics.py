@@ -12,10 +12,8 @@ import whitematteranalysis as wma
 import matplotlib.pyplot as plt
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compute requested statistics comparing groups in the input groups file. Please verify your input by running wm_quality_control_cluster measurements before running this program.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
@@ -39,12 +37,21 @@ def main():
     parser.add_argument('--no-hierarchy', dest='hierarchy', action='store_false')
     parser.set_defaults(hierarchy=True)
     parser.add_argument('-mode', dest='mode', action='store', default='all', help='all, clusters, toplevel, sublevel')
-
-
     parser.add_argument('--onetail', dest='one_tailed', action='store_true')
     parser.set_defaults(one_tailed=False)
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")

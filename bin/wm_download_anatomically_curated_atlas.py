@@ -8,13 +8,9 @@ import zipfile
 import sys
 import ssl
 
-def main():
-    if (not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None)): 
-        ssl._create_default_https_context = ssl._create_unverified_context
-    
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Download a pre-provided anatomically curated fiber clustering white matter atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
@@ -25,9 +21,23 @@ def main():
     parser.add_argument(
         '-atlas', action="store", dest="requested_atlas", type=str, 
         help='Name of the atlas. Currently, \'ORG-800FC-100HCP\' and \'ORG-2000FC-100HCP\' are available to download.')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
+    if (not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None)):
+        ssl._create_default_https_context = ssl._create_unverified_context
+
     def download_file(url, output_file):
     
         try:

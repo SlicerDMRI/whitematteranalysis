@@ -9,14 +9,11 @@ import glob
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Append multiple fiber clusters into anatomical tracts based on the ORG atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-
     parser.add_argument(
         'inputDirectory',
         help='Contains fiber clusters as vtkPolyData file(s).')
@@ -27,7 +24,18 @@ def main():
         'outputDirectory',
         help='The output directory should be a new empty directory. It will be created if needed.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
