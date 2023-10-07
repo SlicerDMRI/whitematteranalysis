@@ -15,8 +15,7 @@ def _build_arg_parser():
 
     parser = argparse.ArgumentParser(
         description="Compare two tractography files to see how much registration has changed the points. The files must have the exact same size and lines and points, e.g. the original file and the file that results from applying a transform to a file.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.1 (2007): 1562-1575.\"")
     parser.add_argument(
         'inputFile1',
         help='A file of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
