@@ -6,11 +6,7 @@ import multiprocessing
 import vtk
 import time
 
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
 import matplotlib.pyplot as plt
 

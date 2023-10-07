@@ -8,17 +8,9 @@ import multiprocessing
 import numpy
 import vtk
 
-try:
-    import whitematteranalysis as wma
-except:
-    print("Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
-try:
-    from joblib import Parallel, delayed
-except:
-    print("Error importing joblib package\n")
-    raise
+from joblib import Parallel, delayed
 
 
 #-----------------

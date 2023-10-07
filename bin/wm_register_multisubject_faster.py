@@ -8,20 +8,10 @@ import time
 import numpy
 import vtk
 
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
-try:
-    import scipy.optimize
-except ImportError:
-    print("")
-    print(f"<{os.path.basename(__file__)}> ERROR: Failed to import scipy.optimize, cannot run registration.")
-    print("Please install scipy.")
-    print("")
-    exit()
+import scipy.optimize
+
 
 def main():
     #-----------------

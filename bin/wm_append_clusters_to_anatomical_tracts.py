@@ -4,11 +4,7 @@ import argparse
 import vtk
 import glob
 
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
 #-----------------
 # Parse arguments

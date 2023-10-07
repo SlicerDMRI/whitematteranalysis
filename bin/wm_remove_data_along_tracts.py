@@ -7,17 +7,10 @@ import argparse
 import multiprocessing
 import numpy
 
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
-try:
-    from joblib import Parallel, delayed
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing joblib package\n")
-    raise
+from joblib import Parallel, delayed
+
 
 def main():
     #-----------------
