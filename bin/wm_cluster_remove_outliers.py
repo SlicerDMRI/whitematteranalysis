@@ -110,10 +110,6 @@ def main():
     verbose = args.flag_verbose
     
     print("==========================\n")
-      
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
     
     # Copy all MRML files to the new subject directory
     input_mask = f"{args.inputDirectory}/clustered_tracts*.mrml"

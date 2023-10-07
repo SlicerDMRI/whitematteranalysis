@@ -104,10 +104,6 @@ def main():
 
     print("==========================")
 
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 
     print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))

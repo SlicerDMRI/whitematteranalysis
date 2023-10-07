@@ -78,11 +78,6 @@ def main():
 
     print("==========================")
 
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-
-
     # Loop over input DWIs
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 

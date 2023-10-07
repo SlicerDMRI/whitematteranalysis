@@ -97,10 +97,6 @@ def main():
 
     print("==========================")
 
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-
     # Loop over input DWIs
     inputMask1 = f"{args.inputDirectory}/*.vtk"
     inputMask2 = f"{args.inputDirectory}/*.vtp"

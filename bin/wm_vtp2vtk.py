@@ -58,11 +58,7 @@ def main():
     print("=====top-level output directory requested by user=====\n", args.outputDirectory)
     print("=====final output directory=====\n", outdir_subject)
     print("==========================")
-    
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-    
+
     def list_vtp_files(input_dir):
         # Find input files (JUST vtp)
         #input_mask = "{0}/*.vtk".format(input_dir)

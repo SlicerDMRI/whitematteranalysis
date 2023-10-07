@@ -49,11 +49,6 @@ def main():
     print("==========================")
     print("")
 
-
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-
     def compute_point_data_stats(pd, array_name):
         point_array = pd.GetPointData().GetArray(array_name)
         if point_array is None:

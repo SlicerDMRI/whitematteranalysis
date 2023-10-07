@@ -127,10 +127,6 @@ def main():
     render = not args.flag_norender
     
     print("==========================\n")
-      
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
     
     # read atlas
     print(f"<{os.path.basename(__file__)}> Loading input atlas:", args.atlasDirectory)
