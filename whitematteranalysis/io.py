@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ io.py
 
 This module provides input of vtk polydata tractography files (vtk/vtp).

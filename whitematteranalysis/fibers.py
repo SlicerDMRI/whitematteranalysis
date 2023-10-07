@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ fibers.py
 
 This module contains code for representation of tractography using a
