@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# Run registration on the test dataset.
 
 import argparse
 import os
