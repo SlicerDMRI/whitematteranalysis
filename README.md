@@ -2,6 +2,7 @@ whitematteranalysis
 ===================
 
 [![test, package](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml/badge.svg?branch=master)](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml?query=branch%3Amaster)
+[![License](https://img.shields.io/badge/License-BSD-green.svg)](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/License.txt)
 
 # Synopsis
 
