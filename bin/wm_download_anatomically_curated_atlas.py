@@ -14,7 +14,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Download a pre-provided anatomically curated fiber clustering white matter atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    
     parser.add_argument(
         'outputDirectory',
         help='The output directory, where the atlas will be downloaded, should be a new empty directory. It will be created if needed.')
