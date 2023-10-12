@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ laterality.py
 
 This module calculates white matter fiber laterality indices.

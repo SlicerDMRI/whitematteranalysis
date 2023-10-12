@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ Class RenderPolyData for rendering tractography, and saving views. """
 
 import os

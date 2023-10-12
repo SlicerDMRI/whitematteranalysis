@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ filter.py
 
 Swiss army knife of fiber polydata processing.

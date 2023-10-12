@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ mrml.py
 
 output in MRML scene file format (XML)

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ congeal_multisubject.py
 
 re-implementation of fiber tractography registration (group)

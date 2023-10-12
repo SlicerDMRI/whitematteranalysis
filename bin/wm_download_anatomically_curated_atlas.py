@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 import argparse
 import urllib.request, urllib.error, urllib.parse

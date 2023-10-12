@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ cluster.py
 
 implementations of fiber clustering

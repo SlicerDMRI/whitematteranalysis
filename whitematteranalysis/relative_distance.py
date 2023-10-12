@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """ relative_distance.py
 
 implementation of relative distance model, to test representation of
