@@ -21,7 +21,6 @@ import glob
 import whitematteranalysis as wma
 
 
-
 def _build_arg_parser():
 
     parser = argparse.ArgumentParser(
