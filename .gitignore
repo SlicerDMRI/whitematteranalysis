@@ -10,3 +10,10 @@
 build/*
 *.c
 .idea
+
+# Unit test / coverage reports
+.coverage
+
+.eggs/
+dist
+whitematteranalysis.egg-info/
