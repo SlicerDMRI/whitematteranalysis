@@ -8,11 +8,7 @@ import multiprocessing
 import time
 import vtk
 
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
 def main():
     #-----------------

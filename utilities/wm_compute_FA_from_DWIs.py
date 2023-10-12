@@ -5,11 +5,9 @@ import argparse
 import os
 import numpy
 import glob
-try:
-    import whitematteranalysis as wma
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing white matter analysis package\n")
-    raise
+
+import whitematteranalysis as wma
+
 
 def list_nhdr_files(input_dir):
     # Find input files

@@ -6,11 +6,8 @@ import os
 import argparse
 import multiprocessing
 
-try:
-    import whitematteranalysis as wma
-except:
-    print("Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
+
 
 def main():
     #-----------------

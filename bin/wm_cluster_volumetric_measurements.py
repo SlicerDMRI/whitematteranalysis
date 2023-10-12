@@ -8,11 +8,7 @@ import vtk
 import numpy
 from nibabel.affines import apply_affine
 
-try:
-    import whitematteranalysis as wma
-except:
-    print("Error importing white matter analysis package\n")
-    raise
+import whitematteranalysis as wma
 
 def main():
     #-----------------
