@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Run registration on the test dataset.
-
 import argparse
 import os
 import numpy
