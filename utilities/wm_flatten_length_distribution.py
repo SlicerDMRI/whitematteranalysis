@@ -12,15 +12,12 @@ import whitematteranalysis as wma
 from joblib import Parallel, delayed
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Samples fibers such that the output distribution of fiber lengths is approximately flat, within the input length range.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
         version='1.0')
-
     parser.add_argument(
         'inputDirectory',
         help='Contains whole-brain tractography as vtkPolyData file(s).')
@@ -46,9 +43,18 @@ def main():
         '-j', action="store", dest="numberOfJobs", type=int,
         help='Number of processors to use.')
 
+    return parser
 
-    args = parser.parse_args()
 
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
@@ -90,10 +96,6 @@ def main():
 
 
     print("==========================")
-
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
 
     # Loop over input DWIs
     inputMask1 = f"{args.inputDirectory}/*.vtk"

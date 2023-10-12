@@ -11,14 +11,12 @@ from nibabel.affines import apply_affine
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Convert a fiber tract or cluster (vtk) to a voxel-wise fiber density image (nii.gz). ",
         epilog="Written by Fan Zhang")
-    
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -36,13 +34,24 @@ def main():
     parser.add_argument(
         '-m', action="store", dest="measure", type=str,
         help="diffusion measure; if not provided, the output will be density map")
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.exists(args.inputVTK):
         print("Error: Input directory", args.inputVTK, "does not exist.")
         exit()
-    
+
     def convert_cluster_to_volume_with_sz(inpd, volume, sampling_size=0.5):
     
         volume_shape = volume.get_fdata().shape

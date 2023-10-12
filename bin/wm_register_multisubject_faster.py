@@ -14,14 +14,12 @@ import whitematteranalysis as wma
 import scipy.optimize
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Runs multisubject unbiased group registration of tractography.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"Unbiased Groupwise Registration of White Matter Tractography. LJ O'Donnell,  WM Wells III, Golby AJ, CF Westin. Med Image Comput Comput Assist Interv. 2012;15(Pt 3):123-30.\"")
-    
     parser.add_argument(
         'inputDirectory',
         help='A directory of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
@@ -58,10 +56,20 @@ def main():
     parser.add_argument(
         '-advanced_only_random_seed', action='store', dest="randomSeed", type=int,
         help='(Advanced parameter for testing only.) Set random seed for reproducible sampling in software tests.')
-     
-     
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     print("\n\n<register> =========GROUP REGISTRATION============")
     print(f"<{os.path.basename(__file__)}> Performing unbiased group registration.")
     print(f"<{os.path.basename(__file__)}> Input  directory: ", args.inputDirectory)

@@ -8,10 +8,8 @@ import os
 import glob
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Append diffusion measure files from multiple subjects",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu.")
@@ -22,7 +20,18 @@ def main():
         'appenedmeasurefile',
         help='Output csv file.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     subject_folders = sorted(glob.glob(os.path.join(args.inputfolder, '*')))
 

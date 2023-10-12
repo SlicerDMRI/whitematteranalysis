@@ -13,15 +13,12 @@ import vtk
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Registers a whole-brain vtk tractography file to another vtk tractography file (an atlas).",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"Unbiased Groupwise Registration of White Matter Tractography. LJ O'Donnell,  WM Wells III, Golby AJ, CF Westin. Med Image Comput Comput Assist Interv. 2012;15(Pt 3):123-30.\"")
-    
-    
     parser.add_argument(
         'inputSubject',
         help='One subject data: whole-brain tractography as vtkPolyData (.vtk or .vtp).')
@@ -46,9 +43,20 @@ def main():
     #parser.add_argument(
     #    '-pf', action="store", dest="pointsPerFiber", type=int, default=15,
     #    help='Number of points for fiber representation during registration. The default of 15 is reasonable.')
-     
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     print("\n\n<register> =========GROUP REGISTRATION============")
     print(f"<{os.path.basename(__file__)}> Registering to atlas.")
     print(f"<{os.path.basename(__file__)}> Input  subject file: ", args.inputSubject)

@@ -9,14 +9,11 @@ import whitematteranalysis as wma
 
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Applies white matter laterality pipeline to input directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
-
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -48,7 +45,18 @@ def main():
         '-fibers_per_hem', action="store", dest="numberOfFibersPerHem", type=int,
         help='Number of fibers to analyze from each hemisphere.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
@@ -95,10 +103,6 @@ def main():
         print("fibers to analyze per hemisphere: all or equal")
 
     print("==========================")
-
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
 
     inputPolyDatas = wma.io.list_vtk_files(args.inputDirectory)
 

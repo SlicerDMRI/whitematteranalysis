@@ -9,7 +9,8 @@ import vtk
 import whitematteranalysis as wma
 
 
-def main():
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compute Tract Anatomical Profile",
         epilog="Written by Fan Zhang, zhangfanmark@gmail.com.")
@@ -21,7 +22,18 @@ def main():
         'inputDirectory',
         help='A directory containing subdirectories for all clustered subjects.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")

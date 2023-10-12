@@ -10,24 +10,33 @@ import time
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Compare two tractography files to see how much registration has changed the points. The files must have the exact same size and lines and points, e.g. the original file and the file that results from applying a transform to a file.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
         version='1.0')
-    
     parser.add_argument(
         'inputFile1',
         help='A file of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
     parser.add_argument(
         'inputFile2',
         help='A file of whole-brain tractography as vtkPolyData (.vtk or .vtp).')
-    
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     pd1 = wma.io.read_polydata(args.inputFile1)
     pd2 = wma.io.read_polydata(args.inputFile2)
     

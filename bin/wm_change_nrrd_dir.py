@@ -13,14 +13,11 @@ import whitematteranalysis as wma
 from joblib import Parallel, delayed
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Make sign change of the gradient direction",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-
     parser.add_argument(
         'inputnrrd',
         help='Nrrd header in .nhdr format')
@@ -31,8 +28,18 @@ def main():
         '-d', action="store", dest="dim", type=str,
         help='The dimension to change: x, y, or z.')
 
-    args = parser.parse_args()
+    return parser
 
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     inputnrrd = args.inputnrrd
     outputnrrd = args.outputnrrd

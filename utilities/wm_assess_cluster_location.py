@@ -10,14 +10,11 @@ import whitematteranalysis as wma
 
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Decide a cluster belonging to commissural or hemispheric in the atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -32,7 +29,18 @@ def main():
         '-advanced_times_threshold', action="store", dest="advanced_times_threshold", type=float, default=3,
         help='(Advanced parameter should be used according to applications.) For one cluster, if it has the hemispheric (left or right) fibers three times more than the commissural part, this cluster will be considered as a hemispheric cluster. In a similar way, one cluster needs to have the commissural fibers three times more than the hemispheric (left and right) fibers to be considered as a commissural cluster. Users can change -advanced_num_threshold to have more strict classification. For example, if advanced_num_threshold = 5, the cluster needs to have the commissural fibers five times more than the hemispheric (left and right) fibers to be considered as a commissural cluster.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputAtlasDirectory):
         print("Error: Input directory", args.inputTractDirectory, "does not exist.")

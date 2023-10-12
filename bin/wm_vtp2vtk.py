@@ -9,24 +9,32 @@ import multiprocessing
 import whitematteranalysis as wma
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Converts all vtp files in input directory to vtk files, which are saved in output directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
-    
     parser.add_argument(
         'inputDirectory',
         help='Contains input tractography as vtkPolyData vtp format file(s).')
     parser.add_argument(
         'outputDirectory',
         help='The output directory should be a new empty directory. It will be created if needed. The actual output will be placed into a directory within this output directory, to preserve the informative name of the input directory that may contain subject ID, tract name, etc.')
-    
-    args = parser.parse_args()
-    
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")
         exit()
@@ -50,11 +58,7 @@ def main():
     print("=====top-level output directory requested by user=====\n", args.outputDirectory)
     print("=====final output directory=====\n", outdir_subject)
     print("==========================")
-    
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-    
+
     def list_vtp_files(input_dir):
         # Find input files (JUST vtp)
         #input_mask = "{0}/*.vtk".format(input_dir)

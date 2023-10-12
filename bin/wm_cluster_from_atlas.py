@@ -10,10 +10,9 @@ import vtk
 
 import whitematteranalysis as wma
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Clusters tractography (propagates clusters) from a cluster atlas (a multi-subject/multi-atlas cluster representation).",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
@@ -51,10 +50,20 @@ def main():
     parser.add_argument(
         '-norender', action='store_true', dest="flag_norender",
         help='No Render. Prevents rendering of images that would require an X connection.')
-    
-    args = parser.parse_args()
-    
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     if not os.path.exists(args.inputFile):
         print(f"<{os.path.basename(__file__)}> Error: Input file", args.inputFile, "does not exist.")
         exit()
@@ -118,10 +127,6 @@ def main():
     render = not args.flag_norender
     
     print("==========================\n")
-      
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
     
     # read atlas
     print(f"<{os.path.basename(__file__)}> Loading input atlas:", args.atlasDirectory)

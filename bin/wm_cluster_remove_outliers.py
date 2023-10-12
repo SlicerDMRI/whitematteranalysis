@@ -19,10 +19,9 @@ except ImportError:
     print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
     print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Removes outliers in a subject dataset that was clustered from a cluster atlas. This script uses the atlas to identifies and remove outliers in each cluster of the subject. The atlas must be the same one used to cluster the subject dataset",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
@@ -52,7 +51,18 @@ def main():
         '-j', action="store", dest="numberOfJobs", type=str,
         help='Number of processors to use.')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
     
     if not os.path.isdir(args.inputDirectory):
         print(f"<{os.path.basename(__file__)}> Error: Input subject directory", args.inputDirectory, "does not exist.")
@@ -100,10 +110,6 @@ def main():
     verbose = args.flag_verbose
     
     print("==========================\n")
-      
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
     
     # Copy all MRML files to the new subject directory
     input_mask = f"{args.inputDirectory}/clustered_tracts*.mrml"

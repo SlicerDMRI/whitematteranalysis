@@ -9,14 +9,11 @@ import whitematteranalysis as wma
 
 
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Extract fiber clusters that connect to one particular region, such as one cortical parcel or one fMRI functional area. This is based on the results from <wm_measure_endpoint_overlap.py>.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-
     parser.add_argument("-v", "--version",
         action="version", default=argparse.SUPPRESS,
         version='1.0',
@@ -37,7 +34,18 @@ def main():
         '-fc_folder', type=str, dest="fiber_cluster_folder",
         help='Contains the fiber clustering result, in which each sub folder represents one subject. If specified, a mrml file that displays all output clusters will be generated. ')
 
-    args = parser.parse_args()
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
         print("Error: Input directory", args.inputDirectory, "does not exist.")

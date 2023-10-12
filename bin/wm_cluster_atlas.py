@@ -261,10 +261,6 @@ def main():
     # contain almost as much information and reduce noise for single subject clustering
     #number_of_eigenvectors = 20
     
-    # =======================================================================
-    # Above this line is argument parsing. Below this line is the pipeline.
-    # =======================================================================
-    
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
     

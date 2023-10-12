@@ -19,14 +19,12 @@ except:
     print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
     HAVE_PLT = 0    
 
-def main():
-    #-----------------
-    # Parse arguments
-    #-----------------
+
+def _build_arg_parser():
+
     parser = argparse.ArgumentParser(
         description="Perform quality control to render the overlap of two tracts.",
         epilog="Written by Fan Zhang (fzhang@bwh.harvard.edu).")
-    
     parser.add_argument(
         'inputTract1',
         help='Input tract 1 as vtkPolyData (.vtk or .vtp).')
@@ -36,9 +34,20 @@ def main():
     parser.add_argument(
         'outputDirectory',
         help='Quality control information will be stored in the output directory, which will be created if it does not exist.')
-     
-    args = parser.parse_args()
-    
+
+    return parser
+
+
+def _parse_args(parser):
+
+    return parser.parse_args()
+
+
+def main():
+
+    parser = _build_arg_parser()
+    args = _parse_args(parser)
+
     print(f"<{os.path.basename(__file__)}> Starting...")
     
     if not os.path.exists(args.inputTract1):
