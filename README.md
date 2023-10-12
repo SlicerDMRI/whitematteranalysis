@@ -2,6 +2,7 @@ whitematteranalysis
 ===================
 
 [![test, package](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml/badge.svg?branch=master)](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml?query=branch%3Amaster)
+[![Documentation Status](https://readthedocs.org/projects/whitematteranalysis/badge/?version=latest)](https://whitematteranalysis.readthedocs.io/en/latest/?badge=latest)
 
 # Synopsis
 
@@ -27,6 +28,9 @@ Note: On macOS, to be able to use `pip`, `X-code` needs to be installed using `$
 Run `$ wm_quality_control_tractography.py --help` to test if the installation is successful.
 
 ## 3. Documentation
+
+The `whitematteranalysis` package documentation can be found at
+https://whitematteranalysis.readthedocs.io/en/latest/.
 
 * A master shell script `wm_apply_ORG_atlas_to_subject.sh` (see code [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/73a7948751f49d9fda8ec84fb5caeecaeeb92621/bin/wm_apply_ORG_atlas_to_subject.sh#L1-L40)) is provided to apply an anatomically curated white matter atlas ([the ORG atlas](https://dmri.slicer.org/atlases/)), along with the computation tools provided in whitematteranalysis, to perform subject-specific tractography parcellation.
 
