@@ -40,6 +40,7 @@ setup(
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     setup_requires=setup_requires,
     install_requires=setup_requires + external_dependencies,
     extras_require={'doc': ['sphinx', 'sphinx-argparse', 'sphinx_rtd_theme']},
