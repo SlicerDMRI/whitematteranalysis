@@ -35,7 +35,7 @@ setup(
     name='whitematteranalysis',
     version='0.3.0',
     author='Fan Zhang and Lauren O\'Donnell',
-    author_email='fzhang@bwh.harvard.edu; odonnell@bwh.harvard.edu',
+    author_email='odonnell@bwh.harvard.edu',
     packages=['whitematteranalysis'],
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
