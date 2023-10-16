@@ -2,7 +2,6 @@ import glob
 import os
 from itertools import chain
 from setuptools import setup
-from pkg_resources import resource_filename
 
 #    url='http://pypi.python.org/pypi/whitematteranalysis/',
 #    scripts=['bin/test1.py','bin/test2.py'],
