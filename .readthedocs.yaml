@@ -13,6 +13,9 @@ build:
   apt_packages:
     - libblas-dev
     - liblapack-dev
+  jobs:
+    pre_build:
+      - sphinx-apidoc -f -o doc .
 
 # Build documentation in the doc/ directory with Sphinx
 sphinx:
