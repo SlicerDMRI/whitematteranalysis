@@ -52,7 +52,8 @@ jobs:
     - name: Run tests
       run: |
         # tox --sitepackages
-        python setup.py install
+        pip install -e .
+        # cat /home/runner/work/whitematteranalysis/whitematteranalysis/whitematteranalysis.egg-info
         python -c 'import whitematteranalysis'
         # coverage run --source whitematteranalysis -m pytest whitematteranalysis -o junit_family=xunit2 -v --doctest-modules --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
         pytest
