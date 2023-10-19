@@ -1,12 +1,48 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import enum
 import os
 import argparse
 import urllib.request, urllib.error, urllib.parse
 import zipfile
 import sys
 import ssl
+
+
+ZENODO_RECORD_ROOT_URL = "https://zenodo.org/record/"
+ZENODO_API_RECORD_ROOT_URL = "https://zenodo.org/api/records/"
+
+fname_sep = "."
+
+
+class DataExchangeFormatFileExtension(enum.Enum):
+    JSON = "json"
+
+
+class ORGAtlasVersion(enum.Enum):
+    V1_1 = ("v1.1", str(2648284))
+    V1_1_1 = ("v1.1.1", str(2648292))
+    V1_2 = ("v1.2", str(4156927))
+    V1_3_A = ("v1.3a", str(5109770))
+    V1_3_B = ("v1.3b", str(7784967))
+    V1_4 = ("v1.4", str(8082481))
+
+    @staticmethod
+    def get_version(name):
+        return ORGAtlasVersion(name).value[0]
+
+    @staticmethod
+    def get_record(name):
+        return ORGAtlasVersion(name).value[1]
+
+
+def build_download_url(root_url, version):
+    return urllib.parse.urljoin(root_url, ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(version)))
+
+
+def build_suffix(extension):
+    return fname_sep + extension.value
 
 
 def _build_arg_parser():
@@ -21,6 +57,8 @@ def _build_arg_parser():
     parser.add_argument(
         '-atlas', action="store", dest="requested_atlas", type=str, 
         help='Name of the atlas. Currently, \'ORG-800FC-100HCP\' and \'ORG-2000FC-100HCP\' are available to download.')
+    parser.add_argument(
+        '--version', choices=ORGAtlasVersion._member_names_, default=ORGAtlasVersion.V1_2.name, help="Atlas version.")
 
     return parser
 
@@ -88,15 +126,26 @@ def main():
         os.makedirs(outdir)
     
     requested_atlas = args.requested_atlas
-    
-    repo = 'https://zenodo.org/record/4156927/'
-    version = 'v1.2'
-    
+
+    repo = build_download_url(ZENODO_RECORD_ROOT_URL, args.version)
+    repo = repo + "/"
+    version = ORGAtlasVersion.get_version(ORGAtlasVersion.__getitem__(args.version))
+
+    metadata_url = build_download_url(ZENODO_API_RECORD_ROOT_URL, args.version)
+    metadata_local_file_rootname = ORGAtlasVersion.get_record(ORGAtlasVersion.__getitem__(args.version))
+    metadata_local_file_basename = metadata_local_file_rootname + build_suffix(
+        DataExchangeFormatFileExtension.JSON)
+
     org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
     org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
     if not os.path.exists(org_atlases_version_folder):
         os.makedirs(org_atlases_version_folder)
-    
+
+    metadata_local_fname = os.path.join(
+        org_atlases_version_folder,
+        metadata_local_file_basename,
+    )
+
     if requested_atlas == 'ORG-800FC-100HCP' or requested_atlas == 'ORG-2000FC-100HCP':
         FC_atlas_url = repo + 'files/' + requested_atlas + '.zip?download=1'
         REG_atlas_url = repo + 'files/' + 'ORG-RegAtlas-100HCP.zip?download=1'
@@ -166,7 +215,12 @@ def main():
         else:
             print(f'<{os.path.basename(__file__)}> Skip downloading: There is an existing \'100HCP-population-mean-b0.nii.gz\' in the output folder.', end=' ')
             print('')
-    
+        if not os.path.exists(metadata_local_fname):
+            download_file(metadata_url, metadata_local_fname)
+        else:
+            print(f"<wm_download_org_atlas> Skip downloading: There is an existing \'{metadata_local_file_basename}\' in the output folder.", end=" ")
+            print("")
+
     print('')
     print(f'<{os.path.basename(__file__)}> Successfully downloaded to', outdir)
 
