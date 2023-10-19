@@ -16,8 +16,7 @@ def _build_arg_parser():
 
     parser = argparse.ArgumentParser(
         description="Samples fibers such that the output distribution of fiber lengths is approximately flat, within the input length range.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
     parser.add_argument(
         'inputDirectory',
         help='Contains whole-brain tractography as vtkPolyData file(s).')

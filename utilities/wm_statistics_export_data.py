@@ -13,8 +13,7 @@ def _build_arg_parser():
 
     parser = argparse.ArgumentParser(
         description="Export all subjects selected measures into one excel-readable file for use in statistics programs. Please verify your input by running wm_quality_control_cluster measurements before running this program.",
-        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"",
-        version='1.0')
+        epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
     parser.add_argument(
         'inputDirectory',
         help='A directory of .csv or txt measurement files from Slicer tractography measurements.')
