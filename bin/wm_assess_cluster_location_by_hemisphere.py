@@ -17,9 +17,9 @@ import os
 import shutil
 import vtk
 import glob
+import warnings
 
 import whitematteranalysis as wma
-
 
 
 def _build_arg_parser():
@@ -77,11 +77,17 @@ def main():
             for idx in point_data_array_indices:
                 array = inpointdata.GetArray(idx)
                 if array.GetName() == 'HemisphereLocataion':
+                    warnings.warn(
+                        wma.utils.hemisphere_loc_name_typo_warn_msg,
+                        PendingDeprecationWarning)
                     print('  -- HemisphereLocataion is in the input data: skip updating the vtk file.')
+                    return inpd
+                elif array.GetName() == 'HemisphereLocation':
+                    print('  -- HemisphereLocation is in the input data: skip updating the vtk file.')
                     return inpd
     
         vtk_array = vtk.vtkDoubleArray()
-        vtk_array.SetName('HemisphereLocataion')
+        vtk_array.SetName('HemisphereLocation')
     
         inpd.GetLines().InitTraversal()
         for lidx in range(0, inpd.GetNumberOfLines()):
@@ -96,7 +102,19 @@ def main():
         return inpd
     
     def read_mask_location_from_vtk(inpd):
-    
+
+        def _read_location(_inpd):
+            _flag_location = True
+
+            _inpd.GetLines().InitTraversal()
+            for lidx in range(0, _inpd.GetNumberOfLines()):
+                ptids = vtk.vtkIdList()
+                _inpd.GetLines().GetNextCell(ptids)
+                for pidx in range(0, ptids.GetNumberOfIds()):
+                    mask_location[lidx] = array.GetTuple(ptids.GetId(pidx))[0]
+
+            return _flag_location
+
         mask_location = numpy.zeros(pd.GetNumberOfLines())
     
         inpointdata = inpd.GetPointData()
@@ -106,17 +124,15 @@ def main():
             for idx in point_data_array_indices:
                 array = inpointdata.GetArray(idx)
                 if array.GetName() == 'HemisphereLocataion':
-                    flag_location = True
-                        
-                    inpd.GetLines().InitTraversal()
-                    for lidx in range(0, inpd.GetNumberOfLines()):
-                        ptids = vtk.vtkIdList()
-                        inpd.GetLines().GetNextCell(ptids)
-                        for pidx in range(0, ptids.GetNumberOfIds()):
-                            mask_location[lidx] = array.GetTuple(ptids.GetId(pidx))[0]
-    
+                    warnings.warn(
+                        wma.utils.hemisphere_loc_name_typo_warn_msg,
+                        PendingDeprecationWarning)
+                    flag_location = _read_location(inpd)
                     break
-    
+                elif array.GetName() == 'HemisphereLocation':
+                    flag_location = _read_location(inpd)
+                    break
+
         return flag_location, mask_location
 
     parser = _build_arg_parser()
@@ -214,7 +230,7 @@ def main():
     
         flag_location, mask_location = read_mask_location_from_vtk(pd)
            
-         # If HemisphereLocataion is not defined in the input vtk file, the location of each fiber in the cluster is decided.
+         # If HemisphereLocation is not defined in the input vtk file, the location of each fiber in the cluster is decided.
         if not flag_location:
             if clusterLocationFile is None:
                 # internal representation for fast similarity computation
