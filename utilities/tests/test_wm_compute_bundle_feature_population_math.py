@@ -3,5 +3,5 @@
 
 def test_help_option(script_runner):
     ret = script_runner.run(
-        ["test_wm_compute_bundle_feature_population_math.py", "--help"])
+        ["wm_compute_bundle_feature_population_math.py", "--help"])
     assert ret.success
