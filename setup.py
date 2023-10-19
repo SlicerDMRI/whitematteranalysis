@@ -29,7 +29,6 @@ with open("requirements.txt") as f:
             external_dependencies.append(dependency)
 
 
-setup_requires = ['numpy>=1.20.0']
 setup(
     name='whitematteranalysis',
     version='0.3.0',
@@ -40,8 +39,7 @@ setup(
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
     long_description_content_type="text/markdown",
-    setup_requires=setup_requires,
-    install_requires=setup_requires + external_dependencies,
+    install_requires=external_dependencies,
     extras_require={'doc': ['sphinx', 'sphinx-argparse', 'sphinx_rtd_theme']},
     scripts=list(chain.from_iterable([
         glob.glob("bin/[a-zA-Z]*.py"),
