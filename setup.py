@@ -45,6 +45,5 @@ setup(
     scripts=list(chain.from_iterable([
         glob.glob("bin/[a-zA-Z]*.py"),
         glob.glob("utilities/[a-zA-Z]*.py"),
-        # ['testing/test_run.py']
         ]))
 )
