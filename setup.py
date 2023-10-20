@@ -1,7 +1,7 @@
 import glob
 import os
 from itertools import chain
-from setuptools import setup
+from setuptools import find_packages, setup
 
 #    url='http://pypi.python.org/pypi/whitematteranalysis/',
 #    scripts=['bin/test1.py','bin/test2.py'],
@@ -34,7 +34,7 @@ setup(
     version='0.3.0',
     author='Fan Zhang and Lauren O\'Donnell',
     author_email='odonnell@bwh.harvard.edu',
-    packages=['whitematteranalysis'],
+    packages=find_packages(),
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
