@@ -45,11 +45,9 @@ class WMABundleFeatureDataMap(enum.Enum):
     FA2Mean = ("FA2.Mean", float)
     FWMean = ("FreeWater.Mean", float)
     # ToDo
-    # There is a typo in the HemisphereLocataion (vs. HemisphereLocation)
-    # column: eventually consider both.
     # HemisphereLocataion.Mean can contain integers, and cannot be cast directly
     # into integers; would need to do .astype(float).astype("Int64")
-    HemisphereLocationMean = ("HemisphereLocataion.Mean", float)
+    HemisphereLocationMean = ("HemisphereLocation.Mean", float)
     ClusterIdxMean = ("cluster_idx.Mean", float)
     Trace1Mean = ("trace1.Mean", float)
     Trace2Mean = ("trace2.Mean", str)
