@@ -17,10 +17,8 @@ e.g. python wm_query_atlas_bundles.py \
 import argparse
 from pathlib import Path
 
-from whitematteranalysis.anatomy.org_atlas_utils import (
-    AtlasAvailability,
-    query_bundle_names,
-)
+from whitematteranalysis.anatomy.org_atlas_utils import (AtlasAvailability,
+                                                         query_bundle_names)
 from whitematteranalysis.fileio.utils import save2txt
 
 

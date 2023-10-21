@@ -5,22 +5,15 @@ import argparse
 import glob
 import os
 
+import pandas as pd
 import vtk
 
 import whitematteranalysis as wma
-import pandas as pd
-
-from whitematteranalysis.data.atlas.utils import (
-    ORGAtlasVersion,
-    get_local_atlas_bundle_fname,
-)
 from whitematteranalysis.anatomy.org_atlas_utils import (
-    ORGAtlasBundleFileHeading,
-    get_hemispheric_mono_bundles,
-    get_commissural_augmented_bundles,
-    add_org_atlas_prefix,
-    get_bundle_short_name,
-)
+    ORGAtlasBundleFileHeading, add_org_atlas_prefix, get_bundle_short_name,
+    get_commissural_augmented_bundles, get_hemispheric_mono_bundles)
+from whitematteranalysis.data.atlas.utils import (ORGAtlasVersion,
+                                                  get_local_atlas_bundle_fname)
 
 
 def get_hemispheric_mono_bundle_names(_df):
