@@ -4,21 +4,22 @@
 import argparse
 import glob
 import os
+import warnings
 
 import numpy
 
 import whitematteranalysis as wma
+from whitematteranalysis.utils.opt_pckg import optional_package
 
-HAVE_PLT = 1
-try:
-    import matplotlib
+matplotlib, have_mpl, _ = optional_package("matplotlib")
+plt, _, _ = optional_package("matplotlib.pyplot")
 
+if have_mpl:
     # Force matplotlib to not use any Xwindows backend.
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
-    HAVE_PLT = 0
+    matplotlib.use("Agg")
+else:
+    warnings.warn(matplotlib._msg)
+    warnings.warn("Cannot plot quality control data.")
 
 
 def _build_arg_parser():
@@ -113,7 +114,7 @@ def main():
         print(cidx + 1,'\t', subjects_per_cluster[cidx],'\t', percent_subjects_per_cluster[cidx] * 100.0, file=clusters_qc_file)
     clusters_qc_file.close()
     
-    if HAVE_PLT:
+    if have_mpl:
         print(f"<{os.path.basename(__file__)}> Saving subjects per cluster histogram.")
         fig, ax = plt.subplots()
         counts = numpy.zeros(num_of_subjects+1)

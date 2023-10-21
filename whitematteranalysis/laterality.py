@@ -21,21 +21,24 @@ LateralityResults (io.py)
 """
 
 import os
+import warnings
 
 import numpy
 import vtk
 
-try:
-    from joblib import Parallel, delayed
-    USE_PARALLEL = 1
-except ImportError:
-    USE_PARALLEL = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
-    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
+from whitematteranalysis.utils.opt_pckg import optional_package
 
 from . import filter, similarity
 from .fibers import FiberArray
 from .io import LateralityResults
+
+joblib, have_joblib, _ = optional_package("joblib")
+Parallel, _, _ = optional_package("joblib.Parallel")
+delayed, _, _ = optional_package("joblib.delayed")
+
+if not have_joblib:
+    warnings.warn(joblib._msg)
+    warnings.warn("Cannot multiprocess.")
 
 
 def compute_laterality_index(left, right, idx=None):
@@ -171,7 +174,7 @@ class WhiteMatterLaterality:
             print(f"<{os.path.basename(__file__)}> Starting to compute laterality indices")
 
         # run the computation, either in parallel or not
-        if (USE_PARALLEL & (self.parallel_jobs > 1)):
+        if (have_joblib & (self.parallel_jobs > 1)):
             if self.verbose:
                 print(f"<{os.path.basename(__file__)}> Starting parallel code. Processes:", \
                     self.parallel_jobs)
