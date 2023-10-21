@@ -54,18 +54,18 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist.")
         exit()
 
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
 
     print("f<{os.path.basename(__file__)}> Starting white matter laterality computation.")
     print("")
-    print("=====input directory======\n", args.inputDirectory)
-    print("=====output directory=====\n", args.outputDirectory)
+    print(f"=====input directory======\n {args.inputDirectory}")
+    print(f"=====output directory=====\n {args.outputDirectory}")
     print("==========================")
 
     if args.numberOfFibers is not None:
@@ -93,7 +93,7 @@ def main():
         print("Use equal fiber number from each hemisphere is OFF. Using input fiber number.")
 
     if args.numberOfFibersPerHem is not None:
-        print("fibers to analyze per hemisphere: ", args.numberOfFibersPerHem)
+        print(f"fibers to analyze per hemisphere: {args.numberOfFibersPerHem}")
     else:
         print("fibers to analyze per hemisphere: all or equal")
 
@@ -109,13 +109,13 @@ def main():
         # get subject identifier from unique input filename
         # -------------------
         subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
-        id_msg = f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas)
-        msg = "**Starting subject:", subjectID
+        id_msg = f"<{os.path.basename(__file__)}> {sidx + 1} / {len(inputPolyDatas)}"
+        msg = f"**Starting subject: {subjectID}"
         print(id_msg, msg)
 
         # read input vtk data
         # -------------------
-        msg = "**Reading input:", subjectID
+        msg = f"**Reading input: {subjectID}"
         print(id_msg, msg)
 
         wm = wma.io.read_polydata(inputPolyDatas[sidx])
@@ -123,16 +123,16 @@ def main():
         # remove short fibers
         # -------------------
         if args.fiberLength is not None:
-            msg = "**Preprocessing:", subjectID
+            msg = f"**Preprocessing: {subjectID}"
             print(id_msg, msg)
 
             wm = wma.filter.preprocess(wm, args.fiberLength, remove_u=True, remove_u_endpoint_dist=50, remove_brainstem=True)
-            print("Number of fibers retained: ", wm.GetNumberOfLines())
+            print(f"Number of fibers retained: {wm.GetNumberOfLines()}")
 
         # remove outlier fibers
         # -------------------
         if args.flag_removeOutliers:
-            msg = "**Removing outliers:", subjectID
+            msg = f"**Removing outliers: {subjectID}"
             print(id_msg, msg)
 
             # if it's huge downsample to twice requested size first
@@ -148,7 +148,7 @@ def main():
         # downsample if requested
         # -------------------
         if args.numberOfFibers is not None:
-            msg = "**Downsampling input:", subjectID
+            msg = f"**Downsampling input: {subjectID}"
             print(id_msg, msg)
 
             wm = wma.filter.downsample(wm, args.numberOfFibers)
@@ -158,7 +158,7 @@ def main():
 
         # compute laterality on each dataset
         # -------------------
-        msg = "**Computing laterality:", subjectID
+        msg = f"**Computing laterality: {subjectID}"
         print(id_msg, msg)
 
         laterality = wma.laterality.WhiteMatterLaterality()
@@ -180,7 +180,7 @@ def main():
 
         # outputs
         # -------------------
-        msg = "**Writing output data for subject:", subjectID
+        msg = f"**Writing output data for subject: {subjectID}"
         print(id_msg, msg)
 
         outdir = os.path.join(args.outputDirectory, subjectID)

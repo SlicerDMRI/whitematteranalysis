@@ -86,14 +86,7 @@ class WhiteMatterLaterality:
         self.fibers = FiberArray()
 
     def __str__(self):
-        output = " sigma\t\t\t" + str(self.sigma) \
-            + "\n points_per_fiber\t" + str(self.points_per_fiber) \
-            + "\n threshold\t\t" + str(self.threshold) \
-            + "\n verbose\t\t" + str(self.verbose) \
-            + "\n parallel_jobs\t\t" + str(self.parallel_jobs) \
-            + "\n parallel_verbose\t" + str(self.parallel_verbose) \
-            + "\n fibers\n\t\t\t" \
-            + str(self.fibers)
+        output = f" sigma\t\t\t{str(self.sigma)}\n points_per_fiber\t{str(self.points_per_fiber)}\n threshold\t\t{str(self.threshold)}\n verbose\t\t{str(self.verbose)} \n parallel_jobs\t\t{str(self.parallel_jobs)}\n parallel_verbose\t{str(self.parallel_verbose)}\n fibers\n\t\t\t{str(self.fibers)}"
 
         return output
 
@@ -133,7 +126,7 @@ class WhiteMatterLaterality:
                 if self.fibers_per_hemisphere <= num_fibers:
                     num_fibers = self.fibers_per_hemisphere
                 else:
-                    raise Exception("Fibers per hemisphere is set too high for the dataset. Current subject maximum is"+str(num_fibers))
+                    raise Exception(f"Fibers per hemisphere is set too high for the dataset. Current subject maximum is {str(num_fibers)}")
         
             # grab num_fibers fibers from each hemisphere.
             # use the first n since they were randomly sampled from the whole dataset
@@ -147,7 +140,7 @@ class WhiteMatterLaterality:
             # Now convert to array with points and hemispheres as above
             self.fibers.convert_from_polydata(input_vtk_polydata)
             if self.verbose:
-                print(f"<{os.path.basename(__file__)}> Using ", num_fibers , " fibers per hemisphere.")
+                print(f"<{os.path.basename(__file__)}> Using {num_fibers} fibers per hemisphere.")
                 
         # square sigma for later Gaussian
         sigmasq = self.sigma * self.sigma
@@ -167,17 +160,13 @@ class WhiteMatterLaterality:
 
         # tell user we are doing something
         if self.verbose:
-            print(f"<{os.path.basename(__file__)}> Fibers in each hemisphere.", \
-                "L:", self.fibers.number_left_hem, \
-                "R:", self.fibers.number_right_hem, \
-                "/ Total:", self.fibers.number_of_fibers)
+            print(f"<{os.path.basename(__file__)}> Fibers in each hemisphere. L: {self.fibers.number_left_hem} R: {self.fibers.number_right_hem} / Total: {self.fibers.number_of_fibers}")
             print(f"<{os.path.basename(__file__)}> Starting to compute laterality indices")
 
         # run the computation, either in parallel or not
         if (have_joblib & (self.parallel_jobs > 1)):
             if self.verbose:
-                print(f"<{os.path.basename(__file__)}> Starting parallel code. Processes:", \
-                    self.parallel_jobs)
+                print(f"<{os.path.basename(__file__)}> Starting parallel code. Processes: {self.parallel_jobs}")
 
             # compare to right hemisphere (reflect fiber first if in left hem)
             ret = Parallel(

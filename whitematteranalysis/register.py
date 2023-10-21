@@ -46,7 +46,7 @@ class RegistrationInformation:
     def initialize_fiber_sample(self):
         # use the input random seed every time for code testing experiments
         if self.random_seed is not None:
-            #print f"<{os.path.basename(__file__)}> Setting random seed to", self.random_seed
+            #print(f"<{os.path.basename(__file__)}> Setting random seed to {self.random_seed}")
             np.random.seed(seed=self.random_seed)
 
         # indices of moving fibers to compute the objective function

@@ -54,17 +54,17 @@ def main():
     print(f"<{os.path.basename(__file__)}> Starting...")
     
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {output_dir} does not exist, creating it.")
         os.makedirs(output_dir)
     
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
-    print(f"<{os.path.basename(__file__)}> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found {number_of_subjects} subjects in input directory {args.inputDirectory}")
     
     if number_of_subjects < 1:
         print("\n<quality_control> Error: No .vtk or .vtp files were found in the input directory.\n")
@@ -89,14 +89,14 @@ def main():
     outstr += str(number_of_subjects)
     outstr += '\n'
     outstr += '\n'
-    outstr +=  "Current date: "  + time.strftime("%x")
+    outstr +=  f"Current date: {time.strftime('%x')}"
     outstr += '\n'
-    outstr +=  "Current time: " + time.strftime("%X")
+    outstr +=  f"Current time: {time.strftime('%X')}"
     outstr += '\n'
     outstr += '\n'
-    outstr += "Path to Script: " + os.path.realpath(__file__)
+    outstr += f"Path to Script: {os.path.realpath(__file__)}"
     outstr += '\n'
-    outstr += "Working Directory: " + os.getcwd()
+    outstr += f"Working Directory: {os.getcwd()}"
     outstr += '\n'
     outstr += '\n'
     outstr += "Description of Outputs\n"
@@ -161,19 +161,19 @@ def main():
     outstr = "SUBJECT_ID\tFIBER_STEP_SIZE\tTOTAL_POINTS\tMEAN_FIBER_LENGTH\tTOTAL_FIBERS\t"
     for test_length in fiber_test_lengths[1:]:
         outstr = outstr + "LEN_" + str(test_length) + '\t'
-    outstr = outstr + '\n'
+    outstr = f'{outstr}\n'
     fibers_qc_file.write(outstr)
     fibers_qc_file.close()
     
     data_qc_file = open(data_qc_fname, 'w')
     outstr = "SUBJECT_ID\tDATA_INFORMATION (field name, number of components, point or cell data)"
-    outstr = outstr + '\n'
+    outstr = f'{outstr}\n'
     data_qc_file.write(outstr)
     data_qc_file.close()
     
     spatial_qc_file = open(spatial_qc_fname, 'w')
     outstr = "SUBJECT_ID\tXmin\tXmax\tYmin\tYmax\tZmin\tZmax"    
-    outstr = outstr + '\n'
+    outstr = f'{outstr}\n'
     spatial_qc_file.write(outstr)
     spatial_qc_file.close()
     
@@ -185,7 +185,7 @@ def main():
     appender = vtk.vtkAppendPolyData()
     for fname in input_polydatas:
         subject_id = os.path.splitext(os.path.basename(fname))[0]
-        print("Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id)
+        print(f"Subject {subject_idx} / {number_of_subjects} ID: {subject_id}")
     
         # Read data
         pd = wma.io.read_polydata(fname)
@@ -196,14 +196,14 @@ def main():
         
         # Render individual subject, only including fibers above 5mm.
         ren = wma.render.render(pd2, 1000, verbose=False)
-        output_dir_subdir = os.path.join(output_dir, 'tract_QC_' + subject_id)
+        output_dir_subdir = os.path.join(output_dir, f'tract_QC_{subject_id}')
         if not os.path.exists(output_dir_subdir):
             os.makedirs(output_dir_subdir)
         ren.save_views(output_dir_subdir, subject_id)
         del ren
     
         print('Multiple views for individual subject')
-        html_individual_multiviews = os.path.join(output_dir_subdir, 'view_multiple_'+subject_id+'.html')
+        html_individual_multiviews = os.path.join(output_dir_subdir, f'view_multiple_{subject_id}.html')
         f = open(html_individual_multiviews, 'w')
         outstr = "<!DOCTYPE html>\n<html>\n"
         f.write(outstr)
@@ -214,24 +214,24 @@ def main():
         outstr += "h1 {text-align: center;\n}\n"
         outstr += "</style>\n"
         f.write(outstr)
-        outstr = "<body>\n<h1>All " + subject_id + " Views</h1>\n"
+        outstr = f"<body>\n<h1>All {subject_id} Views</h1>\n"
         f.write(outstr)
         f.close()
     
         for (view, descrip) in zip(html_views, html_views_descrip):
             f = open(html_individual_multiviews, 'a')
-            img_fname = os.path.join(view + subject_id + '.jpg')
+            img_fname = os.path.join(f'{view}{subject_id}.jpg')
             outstr = "<div class=\"floated_img\">\n"
-            outstr+= "<a href=\"" + img_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"450\"></a>\n"
-            outstr+= "<p>" + descrip + "</p>\n</div>\n"
+            outstr+= f"<a href=\"{img_fname}\" ><img src=\"{img_fname}\" alt=\"{subject_id}\" width=\"450\"></a>\n"
+            outstr+= f"<p>{descrip}</p>\n</div>\n"
             f.write(outstr)
             f.close()
     
         # Save view information in html file
         for (fname, view) in zip(html_view_fnames, html_views):
             f = open(fname, 'a')
-            img_fname = os.path.join('tract_QC_' + subject_id, view + subject_id + '.jpg')
-            html_fname = os.path.join('tract_QC_' + subject_id, 'view_multiple_'+subject_id+'.html')
+            img_fname = os.path.join(f'tract_QC_{subject_id}', f'{view}{subject_id}.jpg')
+            html_fname = os.path.join(f'tract_QC_{subject_id}', f'view_multiple_{subject_id}.html')
             print(output_dir_subdir)
             print(img_fname)
             print(html_individual_multiviews)
@@ -241,8 +241,8 @@ def main():
             #outstr+= "<figcaption>" + subject_id + "</figcaption>\n"
             #outstr+= "</figure>\n"
             outstr = "<div class=\"floated_img\">\n"
-            outstr+= "<a href=\"" + html_fname + "\" ><img src=\"" + img_fname + "\" alt=\"" + subject_id + "\"  width=\"300\"></a>\n"
-            outstr+= "<p>" + subject_id + "</p>\n</div>\n"
+            outstr+= f"<a href=\"{html_fname}\" ><img src=\"{img_fname}\" alt=\"{subject_id}\"  width=\"300\"></a>\n"
+            outstr+= f"<p>{subject_id}</p>\n</div>\n"
             f.write(outstr)
             f.close()
     
@@ -251,26 +251,26 @@ def main():
         pd2, lengths, step_size = wma.filter.preprocess(pd, 20, return_lengths=True, verbose=False)
         lengths = np.array(lengths)
         fibers_qc_file = open(fibers_qc_fname, 'a')
-        outstr = str(subject_id) +  '\t'
-        outstr = outstr + f'{step_size:.4f}' + '\t'
+        outstr = f'{str(subject_id)}\t'
+        outstr = f'{outstr}{step_size:.4f}\t'
         # total points in the dataset
-        outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
+        outstr = f'{outstr}{str(pd.GetNumberOfPoints())}\t'
         # mean fiber length
-        outstr = outstr + str(np.mean(lengths)) + '\t'
+        outstr = f'{outstr}{str(np.mean(lengths))}\t'
         # total numbers of fibers
         for test_length in fiber_test_lengths:
             number_fibers = np.count_nonzero(lengths > test_length)
-            outstr = outstr + str(number_fibers) + '\t'
-        outstr = outstr + '\n'
+            outstr = f'{outstr}{str(number_fibers)}\t'
+        outstr = f'{outstr}\n'
         fibers_qc_file.write(outstr)
         fibers_qc_file.close()
     
         # Save information about the spatial location of the fiber tracts
         spatial_qc_file = open(spatial_qc_fname, 'a')
-        outstr = str(subject_id) +  '\t'
+        outstr = f'{str(subject_id)}\t'
         for bound in pd.GetBounds():
-            outstr = outstr + str(bound) + '\t'
-        outstr = outstr + '\n'
+            outstr = f'{outstr}{str(bound)}\t'
+        outstr = f'{outstr}\n'
         spatial_qc_file.write(outstr)
         
         # Save the subject's fiber lengths  
@@ -308,20 +308,20 @@ def main():
     
         # Record what scalar/tensor data is present in this subject's file
         data_qc_file = open(data_qc_fname, 'a')
-        outstr = str(subject_id) +  '\t'
+        outstr = f'{str(subject_id)} \t'
         inpointdata = pd.GetPointData()
         incelldata = pd.GetCellData()
         if inpointdata.GetNumberOfArrays() > 0:
             point_data_array_indices = list(range(inpointdata.GetNumberOfArrays()))            
             for idx in point_data_array_indices:
                 array = inpointdata.GetArray(idx)
-                outstr = outstr + str(array.GetName()) + '\t' + str(array.GetNumberOfComponents()) + '\t' + 'point' + '\t'
+                outstr = f'{outstr}{str(array.GetName())}\t{str(array.GetNumberOfComponents())}\tpoint\t'
         if incelldata.GetNumberOfArrays() > 0:
             cell_data_array_indices = list(range(incelldata.GetNumberOfArrays()))            
             for idx in cell_data_array_indices:
                 array = incelldata.GetArray(idx)
-                outstr = outstr + str(array.GetName()) + '\t' + str(array.GetNumberOfComponents()) +'\t'  + 'cell' + '\t'
-        outstr = outstr + '\n'
+                outstr = f'{outstr}{str(array.GetName())}\t{str(array.GetNumberOfComponents())}\tcell\t'
+        outstr = f'{outstr}\n'
         data_qc_file.write(outstr)
         data_qc_file.close()
     
@@ -360,7 +360,7 @@ def main():
     # Finish html files
     for (fname) in html_view_fnames:
         f = open(fname, 'a')
-        img_fname = os.path.join(output_dir_subdir, view + subject_id + '.jpg')
+        img_fname = os.path.join(output_dir_subdir, f'{view}{subject_id}.jpg')
         outstr = "\n</body>\n</html>\n"
         f.write(outstr)
         f.close()

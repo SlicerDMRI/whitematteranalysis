@@ -56,42 +56,42 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist.")
         exit()
 
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print("Output directory", outdir, "does not exist, creating it.")
+        print(f"Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
 
     print(f"{os.path.basename(__file__)}. Starting streamline length distribution flattening.")
     print("")
-    print("=====input directory======\n", args.inputDirectory)
-    print("=====output directory=====\n", args.outputDirectory)
+    print(f"=====input directory======\n {args.inputDirectory}")
+    print(f"=====output directory=====\n {args.outputDirectory}")
     print("==========================")
 
     if args.numberOfFibers is not None:
-        print("fibers to retain per subject: ", args.numberOfFibers)
+        print(f"fibers to retain per subject: {args.numberOfFibers}")
         args.fibersPerBin = np.divide(args.numberOfFibers,args.numberOfBins)
     else:
         print("fibers to retain per subject: ALL")
 
     if args.fiberLengthMin is not None:
-        print("minimum length of fibers to retain (in mm): ", args.fiberLengthMin)
+        print(f"minimum length of fibers to retain (in mm): {args.fiberLengthMin}")
     else:
-        print("minimum length of fibers to retain (in mm): 0")
+        print(f"minimum length of fibers to retain (in mm): 0")
 
     if args.fiberLengthMax is not None:
-        print("maximum length of fibers to retain (in mm): ", args.fiberLengthMax)
+        print("maximum length of fibers to retain (in mm): {args.fiberLengthMax}")
 
-    print("Bins:", args.numberOfBins)
-    print("Fibers per bin:", args.fibersPerBin)
+    print(f"Bins: {args.numberOfBins}")
+    print(f"Fibers per bin: {args.fibersPerBin}")
 
     if args.numberOfJobs is not None:
         parallel_jobs = args.numberOfJobs
     else:
         parallel_jobs = 1
-    print('Using N jobs:', parallel_jobs)
+    print(f'Using N jobs: {parallel_jobs}')
 
 
     print("==========================")
@@ -102,7 +102,7 @@ def main():
 
     inputPolyDatas = glob.glob(inputMask1) + glob.glob(inputMask2)
 
-    print(f"<{os.path.basename(__file__)}> Input number of files: ", len(inputPolyDatas))
+    print(f"<{os.path.basename(__file__)}> Input number of files: {len(inputPolyDatas)}")
 
     # for testing
     #inputPolyDatas = inputPolyDatas[0:2]
@@ -111,13 +111,13 @@ def main():
         # get subject identifier from unique input filename
         # -------------------
         subjectID = os.path.splitext(os.path.basename(inputPolyDatas[sidx]))[0]
-        id_msg = f"<{os.path.basename(__file__)}> ", sidx + 1, "/", len(inputPolyDatas)
-        msg = "**Starting subject:", subjectID
+        id_msg = f"<{os.path.basename(__file__)}> {sidx + 1} / {len(inputPolyDatas)}"
+        msg = f"**Starting subject: {subjectID}"
         print(id_msg + msg)
 
         # read input vtk data
         # -------------------
-        msg = "**Reading input:", subjectID
+        msg = f"**Reading input: {subjectID}"
         print(id_msg + msg)
 
         wm = wma.io.read_polydata(inputPolyDatas[sidx])
@@ -129,14 +129,14 @@ def main():
 
         # outputs
         # -------------------
-        msg = "**Writing output data for subject:", subjectID
+        msg = f"**Writing output data for subject: {subjectID}"
         print(id_msg, msg)
 
-        fname = os.path.join(args.outputDirectory, subjectID+'_flat.vtp')
+        fname = os.path.join(args.outputDirectory, f'{subjectID}_flat.vtp')
         try:
-            print("Writing output polydata", fname, "...")
+            print(f"Writing output polydata {fname}...")
             wma.io.write_polydata(wm2, fname)
-            print("Wrote output", fname, ".")
+            print(f"Wrote output {fname}.")
         except:
             print("Unknown exception in IO")
             raise

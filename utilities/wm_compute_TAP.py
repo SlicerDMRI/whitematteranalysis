@@ -34,7 +34,7 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist or is not a directory.")
         exit()
 
     def list_vtk_files(input_dir):
@@ -90,7 +90,7 @@ def main():
                     r_list = r_list[arg]
 
                     for r, p in zip(r_list, r_prob):
-                        TAP_str += "'%d:%0.6f'," % (r, p)
+                        TAP_str += f"{r}:{p:0.6f}"
 
         return TAP_str
 
@@ -103,7 +103,7 @@ def main():
         tract_name = os.path.basename(vtk_file).replace(".vtp", "").replace(".vtk", "")
         pd = wma.io.read_polydata(vtk_file)
         TAP_str = compute_TAP(pd)
-        all_TAP_str += tract_name + "," + TAP_str + "\n"
+        all_TAP_str += f"{tract_name},{TAP_str}\n"
 
     print(all_TAP_str)
 

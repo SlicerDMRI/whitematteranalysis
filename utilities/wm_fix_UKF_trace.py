@@ -13,7 +13,7 @@ import whitematteranalysis as wma
 
 def list_files(input_dir,regstr):
     # Find input files
-    input_mask = ("{0}/"+regstr).format(input_dir)
+    input_mask = f"{input_dir}/{regstr}"
     input_pd_fnames = glob.glob(input_mask)
     input_pd_fnames = sorted(input_pd_fnames)
     return(input_pd_fnames)
@@ -29,7 +29,7 @@ def fix_trace(inpd):
 
         if array.GetName() == 'trace1' or array.GetName() == 'trace2':
             array_trace_fixed = vtk.vtkFloatArray()
-            array_trace_fixed.SetName("correct_"+array.GetName())
+            array_trace_fixed.SetName(f"correct_{array.GetName()}")
             
             inpd.GetLines().InitTraversal()
             for lidx in range(0, inpd.GetNumberOfLines()):
@@ -83,7 +83,7 @@ def main():
 
     vtk_list = list_files(args.inputDirectory, "*.vt*")
     for vtk_file in vtk_list:
-        print("Correcting:", vtk_file)
+        print(f"Correcting: {vtk_file}")
         pd = wma.io.read_polydata(vtk_file)
         pd = fix_trace(pd)
         wma.io.write_polydata(pd, vtk_file)

@@ -77,7 +77,7 @@ def main():
     with open(outputnrrd, 'w') as o:
         o.write(outstr)
 
-    print('Done! New nrrd header: ' + outputnrrd)
+    print(f'Done! New nrrd header {outputnrrd}')
 
 
 if __name__ == "__main__":

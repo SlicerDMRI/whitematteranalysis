@@ -137,7 +137,7 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist or is not a directory.")
         exit()
     
     clusterLocationFile = args.clusterLocationFile
@@ -172,7 +172,7 @@ def main():
     if outdir is not None:
         print(f"<{os.path.basename(__file__)}> Separated clusters will be ouput.")
         if not os.path.exists(outdir):
-            print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+            print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
             os.makedirs(outdir)
     
         outdir_right = os.path.join(outdir, 'tracts_right_hemisphere')

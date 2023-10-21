@@ -67,7 +67,7 @@ def main():
 
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist.")
         exit()
 
     inputdir_left = os.path.join(inputdir, 'tracts_left_hemisphere')
@@ -75,18 +75,18 @@ def main():
     inputdir_comm = os.path.join(inputdir, 'tracts_commissural')
 
     if not os.path.isdir(inputdir_left):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", inputdir_left, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {inputdir_left} does not exist.")
         exit()
     if not os.path.isdir(inputdir_right):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", inputdir_right, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {inputdir_right}does not exist.")
         exit()
     if not os.path.isdir(inputdir_comm):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", inputdir_comm, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {inputdir_comm} does not exist.")
         exit()
 
     atlasdir = os.path.abspath(args.atlasDirectory)
     if not os.path.isdir(args.atlasDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Atlas directory", args.atlasDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Atlas directory {args.atlasDirectory} does not exist.")
         exit()
 
     def list_mrml_files(input_dir):
@@ -100,11 +100,11 @@ def main():
     if len(mrml_files) == 0:
         print(f"<{os.path.basename(__file__)}> Error: There is no mrml files in the input atlas folder.")
     else:
-        print(f"<{os.path.basename(__file__)}>", len(mrml_files)-1, "mrml files are detected.")
+        print(f"<{os.path.basename(__file__)}> {len(mrml_files)-1} mrml files are detected.")
 
     outdir = os.path.abspath(args.outputDirectory)
     if not os.path.exists(args.outputDirectory):
-        print(f"<{os.path.basename(__file__)}> Output directory", args.outputDirectory, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {args.outputDirectory} does not exist, creating it.")
         os.makedirs(outdir)
 
     def output_appended_tract(cluster_vtp_list, outputfile):
@@ -142,12 +142,12 @@ def main():
     tract_idx = 1
     for tract in hemispheric_tracts:
 
-        print(" *", tract_idx, "-", tract)
+        print(f" * {tract_idx} - {tract}")
         tract_idx = tract_idx + 1
         mrml = os.path.join(atlasdir, tract+".mrml")
 
         if not os.path.exists(mrml):
-            print(f"<{os.path.basename(__file__)}> Error: Cannot locate", mrml)
+            print(f"<{os.path.basename(__file__)}> Error: Cannot locate {mrml}")
             exit()
 
         cluster_vtp_list_left = list()
@@ -160,13 +160,13 @@ def main():
 
                 cluster_vtp_filename_left = os.path.join(inputdir_left, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_left):
-                    print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_left, "does not exist.")
+                    print(f"<{os.path.basename(__file__)}> Error: {cluster_vtp_filename_left} does not exist.")
                     exit()
                 cluster_vtp_list_left.append(cluster_vtp_filename_left)
 
                 cluster_vtp_filename_right = os.path.join(inputdir_right, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_right):
-                    print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_right, "does not exist.")
+                    print(f"<{os.path.basename(__file__)}> Error: {cluster_vtp_filename_right} does not exist.")
                     exit()
                 cluster_vtp_list_right.append(cluster_vtp_filename_right)
 
@@ -179,13 +179,13 @@ def main():
     print(f"<{os.path.basename(__file__)}> commissural tracts: ")
     for tract in commissural_tracts:
 
-        print(" *", tract_idx, "-", tract)
+        print(f" * {tract_idx} - {tract}")
         tract_idx = tract_idx + 1
 
         mrml = os.path.join(atlasdir, tract+".mrml")
 
         if not os.path.exists(mrml):
-            print(f"<{os.path.basename(__file__)}> Error: Cannot locate", mrml)
+            print(f"<{os.path.basename(__file__)}> Error: Cannot locate {mrml}")
             exit()
 
         cluster_vtp_list_comm = list()
@@ -197,7 +197,7 @@ def main():
 
                 cluster_vtp_filename_comm = os.path.join(inputdir_comm, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_comm):
-                    print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_comm, "does not exist.")
+                    print(f"<{os.path.basename(__file__)}> Error {cluster_vtp_filename_comm} does not exist.")
                     exit()
                 cluster_vtp_list_comm.append(cluster_vtp_filename_comm)
 
@@ -216,8 +216,8 @@ def main():
     list_tracts= list_cluster_files(outdir)
 
     print('')
-    print(f'<{os.path.basename(__file__)}> Appended tracts can be found at', outdir, '\n')
-    print(f'<{os.path.basename(__file__)}> A total of', len(list_tracts), 'tracts\n')
+    print(f'<{os.path.basename(__file__)}> Appended tracts can be found at {outdir}\n')
+    print(f'<{os.path.basename(__file__)}> A total of {len(list_tracts)} tracts\n')
 
 
 if __name__ == "__main__":

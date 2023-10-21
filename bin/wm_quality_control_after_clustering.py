@@ -48,16 +48,16 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {output_dir} does not exist, creating it.")
         os.makedirs(output_dir)
     
     subject_list = os.listdir(args.inputDirectory)
-    print(f"<{os.path.basename(__file__)}> found", len(subject_list), "subjects.")
+    print(f"<{os.path.basename(__file__)}> found {len(subject_list)} subjects.")
     
     # Check if all subjects have the same number of clusters.
     # This can also help find the sub folders that are not the fiber clustering results.
@@ -70,7 +70,7 @@ def main():
         input_mask2 = f"{sub_dir}/cluster_*.vtp"
         cluster_polydatas = glob.glob(input_mask) + glob.glob(input_mask2)
         cluster_polydatas = sorted(cluster_polydatas)
-        print("  ", sub, "has", len(cluster_polydatas), "clusters.")
+        print(f"   {sub} has {len(cluster_polydatas)} clusters.")
         if sidx == 0:
             num_of_clusters = len(cluster_polydatas)
         else:
@@ -86,7 +86,7 @@ def main():
     num_fibers_per_subject = np.zeros([num_of_subjects, num_of_clusters])
     for sidx in range(0, num_of_subjects):
         sub = subject_list[sidx]
-        print("   loading", sub)
+        print(f"   loading {sub}")
         sub_dir = os.path.join(args.inputDirectory, sub)
         input_mask = f"{sub_dir}/cluster_*.vtk"
         input_mask2 = f"{sub_dir}/cluster_*.vtp"

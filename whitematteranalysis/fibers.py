@@ -145,10 +145,7 @@ class FiberArray:
         self.number_commissure = None
 
     def __str__(self):
-        output = "\n points_per_fiber\t" + str(self.points_per_fiber) \
-            + "\n number_of_fibers\t\t" + str(self.number_of_fibers) \
-            + "\n fiber_hemisphere\t\t" + str(self.fiber_hemisphere) \
-            + "\n verbose\t" + str(self.verbose)
+        output = f"\n points_per_fiber\t{str(self.points_per_fiber)}\n number_of_fibers\t\t{str(self.number_of_fibers)}\n fiber_hemisphere\t\t{str(self.fiber_hemisphere)}\n verbose\t{str(self.verbose)}"
 
         return output
 
@@ -340,7 +337,7 @@ class FiberArray:
         self.number_of_fibers = input_vtk_polydata.GetNumberOfLines()
 
         if self.verbose:
-            print(f"<{os.path.basename(__file__)}> Converting polydata to array representation. Lines:", self.number_of_fibers)
+            print(f"<{os.path.basename(__file__)}> Converting polydata to array representation. Lines: {self.number_of_fibers}")
 
         # allocate array number of lines by line length
         self.fiber_array_r = np.zeros((self.number_of_fibers,
@@ -362,8 +359,8 @@ class FiberArray:
 
             if self.verbose:
                 if lidx % 100 == 0:
-                    print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", self.number_of_fibers)
-                    print(f"<{os.path.basename(__file__)}> number of points:", line_length)
+                    print(f"<{os.path.basename(__file__)}> Line: {lidx} / {self.number_of_fibers}")
+                    print(f"<{os.path.basename(__file__)}> number of points: {line_length}")
 
             # loop over the indices that we want and get those points
             pidx = 0

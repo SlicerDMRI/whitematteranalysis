@@ -35,13 +35,13 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist.")
         exit()
 
     print(f"<{os.path.basename(__file__)}> Starting computation.")
     print("")
-    print("=====input directory ======\n", args.inputDirectory)
-    print("=====output file =====\n", args.outputFile)
+    print(f"=====input directory ======\n {args.inputDirectory}")
+    print(f"=====output file =====\n {args.outputFile}")
     print("==========================")
     print("")
 
@@ -51,7 +51,7 @@ def main():
             return None
         # make sure this is a one-component scalar
         if point_array.GetNumberOfComponents() > 1:
-            print("Error in compute_point_data_stats: Array", array_name, "has more than one component", point_array.GetNumberOfComponents(), ".")
+            print(f"Error in compute_point_data_stats: Array {array_name} has more than one component {point_array.GetNumberOfComponents()}.")
             return None
         print(point_array)
         num_points = pd.GetNumberOfPoints()
@@ -59,7 +59,7 @@ def main():
 
         for pidx in range(0, num_points):
             if (pidx % 1000) == 0:
-                print("Point", pidx, '/', num_points)
+                print(f"Point {pidx} / {num_points}")
             # this assumes we have scalars here
             points_copy[pidx] = point_array.GetTuple(pidx)[0]
 
@@ -67,7 +67,7 @@ def main():
         #points_std = np.std(points_copy)
         #points_median = np.median(points_copy)
 
-        print("Mean ", array_name, ":", points_mean)
+        print(f"Mean {array_name} : {points_mean}")
 
         return points_mean
 
@@ -78,7 +78,7 @@ def main():
 
     input_polydatas = input_polydatas[0:10]
 
-    print(f"<{os.path.basename(__file__)}> Input number of vtk/vtp files: ", number_of_clusters)
+    print(f"<{os.path.basename(__file__)}> Input number of vtk/vtp files: {number_of_clusters}")
 
     scalars = ['FA', 'Trace', 'FA1', 'FA2', 'Trace1', 'Trace2']
 
@@ -89,10 +89,10 @@ def main():
     for fname in input_polydatas:
         print(fname)
         # read data
-        print(f"<{os.path.basename(__file__)}> Reading input file:", fname)
+        print(f"<{os.path.basename(__file__)}> Reading input file: {fname}")
         pd = wma.io.read_polydata(fname)
         # preprocessing step: minimum length
-        print(f"<{os.path.basename(__file__)}> Computing stats for input file:", fname)
+        print(f"<{os.path.basename(__file__)}> Computing stats for input file: {fname}")
         output_row = list()
         output_row.append(fname)
         for sc in scalars:
@@ -109,9 +109,9 @@ def main():
         outstr = ''
         for item in row:
             if outstr != '':
-                outstr = outstr + '\t'
-            outstr = outstr + str(item)
-        outstr = outstr + '\n'
+                outstr = f'{outstr}\t'
+            outstr = f'{outstr}{str(item)}'
+        outstr = f'{outstr}\n'
         f.write(outstr)
 
     f.close()

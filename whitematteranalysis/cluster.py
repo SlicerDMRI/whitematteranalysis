@@ -80,18 +80,18 @@ class ClusterAtlas:
 
     def load(self, directory, atlas_name, verbose=False):
         if not os.path.isdir(directory):
-            print("Error: Atlas directory", directory, "does not exist or is not a directory.")
+            print(f"Error: Atlas directory {directory} does not exist or is not a directory.")
             raise f"<{os.path.basename(__file__)}> I/O error"
         
         fname_base = os.path.join(directory,atlas_name)
-        fname_atlas = fname_base+'.p'
-        fname_polydata = fname_base+'.vtp'
+        fname_atlas = f'{fname_base}.p'
+        fname_polydata = f'{fname_base}.vtp'
         
         if not os.path.exists(fname_atlas):
-            print("Error: Atlas file", fname_atlas, "does not exist.")
+            print(f"Error: Atlas file {fname_atlas} does not exist.")
             raise f"<{os.path.basename(__file__)}> I/O error"
         if not os.path.exists(fname_polydata):
-            print("Error: Atlas file", fname_polydata, "does not exist.")
+            print(f"Error: Atlas file {fname_polydata} does not exist.")
             raise f"<{os.path.basename(__file__)}> I/O error"
 
         try:
@@ -99,9 +99,8 @@ class ClusterAtlas:
         except UnicodeDecodeError:
             atlas = pickle.load(open(fname_atlas,'rb'), encoding="latin1")
         atlas.nystrom_polydata = io.read_polydata(fname_polydata)
-        print(f"<{os.path.basename(__file__)}> Loaded atlas", atlas_name, "from", directory, ".")
-        print(f"<{os.path.basename(__file__)}> Atlas Nystrom polydata sample:", atlas.nystrom_polydata.GetNumberOfLines(), \
-            "\nAtlas size:", atlas.pinv_A.shape, "\nAtlas number of eigenvectors:", atlas.number_of_eigenvectors)
+        print(f"<{os.path.basename(__file__)}> Loaded atlas {atlas_name} from {directory}.")
+        print(f"<{os.path.basename(__file__)}> Atlas Nystrom polydata sample: {atlas.nystrom_polydata.GetNumberOfLines()}\nAtlas size: {atlas.pinv_A.shape}\nAtlas number of eigenvectors: {atlas.number_of_eigenvectors}")
 
         atlas.polydata_filename = fname_polydata
 
@@ -186,8 +185,8 @@ def spectral(input_polydata, number_of_clusters=200,
     # test pd has lines first
     number_fibers = input_polydata.GetNumberOfLines()
     print(f"<{os.path.basename(__file__)}> Starting spectral clustering.")
-    print(f"<{os.path.basename(__file__)}> Number of input fibers:", number_fibers)
-    print(f"<{os.path.basename(__file__)}> Number of clusters:", number_of_clusters)
+    print(f"<{os.path.basename(__file__)}> Number of input fibers: {number_fibers}")
+    print(f"<{os.path.basename(__file__)}> Number of clusters: {number_of_clusters}")
 
     if number_fibers == 0:
         print(f"<{os.path.basename(__file__)}> ERROR: Cannot cluster polydata with 0 fibers.")
@@ -231,7 +230,7 @@ def spectral(input_polydata, number_of_clusters=200,
         atlas.nystrom_polydata = polydata_m
         polydata_n = filter.mask(input_polydata, nystrom_mask == False, verbose=False)
         sz = polydata_m.GetNumberOfLines()
-        print(f'<{os.path.basename(__file__)}> Using Nystrom approximation. Subset size:',  sz, '/', number_fibers)
+        print(f'<{os.path.basename(__file__)}> Using Nystrom approximation. Subset size: {sz} / {number_fibers}')
         # Determine ordering to get embedding to correspond to original input data.
         reorder_embedding = np.concatenate((np.where(nystrom_mask)[0], np.where(~nystrom_mask)[0]))
         if landmarks is not None:
@@ -249,8 +248,8 @@ def spectral(input_polydata, number_of_clusters=200,
                                            sigma, number_of_jobs, landmarks_n, landmarks_m, distance_method, bilateral)
 
         # sanity check
-        print(f"<{os.path.basename(__file__)}> Range of values in A:", np.min(A), np.max(A))
-        print(f"<{os.path.basename(__file__)}> Range of values in B:", np.min(B), np.max(B))
+        print(f"<{os.path.basename(__file__)}> Range of values in A: {np.min(A)} {np.max(A)}")
+        print(f"<{os.path.basename(__file__)}> Range of values in B: {np.min(B)} {np.max(B)}")
         
     else:
         # Calculate all fiber similarities
@@ -260,7 +259,7 @@ def spectral(input_polydata, number_of_clusters=200,
 
         atlas.nystrom_polydata = input_polydata
         # sanity check
-        print(f"<{os.path.basename(__file__)}> Range of values in A:", np.min(A), np.max(A))
+        print(f"<{os.path.basename(__file__)}> Range of values in A: {np.min(A)} {np.max(A)}")
         
     testval = np.max(A-A.T)
     if not testval == 0.0:
@@ -268,26 +267,26 @@ def spectral(input_polydata, number_of_clusters=200,
             print(f"<{os.path.basename(__file__)}> ERROR: A matrix is not symmetric.")
             raise AssertionError
         else:
-            print(f"<{os.path.basename(__file__)}> Maximum of A - A^T:", testval)
+            print(f"<{os.path.basename(__file__)}> Maximum of A - A^T: {testval}")
         # Ensure that A is symmetric
         A = np.divide(A+A.T, 2.0)
         
     testval = np.min(A)
     if not testval > 0.0:
         print(f"<{os.path.basename(__file__)}> ERROR: A matrix is not positive.")
-        print(f"<{os.path.basename(__file__)}> Minimum value in A: ", testval)
+        print(f"<{os.path.basename(__file__)}> Minimum value in A: {testval}")
         if testval < 0.0:
             raise AssertionError
 
     # Outliers will have low measured (or estimated) row sums. Detect outliers in A:
     # to turn off for testing: outlier_std_threshold = np.inf
     row_sum_A_initial = np.sum(A, axis=0) + np.sum(B.T, axis=0)
-    print(f"<{os.path.basename(__file__)}> Initial similarity (row) sum A:", np.mean(row_sum_A_initial), np.std(row_sum_A_initial), np.min(row_sum_A_initial))
+    print(f"<{os.path.basename(__file__)}> Initial similarity (row) sum A: {np.mean(row_sum_A_initial)} {np.std(row_sum_A_initial)} {np.min(row_sum_A_initial)}")
     atlas.outlier_std_threshold = outlier_std_threshold
     atlas.row_sum_threshold_for_rejection = np.mean(row_sum_A_initial) - outlier_std_threshold*np.std(row_sum_A_initial)
     bad_idx = np.nonzero(row_sum_A_initial < atlas.row_sum_threshold_for_rejection)[0]
     reject_A = bad_idx
-    print(f"<{os.path.basename(__file__)}> Rejecting n=", len(bad_idx), "/", sz, "fibers >", outlier_std_threshold, "standard deviations below the mean total fiber similarity")
+    print(f"<{os.path.basename(__file__)}> Rejecting n= {len(bad_idx)} / {sz} fibers > {outlier_std_threshold} standard deviations below the mean total fiber similarity")
 
     A = np.delete(A,reject_A,0)
     A = np.delete(A,reject_A,1)
@@ -298,13 +297,13 @@ def spectral(input_polydata, number_of_clusters=200,
     # Ensure that A is positive definite.
     if pos_def_approx:
         e_val, e_vec = np.linalg.eigh(A)
-        print(f"<{os.path.basename(__file__)}> Eigenvalue range of A:", e_val[0], e_val[-1])
+        print(f"<{os.path.basename(__file__)}> Eigenvalue range of A: {e_val[0]} {e_val[-1]}")
         A2 = nearPSD(A)
         e_val, e_vec = np.linalg.eigh(A2)
-        print(f"<{os.path.basename(__file__)}> Eigenvalue range of nearest PSD matrix to A:", e_val[0], e_val[-1])
+        print(f"<{os.path.basename(__file__)}> Eigenvalue range of nearest PSD matrix to A: {e_val[0]} e{_val[-1]}")
         testval = np.max(A-A2)
         if not testval == 0.0:
-            print(f"<{os.path.basename(__file__)}> A matrix differs by PSD matrix by maximum of:", testval)
+            print(f"<{os.path.basename(__file__)}> A matrix differs by PSD matrix by maximum of: {testval}")
             if testval > 0.25:
                 print(f"<{os.path.basename(__file__)}> ERROR: A matrix changed by more than 0.25.")
                 raise AssertionError
@@ -321,9 +320,9 @@ def spectral(input_polydata, number_of_clusters=200,
             # C is not computed.
             # Calculate the sum of the partial rows we've computed:
             atlas.row_sum_1 = np.sum(A, axis=0) + np.sum(B.T, axis=0)
-            #print f"<{os.path.basename(__file__)}> A size:", A.shape
-            #print f"<{os.path.basename(__file__)}> B size:", B.shape
-            #print f"<{os.path.basename(__file__)}> A-B matrix row sums range (should be > 0):", np.min(atlas.row_sum_1), np.max(atlas.row_sum_1)
+            #print(f"<{os.path.basename(__file__)}> A size: {A.shape}")
+            #print(f"<{os.path.basename(__file__)}> B size: {B.shape}")
+            #print(f"<{os.path.basename(__file__)}> A-B matrix row sums range (should be > 0): {np.min(atlas.row_sum_1)} {np.max(atlas.row_sum_1)}")
 
             # Approximate the sum of the rest of the data (including C)
             # These are weighted sums of the columns we did compute
@@ -335,7 +334,7 @@ def spectral(input_polydata, number_of_clusters=200,
             atlas.pinv_A = np.linalg.pinv(A)
 
             #e_val, e_vec = np.linalg.eigh(atlas.pinv_A)
-            #print f"<{os.path.basename(__file__)}> test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]
+            #print(f"<{os.path.basename(__file__)}> test of non-normalized A pseudoinverse Eigenvalue range: {e_val[0]} {e_val[-1]}")
 
             # row sum formula:
             # dhat = [a_r + b_r; b_c + B^T*A-1*b_r]
@@ -343,27 +342,27 @@ def spectral(input_polydata, number_of_clusters=200,
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
             atlas.row_sum_matrix = np.dot(np.sum(B.T, axis=0), atlas.pinv_A)
             #test = np.sum(B.T, axis=0)
-            #print f"<{os.path.basename(__file__)}> B column sums range (should be > 0):", np.min(test), np.max(test)
-            print(f"<{os.path.basename(__file__)}> Range of row sum weights:", np.min(atlas.row_sum_matrix), np.max(atlas.row_sum_matrix))
-            #print f"<{os.path.basename(__file__)}> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
+            #print(f"<{os.path.basename(__file__)}> B column sums range (should be > 0): {np.min(test)} {np.max(test)}")
+            print(f"<{os.path.basename(__file__)}> Range of row sum weights: {np.min(atlas.row_sum_matrix)} {np.max(atlas.row_sum_matrix)}")
+            #print(f"<{os.path.basename(__file__)}> First 10 entries in weight matrix: {atlas.row_sum_matrix[0:10]}")
             #test = np.dot(atlas.row_sum_matrix, B)
-            #print f"<{os.path.basename(__file__)}> Test partial sum estimation for B:", np.min(test), np.max(test)
+            #print(f"<{os.path.basename(__file__)}> Test partial sum estimation for B: {np.min(test)} {np.max(test)}")
             #del test
             
             # row sum estimate for current B part of the matrix
             row_sum_2 = np.sum(B, axis=0) + \
                 np.dot(atlas.row_sum_matrix, B)
-            print(f"<{os.path.basename(__file__)}> Row sum check (min/max, should be > 0) A:", np.min(atlas.row_sum_1), np.median(atlas.row_sum_1), np.max(atlas.row_sum_1),  "B:", np.min(row_sum_2), np.median(row_sum_2), np.max(row_sum_2))
+            print(f"<{os.path.basename(__file__)}> Row sum check (min/max, should be > 0) A: {np.min(atlas.row_sum_1)} {np.median(atlas.row_sum_1)} {np.max(atlas.row_sum_1)} B: {np.min(row_sum_2)} {np.median(row_sum_2)} {np.max(row_sum_2)}")
 
             # reject outliers in B
             bad_idx = np.nonzero(row_sum_2 < atlas.row_sum_threshold_for_rejection)[0]
             reject_B = bad_idx
-            print(f"<{os.path.basename(__file__)}> Rejecting n=", len(bad_idx), "/", B.shape[1], "fibers >", outlier_std_threshold, "standard deviations below the mean total fiber similarity")
+            print(f"<{os.path.basename(__file__)}> Rejecting n= {len(bad_idx)} / {B.shape[1]} fibers > {outlier_std_threshold} standard deviations below the mean total fiber similarity")
             row_sum_2 = np.delete(row_sum_2,reject_B)
             B = np.delete(B,reject_B,1)
 
-            print(f"<{os.path.basename(__file__)}> After outlier rejection A:", A.shape, "B:", B.shape)
-            print(f"<{os.path.basename(__file__)}> Row sum check (min/max, should be > 0) A:", np.min(atlas.row_sum_1), np.median(atlas.row_sum_1), np.max(atlas.row_sum_1),  "B:", np.min(row_sum_2), np.median(row_sum_2), np.max(row_sum_2))
+            print(f"<{os.path.basename(__file__)}> After outlier rejection A: {A.shape} B: {B.shape}")
+            print(f"<{os.path.basename(__file__)}> Row sum check (min/max, should be > 0) A: {np.min(atlas.row_sum_1)} {np.median(atlas.row_sum_1)} {np.max(atlas.row_sum_1)} B: {np.min(row_sum_2)} {np.median(row_sum_2)} {np.max(row_sum_2)}")
 
             # Separate the Nystrom sample and the rest of the data after removing outliers
             nystrom_mask_2 = nystrom_mask
@@ -380,7 +379,7 @@ def spectral(input_polydata, number_of_clusters=200,
             output_polydata = filter.mask(input_polydata, np.add(nystrom_mask_2, not_nystrom_mask),verbose=False)
             sz = polydata_m.GetNumberOfLines()
             number_fibers = output_polydata.GetNumberOfLines()
-            print(f'<{os.path.basename(__file__)}> Using Nystrom approximation. Subset size (A):',  sz, '/', number_fibers, "B:", polydata_n.GetNumberOfLines())
+            print(f'<{os.path.basename(__file__)}> Using Nystrom approximation. Subset size (A): {sz} / {number_fibers} B: {polydata_n.GetNumberOfLines()}')
             # Determine ordering to get embedding to correspond to original input data.
             # reject outliers from masks
             reject_idx = np.concatenate((midxA[reject_A],midxB[reject_B]))
@@ -393,7 +392,7 @@ def spectral(input_polydata, number_of_clusters=200,
             # in case of negative row sum estimation
             if any(row_sum_2<=0):
                 print(f"<{os.path.basename(__file__)}> Warning: Consider increasing sigma or using the Mean distance. negative row sum approximations.")
-                print("Number of negative row sums:", np.count_nonzero(row_sum_2<=0))
+                print(f"Number of negative row sums: {np.count_nonzero(row_sum_2 <= 0)}")
                 #row_sum_2[row_sum_2<0] = 0.1
 
             # save for testing
@@ -412,7 +411,7 @@ def spectral(input_polydata, number_of_clusters=200,
         else:
             # normalized cuts normalization using row (same as column) sums
             row_sum = np.sum(A, axis=0)
-            print(f"<{os.path.basename(__file__)}> A matrix row sums range (should be > 0):", np.min(row_sum), np.max(row_sum))
+            print(f"<{os.path.basename(__file__)}> A matrix row sums range (should be > 0): {np.min(row_sum)} {np.max(row_sum)}")
             dhat = np.divide(1, np.sqrt(row_sum))
             A = \
                 np.multiply(A, np.outer(dhat, dhat.T))
@@ -421,11 +420,11 @@ def spectral(input_polydata, number_of_clusters=200,
     print(f'<{os.path.basename(__file__)}> Calculating eigenvectors of similarity matrix A...')
     atlas.e_val, atlas.e_vec = np.linalg.eigh(A)
     print(f'<{os.path.basename(__file__)}> Done calculating eigenvectors.')
-    print(f"<{os.path.basename(__file__)}> Eigenvalue range:", atlas.e_val[0], atlas.e_val[-1])
+    print(f"<{os.path.basename(__file__)}> Eigenvalue range: {atlas.e_val[0]} {atlas.e_val[-1]}")
     # Check how well our chosen number of eigenvectors models the data
     power = np.cumsum(atlas.e_val[::-1]) / np.sum(atlas.e_val)
-    print(f"<{os.path.basename(__file__)}> Power from chosen number of eigenvectors (", number_of_eigenvectors, ')', power[number_of_eigenvectors])
-    print(f'<{os.path.basename(__file__)}> Top eigenvalues:', atlas.e_val[::-1][1:number_of_eigenvectors])
+    print(f"<{os.path.basename(__file__)}> Power from chosen number of eigenvectors ({number_of_eigenvectors}) {power[number_of_eigenvectors]}")
+    print(f'<{os.path.basename(__file__)}> Top eigenvalues: {atlas.e_val[::-1][1:number_of_eigenvectors]}')
 
     # 4) Compute embedding using eigenvectors
     print(f'<{os.path.basename(__file__)}> Compute embedding using eigenvectors.')
@@ -491,11 +490,11 @@ def spectral(input_polydata, number_of_clusters=200,
         centroid_order = render.argsort_by_jet_lookup_table(color)
         atlas.centroids = centroids[centroid_order,:]
         cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
-        #print f"<{os.path.basename(__file__)}> Distortion metric:", cluster_metric
+        #print(f"<{os.path.basename(__file__)}> Distortion metric: {cluster_metric}")
         if 0:
             # This is extremely slow, but leave code here if ever wanted for testing
             cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
-            print("Silhouette Coefficient: %0.3f" % cluster_metric)
+            print(f"Silhouette Coefficient: {cluster_metric:0.3f}")
  
     else:
         raise NotImplementedError(
@@ -779,9 +778,9 @@ def _pairwise_similarity_matrix(input_polydata, threshold, sigma,
         test = np.min(np.diag(similarity_matrix)) == 1.0
         if not test:
             print(f"<{os.path.basename(__file__)}> ERROR: On-diagonal elements are not all 1.0.")
-            print(" Minimum on-diagonal value:", np.min(np.diag(similarity_matrix)))
-            print(" Maximum on-diagonal value:", np.max(np.diag(similarity_matrix)))
-            print(" Mean value:", np.mean(np.diag(similarity_matrix)))
+            print(f" Minimum on-diagonal value: {np.min(np.diag(similarity_matrix))}")
+            print(f" Maximum on-diagonal value: {np.max(np.diag(similarity_matrix))}")
+            print(f" Mean value: {np.mean(np.diag(similarity_matrix))}")
             raise AssertionError
 
     return similarity_matrix
@@ -928,7 +927,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     idx = 1
     for fname in input_polydatas:
         subject_id = os.path.splitext(os.path.basename(fname))[0]
-        outstr =  str(idx) + '\t' + str(subject_id) + '\t' + str(fname) + '\n'
+        outstr = f'{str(idx)}\t{str(subject_id)}\t{str(fname)}\n'
         subjects_qc_file.write(outstr)
         idx += 1
     subjects_qc_file.close()
@@ -967,11 +966,9 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     # Save output quality control information
     print(f"<{os.path.basename(__file__)}> Saving cluster quality control information file.")
     clusters_qc_file = open(clusters_qc_fname, 'w')
-    print('cluster_idx','\t', 'number_subjects','\t', 'percent_subjects','\t', 'mean_length','\t', 'std_length','\t', 'mean_fibers_per_subject','\t', 'std_fibers_per_subject', file=clusters_qc_file)
+    print('cluster_idx\tnumber_subjects\tpercent_subjects\tmean_length\tstd_length\tmean_fibers_per_subject\tstd_fibers_per_subject', file=clusters_qc_file)
     for cidx in cluster_indices:
-        print(cidx + 1,'\t', subjects_per_cluster[cidx],'\t', percent_subjects_per_cluster[cidx] * 100.0,'\t', \
-            mean_fiber_len_per_cluster[cidx],'\t', std_fiber_len_per_cluster[cidx],'\t', \
-            mean_fibers_per_subject_per_cluster[cidx],'\t', std_fibers_per_subject_per_cluster[cidx], file=clusters_qc_file)
+        print(f'{cidx + 1}\t{subjects_per_cluster[cidx]}\t{percent_subjects_per_cluster[cidx] * 100.0}\t{mean_fiber_len_per_cluster[cidx]}\t{std_fiber_len_per_cluster[cidx]}\t{mean_fibers_per_subject_per_cluster[cidx]}\t{std_fibers_per_subject_per_cluster[cidx]}', file=clusters_qc_file)
 
     clusters_qc_file.close()
 
@@ -995,7 +992,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
     # Figure out file name and mean color for each cluster, and write the individual polydatas
     pd_c_list = mask_all_clusters(output_polydata_s, cluster_numbers_s, len(cluster_indices), preserve_point_data=True,
                                   preserve_cell_data=True, verbose=False)
-    print(f"<{os.path.basename(__file__)}> Beginning to save individual clusters as polydata files. TOTAL CLUSTERS:", len(cluster_indices), end=' ')
+    print(f"<{os.path.basename(__file__)}> Beginning to save individual clusters as polydata files. TOTAL CLUSTERS: {len(cluster_indices)}", end=' ')
     fnames = list()
     cluster_colors = list()
     cluster_sizes = list()
@@ -1039,10 +1036,10 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
             print(sz, ":", fname)
             empty_count += 1
     if empty_count:
-        print(f"<{os.path.basename(__file__)}> Warning. Empty clusters found:", empty_count)
+        print(f"<{os.path.basename(__file__)}> Warning. Empty clusters found: {empty_count}")
 
     cluster_sizes = np.array(cluster_sizes)
-    print(f"<{os.path.basename(__file__)}> Mean number of fibers per cluster:", np.mean(cluster_sizes), "Range:", np.min(cluster_sizes), "..", np.max(cluster_sizes))
+    print(f"<{os.path.basename(__file__)}> Mean number of fibers per cluster: {np.mean(cluster_sizes)} Range: {np.min(cluster_sizes)}..{np.max(cluster_sizes)}")
 
     # Estimate subsampling ratio to display approximately number_of_fibers_to_display total fibers in 3D Slicer
     number_fibers = len(cluster_numbers_s)
@@ -1050,7 +1047,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         ratio = 1.0
     else:
         ratio = number_of_fibers_to_display / number_fibers
-    print(f"<{os.path.basename(__file__)}> Subsampling ratio for display of", number_of_fibers_to_display, "total fibers estimated as:", ratio)
+    print(f"<{os.path.basename(__file__)}> Subsampling ratio for display of {number_of_fibers_to_display} total fibers estimated as: {ratio}")
 
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir, 'clustered_tracts.mrml')
@@ -1069,7 +1066,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
 
 def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, preserve_point_data=True, preserve_cell_data=False, verbose=True):
 
-    print(f'<{os.path.basename(__file__)}> Masking all clusters: total ', number_of_clusters)
+    print(f'<{os.path.basename(__file__)}> Masking all clusters: total {number_of_clusters}')
 
     inpoints = inpd.GetPoints()
     inpointdata = inpd.GetPointData()
@@ -1114,7 +1111,7 @@ def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, p
                     out_array.SetName(array.GetName())
 
                     if verbose and c_idx == 0:
-                        print("Cell data array found:", array.GetName(), array.GetNumberOfComponents())
+                        print(f"Cell data array found: {array.GetName()} {array.GetNumberOfComponents()}")
 
                     outpd_list[c_idx].GetCellData().AddArray(out_array)
 
@@ -1134,7 +1131,7 @@ def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, p
                     out_array.SetName(array.GetName())
 
                     if verbose and c_idx == 0:
-                        print("Point data array found:", array.GetName(), array.GetNumberOfComponents())
+                        print(f"Point data array found: {array.GetName()} {array.GetNumberOfComponents()}")
 
                     outpd_list[c_idx].GetPointData().AddArray(out_array)
 
@@ -1172,7 +1169,7 @@ def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, p
 
     if not tensors_labeled:
         if len(tensor_names) > 0:
-            print("Data has unexpected tensor name(s). Unable to set active for visualization:", tensor_names)
+            print(f"Data has unexpected tensor name(s). Unable to set active for visualization: {tensor_names}")
 
     # now set cell data visualization inactive.
     for c_idx in range(0, number_of_clusters):
@@ -1192,7 +1189,7 @@ def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, p
 
             if verbose:
                 if lidx % 100 == 0:
-                    print("Line:", lidx, "/", inpd.GetNumberOfLines(), ", belonging to cluster ", c_idx)
+                    print(f"Line: {lidx} / {inpd.GetNumberOfLines()} belonging to cluster {c_idx}")
 
             # get points for each ptid and add to output polydata
             cellptids = vtk.vtkIdList()
@@ -1221,6 +1218,6 @@ def mask_all_clusters(inpd, cluster_numbers_s, number_of_clusters, color=None, p
         outpd_list[c_idx].SetPoints(outpoints_list[c_idx])
 
         if verbose:
-            print(f"<{os.path.basename(__file__)}> Cluster", c_idx," have fibers ", outpd_list[c_idx].GetNumberOfLines(), "/", inpd.GetNumberOfLines(), ", points ", outpd_list[c_idx].GetNumberOfPoints())
+            print(f"<{os.path.basename(__file__)}> Cluster {c_idx} have fibers {outpd_list[c_idx].GetNumberOfLines()} / {inpd.GetNumberOfLines()}, points {outpd_list[c_idx].GetNumberOfPoints()}")
 
     return outpd_list

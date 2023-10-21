@@ -42,29 +42,29 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist.")
         exit()
 
     if not os.path.exists(args.subjectsInformationFile):
-        print(f"<{os.path.basename(__file__)}> Error: Input file", args.subjectsInformationFile, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input file {args.subjectsInformationFile} does not exist.")
         exit()
 
     measurements = args.measures
 
     # Read and check data
     measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')
-    print("Measurement directory:", args.inputDirectory)
+    print(f"Measurement directory {args.inputDirectory}")
     number_of_subjects = len(measurement_list)
-    print("Number of subjects data found:", number_of_subjects)
+    print(f"Number of subjects data found: {number_of_subjects}")
     if number_of_subjects < 1:
-        print("ERROR, no measurement files found in directory:", args.inputDirectory)
+        print(f"ERROR, no measurement files found in directory {args.inputDirectory}")
         exit()
     header = measurement_list[0].measurement_header
     region_list = measurement_list[0].cluster_path
     #print "Measurement header is:", header
     #print "Clusters found:",  measurement_list[0].cluster_path
     number_of_clusters = measurement_list[0].measurement_matrix[:,0].shape[0]
-    print("Number of measurement regions (clusters and hierarchy groups) is:", number_of_clusters)
+    print(f"Number of measurement regions (clusters and hierarchy groups) is: {number_of_clusters}")
 
     # Read and check subject ID list
     dg = wma.tract_measurement.load_demographics(args.subjectsInformationFile)
@@ -81,7 +81,7 @@ def main():
     for subject_measured, subject_id in zip(measurement_list, case_id_list):
         if not str(subject_id) in subject_measured.case_id:
             print("ERROR: id list and input data mismatch.")
-            print("ERROR at:", subject_measured.case_id, subject_id)
+            print(f"ERROR at: {subject_measured.case_id} {subject_id}")
             exit()
     print("Dataset passed. Subject IDs in subject information excel file match subject IDs in measurement directory.")
 
@@ -89,7 +89,7 @@ def main():
     vidx_list = []; # index of values of interest
     for measure in measurements:
         vidx_list.append(list(header).index(measure))
-    print("Column indices of measures for export:", vidx_list)
+    print(f"Column indices of measures for export: {vidx_list}")
 
     # reformat this information for export.
     # export format for header is subject ID, region1.measure1, region1.measure2, ..., regionN.measureN
