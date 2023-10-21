@@ -5,18 +5,20 @@ import argparse
 import os
 import sys
 import time
+import warnings
 
 import numpy as np
 import vtk
 
 import whitematteranalysis as wma
+from whitematteranalysis.utils.opt_pckg import optional_package
 
-HAVE_PLT = 1
-try:
-    import matplotlib.pyplot as plt
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot quality control data.\n")
-    HAVE_PLT = 0
+matplotlib, have_mpl, _ = optional_package("matplotlib")
+plt, _, _ = optional_package("matplotlib.pyplot")
+
+if not have_mpl:
+    warnings.warn(matplotlib._msg)
+    warnings.warn("Cannot plot quality control data.")
 
 
 def _build_arg_parser():
@@ -175,7 +177,7 @@ def main():
     spatial_qc_file.write(outstr)
     spatial_qc_file.close()
     
-    if HAVE_PLT:
+    if have_mpl:
         plt.figure(1)
     
     # Loop over subjects and check each
@@ -272,7 +274,7 @@ def main():
         spatial_qc_file.write(outstr)
         
         # Save the subject's fiber lengths  
-        if HAVE_PLT:
+        if have_mpl:
             plt.figure(1)
             if lengths.size > 1:
                 plt.hist(lengths, bins=100, histtype='step', label=subject_id)
@@ -329,7 +331,7 @@ def main():
         del pd3
         subject_idx += 1
     
-    if HAVE_PLT:
+    if have_mpl:
         plt.figure(1)
         plt.title('Histogram of fiber lengths for all subjects')
         plt.xlabel('fiber length (mm)')
