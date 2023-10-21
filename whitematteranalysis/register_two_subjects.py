@@ -25,14 +25,6 @@ import time
 import numpy as np
 import vtk
 
-try:
-    from joblib import Parallel, delayed
-    USE_PARALLEL = 1
-except ImportError:
-    USE_PARALLEL = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
-    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
-
 import whitematteranalysis as wma
 
 
