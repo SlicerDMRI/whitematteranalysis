@@ -3,10 +3,8 @@
 
 import os
 
-from whitematteranalysis.data.atlas.utils import (
-    ORGAtlasVersion,
-    get_local_atlas_bundle_fname,
-)
+from whitematteranalysis.data.atlas.utils import (ORGAtlasVersion,
+                                                  get_local_atlas_bundle_fname)
 
 
 def test_get_local_atlas_bundle_fname():

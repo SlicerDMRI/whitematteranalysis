@@ -4,11 +4,8 @@ import enum
 
 import pandas as pd
 
-from whitematteranalysis.fileio.utils import (
-    SlicerFileExtension,
-    VTKFileExtension,
-    find_filenames,
-)
+from whitematteranalysis.fileio.utils import (SlicerFileExtension,
+                                              VTKFileExtension, find_filenames)
 
 atlas_bundle_file_prefix = "T_"
 nonatlas_bundle_names = ["T_FalsePositive"]

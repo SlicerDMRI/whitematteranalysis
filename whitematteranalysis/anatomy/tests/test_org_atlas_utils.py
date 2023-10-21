@@ -4,23 +4,13 @@
 import pandas as pd
 
 from whitematteranalysis.anatomy.org_atlas_utils import (
-    ORGAtlasBundleFileHeading,
-    get_association_bundles,
-    get_bundle_long_name,
-    get_bundle_short_name,
-    get_cerebellar_bundles,
-    get_commissural_bundles,
-    get_commissural_augmented_bundles,
-    get_hemispheric_bundles,
-    get_hemispheric_mono_bundles,
-    get_striatal_bundles,
-    get_projection_bundles,
-    get_superficial_bundles,
-)
-from whitematteranalysis.data.atlas.utils import (
-    ORGAtlasVersion,
-    get_local_atlas_bundle_fname,
-)
+    ORGAtlasBundleFileHeading, get_association_bundles, get_bundle_long_name,
+    get_bundle_short_name, get_cerebellar_bundles,
+    get_commissural_augmented_bundles, get_commissural_bundles,
+    get_hemispheric_bundles, get_hemispheric_mono_bundles,
+    get_projection_bundles, get_striatal_bundles, get_superficial_bundles)
+from whitematteranalysis.data.atlas.utils import (ORGAtlasVersion,
+                                                  get_local_atlas_bundle_fname)
 
 
 def _check_bundle_count(method_name, expected_bndl_count):
