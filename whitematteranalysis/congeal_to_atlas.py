@@ -10,9 +10,12 @@ class MultiSubjectRegistration
 """
 
 import os
+
 import numpy
 import vtk
+
 import whitematteranalysis as wma
+
 
 class SubjectToAtlasRegistration:
 

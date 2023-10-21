@@ -11,6 +11,7 @@ class MultiSubjectRegistration
 
 import os
 import time
+
 import numpy
 import vtk
 from joblib import Parallel, delayed
@@ -18,6 +19,7 @@ from joblib import Parallel, delayed
 HAVE_PLT = 1
 try:
     import matplotlib
+
     # Force matplotlib to not use any Xwindows backend.
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -26,6 +28,7 @@ except:
     HAVE_PLT = 0
 
 import whitematteranalysis as wma
+
 
 class MultiSubjectRegistration:
 

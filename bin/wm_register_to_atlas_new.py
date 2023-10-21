@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
-import glob
-import numpy
-import time
-import multiprocessing
 import argparse
+import glob
+import multiprocessing
+import os
+import time
 
+import numpy
 import vtk
 
 import whitematteranalysis as wma
-
 
 
 def _build_arg_parser():

@@ -4,12 +4,12 @@
 
 import argparse
 import os
-import numpy
-import vtk
 import time
 
-import whitematteranalysis as wma
+import numpy
+import vtk
 
+import whitematteranalysis as wma
 
 HAVE_PLT = 1
 

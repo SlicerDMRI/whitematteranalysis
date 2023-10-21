@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import math
 import os
+import sys
 
 import numpy
 import vtk
+
 from . import fibers
-import math
-import sys
 
 sys.setrecursionlimit(1000000)
 

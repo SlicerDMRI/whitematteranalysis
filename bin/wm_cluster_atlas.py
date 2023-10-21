@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy
 import argparse
-import os
 import multiprocessing
-import vtk
+import os
 import time
+
+import matplotlib.pyplot as plt
+import numpy
+import vtk
 
 import whitematteranalysis as wma
 
-import matplotlib.pyplot as plt
 
 def main():
     #-----------------

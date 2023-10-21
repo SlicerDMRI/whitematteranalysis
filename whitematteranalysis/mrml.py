@@ -7,6 +7,7 @@ output in MRML scene file format (XML)
 """
 import os
 
+
 def write(pd_filenames, colors, filename, ratio=1.0):
     writer = WriteMRML()
     writer.write(pd_filenames, colors, filename, ratio)

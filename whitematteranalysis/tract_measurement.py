@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import csv
-import os
 import glob
+import os
+
 import numpy
 import xlrd
+
 
 class TractMeasurement:
     """Fiber tract scalar measurement obtained from Slicer module FiberTractScalarMeasurement."""

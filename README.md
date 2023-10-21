@@ -3,6 +3,8 @@ whitematteranalysis
 
 [![test, package](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml/badge.svg?branch=master)](https://github.com/SlicerDMRI/whitematteranalysis/actions/workflows/test_package.yaml?query=branch%3Amaster)
 [![Documentation Status](https://readthedocs.org/projects/whitematteranalysis/badge/?version=latest)](https://whitematteranalysis.readthedocs.io/en/latest/?badge=latest)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+
 
 # Synopsis
 

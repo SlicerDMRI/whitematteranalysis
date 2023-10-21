@@ -20,16 +20,16 @@ This function reads in the laterality data for further analysis.
 
 """
 
+import glob
 import os
 import pickle
-import glob
 import time
+
 import numpy
 import vtk
 from joblib import Parallel, delayed
 
-from . import render
-from . import filter
+from . import filter, render
 
 VERBOSE = 0
 

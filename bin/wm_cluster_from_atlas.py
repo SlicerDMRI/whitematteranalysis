@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy
 import argparse
-import os
 import multiprocessing
+import os
 import time
+
+import numpy
 import vtk
 
 import whitematteranalysis as wma

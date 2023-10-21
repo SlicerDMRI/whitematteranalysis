@@ -23,8 +23,8 @@ LateralityResults (io.py)
 import os
 
 import numpy
-
 import vtk
+
 try:
     from joblib import Parallel, delayed
     USE_PARALLEL = 1
@@ -33,9 +33,10 @@ except ImportError:
     print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
     print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
+from . import filter, similarity
 from .fibers import FiberArray
 from .io import LateralityResults
-from . import filter, similarity
+
 
 def compute_laterality_index(left, right, idx=None):
     ''' Compute laterality index from left and right hemisphere quantities.'''

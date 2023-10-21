@@ -8,7 +8,6 @@ from warnings import warn
 import whitematteranalysis as wma
 
 
-
 def _build_arg_parser():
 
     parser = argparse.ArgumentParser(

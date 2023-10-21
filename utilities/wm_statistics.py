@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
+import glob
+import os
+
+import matplotlib.pyplot as plt
 import numpy
 import scipy.stats
 import statsmodels.sandbox.stats.multicomp
-import glob
-import argparse
-import os
 
 import whitematteranalysis as wma
-import matplotlib.pyplot as plt
 
 
 def _build_arg_parser():

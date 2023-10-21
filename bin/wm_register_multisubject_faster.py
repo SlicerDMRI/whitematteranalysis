@@ -2,17 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
 import multiprocessing
+import os
 import time
 
 import numpy
+import scipy.optimize
 import vtk
 
 import whitematteranalysis as wma
-
-import scipy.optimize
-
 
 
 def _build_arg_parser():

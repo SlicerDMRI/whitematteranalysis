@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
+import glob
+import os
+import shutil
+import warnings
+
 # If the cluster was created in bilateral clustering and is not commissural, separate into separate directories
 # output should be a right_hem and a left_hem directory
 # copy MRML files from toplevel directory into this one
@@ -12,12 +18,7 @@
 # For running this per-subject, the alignment should be performed to handle the tracts near the midline better.
 # That should be added as an option.
 import numpy
-import argparse
-import os
-import shutil
 import vtk
-import glob
-import warnings
 
 import whitematteranalysis as wma
 

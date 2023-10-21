@@ -14,8 +14,8 @@ class RelativeDistanceModel
 import os
 
 import numpy
-
 import vtk
+
 try:
     from joblib import Parallel, delayed
     USE_PARALLEL = 1

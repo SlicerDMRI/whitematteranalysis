@@ -5,15 +5,16 @@
 implementations of fiber clustering
 
 """
+import colorsys
 import os
 import pickle
 
-import vtk
 import numpy
-import colorsys
+import vtk
+
 try:
-    import scipy.cluster.vq
     import scipy.cluster.hierarchy
+    import scipy.cluster.vq
     USE_SCIPY = 1
 except ImportError:
     USE_SCIPY = 0
@@ -27,18 +28,14 @@ except ImportError:
     print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
     print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
-from . import fibers
-from . import similarity
-from . import filter
-from . import render
-from . import io
-from . import mrml
-
 from pprint import pprint
+
+from . import fibers, filter, io, mrml, render, similarity
 
 HAVE_PLT = 1
 try:
     import matplotlib
+
     # Force matplotlib to not use any Xwindows backend.
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
@@ -49,8 +46,8 @@ except:
 # This did not work better. Leave here for future testing if of interest
 if 0:
     try:    
-        from sklearn.cluster import AffinityPropagation
         from sklearn import metrics
+        from sklearn.cluster import AffinityPropagation
     except ImportError:
         SKLEARN = 0
         print(f"<{os.path.basename(__file__)}> Failed to import sklearn, cannot use affinity propagation.")

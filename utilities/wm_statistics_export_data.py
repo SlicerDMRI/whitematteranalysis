@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
 import csv
+import os
+
 import numpy
 
 import whitematteranalysis as wma

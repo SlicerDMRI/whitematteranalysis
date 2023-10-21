@@ -19,12 +19,13 @@ except ImportError:
     print(f"<{os.path.basename(__file__)}> Failed to import  scipy.optimize, cannot align or register.")
     print(f"<{os.path.basename(__file__)}> Please install  scipy.optimize for this functionality.")
 
-import numpy
+import os
 import sys
 import time
+
+import numpy
 import vtk
 import vtk.util.numpy_support
-import os
 
 # debug only
 #import resource
@@ -38,6 +39,7 @@ except ImportError:
     print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
 
 import whitematteranalysis as wma
+
 
 class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractography):
 

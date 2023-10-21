@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
 import argparse
+import glob
 import os
+
 import numpy
 import vtk
+
 import whitematteranalysis as wma
 
 

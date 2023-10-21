@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import numpy
-
 import vtk
 
 import whitematteranalysis.fibers

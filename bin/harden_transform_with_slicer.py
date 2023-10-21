@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import slicer
-import os
 import glob
+import os
 import shutil
+
+import slicer
+
 
 def harden_transform(polydata, transform, inverse, outdir):
     

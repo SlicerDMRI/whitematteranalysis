@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os
 import argparse
-import vtk
 import glob
+import os
+
 import numpy
+import vtk
 
 import whitematteranalysis as wma
+
 
 def list_files(input_dir,regstr):
     # Find input files

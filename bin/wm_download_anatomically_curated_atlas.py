@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import argparse
 import enum
 import os
-import argparse
-import urllib.request, urllib.error, urllib.parse
-import zipfile
-import sys
 import ssl
-
+import sys
+import urllib.error
+import urllib.parse
+import urllib.request
+import zipfile
 
 ZENODO_RECORD_ROOT_URL = "https://zenodo.org/record/"
 ZENODO_API_RECORD_ROOT_URL = "https://zenodo.org/api/records/"

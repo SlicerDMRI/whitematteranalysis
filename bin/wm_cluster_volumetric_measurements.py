@@ -3,9 +3,10 @@
 
 import argparse
 import os
+
 import nibabel
-import vtk
 import numpy
+import vtk
 from nibabel.affines import apply_affine
 
 import whitematteranalysis as wma
