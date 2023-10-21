@@ -8,6 +8,34 @@ import os
 import vtk
 
 import whitematteranalysis as wma
+import pandas as pd
+
+from whitematteranalysis.data.atlas.utils import (
+    ORGAtlasVersion,
+    get_local_atlas_bundle_fname,
+)
+from whitematteranalysis.anatomy.org_atlas_utils import (
+    ORGAtlasBundleFileHeading,
+    get_hemispheric_mono_bundles,
+    get_commissural_augmented_bundles,
+    add_org_atlas_prefix,
+    get_bundle_short_name,
+)
+
+
+def get_hemispheric_mono_bundle_names(_df):
+
+    hemis_mono_df = get_hemispheric_mono_bundles(_df)
+    hemis_names = hemis_mono_df[ORGAtlasBundleFileHeading.SHORT_NAME.value].values.tolist()
+    return add_org_atlas_prefix(hemis_names)
+
+
+def get_commissural_bundle_names(_df):
+
+    com_df = get_commissural_augmented_bundles(_df)
+    com_names = get_bundle_short_name(com_df, com_df[
+        ORGAtlasBundleFileHeading.ID.value].values)
+    return add_org_atlas_prefix(com_names)
 
 
 def _build_arg_parser():
@@ -24,6 +52,12 @@ def _build_arg_parser():
     parser.add_argument(
         'outputDirectory',
         help='The output directory should be a new empty directory. It will be created if needed.')
+    parser.add_argument(
+        '--version',
+        choices=ORGAtlasVersion._member_names_,
+        default=ORGAtlasVersion.V1_2.name,
+        help="Atlas version.",
+    )
 
     return parser
 
@@ -105,12 +139,11 @@ def main():
 
         wma.io.write_polydata(pd_appended_cluster, outputfile)
 
-    hemispheric_tracts = ["T_AF", "T_CB", "T_CPC", "T_MdLF", "T_PLIC", "T_SLF-I", "T_SLF-II", "T_SLF-III", "T_EC", "T_EmC", "T_ICP", "T_ILF", "T_IOFF", "T_UF",
-                         "T_Intra-CBLM-I&P", "T_Intra-CBLM-PaT", "T_CR-F", "T_CR-P", "T_CST", "T_SF", "T_SO", "T_SP", "T_TF", "T_TO", "T_TP",
-                         "T_Sup-F", "T_Sup-FP", "T_Sup-O", "T_Sup-OT", "T_Sup-P", "T_Sup-PO", "T_Sup-PT", "T_Sup-T"]
+    fname = get_local_atlas_bundle_fname(ORGAtlasVersion(args.version))
+    df = pd.read_csv(fname, sep=",")
 
-    commissural_tracts = ["T_CC1", "T_CC2", "T_CC3", "T_CC4", "T_CC5", "T_CC6", "T_CC7", "T_MCP"]
-
+    hemispheric_tracts = get_hemispheric_mono_bundle_names(df)
+    commissural_tracts = get_commissural_bundle_names(df)
 
     print(f"<{os.path.basename(__file__)}> hemispheric tracts (left and right): ")
     tract_idx = 1
