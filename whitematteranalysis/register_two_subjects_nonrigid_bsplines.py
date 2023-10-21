@@ -10,20 +10,11 @@ class RegisterTractographyNonrigid
 """
 
 import os
-
-try:
-    import scipy.optimize
-    USE_SCIPY = 1
-except ImportError:
-    USE_SCIPY = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import  scipy.optimize, cannot align or register.")
-    print(f"<{os.path.basename(__file__)}> Please install  scipy.optimize for this functionality.")
-
-import os
 import sys
 import time
 
 import numpy as np
+import scipy.optimize
 import vtk
 import vtk.util.numpy_support
 
@@ -335,7 +326,8 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             print("TRANS:", self.final_transform, "FLAG:", warnflag)
 
         else:
-            print("Unknown optimizer.")
+            raise NotImplementedError(
+                f"Workflow not implemented for optimizer: {self.optimizer}.")
 
         progress_file = open(self.progress_filename, 'a')
         self.total_time = time.time() - self.start_time
