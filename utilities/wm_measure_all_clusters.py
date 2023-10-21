@@ -3,10 +3,10 @@
 
 import argparse
 import os
+
 import numpy
 
 import whitematteranalysis as wma
-
 
 
 def _build_arg_parser():

@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
-import numpy
 import glob
+import os
+
+import numpy
 
 import whitematteranalysis as wma
 

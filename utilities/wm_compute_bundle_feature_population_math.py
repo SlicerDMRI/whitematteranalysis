@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pandas as pd
 
-
 relative_label = "relative"
 sum_label = "sum"
 underscore = "_"

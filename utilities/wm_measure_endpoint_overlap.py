@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
 import glob
+import os
+
 from joblib import Parallel, delayed
 
 import whitematteranalysis as wma
-
 
 
 def _build_arg_parser():

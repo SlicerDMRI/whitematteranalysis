@@ -6,8 +6,8 @@ contain a typo in the hemisphere location VTK array scalar property. Change
 `HemisphereLocataion` to `HemisphereLocation`.
 """
 
-import os
 import argparse
+import os
 
 import vtk
 

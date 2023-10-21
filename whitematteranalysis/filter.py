@@ -21,8 +21,8 @@ remove_outliers
 
 import os
 
-import vtk
 import numpy
+import vtk
 
 try:
     from joblib import Parallel, delayed

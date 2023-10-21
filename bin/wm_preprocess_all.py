@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import glob
-import os
 import argparse
+import glob
 import multiprocessing
+import os
 from pathlib import Path
-
-import whitematteranalysis as wma
 
 from joblib import Parallel, delayed
 
+import whitematteranalysis as wma
 
 
 def _build_arg_parser():

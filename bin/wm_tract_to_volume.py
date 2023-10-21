@@ -3,13 +3,13 @@
 
 import argparse
 import os
+
 import nibabel
-import vtk
 import numpy
+import vtk
 from nibabel.affines import apply_affine
 
 import whitematteranalysis as wma
-
 
 
 def _build_arg_parser():

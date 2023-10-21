@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy
 import argparse
-import pandas
-import os
 import glob
+import os
+
+import numpy
+import pandas
 
 
 def _build_arg_parser():

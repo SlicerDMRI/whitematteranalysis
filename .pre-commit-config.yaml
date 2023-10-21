@@ -1,0 +1,10 @@
+default_language_version:
+  python: python3.10
+
+repos:
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.11.5
+    hooks:
+      - id: isort
+        name: isort
+        types: [python]

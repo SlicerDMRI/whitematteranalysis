@@ -10,10 +10,10 @@ class FiberArray
 """
 
 import os
+import time
 
 import numpy
 import vtk
-import time
 
 
 class Fiber:

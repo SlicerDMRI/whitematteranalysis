@@ -1,6 +1,8 @@
 import glob
 import os
+import sys
 from itertools import chain
+
 from setuptools import find_packages, setup
 
 #    url='http://pypi.python.org/pypi/whitematteranalysis/',
@@ -9,7 +11,6 @@ from setuptools import find_packages, setup
 # ext_modules work-around: https://stackoverflow.com/a/38057196
 # get_include work-around: https://stackoverflow.com/a/21621689
 
-import sys
 if sys.platform == 'win32':
     # force setuptools to use the MSVC compiler environment
     # otherwise it will check version for VC9, and error out

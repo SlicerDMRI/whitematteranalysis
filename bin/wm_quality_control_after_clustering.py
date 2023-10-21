@@ -2,15 +2,17 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import os
-import numpy
 import glob
+import os
+
+import numpy
 
 import whitematteranalysis as wma
 
 HAVE_PLT = 1
 try:
     import matplotlib
+
     # Force matplotlib to not use any Xwindows backend.
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt

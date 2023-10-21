@@ -3,13 +3,13 @@
 
 import argparse
 import os
+import sys
+import time
+
 import numpy
 import vtk
-import time
-import sys
 
 import whitematteranalysis as wma
-
 
 HAVE_PLT = 1
 try:
