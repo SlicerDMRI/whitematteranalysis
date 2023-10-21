@@ -1,6 +1,6 @@
 name: code format
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   pre-commit:
