@@ -158,13 +158,13 @@ def main():
             if idx > 0:
                 cluster_vtp_filename = line[idx-13:idx+4]
 
-                cluster_vtp_filename_left = os.path.join(inputdir_left, cluster_vtp_filename);
+                cluster_vtp_filename_left = os.path.join(inputdir_left, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_left):
                     print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_left, "does not exist.")
                     exit()
                 cluster_vtp_list_left.append(cluster_vtp_filename_left)
 
-                cluster_vtp_filename_right = os.path.join(inputdir_right, cluster_vtp_filename);
+                cluster_vtp_filename_right = os.path.join(inputdir_right, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_right):
                     print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_right, "does not exist.")
                     exit()
@@ -195,7 +195,7 @@ def main():
             if idx > 0:
                 cluster_vtp_filename = line[idx-13:idx+4]
 
-                cluster_vtp_filename_comm = os.path.join(inputdir_comm, cluster_vtp_filename);
+                cluster_vtp_filename_comm = os.path.join(inputdir_comm, cluster_vtp_filename)
                 if not os.path.exists(cluster_vtp_filename_comm):
                     print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename_comm, "does not exist.")
                     exit()
