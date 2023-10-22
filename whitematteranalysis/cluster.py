@@ -1041,7 +1041,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         else:
             cluster_colors.append([0,0,0])
         del pd_c
-    print("\n<cluster.py> Finishes saving individual clusters as polydata files.")
+    print("\n<cluster.py> Finished saving individual clusters as polydata files.")
 
     # Notify user if some clusters empty
     empty_count = 0
