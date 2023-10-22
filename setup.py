@@ -35,7 +35,7 @@ setup(
     version='0.3.0',
     author='Fan Zhang and Lauren O\'Donnell',
     author_email='odonnell@bwh.harvard.edu',
-    packages=find_packages(exclude=["doc"]),
+    packages=find_packages(exclude=["docs"]),
     license='LICENSE.txt',
     description='Processing of whole-brain streamline tractography.',
     long_description=open('README.md').read(),
