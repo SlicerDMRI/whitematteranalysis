@@ -4,7 +4,7 @@
 import argparse
 import os
 
-import nibabel
+import nibabel as nib
 import numpy
 import vtk
 from nibabel.affines import apply_affine
@@ -68,7 +68,7 @@ def main():
         print("Output directory", args.outputDirectory, "does not exist, creating it.")
         os.makedirs(outdir)
     
-    input_volume = nibabel.load(inputvol)
+    input_volume = nib.load(inputvol)
     print(f'<{os.path.basename(__file__)}> Input volume shape:', input_volume.get_data().shape)
     
     input_vtk_list = wma.io.list_vtk_files(inputdir)
@@ -182,9 +182,9 @@ def main():
         str_out = str_out + '\n' + str_line
     
         if args.outputLabelmap:
-            volume_new = nibabel.Nifti1Image(new_voxel_data, input_volume.affine, input_volume.header)
+            volume_new = nib.Nifti1Image(new_voxel_data, input_volume.affine, input_volume.header)
             output_labelmap = os.path.join(outdir, vtk_file_name+'.nii.gz')
-            nibabel.save(volume_new, output_labelmap)
+            nib.save(volume_new, output_labelmap)
     
     output_file = open(output_stats_file, 'w')
     output_file.write(str_out)

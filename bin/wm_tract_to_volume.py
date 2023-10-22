@@ -4,7 +4,7 @@
 import argparse
 import os
 
-import nibabel
+import nibabel as nib
 import numpy
 import vtk
 from nibabel.affines import apply_affine
@@ -149,16 +149,16 @@ def main():
             
         return new_voxel_data
     
-    volume = nibabel.load(args.refvolume)
+    volume = nib.load(args.refvolume)
     print(f'<{os.path.basename(__file__)}>', args.refvolume, ', input volume shape: ', volume.get_fdata().shape)
     
     inpd = wma.io.read_polydata(args.inputVTK)
     
     new_voxel_data = convert_cluster_to_volume(inpd, volume, measure=args.measure)
     
-    volume_new = nibabel.Nifti1Image(new_voxel_data, volume.affine, volume.header)
+    volume_new = nib.Nifti1Image(new_voxel_data, volume.affine, volume.header)
     
-    nibabel.save(volume_new, args.outputVol)
+    nib.save(volume_new, args.outputVol)
     
     print('Done: save tract map to', args.outputVol)
 
