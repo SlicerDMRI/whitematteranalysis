@@ -14,10 +14,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Extract fiber clusters that connect to one particular region, such as one cortical parcel or one fMRI functional area. This is based on the results from <wm_measure_endpoint_overlap.py>.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='Contains endpoint overlap percentage measurement as txt files, which are computed from <wm_measure_endpoint_overlap.py>.')

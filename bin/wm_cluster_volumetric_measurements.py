@@ -17,10 +17,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Compute measurements of a cluster based on a provided volumetric scalar map (e.g. an FA image).",
         epilog="Written by Fan Zhang")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='Directory of input VTK/VTP files.')

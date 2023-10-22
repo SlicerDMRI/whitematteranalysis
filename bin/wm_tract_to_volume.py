@@ -17,11 +17,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Convert a fiber tract or cluster (vtk) to a voxel-wise fiber density image (nii.gz). ",
         epilog="Written by Fan Zhang")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
-    
     parser.add_argument(
         'inputVTK',
         help='Input VTK/VTP file that is going to be converted.')

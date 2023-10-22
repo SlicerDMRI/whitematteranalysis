@@ -25,10 +25,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Removes outliers in a subject dataset that was clustered from a cluster atlas. This script uses the atlas to identifies and remove outliers in each cluster of the subject. The atlas must be the same one used to cluster the subject dataset",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='A directory containing subject clusters (.vtp). Please note that file separator should not be provided at the end of the input so that the program can automatically recognize subject ID from the input folder name.')

@@ -17,10 +17,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Clusters tractography (propagates clusters) from a cluster atlas (a multi-subject/multi-atlas cluster representation).",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputFile',
         help='A file of whole-brain tractography as vtkPolyData (.vtk or .vtp).')

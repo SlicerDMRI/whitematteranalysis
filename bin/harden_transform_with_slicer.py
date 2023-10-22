@@ -50,10 +50,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Harden transform with Slicer.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'polydata',
         help='')

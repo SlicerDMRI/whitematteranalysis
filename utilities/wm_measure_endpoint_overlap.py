@@ -15,10 +15,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Measure overlaps of fiber clusters with cortical parcellation or fMRI functional areas. This is based on the 3D Slicer module FiberEndPointFromLabelMap.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputTractDirectory',
         help='Directory of fiber clustering results obtained by <wm_cluster_from_atlas.py> of multiple subjects. Make sure only the fiber clustering results are stored in this folder, making one subdirectory corresponding to one subject.')

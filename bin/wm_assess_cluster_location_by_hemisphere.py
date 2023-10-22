@@ -29,10 +29,6 @@ def _build_arg_parser():
         description="Assess if a fiber within the clusters belongs to left hemispheric, right hemispheric, or commissural tracts. "
                     "This code needs to be run in the ATLAS space, where the brain is clustered at the RAS origin. ",
         epilog="Written by Fan Zhang (fzhang@bwh.harvard.edu) and Lauren O\'Donnell (odonnell@bwh.harvard.edu). Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='A directory of clustered whole-brain tractography as vtkPolyData (.vtk or .vtp).')
