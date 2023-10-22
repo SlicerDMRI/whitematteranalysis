@@ -93,7 +93,7 @@ class ClusterAtlas:
     def load(self, directory, atlas_name, verbose=False):
         if not os.path.isdir(directory):
             print("Error: Atlas directory", directory, "does not exist or is not a directory.")
-            raise "<cluster.py> I/O error"
+            raise f"<{os.path.basename(__file__)}> I/O error"
         
         fname_base = os.path.join(directory,atlas_name)
         fname_atlas = fname_base+'.p'
@@ -101,10 +101,10 @@ class ClusterAtlas:
         
         if not os.path.exists(fname_atlas):
             print("Error: Atlas file", fname_atlas, "does not exist.")
-            raise "<cluster.py> I/O error"
+            raise f"<{os.path.basename(__file__)}> I/O error"
         if not os.path.exists(fname_polydata):
             print("Error: Atlas file", fname_polydata, "does not exist.")
-            raise "<cluster.py> I/O error"
+            raise f"<{os.path.basename(__file__)}> I/O error"
 
         try:
             atlas = pickle.load(open(fname_atlas,'rb'))
@@ -333,21 +333,21 @@ def spectral(input_polydata, number_of_clusters=200,
             # C is not computed.
             # Calculate the sum of the partial rows we've computed:
             atlas.row_sum_1 = np.sum(A, axis=0) + np.sum(B.T, axis=0)
-            #print "<cluster.py> A size:", A.shape
-            #print "<cluster.py> B size:", B.shape
-            #print "<cluster.py> A-B matrix row sums range (should be > 0):", np.min(atlas.row_sum_1), np.max(atlas.row_sum_1)
-            
+            #print f"<{os.path.basename(__file__)}> A size:", A.shape
+            #print f"<{os.path.basename(__file__)}> B size:", B.shape
+            #print f"<{os.path.basename(__file__)}> A-B matrix row sums range (should be > 0):", np.min(atlas.row_sum_1), np.max(atlas.row_sum_1)
+
             # Approximate the sum of the rest of the data (including C)
             # These are weighted sums of the columns we did compute
             # where the weight depends on how similar that fiber 
             # was to each path in A.  This uses the dual basis
             # of the columns in A.
             # Approximate the inverse of A for dual basis
-            #print "<cluster.py> Using numpy linalg pinv A"
+            #print(f"<{os.path.basename(__file__)}> Using numpy linalg pinv A")
             atlas.pinv_A = np.linalg.pinv(A)
 
             #e_val, e_vec = np.linalg.eigh(atlas.pinv_A)
-            #print "<cluster.py> test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]  
+            #print f"<{os.path.basename(__file__)}> test of non-normalized A pseudoinverse Eigenvalue range:", e_val[0], e_val[-1]
 
             # row sum formula:
             # dhat = [a_r + b_r; b_c + B^T*A-1*b_r]
@@ -355,11 +355,11 @@ def spectral(input_polydata, number_of_clusters=200,
             # matlab was: atlas.approxRowSumMatrix = sum(B',1)*atlas.pseudoInverseA;
             atlas.row_sum_matrix = np.dot(np.sum(B.T, axis=0), atlas.pinv_A)
             #test = np.sum(B.T, axis=0)
-            #print "<cluster.py> B column sums range (should be > 0):", np.min(test), np.max(test)
+            #print f"<{os.path.basename(__file__)}> B column sums range (should be > 0):", np.min(test), np.max(test)
             print(f"<{os.path.basename(__file__)}> Range of row sum weights:", np.min(atlas.row_sum_matrix), np.max(atlas.row_sum_matrix))
-            #print "<cluster.py> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
+            #print f"<{os.path.basename(__file__)}> First 10 entries in weight matrix:", atlas.row_sum_matrix[0:10]
             #test = np.dot(atlas.row_sum_matrix, B)
-            #print "<cluster.py> Test partial sum estimation for B:", np.min(test), np.max(test)
+            #print f"<{os.path.basename(__file__)}> Test partial sum estimation for B:", np.min(test), np.max(test)
             #del test
             
             # row sum estimate for current B part of the matrix
@@ -503,7 +503,7 @@ def spectral(input_polydata, number_of_clusters=200,
         centroid_order = render.argsort_by_jet_lookup_table(color)
         atlas.centroids = centroids[centroid_order,:]
         cluster_idx, dist = scipy.cluster.vq.vq(embed, atlas.centroids)
-        #print "<cluster.py> Distortion metric:", cluster_metric
+        #print f"<{os.path.basename(__file__)}> Distortion metric:", cluster_metric
         if 0:
             # This is extremely slow, but leave code here if ever wanted for testing
             cluster_metric = metrics.silhouette_score(embed, cluster_idx, metric='sqeuclidean')
@@ -513,7 +513,7 @@ def spectral(input_polydata, number_of_clusters=200,
         print("ERROR: Unknown centroid finder", centroid_finder)
         ## # This found fewer clusters than we need to represent the anatomy well
         ## # Leave code here in case wanted in future for more testing.
-        ## print '<cluster.py> Affinity Propagation clustering in embedding space.'
+        ## print(f'<{os.path.basename(__file__)}> Affinity Propagation clustering in embedding space.')
         ## af = AffinityPropagation(preference=-50).fit(embed)
         ## cluster_centers_indices = af.cluster_centers_indices_
         ## labels = af.labels_
@@ -1041,7 +1041,7 @@ def output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_f
         else:
             cluster_colors.append([0,0,0])
         del pd_c
-    print("\n<cluster.py> Finished saving individual clusters as polydata files.")
+    print(f"\n<{os.path.basename(__file__)}> Finished saving individual clusters as polydata files.")
 
     # Notify user if some clusters empty
     empty_count = 0

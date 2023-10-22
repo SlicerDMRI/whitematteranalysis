@@ -47,7 +47,7 @@ def main():
     
     ## output_dir = args.outputDirectory
     ## if not os.path.exists(output_dir):
-    ##     print "<register> Output directory", output_dir, "does not exist, creating it."
+    ##     print f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it."
     ##     os.makedirs(output_dir)
     
     measurement_list = wma.tract_measurement.load_measurement_in_folder(args.inputDirectory, hierarchy = 'Column', separator = 'Tab')

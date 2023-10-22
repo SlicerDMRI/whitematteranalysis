@@ -287,7 +287,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data, verbose=verbose)
 
     # final line count
-    #print "<filter.py> Number of lines selected:", outpd.GetNumberOfLines()
+    #print f"<{os.path.basename(__file__)}> Number of lines selected:", outpd.GetNumberOfLines()
     if return_indices:
         # return sorted indices, this is the line ordering of output
         # polydata (because we mask rather than changing input line order)
@@ -1134,7 +1134,7 @@ def pd_to_array(inpd, dims=225):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines()
         inpd.GetLines().GetNextCell(ptids)
         num_points = ptids.GetNumberOfIds()
         for pidx in range(0, num_points):
@@ -1176,7 +1176,7 @@ def measure_line_lengths(inpd):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print "<filter.py> Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines()
         inpd.GetLines().GetNextCell(ptids)
         output_lengths[lidx] = ptids.GetNumberOfIds()
     return(output_lengths)
