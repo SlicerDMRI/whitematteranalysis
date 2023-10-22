@@ -78,7 +78,7 @@ def main():
 
     fixed_log = os.path.join(args.inputDirectory, 'fixed.log')
     if os.path.exists(fixed_log):
-        print(" ** Aleady fixed!")
+        print(" ** Already fixed!")
         return
 
     vtk_list = list_files(args.inputDirectory, "*.vt*")

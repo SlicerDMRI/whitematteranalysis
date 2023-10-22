@@ -103,7 +103,7 @@ def main():
             output.close()  
             print('')      
         except:
-            print('[ERRIR] Download fails! Please check your network connection and rerun the script.')
+            print('[ERROR] Download fails! Please check your network connection and rerun the script.')
             print(sys.exc_info())
             exit()
     
