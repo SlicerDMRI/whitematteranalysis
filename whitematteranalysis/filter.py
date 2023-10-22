@@ -21,7 +21,7 @@ remove_outliers
 
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 try:
@@ -71,9 +71,9 @@ def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, nu
         # call preprocess just to get the lengths measured
         inpd2, lengths, step_size = preprocess(inpd, 0.0, max_length_mm=max_length_mm, verbose=False, return_lengths=True)
         if max_length_mm is None:
-            max_length_mm = numpy.max(lengths)
+            max_length_mm = np.max(lengths)
         if min_length_mm is None:
-            min_length_mm = numpy.min(lengths)
+            min_length_mm = np.min(lengths)
 
     increment = (max_length_mm - min_length_mm) / (num_bins - 1)
     bin_ends = list()
@@ -135,7 +135,7 @@ def compute_lengths(inpd):
     for ptidx in range(1, ptids.GetNumberOfIds()-1):
         point0 = inpoints.GetPoint(ptids.GetId(ptidx))
         point1 = inpoints.GetPoint(ptids.GetId(ptidx + 1))
-        step_size += numpy.sqrt(numpy.sum(numpy.power(numpy.subtract(point0, point1), 2)))
+        step_size += np.sqrt(np.sum(np.power(np.subtract(point0, point1), 2)))
         count += 1
     step_size = step_size / count
 
@@ -148,7 +148,7 @@ def compute_lengths(inpd):
         # save length
         fiber_lengths.append(ptids.GetNumberOfIds() * step_size)
 
-    return numpy.array(fiber_lengths), step_size
+    return np.array(fiber_lengths), step_size
 
 def preprocess(inpd, min_length_mm,
                remove_u=False,
@@ -224,8 +224,8 @@ def preprocess(inpd, min_length_mm,
 
             if remove_u:
                 # compute distance between endpoints
-                endpoint_dist = numpy.sqrt(numpy.sum(numpy.power(
-                            numpy.subtract(point0, point1), 2)))
+                endpoint_dist = np.sqrt(np.sum(np.power(
+                            np.subtract(point0, point1), 2)))
                 if endpoint_dist < remove_u_endpoint_dist:
                     keep_curr_fiber = False
 
@@ -239,15 +239,15 @@ def preprocess(inpd, min_length_mm,
         if keep_curr_fiber:
             line_indices.append(lidx)
 
-    fiber_mask = numpy.zeros(num_lines)
+    fiber_mask = np.zeros(num_lines)
     fiber_mask[line_indices] = 1
     outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data, verbose=verbose)
 
     if return_indices:
         if return_lengths:
-            return outpd, numpy.array(line_indices), fiber_lengths, step_size
+            return outpd, np.array(line_indices), fiber_lengths, step_size
         else:
-            return outpd, numpy.array(line_indices)
+            return outpd, np.array(line_indices)
     else:
         if return_lengths:
             return outpd, fiber_lengths, step_size
@@ -269,17 +269,17 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     if random_seed is not None:
         if verbose:
             print(f"<{os.path.basename(__file__)}> Setting random seed to", random_seed)
-        numpy.random.seed(seed=random_seed)
+        np.random.seed(seed=random_seed)
 
     # randomly pick the lines that we will keep
-    line_indices = numpy.random.permutation(num_lines)
+    line_indices = np.random.permutation(num_lines)
     if initial_indices is None:
         line_indices = line_indices[0:output_number_of_lines]
-        fiber_mask = numpy.zeros(num_lines)
+        fiber_mask = np.zeros(num_lines)
         fiber_mask[line_indices] = 1
     else:
         line_indices = initial_indices[line_indices[0:output_number_of_lines]]
-        fiber_mask = numpy.zeros(inpd.GetNumberOfLines())
+        fiber_mask = np.zeros(inpd.GetNumberOfLines())
         fiber_mask[line_indices] = 1
 
     # don't color by line index by default, preserve whatever was there
@@ -291,7 +291,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     if return_indices:
         # return sorted indices, this is the line ordering of output
         # polydata (because we mask rather than changing input line order)
-        return outpd, numpy.sort(line_indices)
+        return outpd, np.sort(line_indices)
     else:
         return outpd
 
@@ -613,12 +613,12 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
                 distance_method = distance_method)
             for lidx in fiber_indices)
 
-        distances = numpy.array(distances)
+        distances = np.array(distances)
 
         # now we check where there are no nearby fibers in d
-        mindist = numpy.zeros(fiber_array.number_of_fibers)
+        mindist = np.zeros(fiber_array.number_of_fibers)
         for lidx in fiber_indices:
-            dist = numpy.sort(distances[lidx, :])
+            dist = np.sort(distances[lidx, :])
             # robust minimum distance
             mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
             #mindist[lidx] = (dist[1] + dist[2]) / 2.0
@@ -626,10 +626,10 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
     else:
         # do this in a loop to use less memory. then parallelization can 
         # happen over the number of subjects.
-        mindist = numpy.zeros(fiber_array.number_of_fibers)
+        mindist = np.zeros(fiber_array.number_of_fibers)
         for lidx in fiber_indices:
             distances = similarity.fiber_distance(fiber_array.get_fiber(lidx), fiber_array, 0,  distance_method = distance_method)
-            dist = numpy.sort(distances)
+            dist = np.sort(distances)
             # robust minimum distance
             mindist[lidx] = (dist[1] + dist[2] + dist[3]) / 3.0
             
@@ -637,7 +637,7 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
     fiber_mask = mindist < min_fiber_distance
 
     if True:
-        num_fibers = len(numpy.nonzero(fiber_mask)[0]), "/", len(fiber_mask)
+        num_fibers = len(np.nonzero(fiber_mask)[0]), "/", len(fiber_mask)
         print(f"<{os.path.basename(__file__)}> Number retained after outlier removal: ", num_fibers)
 
     outpd = mask(inpd, fiber_mask, mindist)
@@ -685,10 +685,10 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
             current_fiber_array,
             0, 'Hausdorff')
             for lidx in fiber_indices)
-        distances = numpy.array(distances)
+        distances = np.array(distances)
     else:
         distances = \
-            numpy.zeros(
+            np.zeros(
             (current_fiber_array.number_of_fibers,
              current_fiber_array.number_of_fibers))
         for lidx in fiber_indices:
@@ -703,15 +703,15 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
             print(fidx, '/', current_fiber_array.number_of_fibers)
 
         # find indices of all nearby fibers
-        indices = numpy.nonzero(distances[fidx] < upper_thresh)[0]
+        indices = np.nonzero(distances[fidx] < upper_thresh)[0]
         local_fibers = list()
         local_weights = list()
 
         for idx in indices:
             dist = distances[fidx][idx]
             # these are now squared distances
-            weight = numpy.exp(-dist/sigmasq)
-            #weight = numpy.exp(-(dist*dist)/sigmasq)
+            weight = np.exp(-dist/sigmasq)
+            #weight = np.exp(-(dist*dist)/sigmasq)
             local_fibers.append(curr_fibers[idx] * weight)
             local_weights.append(weight)
         # actually perform the weighted average
@@ -734,9 +734,9 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
     output_fiber_array.points_per_fiber = points_per_fiber
     dims = [output_fiber_array.number_of_fibers, output_fiber_array.points_per_fiber]
     # fiber data
-    output_fiber_array.fiber_array_r = numpy.zeros(dims)
-    output_fiber_array.fiber_array_a = numpy.zeros(dims)
-    output_fiber_array.fiber_array_s = numpy.zeros(dims)
+    output_fiber_array.fiber_array_r = np.zeros(dims)
+    output_fiber_array.fiber_array_a = np.zeros(dims)
+    output_fiber_array.fiber_array_s = np.zeros(dims)
     next_fidx = 0
     for next_fib in next_fibers:
         output_fiber_array.fiber_array_r[next_fidx] = next_fib.r
@@ -757,7 +757,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
     outpd.GetCellData().AddArray(outcolors)
     outpd.GetCellData().SetActiveScalars('KernelDensity')
 
-    return outpd, numpy.array(next_weights)
+    return outpd, np.array(next_weights)
     
 def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jobs=2, cluster_max = 10):
     """ Average nearby fibers.
@@ -786,7 +786,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     iteration_count = 0
     
     while not converged:
-        print(f"<{os.path.basename(__file__)}> ITERATION:", iteration_count, "SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)))
+        print(f"<{os.path.basename(__file__)}> ITERATION:", iteration_count, "SUM FIBER COUNTS:", np.sum(np.array(curr_count)))
         print(f"<{os.path.basename(__file__)}> number indices", len(curr_indices))
         
         # fiber data structures for output of this iteration
@@ -795,11 +795,11 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         next_indices = list()
         
         # information for this iteration
-        done = numpy.zeros(current_fiber_array.number_of_fibers)
+        done = np.zeros(current_fiber_array.number_of_fibers)
         fiber_indices = list(range(0, current_fiber_array.number_of_fibers))
 
         # if the maximum number of fibers have been combined, stop averaging this fiber
-        done[numpy.nonzero(numpy.array(curr_count) >= cluster_max)] = 1
+        done[np.nonzero(np.array(curr_count) >= cluster_max)] = 1
         
         # pairwise distance matrix
         if USE_PARALLEL:
@@ -809,10 +809,10 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
                 current_fiber_array,
                 0, 'Hausdorff')
                 for lidx in fiber_indices)
-            distances = numpy.array(distances)
+            distances = np.array(distances)
         else:
             distances = \
-                numpy.zeros(
+                np.zeros(
                 (current_fiber_array.number_of_fibers,
                  current_fiber_array.number_of_fibers))
             for lidx in fiber_indices:
@@ -823,11 +823,11 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
 
         # distances to self are not of interest
         for lidx in fiber_indices:
-            distances[lidx,lidx] = numpy.inf
+            distances[lidx,lidx] = np.inf
         
         # sort the pairwise distances. 
         distances_flat = distances.flatten()
-        pair_order = numpy.argsort(distances_flat)
+        pair_order = np.argsort(distances_flat)
 
         print(f"<{os.path.basename(__file__)}> DISTANCE MIN:", distances_flat[pair_order[0]], \
             "DISTANCE COUNT:", distances.shape)
@@ -876,7 +876,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
             pair_idx = pair_order[idx]
 
         # copy through any unvisited (already converged) fibers
-        unvisited = numpy.nonzero(done==0)[0]
+        unvisited = np.nonzero(done==0)[0]
         for fidx in unvisited:
             next_fibers.append(curr_fibers[fidx])
             next_count.append(curr_count[fidx])
@@ -894,9 +894,9 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         current_fiber_array.points_per_fiber = points_per_fiber
         dims = [current_fiber_array.number_of_fibers, current_fiber_array.points_per_fiber]
         # fiber data
-        current_fiber_array.fiber_array_r = numpy.zeros(dims)
-        current_fiber_array.fiber_array_a = numpy.zeros(dims)
-        current_fiber_array.fiber_array_s = numpy.zeros(dims)
+        current_fiber_array.fiber_array_r = np.zeros(dims)
+        current_fiber_array.fiber_array_a = np.zeros(dims)
+        current_fiber_array.fiber_array_s = np.zeros(dims)
         curr_fidx = 0
         for curr_fib in curr_fibers:
             current_fiber_array.fiber_array_r[curr_fidx] = curr_fib.r
@@ -904,8 +904,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
             current_fiber_array.fiber_array_s[curr_fidx] = curr_fib.s
             curr_fidx += 1
 
-        print(f"<{os.path.basename(__file__)}> SUM FIBER COUNTS:", numpy.sum(numpy.array(curr_count)), "SUM DONE FIBERS:", numpy.sum(done))
-        print(f"<{os.path.basename(__file__)}> MAX COUNT:" , numpy.max(numpy.array(curr_count)), "AVGS THIS ITER:", number_averages)
+        print(f"<{os.path.basename(__file__)}> SUM FIBER COUNTS:", np.sum(np.array(curr_count)), "SUM DONE FIBERS:", np.sum(done))
+        print(f"<{os.path.basename(__file__)}> MAX COUNT:" , np.max(np.array(curr_count)), "AVGS THIS ITER:", number_averages)
 
     # when converged, convert output to polydata
     outpd = current_fiber_array.convert_to_polydata()
@@ -918,11 +918,11 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     outpd.GetCellData().SetScalars(outcolors)
 
     # also color the input pd by output cluster number
-    cluster_numbers = numpy.zeros(original_number_of_fibers)
-    cluster_count = numpy.zeros(original_number_of_fibers)
+    cluster_numbers = np.zeros(original_number_of_fibers)
+    cluster_count = np.zeros(original_number_of_fibers)
     cluster_idx = 0
     for index_list in curr_indices:
-        indices = numpy.array(index_list).astype(int)
+        indices = np.array(index_list).astype(int)
         cluster_numbers[indices] = cluster_idx
         cluster_count[indices] = curr_count[cluster_idx]
         cluster_idx += 1
@@ -933,7 +933,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     inpd.GetCellData().AddArray(outclusters)
     inpd.GetCellData().SetActiveScalars('ClusterNumber')
 
-    return outpd, numpy.array(curr_count), inpd, cluster_numbers, cluster_count
+    return outpd, np.array(curr_count), inpd, cluster_numbers, cluster_count
     
 
     
@@ -974,10 +974,10 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
             fiber_array,
             0, 'Hausdorff')
             for lidx in fiber_indices)
-        distances = numpy.array(distances)
+        distances = np.array(distances)
     else:
         distances = \
-            numpy.zeros(
+            np.zeros(
             (fiber_array.number_of_fibers,
              fiber_array.number_of_fibers))
         for lidx in fiber_indices:
@@ -1004,20 +1004,20 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
 
         # find indices of all nearby fibers
         # this includes the center fiber under the kernel
-        indices = numpy.nonzero(distances[fidx] < upper_thresh)[0]
+        indices = np.nonzero(distances[fidx] < upper_thresh)[0]
         local_fibers = list()
         local_weights = list()
 
         for idx in indices:
             dist = distances[fidx][idx]
             # compute filter kernel weights
-            weight = numpy.exp(-(dist*dist)/sigmasq)
-            #weight = (1 - (dist*dist)/sigmasq) * numpy.exp(-(dist*dist)/(2*sigmasq))
+            weight = np.exp(-(dist*dist)/sigmasq)
+            #weight = (1 - (dist*dist)/sigmasq) * np.exp(-(dist*dist)/(2*sigmasq))
             local_fibers.append(fiber_list[idx])
             local_weights.append(weight)
 
         # actually perform the weighted average
-        #mean_weight = numpy.mean(numpy.array(local_weights))
+        #mean_weight = np.mean(np.array(local_weights))
         #out_weights = local_weights[0]
         #for weight in local_weights[1:]:
         #    out_weights += weight
@@ -1041,9 +1041,9 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
             if idx == 0:
                 out_vector = fibers.Fiber()
                 out_vector.points_per_fiber = points_per_fiber
-                out_vector.r = numpy.zeros(points_per_fiber)
-                out_vector.a = numpy.zeros(points_per_fiber)
-                out_vector.s = numpy.zeros(points_per_fiber)
+                out_vector.r = np.zeros(points_per_fiber)
+                out_vector.a = np.zeros(points_per_fiber)
+                out_vector.s = np.zeros(points_per_fiber)
             #filtered_fiber = match_fiber.match_order(fiber)
             #out_vector.r = (out_vector.r + matched_fiber.r) * local_weights[idx]
             #out_vector.a = (out_vector.a + matched_fiber.a) * local_weights[idx]
@@ -1053,17 +1053,17 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
             out_vector.s += (current_fiber.s - matched_fiber.s) * local_weights[idx]
             idx += 1
 
-        total_weights = numpy.sum(numpy.array(local_weights))
+        total_weights = np.sum(np.array(local_weights))
         out_vector = out_vector / total_weights       
 
         filter_vectors.append(out_vector)
         filter_confidences.append(total_weights)
 
-        filter_vector_magnitudes.append(numpy.sqrt(\
-                numpy.multiply(out_vector.r, out_vector.r) + \
-                    numpy.multiply(out_vector.a, out_vector.a) + \
-                    numpy.multiply(out_vector.s, out_vector.s)))
-        #filter_vector_magnitudes.append(numpy.sum(out_vector.r))
+        filter_vector_magnitudes.append(np.sqrt(\
+                np.multiply(out_vector.r, out_vector.r) + \
+                    np.multiply(out_vector.a, out_vector.a) + \
+                    np.multiply(out_vector.s, out_vector.s)))
+        #filter_vector_magnitudes.append(np.sum(out_vector.r))
 
 
     # output a new pd!!!!
@@ -1113,17 +1113,17 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
     #inpd.GetCellData().AddArray(outcolors)
     #inpd.GetCellData().SetActiveScalars('EdgeMagnitude')
 
-    return outpd, numpy.array(filter_vector_magnitudes)
+    return outpd, np.array(filter_vector_magnitudes)
 
 def pd_to_array(inpd, dims=225):
-    count_vol = numpy.ndarray([dims,dims,dims])
+    count_vol = np.ndarray([dims,dims,dims])
     ptids = vtk.vtkIdList()
     points = inpd.GetPoints()
     data_vol = []    
     # check for cell data
     cell_data = inpd.GetCellData().GetScalars()
     if cell_data:
-        data_vol = numpy.ndarray([dims,dims,dims])
+        data_vol = np.ndarray([dims,dims,dims])
     # loop over lines
     inpd.GetLines().InitTraversal()
     print(f"<{os.path.basename(__file__)}> Input number of points: ",\
@@ -1140,7 +1140,7 @@ def pd_to_array(inpd, dims=225):
         for pidx in range(0, num_points):
             point = points.GetPoint(ptids.GetId(pidx))
             # center so that 0,0,0 moves to 100,100,100
-            point = numpy.round(numpy.array(point) + 110)         
+            point = np.round(np.array(point) + 110)
             count_vol[point[0], point[1], point[2]] += 1
             if cell_data:
                 data_vol[point[0], point[1], point[2]] += cell_data.GetTuple(lidx)[0]
@@ -1157,7 +1157,7 @@ def array_to_vtk(inarray, name='from_numpy'):
     sc.SetNumberOfComponents(1)
     sc.SetName(name)
     for ii,tmp in enumerate(inarray.flatten()):
-        sc.SetValue(ii,round((numpy.abs(tmp))*100))
+        sc.SetValue(ii,round((np.abs(tmp))*100))
     vol.GetPointData().SetScalars(sc)
     return vol
     
@@ -1165,7 +1165,7 @@ def array_to_vtk(inarray, name='from_numpy'):
 def measure_line_lengths(inpd):
     ptids = vtk.vtkIdList()
     points = inpd.GetPoints()
-    output_lengths = numpy.zeros(inpd.GetNumberOfLines())
+    output_lengths = np.zeros(inpd.GetNumberOfLines())
     # loop over lines
     inpd.GetLines().InitTraversal()
     print(f"<{os.path.basename(__file__)}> Input number of points: ",\

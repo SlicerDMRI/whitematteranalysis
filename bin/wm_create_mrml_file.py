@@ -5,7 +5,7 @@ import argparse
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -47,9 +47,9 @@ def main():
     # hack a colormap. 0..255 values for each
     step = int(100*255.0 / (number_of_files-1))
     print(step, number_of_files)
-    R = numpy.array(list(range(0,100*255+1, step))) / 100.0
-    G = numpy.abs(list(range(100*-127,100*128+1, step)))* 2.0 / 100.0
-    B = numpy.array(list(range(100*255+1,0, -step))) / 100.0
+    R = np.array(list(range(0,100*255+1, step))) / 100.0
+    G = np.abs(list(range(100*-127,100*128+1, step)))* 2.0 / 100.0
+    B = np.array(list(range(100*255+1,0, -step))) / 100.0
     
     #print len(R), len (G), len(B)
     #print R
@@ -61,7 +61,7 @@ def main():
     for pd in input_polydatas:
         colors.append([R[idx], G[idx],B[idx]])
         idx += 1
-    colors = numpy.array(colors)
+    colors = np.array(colors)
     print(colors)
     wma.mrml.write(input_polydatas, colors, os.path.join(args.inputDirectory, mrml_filename), ratio=1.0)
 

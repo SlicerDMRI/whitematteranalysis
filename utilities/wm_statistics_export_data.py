@@ -5,7 +5,7 @@ import argparse
 import csv
 import os
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 

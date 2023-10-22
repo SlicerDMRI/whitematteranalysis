@@ -5,7 +5,7 @@ import argparse
 import glob
 import os
 
-import numpy
+import numpy as np
 import pandas
 
 
@@ -82,8 +82,8 @@ def main():
 
         data.append(stats_data_vec)
 
-    data = numpy.array(data)
-    data = numpy.concatenate([numpy.array(subject_IDs)[:, numpy.newaxis], data], axis = 1)
+    data = np.array(data)
+    data = np.concatenate([np.array(subject_IDs)[:, np.newaxis], data], axis = 1)
 
     df = pandas.DataFrame(data, columns=appended_fields)
 
@@ -111,19 +111,19 @@ def main():
 
     if len(clusters) == 800 and len(tracts) == 73:
         comm_clusters = [3, 8, 33, 40, 46, 52, 56, 57, 62, 68, 69, 73, 86, 91, 109, 110, 114, 142, 144, 145, 146, 159, 163, 250, 251, 252, 257, 262, 263, 268, 271, 305, 311, 314, 322, 330, 334, 338, 342, 350, 363, 371, 375, 403, 410, 437, 440, 448, 456, 465, 468, 475, 484, 485, 488, 519, 522, 525, 543, 545, 549, 557, 576, 577, 582, 587, 591, 597, 601, 614, 620, 623, 627, 633, 645, 653, 658, 663, 670, 677, 683, 702, 770, 781]
-        comm_clusters = numpy.array(comm_clusters)
-        hemi_clusters = numpy.setdiff1d(numpy.arange(800), comm_clusters)
+        comm_clusters = np.array(comm_clusters)
+        hemi_clusters = np.setdiff1d(np.arange(800), comm_clusters)
     elif len(clusters) == 800 and len(tracts) == 74: # CPC separated
         comm_clusters = [3, 8, 33, 40, 46, 52, 56, 57, 62, 68, 69, 73, 86, 91, 109, 110, 114, 142, 144, 146, 163, 250, 251, 252, 257, 262, 263, 268, 271, 305, 311, 314, 322, 330, 334, 338, 342, 350, 363, 371, 375, 403, 410, 437, 440, 448, 456, 465, 468, 475, 484, 485, 488, 519, 522, 525, 543, 545, 549, 576, 577, 582, 587, 591, 597, 601, 614, 620, 623, 627, 633, 645, 653, 658, 663, 670, 683, 702, 781]
-        comm_clusters = numpy.array(comm_clusters)
-        hemi_clusters = numpy.setdiff1d(numpy.arange(800), comm_clusters)
+        comm_clusters = np.array(comm_clusters)
+        hemi_clusters = np.setdiff1d(np.arange(800), comm_clusters)
     else:
         comm_clusters = None
         hemi_clusters = None
 
     locations = ['left_hemisphere', 'right_hemisphere', 'commissural']
     appended_fields = ['subjectkey']
-    clusters = numpy.array(clusters)
+    clusters = np.array(clusters)
     for loc in locations:
         if loc == 'left_hemisphere' or loc == 'right_hemisphere':
             clusters_loc = clusters[hemi_clusters]
@@ -161,7 +161,7 @@ def main():
         stats_data = stats_data[comm_clusters, :]
         c_stats_data_vec = stats_data.flatten()
 
-        stats_data_vec = numpy.concatenate([l_stats_data_vec, r_stats_data_vec, c_stats_data_vec])
+        stats_data_vec = np.concatenate([l_stats_data_vec, r_stats_data_vec, c_stats_data_vec])
 
         if stats_data_vec.shape[0] != len(appended_fields) - 1:
             print("Error: Check if the diffusion measure file has the same rows and columns with other subjects!")
@@ -169,8 +169,8 @@ def main():
 
         data.append(stats_data_vec)
 
-    data = numpy.array(data)
-    data = numpy.concatenate([numpy.array(subject_IDs)[:, numpy.newaxis], data], axis = 1)
+    data = np.array(data)
+    data = np.concatenate([np.array(subject_IDs)[:, np.newaxis], data], axis = 1)
 
     df = pandas.DataFrame(data, columns=appended_fields)
 

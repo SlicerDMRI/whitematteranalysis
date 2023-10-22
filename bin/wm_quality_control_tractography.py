@@ -6,7 +6,7 @@ import os
 import sys
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -190,7 +190,7 @@ def main():
     
         # Preprocess for rendering without short fibers and compute fiber lengths
         pd2, lengths, step_size = wma.filter.preprocess(pd, 5, return_lengths=True, verbose=False)
-        lengths = numpy.array(lengths)
+        lengths = np.array(lengths)
         
         # Render individual subject, only including fibers above 5mm.
         ren = wma.render.render(pd2, 1000, verbose=False)
@@ -247,17 +247,17 @@ def main():
         # Compute and save stats about this subject's fiber histogram
         # numbers of fibers at different possible threshold lengths
         pd2, lengths, step_size = wma.filter.preprocess(pd, 20, return_lengths=True, verbose=False)
-        lengths = numpy.array(lengths)
+        lengths = np.array(lengths)
         fibers_qc_file = open(fibers_qc_fname, 'a')
         outstr = str(subject_id) +  '\t'
         outstr = outstr + f'{step_size:.4f}' + '\t'
         # total points in the dataset
         outstr = outstr + str(pd.GetNumberOfPoints()) + '\t'
         # mean fiber length
-        outstr = outstr + str(numpy.mean(lengths)) + '\t'
+        outstr = outstr + str(np.mean(lengths)) + '\t'
         # total numbers of fibers
         for test_length in fiber_test_lengths:
-            number_fibers = numpy.count_nonzero(lengths > test_length)
+            number_fibers = np.count_nonzero(lengths > test_length)
             outstr = outstr + str(number_fibers) + '\t'
         outstr = outstr + '\n'
         fibers_qc_file.write(outstr)
@@ -296,8 +296,8 @@ def main():
         # number_rendered_fibers = 500
         number_rendered_fibers = 100
         pd3 = wma.filter.downsample(pd2, number_rendered_fibers, verbose=False)
-        mask = numpy.ones(number_rendered_fibers)
-        colors = numpy.multiply(mask, subject_idx)
+        mask = np.ones(number_rendered_fibers)
+        colors = np.multiply(mask, subject_idx)
         pd3 = wma.filter.mask(pd3, mask, colors, verbose=False)
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             appender.AddInputData(pd3)

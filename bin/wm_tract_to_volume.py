@@ -5,7 +5,7 @@ import argparse
 import os
 
 import nibabel as nib
-import numpy
+import numpy as np
 import vtk
 from nibabel.affines import apply_affine
 
@@ -50,7 +50,7 @@ def main():
     def convert_cluster_to_volume_with_sz(inpd, volume, sampling_size=0.5):
     
         volume_shape = volume.get_fdata().shape
-        new_voxel_data = numpy.zeros(volume_shape)
+        new_voxel_data = np.zeros(volume_shape)
     
         resampler = vtk.vtkPolyDataPointSampler()
         resampler.GenerateEdgePointsOn()
@@ -92,12 +92,12 @@ def main():
             sampledCellPts = resampler.GetOutput().GetPoints()
             sampledNpts = resampler.GetOutput().GetNumberOfPoints()
     
-            line_tmp_voxel_data = numpy.zeros(volume_shape)
+            line_tmp_voxel_data = np.zeros(volume_shape)
             for pidx in range(0, sampledNpts):
                 point = sampledCellPts.GetPoint(pidx)
     
-                point_ijk = apply_affine(numpy.linalg.inv(volume.affine), point)
-                point_ijk = numpy.rint(point_ijk).astype(numpy.int32)
+                point_ijk = apply_affine(np.linalg.inv(volume.affine), point)
+                point_ijk = np.rint(point_ijk).astype(np.int32)
     
                 line_tmp_voxel_data[(point_ijk[0], point_ijk[1], point_ijk[2])] += 1
     
@@ -109,8 +109,8 @@ def main():
     def convert_cluster_to_volume(inpd, volume, measure=None):
     
         volume_shape = volume.get_fdata().shape
-        new_voxel_data = numpy.zeros(volume_shape)
-        new_voxel_measure = numpy.zeros(volume_shape)
+        new_voxel_data = np.zeros(volume_shape)
+        new_voxel_measure = np.zeros(volume_shape)
     
         inpoints = inpd.GetPoints()
         if measure is not None:
@@ -128,8 +128,8 @@ def main():
             for pidx in range(0, ptids.GetNumberOfIds()):
                 point = inpoints.GetPoint(ptids.GetId(pidx))
     
-                point_ijk = apply_affine(numpy.linalg.inv(volume.affine), point)
-                point_ijk = numpy.rint(point_ijk).astype(numpy.int32)
+                point_ijk = apply_affine(np.linalg.inv(volume.affine), point)
+                point_ijk = np.rint(point_ijk).astype(np.int32)
 
                 if measure is not None:
                     count = new_voxel_data[(point_ijk[0], point_ijk[1], point_ijk[2])]

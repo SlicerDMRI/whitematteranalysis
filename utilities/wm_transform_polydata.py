@@ -6,7 +6,7 @@ import glob
 import multiprocessing
 import os
 
-import numpy
+import numpy as np
 import vtk
 from joblib import Parallel, delayed
 

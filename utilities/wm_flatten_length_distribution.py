@@ -6,7 +6,7 @@ import glob
 import multiprocessing
 import os
 
-import numpy
+import numpy as np
 from joblib import Parallel, delayed
 
 import whitematteranalysis as wma
@@ -72,7 +72,7 @@ def main():
 
     if args.numberOfFibers is not None:
         print("fibers to retain per subject: ", args.numberOfFibers)
-        args.fibersPerBin = numpy.divide(args.numberOfFibers,args.numberOfBins)
+        args.fibersPerBin = np.divide(args.numberOfFibers,args.numberOfBins)
     else:
         print("fibers to retain per subject: ALL")
 

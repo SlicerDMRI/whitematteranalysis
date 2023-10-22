@@ -4,7 +4,7 @@
 import argparse
 import os
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 
@@ -111,7 +111,7 @@ def main():
     subject_id_list = []
     for subject_measured in measurement_list:
         subject_id_list.append(subject_measured.case_id)
-    subject_id_list = numpy.array(subject_id_list)
+    subject_id_list = np.array(subject_id_list)
 
     # sanity check number of clusters is the same for all subjects
     print("\n== Testing if all subjects have the same number of clusters.")
@@ -160,7 +160,7 @@ def main():
         print("Clusters that are connected in", num_idx, '(subject number threshold) subjects: ', sum(num_subjects_per_cluster == num_idx))
 
     print("\n== Result clusters that are detected by at least",subject_number_threshold,'subjects')
-    output_cluster_idx = numpy.where(num_subjects_per_cluster >= subject_number_threshold)[0]
+    output_cluster_idx = np.where(num_subjects_per_cluster >= subject_number_threshold)[0]
     output_cluster_idx = output_cluster_idx + 1
     print("Total", len(output_cluster_idx), "clusters.")
     print(output_cluster_idx)
@@ -179,16 +179,16 @@ def main():
         number_of_files = len(cluster_polydatas)
 
         step = int(100 * 255.0 / (number_of_files - 1))
-        R = numpy.array(list(range(0, 100 * 255 + 1, step))) / 100.0
-        G = numpy.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
-        B = numpy.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
+        R = np.array(list(range(0, 100 * 255 + 1, step))) / 100.0
+        G = np.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
+        B = np.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
 
         colors = list()
         idx = 0
         for pd in cluster_polydatas:
             colors.append([R[idx], G[idx], B[idx]])
             idx += 1
-        colors = numpy.array(colors)
+        colors = np.array(colors)
 
         mrml_filename = "cluster_connecting_region_" + region + ".mrml"
 

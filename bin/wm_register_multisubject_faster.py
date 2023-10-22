@@ -6,7 +6,7 @@ import multiprocessing
 import os
 import time
 
-import numpy
+import numpy as np
 import scipy.optimize
 import vtk
 
@@ -435,13 +435,13 @@ def main():
     # -------------
     # Done SETTINGS. Below is computation
     # -------------
-    total_iterations = numpy.sum(numpy.array(iterations_per_scale))
+    total_iterations = np.sum(np.array(iterations_per_scale))
     iteration = 1
     # estimate percentage complete based on number of fibers compared,
     # because the times cobyla calls the objective function are approx
     # constant per scale (except first scale where they are cut short)
-    total_comparisons = numpy.multiply(iterations_per_scale,numpy.multiply(numpy.array(mean_brain_size_per_scale), numpy.array(subject_brain_size_per_scale)))
-    total_comparisons = numpy.sum(total_comparisons)
+    total_comparisons = np.multiply(iterations_per_scale,np.multiply(np.array(mean_brain_size_per_scale), np.array(subject_brain_size_per_scale)))
+    total_comparisons = np.sum(total_comparisons)
     comparisons_so_far = 0
     progress_filename = os.path.join(args.outputDirectory, 'progress.txt')
     progress_file = open(progress_filename, 'w')

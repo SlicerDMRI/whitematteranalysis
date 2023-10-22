@@ -5,7 +5,7 @@ import argparse
 import os
 
 import nibabel as nib
-import numpy
+import numpy as np
 import vtk
 from nibabel.affines import apply_affine
 
@@ -80,7 +80,7 @@ def main():
         volume_shape = volume.get_data().shape 
         voxel_size = volume.header.get_zooms()
     
-        new_voxel_data = numpy.zeros(volume_shape)
+        new_voxel_data = np.zeros(volume_shape)
     
         if sampling_size is not None:
             resampler = vtk.vtkPolyDataPointSampler()
@@ -131,8 +131,8 @@ def main():
             for pidx in range(0, sampledNpts):
                 point = sampledCellPts.GetPoint(pidx)
     
-                point_ijk = apply_affine(numpy.linalg.inv(volume.affine), point)
-                point_ijk = numpy.rint(point_ijk).astype(numpy.int32)
+                point_ijk = apply_affine(np.linalg.inv(volume.affine), point)
+                point_ijk = np.rint(point_ijk).astype(np.int32)
     
                 if point_ijk[0] > new_voxel_data.shape[0] or point_ijk[1]> new_voxel_data.shape[1] or point_ijk[2] > new_voxel_data.shape[2]:
                     print('Warning: point', point_ijk, 'is outside the input volumetric map.')
@@ -143,17 +143,17 @@ def main():
                     value_list.append(volume_data[(point_ijk[0], point_ijk[1], point_ijk[2])])
     
         if len(value_list) > 0:
-            mean_v = numpy.mean(value_list)
-            var_v = numpy.var(value_list)
-            max_v = numpy.max(value_list)
-            min_v = numpy.min(value_list)
-            median_v = numpy.median(value_list)
+            mean_v = np.mean(value_list)
+            var_v = np.var(value_list)
+            max_v = np.max(value_list)
+            min_v = np.min(value_list)
+            median_v = np.median(value_list)
         else:
-            mean_v = numpy.nan
-            var_v = numpy.nan
-            max_v = numpy.nan
-            min_v = numpy.nan
-            median_v = numpy.nan
+            mean_v = np.nan
+            var_v = np.nan
+            max_v = np.nan
+            min_v = np.nan
+            median_v = np.nan
          
         num_voxels = len(value_list)
         volume_size = voxel_size[0] * voxel_size[1] * voxel_size[2] * num_voxels

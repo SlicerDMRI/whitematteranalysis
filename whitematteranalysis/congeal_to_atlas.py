@@ -11,7 +11,7 @@ class MultiSubjectRegistration
 
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -89,7 +89,7 @@ class SubjectToAtlasRegistration:
         if self.mode == "Nonrigid":
             # This sets up identity transform to initialize.
             res = self.nonrigid_grid_resolution
-            trans = numpy.zeros(res*res*res*3)
+            trans = np.zeros(res*res*res*3)
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             self.transform = vtktrans
             self.transform_as_array = trans
@@ -97,7 +97,7 @@ class SubjectToAtlasRegistration:
         else:
             trans = vtk.vtkTransform()
             self.transform = trans
-            self.transform_as_array =  numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float)
+            self.transform_as_array =  np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float)
         self.subject_id = subject_id
 
     def set_atlas(self, polydata, atlas_id):
@@ -119,7 +119,7 @@ class SubjectToAtlasRegistration:
 
         mean_fibers = wma.fibers.FiberArray()
         mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
-        fixed = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+        fixed = np.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
         
         print("filtering and downsampling subject")
         subject_brain = wma.filter.preprocess(self.subject_polydata, self.fiber_length, max_length_mm=self.fiber_length_max, return_indices=False, preserve_point_data=False, preserve_cell_data=False, verbose=False)
@@ -127,12 +127,12 @@ class SubjectToAtlasRegistration:
 
         fibers = wma.fibers.FiberArray()
         fibers.convert_from_polydata(subject_brain, self.points_per_fiber)
-        moving = numpy.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
+        moving = np.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
 
         subject_idx = 1
         iteration_count = self.total_iterations
         output_directory = self.output_directory
-        step_size = numpy.array([self.initial_step, self.final_step])
+        step_size = np.array([self.initial_step, self.final_step])
         render = False
         
         (self.transform_as_array, objectives, diff) = wma.congeal_multisubject.congeal_multisubject_inner_loop(fixed, moving, self.transform_as_array, self.mode, self.sigma, subject_idx, iteration_count, self.output_directory, step_size, self.maxfun, render, self.nonrigid_grid_resolution)

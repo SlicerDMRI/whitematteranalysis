@@ -5,7 +5,7 @@ import argparse
 import glob
 import os
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 
@@ -82,7 +82,7 @@ def main():
     
     # Read number of fibers per cluster per subject
     print(f"<{os.path.basename(__file__)}> calculate the number of fibers per cluster per subject.")
-    num_fibers_per_subject = numpy.zeros([num_of_subjects, num_of_clusters])
+    num_fibers_per_subject = np.zeros([num_of_subjects, num_of_clusters])
     for sidx in range(0, num_of_subjects):
         sub = subject_list[sidx]
         print("   loading", sub)
@@ -96,10 +96,10 @@ def main():
             pd = wma.io.read_polydata(fname)
             num_fibers_per_subject[sidx, cidx] = pd.GetNumberOfLines()
     
-    subjects_per_cluster = numpy.sum(num_fibers_per_subject > 0, axis=0)
-    #clusters_per_subject = numpy.sum(num_fibers_per_subject > 0, axis=1)
+    subjects_per_cluster = np.sum(num_fibers_per_subject > 0, axis=0)
+    #clusters_per_subject = np.sum(num_fibers_per_subject > 0, axis=1)
     
-    percent_subjects_per_cluster = numpy.divide(subjects_per_cluster, float(num_of_subjects))
+    percent_subjects_per_cluster = np.divide(subjects_per_cluster, float(num_of_subjects))
     
     clusters_qc_fname = os.path.join(output_dir, 'cluster_quality_control.txt')
     print(f"<{os.path.basename(__file__)}> Saving cluster quality control information file.")
@@ -112,8 +112,8 @@ def main():
     if HAVE_PLT:
         print(f"<{os.path.basename(__file__)}> Saving subjects per cluster histogram.")
         fig, ax = plt.subplots()
-        counts = numpy.zeros(num_of_subjects+1)
-        counts[:numpy.max(subjects_per_cluster)+1] = numpy.bincount(subjects_per_cluster)
+        counts = np.zeros(num_of_subjects+1)
+        counts[:np.max(subjects_per_cluster)+1] = np.bincount(subjects_per_cluster)
         ax.bar(list(range(num_of_subjects + 1)), counts, width=1, align='center')
         ax.set(xlim=[-1, num_of_subjects + 1])
         plt.title('Histogram of Subjects per Cluster')

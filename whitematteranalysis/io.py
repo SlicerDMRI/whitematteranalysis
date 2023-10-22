@@ -25,7 +25,7 @@ import os
 import pickle
 import time
 
-import numpy
+import numpy as np
 import vtk
 from joblib import Parallel, delayed
 
@@ -506,7 +506,7 @@ def write_transforms_to_itk_format(transform_list, outdir, subject_ids=None):
             extent_0 = [-int((grid_size[0] - 1)/2), -int((grid_size[1] - 1)/2), -int((grid_size[2] - 1)/2)]
             extent_1 = [ int((grid_size[0] - 1)/2),  int((grid_size[1] - 1)/2),  int((grid_size[2] - 1)/2)]
 
-            origin = -grid_spacing * (numpy.array(extent_1) - numpy.array(extent_0))/2.0
+            origin = -grid_spacing * (np.array(extent_1) - np.array(extent_0))/2.0
 
             grid_points_LPS = list()
             grid_points_RAS = list()
@@ -695,7 +695,7 @@ class LateralityResults:
         fid.close()
         print("e")
         # generate histogram (needs matplotlib)
-        li_stats = self.laterality_index[numpy.nonzero(self.laterality_index)]
+        li_stats = self.laterality_index[np.nonzero(self.laterality_index)]
         ## if USE_MATPLOTLIB and 0:
         ##     try:
         ##         print "f"

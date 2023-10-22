@@ -4,7 +4,7 @@ import math
 import os
 import sys
 
-import numpy
+import numpy as np
 import vtk
 
 from . import fibers
@@ -14,7 +14,7 @@ sys.setrecursionlimit(1000000)
 def distance_to_similarity(distance, sigmasq=100):
 
     # compute the similarities using Gaussian kernel
-    similarities = numpy.exp(-distance / (sigmasq))
+    similarities = np.exp(-distance / (sigmasq))
 
     return similarities
 
@@ -40,9 +40,9 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
     if distance_method == 'StrictSimilarity':
         # for use in laterality
         # this is the product of all similarity values along the fiber
-        distance = numpy.maximum(distance_1, distance_2)
+        distance = np.maximum(distance_1, distance_2)
     else:
-        distance = numpy.minimum(distance_1, distance_2)
+        distance = np.minimum(distance_1, distance_2)
 
     if bilateral:
         fiber_reflect = fiber.get_reflected_fiber()
@@ -52,9 +52,9 @@ def fiber_distance(fiber, fiber_array, threshold=0, distance_method='MeanSquared
         # representation (either reflected or not)
         if distance_method == 'StrictSimilarity':
             # this is the product of all similarity values along the fiber
-            distance = numpy.maximum(distance, distance_reflect)
+            distance = np.maximum(distance, distance_reflect)
         else:
-            distance = numpy.minimum(distance, distance_reflect)
+            distance = np.minimum(distance, distance_reflect)
         
     return distance
 
@@ -81,9 +81,9 @@ def fiber_distance_oriented(fiber, fiber_array, threshold=0, distance_method='Me
         # representation (either reflected or not)
         if distance_method == 'StrictSimilarity':
             # this is the product of all similarity values along the fiber
-            distance = numpy.maximum(distance, distance_reflect)
+            distance = np.maximum(distance, distance_reflect)
         else:
-            distance = numpy.minimum(distance, distance_reflect)
+            distance = np.minimum(distance, distance_reflect)
         
     return distance
 
@@ -104,35 +104,35 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
     ddy = fiber_array.fiber_array_a - fiber.a
     ddz = fiber_array.fiber_array_s - fiber.s
 
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
+    dx = np.square(ddx)
+    dy = np.square(ddy)
+    dz = np.square(ddz)
 
     # sum dx dx dz at each point on the fiber and sqrt for threshold
-    #distance = numpy.sqrt(dx + dy + dz)
+    #distance = np.sqrt(dx + dy + dz)
     distance = dx + dy + dz
 
     # threshold if requested
     if threshold:
         # set values less than threshold to 0
         distance = distance - threshold*threshold
-        idx = numpy.nonzero(distance < 0)
+        idx = np.nonzero(distance < 0)
         distance[idx] = 0
 
     if distance_method == 'Mean':
         # sum along fiber
-        distance = numpy.sum(numpy.sqrt(distance), 1)
+        distance = np.sum(np.sqrt(distance), 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
         distance = distance / npts
         # for consistency with other methods we need to square this value
-        distance = numpy.square(distance)
+        distance = np.square(distance)
     elif distance_method == 'Hausdorff':
         # take max along fiber
-        distance = numpy.max(distance, 1)
+        distance = np.max(distance, 1)
     elif distance_method == 'MeanSquared':
         # sum along fiber
-        distance = numpy.sum(distance, 1)
+        distance = np.sum(distance, 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
         distance = distance / npts
@@ -141,45 +141,45 @@ def _fiber_distance_internal_use(fiber, fiber_array, threshold=0, distance_metho
         # this is the product of all similarity values along the fiber
         # not truly a distance but it's easiest to compute here in this function
         # where we have all distances along the fiber
-        #print "distance range :", numpy.min(distance), numpy.max(distance)
+        #print "distance range :", np.min(distance), np.max(distance)
         distance = distance_to_similarity(distance, sigmasq)
-        #print "similarity range :", numpy.min(distance), numpy.max(distance)        
-        distance = numpy.prod(distance, 1)
-        #print "overall similarity range:", numpy.min(distance), numpy.max(distance)
+        #print "similarity range :", np.min(distance), np.max(distance)        
+        distance = np.prod(distance, 1)
+        #print "overall similarity range:", np.min(distance), np.max(distance)
     elif distance_method == 'Mean_shape':
         
         # sum along fiber
         distance_square = distance
-        distance = numpy.sqrt(distance_square)
+        distance = np.sqrt(distance_square)
 
-        d = numpy.sum(distance, 1)
+        d = np.sum(distance, 1)
         # Remove effect of number of points along fiber (mean)
         npts = float(fiber_array.points_per_fiber)
-        d = numpy.divide(d, npts)
+        d = np.divide(d, npts)
         # for consistency with other methods we need to square this value
-        d = numpy.square(d)
+        d = np.square(d)
 
         distance_endpoints = (distance[:,0] + distance[:,npts-1])/2
 
-        for i in numpy.linspace(0,numpy.size(distance,0)-1,numpy.size(distance,0)):
-            for j in numpy.linspace(0,numpy.size(distance,1)-1,numpy.size(distance,1)):
+        for i in np.linspace(0,np.size(distance,0)-1,np.size(distance,0)):
+            for j in np.linspace(0,np.size(distance,1)-1,np.size(distance,1)):
                 if distance[i,j] == 0:
                     distance[i,j] = 1
-        ddx = numpy.divide(ddx,distance)
-        ddy = numpy.divide(ddy,distance)
-        ddz = numpy.divide(ddz,distance)
+        ddx = np.divide(ddx,distance)
+        ddy = np.divide(ddy,distance)
+        ddz = np.divide(ddz,distance)
         #print ddx*ddx+ddy*ddy+ddz*ddz
         npts = float(fiber_array.points_per_fiber)
-        angles = numpy.zeros([(numpy.size(distance))/npts,npts*(npts+1)/2])
+        angles = np.zeros([(np.size(distance))/npts,npts*(npts+1)/2])
         s = 0
-        n = numpy.linspace(0,npts-1,npts)
+        n = np.linspace(0,npts-1,npts)
         for i in n:
-            m = numpy.linspace(0,i,i+1)
+            m = np.linspace(0,i,i+1)
             for j in m:
                 angles[:,s] = (ddx[:,i]-ddx[:,j])*(ddx[:,i]-ddx[:,j]) + (ddy[:,i]-ddy[:,j])*(ddy[:,i]-ddy[:,j]) + (ddz[:,i]-ddz[:,j])*(ddz[:,i]-ddz[:,j])
                 s = s+1
-        angles = (numpy.sqrt(angles))/2
-        angle = numpy.max(angles,1)
+        angles = (np.sqrt(angles))/2
+        angle = np.max(angles,1)
         #print angle.max()
         
         distance = 0.5*d + 0.4*d/(0.5+0.5*(1-angle*angle)) + 0.1*distance_endpoints
@@ -200,7 +200,7 @@ def rectangular_frechet_distances(input_vtk_polydata_m,input_vtk_polydata_n):
     number_of_lines_m = input_vtk_polydata_m.GetNumberOfLines()
     all_fibers_n = range(0,number_of_lines_n)
     all_fibers_m = range(0,number_of_lines_m)
-    distances = numpy.zeros([number_of_lines_n,number_of_lines_m])
+    distances = np.zeros([number_of_lines_n,number_of_lines_m])
 
     input_vtk_polydata_n.GetLines().InitTraversal()
     line1_ptids = vtk.vtkIdList()
@@ -228,7 +228,7 @@ def pairwise_frechet_distances(input_vtk_polydata_n,input_vtk_polydata_m):
     number_of_lines_m = input_vtk_polydata_m.GetNumberOfLines()
     all_fibers_n = range(0,number_of_lines_n)
     all_fibers_m = range(0,number_of_lines_m)
-    distances = numpy.zeros([number_of_lines_n,number_of_lines_m])
+    distances = np.zeros([number_of_lines_n,number_of_lines_m])
 
     input_vtk_polydata_n.GetLines().InitTraversal()
     line1_ptids = vtk.vtkIdList()
@@ -262,7 +262,7 @@ def Frechet_distances_2(input_vtk_polydata_n, input_vtk_polydata_m):
     number_of_lines_n = input_vtk_polydata_n.GetNumberOfLines()
     all_fibers_m = range(0,number_of_lines_m)
     all_fibers_n = range(0,number_of_lines_n)
-    distances = numpy.zeros([number_of_lines_m,number_of_lines_n])
+    distances = np.zeros([number_of_lines_m,number_of_lines_n])
     
     #input_vtk_polydata2 = input_vtk_polydata
     
@@ -304,8 +304,8 @@ def _c(ca,i,j,P,Q):
     return ca[i,j]
 
 def frechDist(P,Q):
-    ca = numpy.ones((len(P),len(Q)))
-    ca = numpy.multiply(ca,-1)
+    ca = np.ones((len(P),len(Q)))
+    ca = np.multiply(ca,-1)
     return _c(ca,len(P)-1,len(Q)-1,P,Q)    
 
 def _frechet_distance_internal_use(inpoints1,inpoints2,line1_ptids,line2_ptids):
@@ -319,8 +319,8 @@ def _frechet_distance_internal_use(inpoints1,inpoints2,line1_ptids,line2_ptids):
         d2 = d2 + _euc_dist(inpoints1.GetPoint(line1_ptids.GetId(line1_length-1-i*5)),inpoints2.GetPoint(line2_ptids.GetId(line2_length-1-i*5)))
     d1 = d1/9
     d2 = d2/9
-    line1_points = numpy.zeros([int(round(line1_length/80))-1,3])
-    line2_points = numpy.zeros([int(round(line2_length/80))-1,3])
+    line1_points = np.zeros([int(round(line1_length/80))-1,3])
+    line2_points = np.zeros([int(round(line2_length/80))-1,3])
     all_points1 = range(1,int(round((line1_length)/80)))
     all_points2 = range(1,int(round((line2_length)/80)))
     for i1 in all_points1:
@@ -338,17 +338,17 @@ def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, land
     #print "*******************************"
     #print "Using landmarks. N fibers:", n_fibers, "N landmarks:", n_landmarks, "dimensions (3):", dims
     #print "*******************************"
-    diffs = numpy.zeros((n_fibers, n_landmarks))
+    diffs = np.zeros((n_fibers, n_landmarks))
     for lidx in range(n_landmarks):
         # compute fiber array landmark distances to this landmark
-        dx = numpy.subtract(fiber_array.fiber_array_r.T, landmarks[:,lidx,0]).T
-        dy = numpy.subtract(fiber_array.fiber_array_a.T, landmarks[:,lidx,1]).T
-        dz = numpy.subtract(fiber_array.fiber_array_s.T, landmarks[:,lidx,2]).T
+        dx = np.subtract(fiber_array.fiber_array_r.T, landmarks[:,lidx,0]).T
+        dy = np.subtract(fiber_array.fiber_array_a.T, landmarks[:,lidx,1]).T
+        dz = np.subtract(fiber_array.fiber_array_s.T, landmarks[:,lidx,2]).T
         
-        dx = numpy.power(dx, 2)
-        dy = numpy.power(dy, 2)
-        dz = numpy.power(dz, 2)
-        landmark_distance = numpy.sqrt(dx + dy + dz)
+        dx = np.power(dx, 2)
+        dy = np.power(dy, 2)
+        dz = np.power(dz, 2)
+        landmark_distance = np.sqrt(dx + dy + dz)
         #print "lm dist array shape", landmark_distance.shape
         
         del dx 
@@ -358,10 +358,10 @@ def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, land
         dx = fiber.r - fiber_landmarks[lidx,0]
         dy = fiber.a - fiber_landmarks[lidx,1]
         dz = fiber.s - fiber_landmarks[lidx,2]
-        dx = numpy.power(dx, 2)
-        dy = numpy.power(dy, 2)
-        dz = numpy.power(dz, 2)
-        fiber_landmark_distance = numpy.sqrt(dx + dy + dz)
+        dx = np.power(dx, 2)
+        dy = np.power(dy, 2)
+        dz = np.power(dz, 2)
+        fiber_landmark_distance = np.sqrt(dx + dy + dz)
         #print "lm dist fiber shape", fiber_landmark_distance.shape
         del dx 
         del dy 
@@ -369,9 +369,9 @@ def _fiber_distance_internal_landmarks(fiber, fiber_array, fiber_landmarks, land
         # difference between LD at all points on fiber
         ld_diff = landmark_distance - fiber_landmark_distance
         # summarize for this landmark
-        diffs[:,lidx] = numpy.mean(numpy.multiply(ld_diff, ld_diff), 1)
+        diffs[:,lidx] = np.mean(np.multiply(ld_diff, ld_diff), 1)
         
-    distance = numpy.sqrt(numpy.mean(diffs, 1))
+    distance = np.sqrt(np.mean(diffs, 1))
     return distance
 
 def total_similarity_for_laterality(fiber, fiber_array, reflect, threshold, sigmasq):
@@ -386,7 +386,7 @@ def total_similarity_for_laterality(fiber, fiber_array, reflect, threshold, sigm
     similarity = fiber_distance(fiber, fiber_array, threshold=threshold, distance_method='StrictSimilarity', sigmasq=sigmasq)
 
     # compute fiber similarity total (eg to all fibers in a hemisphere)
-    total_similarity = numpy.sum(similarity)
+    total_similarity = np.sum(similarity)
 
     # Do not include the self fiber in the computation (subtract 1.0)
     #if ~reflect:
@@ -411,7 +411,7 @@ def total_similarity_and_distances(fiber, fiber_array, reflect, threshold, sigma
     similarity = distance_to_similarity(distance, sigmasq)
 
     # compute fiber similarity total (eg to all fibers in a hemisphere)
-    total_similarity = numpy.sum(similarity)
+    total_similarity = np.sum(similarity)
 
     return total_similarity, distance
 
@@ -428,6 +428,6 @@ def total_similarity(fiber, fiber_array, threshold, sigmasq, distance_method='Me
     similarity = distance_to_similarity(distance, sigmasq)
 
     # compute fiber similarity total (eg to all fibers in a hemisphere)
-    total_similarity = numpy.sum(similarity)
+    total_similarity = np.sum(similarity)
 
     return total_similarity

@@ -4,7 +4,7 @@
 import argparse
 import os
 
-import numpy
+import numpy as np
 import scipy.stats
 
 import whitematteranalysis as wma
@@ -81,7 +81,7 @@ def main():
         #fname = subject_measured.cluster_path[0]
         #subject_id_list.append(os.path.basename(os.path.split(fname)[0]))
         subject_id_list.append(subject_measured.case_id)
-    subject_id_list = numpy.array(subject_id_list)
+    subject_id_list = np.array(subject_id_list)
     
     # sanity check number of clusters is the same for all subjects
     print("\n== Testing if all subjects have the same number of clusters.")
@@ -106,17 +106,17 @@ def main():
     mean_fibers_list = []
     for subject_measured in measurement_list:
         # mean number of fibers per cluster
-        mean_fibers_list.append(numpy.mean(subject_measured.measurement_matrix[:,vidx]))
+        mean_fibers_list.append(np.mean(subject_measured.measurement_matrix[:,vidx]))
     # print lowest numbers of fibers
-    mean_fibers_list = numpy.array(mean_fibers_list)
-    mean_fibers = numpy.mean(mean_fibers_list)
-    std_fibers = numpy.std(mean_fibers_list)
+    mean_fibers_list = np.array(mean_fibers_list)
+    mean_fibers = np.mean(mean_fibers_list)
+    std_fibers = np.std(mean_fibers_list)
     print("Mean and standard deviation of mean fibers per cluster in group:", mean_fibers, "+/-", std_fibers)
     threshold = mean_fibers - args.OutlierStandardDeviation * std_fibers
-    ## mean_sorted_idx = numpy.argsort(numpy.array(mean_fibers_list))
+    ## mean_sorted_idx = np.argsort(np.array(mean_fibers_list))
     ## for idx in mean_sorted_idx:
     ##     print mean_fibers_list[idx], "  :  ", subject_id_list[idx]
-    sorted_idx = numpy.argsort(mean_fibers_list)
+    sorted_idx = np.argsort(mean_fibers_list)
     for mf, sp in zip(mean_fibers_list[sorted_idx], subject_id_list[sorted_idx]):
         if mf < threshold:
             if test:
@@ -133,17 +133,17 @@ def main():
     empty_clusters_list = []
     for subject_measured in measurement_list:
         # check if number of fibers per cluster is 0 to indicate empty cluster
-        empty_clusters_list.append(numpy.sum(subject_measured.measurement_matrix[:,vidx] == 0))
+        empty_clusters_list.append(np.sum(subject_measured.measurement_matrix[:,vidx] == 0))
     # print highest numbers of empty clusters
-    ## empty_sorted_idx = numpy.argsort(numpy.array(empty_clusters_list))
+    ## empty_sorted_idx = np.argsort(np.array(empty_clusters_list))
     ## for idx in empty_sorted_idx[::-1]:
     ##     print empty_clusters_list[idx], "  :  ", subject_id_list[idx]
-    empty_clusters_list = numpy.array(empty_clusters_list)
-    mean_clusters = numpy.mean(empty_clusters_list)
-    std_clusters = numpy.std(empty_clusters_list)
+    empty_clusters_list = np.array(empty_clusters_list)
+    mean_clusters = np.mean(empty_clusters_list)
+    std_clusters = np.std(empty_clusters_list)
     print("Mean and standard deviation of empty cluster number in group:", mean_clusters, "+/-", std_clusters)
     threshold = mean_clusters + args.OutlierStandardDeviation * std_clusters
-    sorted_idx = numpy.argsort(empty_clusters_list)
+    sorted_idx = np.argsort(empty_clusters_list)
     for mf, sp in zip(empty_clusters_list[sorted_idx], subject_id_list[sorted_idx]):
         if mf > threshold:
             if test:

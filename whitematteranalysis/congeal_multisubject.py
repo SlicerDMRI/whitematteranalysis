@@ -12,7 +12,7 @@ class MultiSubjectRegistration
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 from joblib import Parallel, delayed
 
@@ -121,14 +121,14 @@ class MultiSubjectRegistration:
             # be re-calculated with current grid resolution in
             # update_nonrigid_grid.
             res = self.nonrigid_grid_resolution
-            trans = numpy.zeros(res*res*res*3)
+            trans = np.zeros(res*res*res*3)
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             self.transforms.append(vtktrans)
             self.transforms_as_array.append(trans)
         else:
             trans = vtk.vtkTransform()
             self.transforms.append(trans)
-            self.transforms_as_array.append(numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float))
+            self.transforms_as_array.append(np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float))
         self.subject_ids.append(subject_id)
         
     def remove_mean_from_transforms(self):
@@ -142,35 +142,35 @@ class MultiSubjectRegistration:
         if self.mode == "Nonrigid":
             # remove any average displacement of each source point.
             # this means the mean of the source points must equal the target point
-            transforms_array = numpy.array(self.transforms_as_array)
+            transforms_array = np.array(self.transforms_as_array)
             res = self.nonrigid_grid_resolution
             print("SHAPE of transforms:", transforms_array.shape, "RES:", res, "TOT:", res*res*res*3)
-            meanabs = numpy.mean(numpy.abs(transforms_array), 0)
+            meanabs = np.mean(np.abs(transforms_array), 0)
             
-            meandisp = numpy.mean(transforms_array, 0)
+            meandisp = np.mean(transforms_array, 0)
             #if self.verbose:
             #print "MEAN DISPLACEMENT:", meandisp
-            print("MEAN ABS DISPLACEMENT:", numpy.min(meanabs), numpy.mean(meanabs), numpy.max(meanabs))
-            print("NONZERO > 0.5:", numpy.sum(meanabs > 0.5), "> 0.1:", numpy.sum(meanabs > 0.1), "/", res*res*res*3)
+            print("MEAN ABS DISPLACEMENT:", np.min(meanabs), np.mean(meanabs), np.max(meanabs))
+            print("NONZERO > 0.5:", np.sum(meanabs > 0.5), "> 0.1:", np.sum(meanabs > 0.1), "/", res*res*res*3)
 
             for transform in self.transforms_as_array:
                 transform[:] = transform - meandisp
 
-            transforms_array = numpy.array(self.transforms_as_array)
+            transforms_array = np.array(self.transforms_as_array)
 
-            meandisp = numpy.mean(transforms_array, 0)
+            meandisp = np.mean(transforms_array, 0)
             #if self.verbose:
             #print "MEAN DISPLACEMENT 2:", meandisp
 
         else:
             # Here we are in the affine case
-            transforms_array = numpy.array(self.transforms_as_array)
-            meantrans = numpy.mean(transforms_array, 0)
+            transforms_array = np.array(self.transforms_as_array)
+            meantrans = np.mean(transforms_array, 0)
             if self.verbose:
                 print(f"<{os.path.basename(__file__)}> TRANSFORMS")
-                print(numpy.round(transforms_array * 100) / 100)
+                print(np.round(transforms_array * 100) / 100)
                 print(f"<{os.path.basename(__file__)}> Removing current (accumulated) mean transform before computing objective:")
-                print(numpy.round(meantrans * 1000) / 1000)        
+                print(np.round(meantrans * 1000) / 1000)
 
             for transform in self.transforms_as_array:
                 transform[0:6] = transform[0:6] - meantrans[0:6]
@@ -257,7 +257,7 @@ class MultiSubjectRegistration:
             mean_brain = appender.GetOutput()
             mean_fibers = wma.fibers.FiberArray()
             mean_fibers.convert_from_polydata(mean_brain, self.points_per_fiber)
-            mean_fibers = numpy.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
+            mean_fibers = np.array([mean_fibers.fiber_array_r,mean_fibers.fiber_array_a,mean_fibers.fiber_array_s])
             #  R,A,S is the first index
             # then fiber number
             # then points along fiber
@@ -267,7 +267,7 @@ class MultiSubjectRegistration:
             pd = wma.filter.downsample(input_pd, self.subject_brain_size, verbose=False, random_seed=self.random_seed)
             fibers = wma.fibers.FiberArray()
             fibers.convert_from_polydata(pd, self.points_per_fiber)
-            fibers_array = numpy.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
+            fibers_array = np.array([fibers.fiber_array_r,fibers.fiber_array_a,fibers.fiber_array_s])
             subject_list.append(fibers_array)
 
             # Append parameter information to lists of parameters for subprocesses
@@ -277,7 +277,7 @@ class MultiSubjectRegistration:
             subj_idx += 1
             iteration_list.append(self.total_iterations)
             outdir_list.append(outdir_render)
-            stepsize_list.append(numpy.array([self.initial_step, self.final_step]))
+            stepsize_list.append(np.array([self.initial_step, self.final_step]))
             maxfun_list.append(self.maxfun)
             render_list.append(self.render)
             grid_resolution_list.append(self.nonrigid_grid_resolution)
@@ -316,7 +316,7 @@ class MultiSubjectRegistration:
             print("Iteration:", self.total_iterations, "Subject:", sidx, "Objective function computations:", len(objectives), "change", diff)
             functions_per_subject.append(len(objectives))
             # Normalize by the number of fibers so this is comparable across iterations if sigma does not change
-            objectives = numpy.divide(objectives, self.subject_brain_size)
+            objectives = np.divide(objectives, self.subject_brain_size)
             # Compute total objective for progress reporting.
             objective_total_before += objectives[0]
             if diff < 0:
@@ -331,9 +331,9 @@ class MultiSubjectRegistration:
                 plt.plot(objectives, 'o-', label=sidx)
 
         number_of_subjects = sidx
-        functions_per_subject = numpy.array(functions_per_subject)
-        objective_changes_per_subject = numpy.array(objective_changes_per_subject)
-        decreases = numpy.array(decreases)
+        functions_per_subject = np.array(functions_per_subject)
+        objective_changes_per_subject = np.array(objective_changes_per_subject)
+        decreases = np.array(decreases)
 
         self.objectives_before.append(objective_total_before)
         self.objectives_after.append(objective_total_after)
@@ -361,8 +361,8 @@ class MultiSubjectRegistration:
         if len(decreases) == 0:
             mean_decreases = 0.0
         else:
-            mean_decreases = numpy.mean(decreases)
-        print(self.total_iterations,'\t', self.sigma, '\t', self.mode, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonrigid_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', numpy.mean(functions_per_subject), '\t', numpy.min(functions_per_subject), '\t', numpy.max(functions_per_subject), '\t', numpy.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', numpy.mean(objective_changes_per_subject), '\t', mean_decreases, '\t', elapsed_time, file=progress_file)
+            mean_decreases = np.mean(decreases)
+        print(self.total_iterations,'\t', self.sigma, '\t', self.mode, '\t', self.subject_brain_size, '\t', fibers_per_subject,'\t', self.mean_brain_size,'\t', self.maxfun,'\t', self.nonrigid_grid_resolution,'\t', self.initial_step,'\t', self.final_step,'\t', self.objectives_before[-1],'\t', self.objectives_after[-1],'\t', total_change,'\t',  percent_change,'\t', np.mean(functions_per_subject), '\t', np.min(functions_per_subject), '\t', np.max(functions_per_subject), '\t', np.sum(functions_per_subject >= self.maxfun), '\t', number_of_subjects,'\t', len(decreases),'\t', np.mean(objective_changes_per_subject), '\t', mean_decreases, '\t', elapsed_time, file=progress_file)
         progress_file.close()
 
         # remove_mean_from_transforms
@@ -514,7 +514,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     if mode == "Affine" or mode == "Rigid":
         obj_diff = register.objective_function_values[-1] - register.objective_function_values[0]
     elif mode == "Nonrigid":
-        obj_diff = numpy.min(register.objective_function_values) - register.objective_function_values[0]
+        obj_diff = np.min(register.objective_function_values) - register.objective_function_values[0]
     #print "\n END ITERATION", iteration_count, "subject", subject_idx, "OBJECTIVE CHANGE:", obj_diff, register.objective_function_values[-1] - register.objective_function_values[0], register.final_transform
     if obj_diff < 0:
         #print "UPDATING MATRIX"

@@ -17,7 +17,7 @@ import warnings
 # and this can be learned. At that point all data are midsagitally aligned, which this requires.
 # For running this per-subject, the alignment should be performed to handle the tracts near the midline better.
 # That should be added as an option.
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -123,7 +123,7 @@ def main():
 
             return _flag_location
 
-        mask_location = numpy.zeros(pd.GetNumberOfLines())
+        mask_location = np.zeros(pd.GetNumberOfLines())
     
         inpointdata = inpd.GetPointData()
         flag_location = False
@@ -179,18 +179,18 @@ def main():
             exit()
     
         # for sanity check 
-        if len(numpy.where(mask_location ==0)[0]) > 1:
+        if len(np.where(mask_location ==0)[0]) > 1:
             print("Error: Not all fibers in", fname, "is labeled with hemisphere location information.")
             exit()
     
         # output separated clusters
-        mask_right = numpy.zeros(pd.GetNumberOfLines())
-        mask_left = numpy.zeros(pd.GetNumberOfLines())
-        mask_commissure = numpy.zeros(pd.GetNumberOfLines())
+        mask_right = np.zeros(pd.GetNumberOfLines())
+        mask_left = np.zeros(pd.GetNumberOfLines())
+        mask_commissure = np.zeros(pd.GetNumberOfLines())
     
-        mask_left[numpy.where(mask_location==1)[0]] = 1
-        mask_right[numpy.where(mask_location==2)[0]] = 1
-        mask_commissure[numpy.where(mask_location==3)[0]] = 1
+        mask_left[np.where(mask_location==1)[0]] = 1
+        mask_right[np.where(mask_location==2)[0]] = 1
+        mask_commissure[np.where(mask_location==3)[0]] = 1
     
         pd_right = wma.filter.mask(pd, mask_right, preserve_point_data=True, preserve_cell_data=True, verbose=False)
         pd_left = wma.filter.mask(pd, mask_left, preserve_point_data=True, preserve_cell_data=True, verbose=False)

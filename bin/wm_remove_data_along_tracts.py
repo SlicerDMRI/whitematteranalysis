@@ -6,7 +6,7 @@ import glob
 import multiprocessing
 import os
 
-import numpy
+import numpy as np
 from joblib import Parallel, delayed
 
 import whitematteranalysis as wma
@@ -89,7 +89,7 @@ def main():
         # -------------------
         inpd = wma.io.read_polydata(inputPolyDatas[sidx])
         num_lines = inpd.GetNumberOfLines()
-        fiber_mask = numpy.ones(num_lines)
+        fiber_mask = np.ones(num_lines)
         outpd = wma.filter.mask(inpd, fiber_mask, preserve_point_data=False, preserve_cell_data=False, verbose=False)
         print("Number of fibers retained: ", outpd.GetNumberOfLines(), "/", num_lines)
             

@@ -12,7 +12,7 @@ class FiberArray
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 
@@ -57,16 +57,16 @@ class Fiber:
     def match_order(self, other):
         """ Reverse order of fiber to match this one if needed """
         # compute correlation
-        corr = numpy.multiply(self.r, other.r) + \
-            numpy.multiply(self.a, other.a) + \
-            numpy.multiply(self.s, other.s)
+        corr = np.multiply(self.r, other.r) + \
+            np.multiply(self.a, other.a) + \
+            np.multiply(self.s, other.s)
 
         other2 = other.get_equivalent_fiber()
-        corr2 = numpy.multiply(self.r, other2.r) + \
-            numpy.multiply(self.a, other2.a) + \
-            numpy.multiply(self.s, other2.s)
+        corr2 = np.multiply(self.r, other2.r) + \
+            np.multiply(self.a, other2.a) + \
+            np.multiply(self.s, other2.s)
         
-        if numpy.sum(corr) > numpy.sum(corr2):
+        if np.sum(corr) > np.sum(corr2):
             return other
         else:
             return other2
@@ -83,17 +83,17 @@ class Fiber:
     def __div__(self, other):
         """ This is to divide a fiber by a number"""
         fiber = Fiber()
-        fiber.r = numpy.divide(self.r, other)
-        fiber.a = numpy.divide(self.a, other)
-        fiber.s = numpy.divide(self.s, other)
+        fiber.r = np.divide(self.r, other)
+        fiber.a = np.divide(self.a, other)
+        fiber.s = np.divide(self.s, other)
         return fiber
 
     def __mul__(self, other):
         """ This is to multiply a fiber by a number"""
         fiber = Fiber()
-        fiber.r = numpy.multiply(self.r, other)
-        fiber.a = numpy.multiply(self.a, other)
-        fiber.s = numpy.multiply(self.s, other)
+        fiber.r = np.multiply(self.r, other)
+        fiber.a = np.multiply(self.a, other)
+        fiber.s = np.multiply(self.s, other)
         return fiber
     
     def __subtract__(self, other):
@@ -236,11 +236,11 @@ class FiberArray:
             fibers.is_commissure = self.is_commissure[fiber_indices]
 
             # calculate indices of each type above
-            fibers.index_left_hem = numpy.nonzero(fibers.is_left_hem)[0]
-            fibers.index_right_hem = numpy.nonzero(fibers.is_right_hem)[0]
-            fibers.index_commissure = numpy.nonzero(fibers.is_commissure)[0]
+            fibers.index_left_hem = np.nonzero(fibers.is_left_hem)[0]
+            fibers.index_right_hem = np.nonzero(fibers.is_right_hem)[0]
+            fibers.index_commissure = np.nonzero(fibers.is_commissure)[0]
             fibers.index_hem = \
-                numpy.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
+                np.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
 
             # output totals of each type also
             fibers.number_left_hem = len(fibers.index_left_hem)
@@ -298,11 +298,11 @@ class FiberArray:
             fibers.is_commissure = self.is_commissure[fiber_indices]
 
             # calculate indices of each type above
-            fibers.index_left_hem = numpy.nonzero(fibers.is_left_hem)[0]
-            fibers.index_right_hem = numpy.nonzero(fibers.is_right_hem)[0]
-            fibers.index_commissure = numpy.nonzero(fibers.is_commissure)[0]
+            fibers.index_left_hem = np.nonzero(fibers.is_left_hem)[0]
+            fibers.index_right_hem = np.nonzero(fibers.is_right_hem)[0]
+            fibers.index_commissure = np.nonzero(fibers.is_commissure)[0]
             fibers.index_hem = \
-                numpy.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
+                np.nonzero(fibers.is_left_hem | fibers.is_right_hem)[0]
 
             # output totals of each type also
             fibers.number_left_hem = len(fibers.index_left_hem)
@@ -343,11 +343,11 @@ class FiberArray:
             print(f"<{os.path.basename(__file__)}> Converting polydata to array representation. Lines:", self.number_of_fibers)
 
         # allocate array number of lines by line length
-        self.fiber_array_r = numpy.zeros((self.number_of_fibers,
+        self.fiber_array_r = np.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
-        self.fiber_array_a = numpy.zeros((self.number_of_fibers,
+        self.fiber_array_a = np.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
-        self.fiber_array_s = numpy.zeros((self.number_of_fibers,
+        self.fiber_array_s = np.zeros((self.number_of_fibers,
                                           self.points_per_fiber))
 
         # loop over lines
@@ -398,15 +398,15 @@ class FiberArray:
         """
 
         # Figure out hemisphere of each line
-        self.fiber_hemisphere = numpy.zeros(self.number_of_fibers)
+        self.fiber_hemisphere = np.zeros(self.number_of_fibers)
         # percentage in left hemisphere
         test = sum(self.fiber_array_r.T < 0) / float(self.points_per_fiber)
         thresh = self.hemisphere_percent_threshold
-        self.fiber_hemisphere[numpy.nonzero(test > thresh)] = -1
-        self.fiber_hemisphere[numpy.nonzero(test < 1 - thresh)] = 1
+        self.fiber_hemisphere[np.nonzero(test > thresh)] = -1
+        self.fiber_hemisphere[np.nonzero(test < 1 - thresh)] = 1
         # previous code left for clarity below, concrete example of threshold:
-        #self.fiber_hemisphere[numpy.nonzero(test > 0.95)] = -1
-        #self.fiber_hemisphere[numpy.nonzero(test < 0.05)] = 1
+        #self.fiber_hemisphere[np.nonzero(test > 0.95)] = -1
+        #self.fiber_hemisphere[np.nonzero(test < 0.05)] = 1
         # otherwise hem stays 0 for commissural
 
         # output boolean arrays for each hemisphere and callosal fibers
@@ -415,11 +415,11 @@ class FiberArray:
         self.is_commissure = (self.fiber_hemisphere == 0)
 
         # output indices of each type above
-        self.index_left_hem = numpy.nonzero(self.is_left_hem)[0]
-        self.index_right_hem = numpy.nonzero(self.is_right_hem)[0]
-        self.index_commissure = numpy.nonzero(self.is_commissure)[0]
+        self.index_left_hem = np.nonzero(self.is_left_hem)[0]
+        self.index_right_hem = np.nonzero(self.is_right_hem)[0]
+        self.index_commissure = np.nonzero(self.is_commissure)[0]
         self.index_hem = \
-            numpy.nonzero(self.is_left_hem | self.is_right_hem)[0]
+            np.nonzero(self.is_left_hem | self.is_right_hem)[0]
 
         # output totals of each type also
         self.number_left_hem = len(self.index_left_hem)

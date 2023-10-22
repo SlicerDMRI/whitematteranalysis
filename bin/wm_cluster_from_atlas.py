@@ -6,7 +6,7 @@ import multiprocessing
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -179,7 +179,7 @@ def main():
         points_per_fiber = 5
         distance_method='Hausdorff'
         # figure out numbers of fibers to sample
-        fiber_sample_sizes = (number_of_fibers * numpy.array(fiber_sample_fractions)).astype(int)
+        fiber_sample_sizes = (number_of_fibers * np.array(fiber_sample_fractions)).astype(int)
         # create registration object and apply settings
         register = wma.congeal.CongealTractography()
         register.parallel_jobs = number_of_jobs
@@ -233,8 +233,8 @@ def main():
     fnames = list()
     cluster_colors = list()
     # These lines counted clusters present in the subject only
-    ##number_of_clusters = numpy.max(cluster_numbers_s)
-    ##first_cluster = numpy.min(cluster_numbers_s)
+    ##number_of_clusters = np.max(cluster_numbers_s)
+    ##first_cluster = np.min(cluster_numbers_s)
     # Get the number of clusters directly from the atlas to ensure we output files for all clusters.
     [number_of_clusters, number_of_eigenvectors] = atlas.centroids.shape
     print(f"<{os.path.basename(__file__)}> Cluster indices range from:", 0, "to", number_of_clusters)
@@ -245,7 +245,7 @@ def main():
     cluster_fnames = list()
     for c in range(number_of_clusters):
         mask = cluster_numbers_s == c
-        cluster_size = numpy.sum(mask)
+        cluster_size = np.sum(mask)
         cluster_sizes.append(cluster_size)
         #pd_c = wma.filter.mask(output_polydata_s, mask, preserve_point_data=True, preserve_cell_data=True,verbose=False)
         pd_c = pd_c_list[c]
@@ -259,7 +259,7 @@ def main():
         wma.io.write_polydata(pd_c, fname_c)
         color_c = color[mask,:]
         if cluster_size:
-            cluster_colors.append(numpy.mean(color_c,0))
+            cluster_colors.append(np.mean(color_c,0))
         else:
             # avoid error if empty mean above
             cluster_colors.append(color[0,:])
@@ -270,8 +270,8 @@ def main():
         if sz == 0:
             print(sz, ":", fname)
         
-    cluster_sizes = numpy.array(cluster_sizes)
-    print(f"<{os.path.basename(__file__)}> Mean number of fibers per cluster:", numpy.mean(cluster_sizes), "Range:", numpy.min(cluster_sizes), "..", numpy.max(cluster_sizes))
+    cluster_sizes = np.array(cluster_sizes)
+    print(f"<{os.path.basename(__file__)}> Mean number of fibers per cluster:", np.mean(cluster_sizes), "Range:", np.min(cluster_sizes), "..", np.max(cluster_sizes))
     
     # Estimate subsampling ratio to display approx. show_fibers total fibers
     number_fibers = len(cluster_numbers_s)
@@ -283,11 +283,11 @@ def main():
     
     # Write the MRML file into the directory where the polydatas were already stored
     fname = os.path.join(outdir, 'clustered_tracts.mrml')
-    wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=ratio)
+    wma.mrml.write(fnames, np.around(np.array(cluster_colors), decimals=3), fname, ratio=ratio)
     
     # Also write one with 100%% of fibers displayed
     fname = os.path.join(outdir, 'clustered_tracts_display_100_percent.mrml')
-    wma.mrml.write(fnames, numpy.around(numpy.array(cluster_colors), decimals=3), fname, ratio=1.0)
+    wma.mrml.write(fnames, np.around(np.array(cluster_colors), decimals=3), fname, ratio=1.0)
     
     # View the whole thing in png format for quality control
     if render:

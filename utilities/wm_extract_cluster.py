@@ -6,7 +6,7 @@ import glob
 import os
 import shutil
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 
@@ -74,7 +74,7 @@ def main():
 
     # also output a MRML file to load them all into Slicer
     # for now, random colors
-    colors = numpy.random.random((len(fname_list),3))*255.0
+    colors = np.random.random((len(fname_list),3))*255.0
     wma.mrml.write(fname_list, colors, fname_mrml, ratio = 1.0)
 
 
