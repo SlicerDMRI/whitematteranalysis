@@ -1,6 +1,9 @@
 Welcome to the whitematteranalysis documentation!
 =================================================
 
+whitematteranalysis (WMA) provides fiber clustering and tractography analysis
+tools.
+
 .. toctree::
    :maxdepth: 1
    :caption: Reference
