@@ -15,6 +15,7 @@ build:
     - liblapack-dev
   jobs:
     pre_build:
+      - pip install --upgrade myst-parser
       - sphinx-apidoc -f -o doc .
 
 # Build documentation in the doc/ directory with Sphinx

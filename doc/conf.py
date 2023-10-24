@@ -66,6 +66,7 @@ release = _version
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "myst_parser",
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
 ]
@@ -79,7 +80,7 @@ templates_path = []
 exclude_patterns = ["*tests*"]
 
 # Sources
-source_suffix = ".rst"
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
