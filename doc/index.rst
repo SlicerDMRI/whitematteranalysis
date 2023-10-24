@@ -17,6 +17,13 @@ tools.
    bin
    utilities
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials
+
+   bundles
+   subject-specific-tractography-parcellation
+
 Indices and tables
 ==================
 
