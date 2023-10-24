@@ -2,7 +2,15 @@ Welcome to the whitematteranalysis documentation!
 =================================================
 
 .. toctree::
-    :maxdepth: 1
+   :maxdepth: 1
+   :caption: Reference
 
-    bin
-    utilities
+   whitematteranalysis
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Scripts
+
+   bin
+   utilities
+
