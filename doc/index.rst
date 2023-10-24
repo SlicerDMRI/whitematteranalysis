@@ -17,3 +17,8 @@ tools.
    bin
    utilities
 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
