@@ -16,10 +16,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Compute Tract Anatomical Profile",
         epilog="Written by Fan Zhang, zhangfanmark@gmail.com.")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='A directory containing subdirectories for all clustered subjects.')

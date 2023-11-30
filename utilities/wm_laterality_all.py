@@ -13,10 +13,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Applies white matter laterality pipeline to input directory.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='Contains whole-brain tractography as vtkPolyData file(s).')

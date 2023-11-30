@@ -15,10 +15,6 @@ def _build_arg_parser():
     parser = argparse.ArgumentParser(
         description="Decide a cluster belonging to commissural or hemispheric in the atlas.",
         epilog="Written by Fan Zhang, fzhang@bwh.harvard.edu")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputAtlasDirectory',
         help='Directory of the fiber clustering atlas. An output CSV file will be generated, showing the location of each fiber cluster: left-hemisphere, right-hemisphere, commissural, or Not Given if the fibers of a cluster are relatively even distributed in these three regions. ')

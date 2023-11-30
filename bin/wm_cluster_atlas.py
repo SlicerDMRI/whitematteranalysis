@@ -20,10 +20,6 @@ def main():
     parser = argparse.ArgumentParser(
         description="Runs clustering of tractography for multiple subjects to create an atlas. This tract atlas can then be applied to the complete set of fibers from individual subjects of interest. To make it possible to cluster the high number of fibers, this code uses random sampling and the Nystrom method as described in the reference below.",
         epilog="Written by Lauren O\'Donnell, odonnell@bwh.harvard.edu.  Please reference \"O'Donnell, Lauren J., and C-F. Westin. Automatic tractography segmentation using a high-dimensional white matter atlas. Medical Imaging, IEEE Transactions on 26.11 (2007): 1562-1575.\"")
-    parser.add_argument("-v", "--version",
-        action="version", default=argparse.SUPPRESS,
-        version='1.0',
-        help="Show program's version number and exit")
     parser.add_argument(
         'inputDirectory',
         help='A directory of (already registered) whole-brain tractography as vtkPolyData (.vtk or .vtp).')
