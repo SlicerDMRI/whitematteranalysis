@@ -4,7 +4,7 @@
 import argparse
 import os
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 
@@ -55,7 +55,7 @@ def main():
             return None
         print(point_array)
         num_points = pd.GetNumberOfPoints()
-        points_copy = numpy.zeros(num_points)
+        points_copy = np.zeros(num_points)
 
         for pidx in range(0, num_points):
             if (pidx % 1000) == 0:
@@ -63,9 +63,9 @@ def main():
             # this assumes we have scalars here
             points_copy[pidx] = point_array.GetTuple(pidx)[0]
 
-        points_mean = numpy.mean(points_copy)
-        #points_std = numpy.std(points_copy)
-        #points_median = numpy.median(points_copy)
+        points_mean = np.mean(points_copy)
+        #points_std = np.std(points_copy)
+        #points_median = np.median(points_copy)
 
         print("Mean ", array_name, ":", points_mean)
 

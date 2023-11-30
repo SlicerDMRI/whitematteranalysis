@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis.fibers
@@ -19,8 +19,8 @@ class RegistrationInformation:
         # transformation matrices for internal use
         # (vtkTransform is returned by compute) 
         # rot x,y,z trans x,y,z scale x,y,z
-        #self.transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1]).astype(float)
-        self.transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float)
+        #self.transform = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1]).astype(float)
+        self.transform = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0]).astype(float)
         self.modified = False
         self.x = []
 
@@ -36,9 +36,9 @@ class RegistrationInformation:
         self._moving_fibers.number_of_fibers = nf
         self._moving_fibers.points_per_fiber = np
         # allocate array number of lines by line length
-        self._moving_fibers.fiber_array_r = numpy.zeros((nf, np))
-        self._moving_fibers.fiber_array_a = numpy.zeros((nf, np))
-        self._moving_fibers.fiber_array_s = numpy.zeros((nf, np))
+        self._moving_fibers.fiber_array_r = np.zeros((nf, np))
+        self._moving_fibers.fiber_array_a = np.zeros((nf, np))
+        self._moving_fibers.fiber_array_s = np.zeros((nf, np))
         
         self.modified = True
         self.apply_transform()
@@ -47,10 +47,10 @@ class RegistrationInformation:
         # use the input random seed every time for code testing experiments
         if self.random_seed is not None:
             #print f"<{os.path.basename(__file__)}> Setting random seed to", self.random_seed
-            numpy.random.seed(seed=self.random_seed)
+            np.random.seed(seed=self.random_seed)
 
         # indices of moving fibers to compute the objective function
-        self._moving_fiber_sample = numpy.random.random_integers(
+        self._moving_fiber_sample = np.random.random_integers(
             0, self._original_fibers.number_of_fibers - 1,
             self.fiber_sample_size)
         self.modified = True
@@ -98,11 +98,11 @@ class RegistrationInformation:
         #    out_array.number_of_fibers = in_array.number_of_fibers
         #    out_array.points_per_fiber = in_array.points_per_fiber
         #    # allocate array number of lines by line length
-        #    out_array.fiber_array_r = numpy.zeros((in_array.number_of_fibers,
+        #    out_array.fiber_array_r = np.zeros((in_array.number_of_fibers,
         #                                           in_array.points_per_fiber))
-        #    out_array.fiber_array_a = numpy.zeros((in_array.number_of_fibers,
+        #    out_array.fiber_array_a = np.zeros((in_array.number_of_fibers,
         #                                           in_array.points_per_fiber))
-        #    out_array.fiber_array_s = numpy.zeros((in_array.number_of_fibers,
+        #    out_array.fiber_array_s = np.zeros((in_array.number_of_fibers,
         #                                           in_array.points_per_fiber))
 
         vtktrans = self.convert_transform_to_vtk(self.transform)
@@ -125,29 +125,29 @@ class RegistrationInformation:
         # test. this confirmed results were equivalent to old method
         # with time consuming polydata conversion.
         #print "=========================**************====================="
-        #print numpy.max(out_array.fiber_array_r - out_array_2.fiber_array_r)
-        #print numpy.max(out_array.fiber_array_a - out_array_2.fiber_array_a)
-        #print numpy.max(out_array.fiber_array_s - out_array_2.fiber_array_s)
+        #print np.max(out_array.fiber_array_r - out_array_2.fiber_array_r)
+        #print np.max(out_array.fiber_array_a - out_array_2.fiber_array_a)
+        #print np.max(out_array.fiber_array_s - out_array_2.fiber_array_s)
         #print "=========================**************====================="
 
         # test. this confirmed in-place array modification results
         # were equivalent to old method with time consuming polydata
         # conversion.
         #print "=========================**************====================="
-        #print numpy.max(in_array.fiber_array_r - out_array_2.fiber_array_r)
-        #print numpy.max(in_array.fiber_array_a - out_array_2.fiber_array_a)
-        #print numpy.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
+        #print np.max(in_array.fiber_array_r - out_array_2.fiber_array_r)
+        #print np.max(in_array.fiber_array_a - out_array_2.fiber_array_a)
+        #print np.max(in_array.fiber_array_s - out_array_2.fiber_array_s)
         #print "=========================**************====================="
         
         #return out_array
 
 
     def set_transform(self, input_transform):
-        input_transform = numpy.array(input_transform)
+        input_transform = np.array(input_transform)
         # decide whether transform was modified
-        if numpy.count_nonzero(self.transform - input_transform):
+        if np.count_nonzero(self.transform - input_transform):
             # directly set it.
-            self.transform = numpy.copy(input_transform)
+            self.transform = np.copy(input_transform)
             self.modified = True
         else:
             self.modified = False
@@ -163,9 +163,9 @@ class RegistrationInformation:
         
         vtktrans = vtk.vtkTransform()
 
-        vtktrans.RotateX(transform[0] * (180 / numpy.pi))
-        vtktrans.RotateY(transform[1] * (180 / numpy.pi))
-        vtktrans.RotateZ(transform[2] * (180 / numpy.pi))
+        vtktrans.RotateX(transform[0] * (180 / np.pi))
+        vtktrans.RotateY(transform[1] * (180 / np.pi))
+        vtktrans.RotateZ(transform[2] * (180 / np.pi))
 
         vtktrans.Translate(transform[3],
                            transform[4], transform[5])
@@ -190,12 +190,12 @@ class RegistrationInformation:
         skewx = vtk.vtkMatrix4x4()
         skewy = vtk.vtkMatrix4x4()
         skewz = vtk.vtkMatrix4x4()
-        skewx.SetElement(2, 1, numpy.tan(szy))
-        skewx.SetElement(1, 2, numpy.tan(syz))
-        skewy.SetElement(2, 0, numpy.tan(szx))
-        skewy.SetElement(0, 2, numpy.tan(sxz))
-        skewz.SetElement(1, 0, numpy.tan(sxy))
-        skewz.SetElement(0, 1, numpy.tan(syx))
+        skewx.SetElement(2, 1, np.tan(szy))
+        skewx.SetElement(1, 2, np.tan(syz))
+        skewy.SetElement(2, 0, np.tan(szx))
+        skewy.SetElement(0, 2, np.tan(sxz))
+        skewz.SetElement(1, 0, np.tan(sxy))
+        skewz.SetElement(0, 1, np.tan(syx))
         vtktrans.Concatenate(skewx)
         vtktrans.Concatenate(skewy)
         vtktrans.Concatenate(skewz)

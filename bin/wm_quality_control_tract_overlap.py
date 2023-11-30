@@ -6,7 +6,7 @@ import argparse
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -86,8 +86,8 @@ def main():
     
         number_rendered_fibers = 800
         pd3 = wma.filter.downsample(pd2, number_rendered_fibers, verbose=False)
-        mask = numpy.ones(number_rendered_fibers)
-        colors = numpy.multiply(mask, subject_idx)
+        mask = np.ones(number_rendered_fibers)
+        colors = np.multiply(mask, subject_idx)
         pd3 = wma.filter.mask(pd3, mask, colors, verbose=False)
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             appender.AddInputData(pd3)

@@ -5,7 +5,7 @@ import argparse
 import glob
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -62,14 +62,14 @@ def main():
                         ptids = vtk.vtkIdList()
                         inpd.GetLines().GetNextCell(ptids)
 
-                        regions = numpy.zeros(ptids.GetNumberOfIds())
+                        regions = np.zeros(ptids.GetNumberOfIds())
                         for pidx in range(0, ptids.GetNumberOfIds()):
                             regions[pidx] = array.GetTuple(ptids.GetId(pidx))[0]
 
-                        regions = numpy.unique(regions)
+                        regions = np.unique(regions)
                         fiber_regions.append(regions)
 
-                    all_regions = numpy.unique(numpy.concatenate(fiber_regions))
+                    all_regions = np.unique(np.concatenate(fiber_regions))
 
                     r_prob = []
                     r_list = []
@@ -83,9 +83,9 @@ def main():
                         r_prob.append(prob)
                         r_list.append(r)
 
-                    r_prob = numpy.array(r_prob)
-                    r_list = numpy.array(r_list)
-                    arg = numpy.argsort(-r_prob)
+                    r_prob = np.array(r_prob)
+                    r_list = np.array(r_list)
+                    arg = np.argsort(-r_prob)
                     r_prob = r_prob[arg]
                     r_list = r_list[arg]
 

@@ -5,7 +5,7 @@ import argparse
 import os
 import re
 
-import numpy
+import numpy as np
 import pandas
 
 
@@ -45,7 +45,7 @@ def main():
     fields = []
     for col in stats.columns:
         fields.append(col)
-    fields = numpy.array(fields)
+    fields = np.array(fields)
 
     print(fields)
 
@@ -65,7 +65,7 @@ def main():
         print(fields[indices])
         append_list.append(indices)
 
-    append_list = numpy.array(append_list)
+    append_list = np.array(append_list)
     append_measures = [field.replace(args.tractList[-1], '') for field in fields[indices]]
 
     print("Output measures:", append_measures)
@@ -75,21 +75,21 @@ def main():
 
         if m_name == '.Num_Points':
 
-            avg_stat = numpy.sum(stats.to_numpy()[:, append_list[:, m_idx]], axis=1)
+            avg_stat = np.sum(stats.to_numpy()[:, append_list[:, m_idx]], axis=1)
 
         elif m_name == '.Num_Fibers':
 
-            avg_stat = numpy.sum(stats.to_numpy()[:, append_list[:, m_idx]], axis=1)
+            avg_stat = np.sum(stats.to_numpy()[:, append_list[:, m_idx]], axis=1)
 
         elif m_name == '.Mean_Length': # weighted by NoS
 
             weight = stats.to_numpy()[:, append_list[:, 1]]
             val = stats.to_numpy()[:, append_list[:, m_idx]]
 
-            val_weighted_sum = numpy.sum(val * weight, axis=1)
-            weight_sum = numpy.sum(weight, axis=1)
+            val_weighted_sum = np.sum(val * weight, axis=1)
+            weight_sum = np.sum(weight, axis=1)
 
-            empty_indices = numpy.where(weight_sum == 0)[0]
+            empty_indices = np.where(weight_sum == 0)[0]
             weight_sum[empty_indices] = 1
 
             avg_stat = val_weighted_sum / weight_sum
@@ -100,10 +100,10 @@ def main():
             weight = stats.to_numpy()[:, append_list[:, 0]]
             val = stats.to_numpy()[:, append_list[:, m_idx]]
 
-            val_weighted_sum = numpy.sum(val.astype(numpy.double) * weight.astype(numpy.double), axis=1)
-            weight_sum = numpy.sum(weight, axis=1)
+            val_weighted_sum = np.sum(val.astype(np.double) * weight.astype(np.double), axis=1)
+            weight_sum = np.sum(weight, axis=1)
 
-            empty_indices = numpy.where(weight_sum == 0)[0]
+            empty_indices = np.where(weight_sum == 0)[0]
             weight_sum[empty_indices] = 1
 
             avg_stat = val_weighted_sum / weight_sum
@@ -111,7 +111,7 @@ def main():
 
         avg_stats.append(avg_stat)
 
-    avg_stats = numpy.array(avg_stats)
+    avg_stats = np.array(avg_stats)
     avg_stats = avg_stats.transpose()
 
     column_names = ['subjectkey']

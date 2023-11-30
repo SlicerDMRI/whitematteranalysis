@@ -22,7 +22,7 @@ LateralityResults (io.py)
 
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 try:
@@ -41,11 +41,11 @@ from .io import LateralityResults
 def compute_laterality_index(left, right, idx=None):
     ''' Compute laterality index from left and right hemisphere quantities.'''
 
-    laterality_index = numpy.zeros(len(left))
+    laterality_index = np.zeros(len(left))
 
     if idx == None:
         # if L=R=0, output 0. (avoid divide by 0, skip masked out data)
-        idx = numpy.nonzero(left)[0] & numpy.nonzero(right)[0]
+        idx = np.nonzero(left)[0] & np.nonzero(right)[0]
 
     # otherwise use input idx to select relevant data, to avoid doing
     # the above nonzero every time in a loop
@@ -136,7 +136,7 @@ class WhiteMatterLaterality:
             # use the first n since they were randomly sampled from the whole dataset
             selected_right = self.fibers.index_right_hem[0:num_fibers]
             selected_left = self.fibers.index_left_hem[0:num_fibers]
-            mask = numpy.zeros(input_vtk_polydata.GetNumberOfLines())
+            mask = np.zeros(input_vtk_polydata.GetNumberOfLines())
             mask[selected_right] = 1
             mask[selected_left] = 1
             # go back to the input data and use just those fibers
@@ -151,11 +151,11 @@ class WhiteMatterLaterality:
 
         # allocate outputs
         nf = self.fibers.number_of_fibers
-        laterality_index = numpy.zeros(nf)
-        right_hem_total = numpy.zeros(nf)
-        left_hem_total = numpy.zeros(nf)
-        #right_hem_distance = numpy.zeros([nf, nf])
-        #left_hem_distance = numpy.zeros([nf, nf])
+        laterality_index = np.zeros(nf)
+        right_hem_total = np.zeros(nf)
+        left_hem_total = np.zeros(nf)
+        #right_hem_distance = np.zeros([nf, nf])
+        #left_hem_distance = np.zeros([nf, nf])
 
 
         # grab all fibers from each hemisphere
@@ -206,8 +206,8 @@ class WhiteMatterLaterality:
             #left_hem_distance = ret[1]
 
         else:
-            right_hem_distance = numpy.zeros([nf, len(self.fibers.index_right_hem)])
-            left_hem_distance = numpy.zeros([nf, len(self.fibers.index_left_hem)])
+            right_hem_distance = np.zeros([nf, len(self.fibers.index_right_hem)])
+            left_hem_distance = np.zeros([nf, len(self.fibers.index_left_hem)])
 
             # compare to right hemisphere (reflect fiber first if in left hem)
             for lidx in self.fibers.index_hem:

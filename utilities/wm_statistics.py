@@ -6,7 +6,7 @@ import glob
 import os
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import scipy.stats
 import statsmodels.sandbox.stats.multicomp
 
@@ -115,7 +115,7 @@ def main():
     if len(study_groups) > 2:
         print("ERROR: this code can currently only handle two study groups.")
         exit()
-    print("Subjects per group:", numpy.sum(numpy.array(group_id_list)==study_groups[0]), numpy.sum(numpy.array(group_id_list)==study_groups[1]))
+    print("Subjects per group:", np.sum(np.array(group_id_list)==study_groups[0]), np.sum(np.array(group_id_list)==study_groups[1]))
 
     print("Performing statistics for measure:", measurement)
 
@@ -166,19 +166,19 @@ def main():
     #mode = "all"
     # sublevels
     if mode == "sublevel":
-        regions_for_stats = numpy.array(hierarchy_region_list)
+        regions_for_stats = np.array(hierarchy_region_list)
         names_for_stats = hierarchy_region_name_list
     elif mode == "toplevel":
         # top level
-        regions_for_stats = numpy.array(hierarchy_toplevel_list)
+        regions_for_stats = np.array(hierarchy_toplevel_list)
         names_for_stats = hierarchy_toplevel_name_list
     elif mode == "clusters":
         # clusters
-        regions_for_stats = numpy.array(hierarchy_cluster_list)
+        regions_for_stats = np.array(hierarchy_cluster_list)
         names_for_stats = hierarchy_cluster_name_list
     elif mode == "all":
         # we are measuring using cluster_*.vtp not a hierarchy
-        regions_for_stats = numpy.array(list(range(number_of_clusters)))
+        regions_for_stats = np.array(list(range(number_of_clusters)))
         names_for_stats = []
         for fname in measurement_list[0].cluster_path:
             #print os.path.splitext(fname)
@@ -200,7 +200,7 @@ def main():
             color = 'b'
         else:
             color = 'r'
-        #plt.plot(numpy.sort(value_list), color)
+        #plt.plot(np.sort(value_list), color)
         plt.plot(value_list, color+'.')
     plt.title(measurement+' measurements by group')
     plt.savefig(fname)
@@ -218,8 +218,8 @@ def main():
             data_0.append(data)
         elif group == study_groups[1]:
             data_1.append(data)
-    data_0 = numpy.array(data_0)
-    data_1 = numpy.array(data_1)
+    data_0 = np.array(data_0)
+    data_1 = np.array(data_1)
 
     # Statistical test in each cluster or input region
     print("Doing t-tests in each cluster or region.")
@@ -230,18 +230,18 @@ def main():
         # ignore nan clusters for missing data. this also prevents nan p-values
         c_data_0 = data_0[:,c]
         c_data_1 = data_1[:,c]
-        shape_before = numpy.array([c_data_0.shape[0], c_data_1.shape[0]])
-        c_data_0 = c_data_0[~numpy.isnan(c_data_0)]
-        c_data_1 = c_data_1[~numpy.isnan(c_data_1)]
+        shape_before = np.array([c_data_0.shape[0], c_data_1.shape[0]])
+        c_data_0 = c_data_0[~np.isnan(c_data_0)]
+        c_data_1 = c_data_1[~np.isnan(c_data_1)]
         data_list.append(c_data_0)
         data_list.append(c_data_1)
-        shape_after = numpy.array([c_data_0.shape[0], c_data_1.shape[0]])
+        shape_after = np.array([c_data_0.shape[0], c_data_1.shape[0]])
         # warn if any cluster is totally absent
         if len(c_data_0) == 0 | len(c_data_1) == 0:
             print("Empty cluster across all subjects indicates data issue:", c)
         # warn if empty clusters
         nan_count = shape_before - shape_after
-        if numpy.sum(nan_count) > 0:
+        if np.sum(nan_count) > 0:
             print("\tCluster", c, ": Warning. Empty/nan found in :", nan_count, "subjects.")
         t, p = scipy.stats.ttest_ind(c_data_0, c_data_1)
         #print c_data_0.shape, c_data_1.shape
@@ -250,7 +250,7 @@ def main():
         else:
             p_val_list.append(p)
 
-    uncorrected_significant = numpy.sum(numpy.array(p_val_list) < 0.05)
+    uncorrected_significant = np.sum(np.array(p_val_list) < 0.05)
     print("Uncorrected:", uncorrected_significant, "/", number_of_tests, ":", 100*uncorrected_significant/float(number_of_tests), "%")
 
     ## if analyze_hierarchy:
@@ -259,17 +259,17 @@ def main():
 
     # bonferroni
     threshold = 0.05 / number_of_clusters
-    corrected_significant = numpy.sum(numpy.array(p_val_list) < threshold)
+    corrected_significant = np.sum(np.array(p_val_list) < threshold)
     print("Bonferroni:", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%")
 
     # FDR
-    reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(numpy.array(p_val_list), alpha=fdr_q, method='indep')
-    #reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(numpy.array(p_val_list), alpha=fdr_q, method='negcorr')
-    corrected_significant = numpy.sum(reject_null)
+    reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(np.array(p_val_list), alpha=fdr_q, method='indep')
+    #reject_null, corrected_p = statsmodels.sandbox.stats.multicomp.fdrcorrection0(np.array(p_val_list), alpha=fdr_q, method='negcorr')
+    corrected_significant = np.sum(reject_null)
     print("FDR at alpha/q =", fdr_q, ":", corrected_significant, "/", number_of_tests, ":", 100*corrected_significant/float(number_of_tests), "%")
 
     ## # plot the data we tested, sorted by p-value
-    ## cluster_order = numpy.argsort(numpy.array(p_val_list))
+    ## cluster_order = np.argsort(np.array(p_val_list))
     ## plt.figure()
     ## plt.plot(data_1.T[cluster_order,:],'ro',markersize=2)
     ## plt.plot(data_0.T[cluster_order,:],'bo',markersize=2)
@@ -279,15 +279,15 @@ def main():
 
     fname = 'plot_region_means_'+measurement+'.pdf'
     print("Plotting mean values per cluster:", fname)
-    cluster_mean_0 = numpy.nanmean(data_0, axis=0)
-    cluster_mean_1 = numpy.nanmean(data_1, axis=0)
+    cluster_mean_0 = np.nanmean(data_0, axis=0)
+    cluster_mean_1 = np.nanmean(data_1, axis=0)
     # Plot the mean values of the groups against each other in each cluster
     # and show which ones were significant
     #print "MEAN SHAPES:", cluster_mean_0.shape, cluster_mean_1.shape
     plt.figure()
     # plot the line if they were equal
-    xmin = numpy.min(cluster_mean_0)
-    xmax = numpy.max(cluster_mean_0)
+    xmin = np.min(cluster_mean_0)
+    xmax = np.max(cluster_mean_0)
     plt.plot([xmin,xmax],[xmin,xmax])
     # plot the means
     #markerfacecolor='none'
@@ -362,7 +362,7 @@ def main():
                     color = 'bo'
                 else:
                     color ='ro'
-                plt.plot(p, numpy.mean(d), color)
+                plt.plot(p, np.mean(d), color)
             # Pad margins so that markers don't get clipped by the axes
             plt.margins(0.2)
     plt.title(measurement+' significant regions')
@@ -398,7 +398,7 @@ def main():
                 ##     significant_clusters.append(cluster)
                 #else:
                 #colors.append([50,50,50])
-            colors = numpy.array(colors)
+            colors = np.array(colors)
             #print colors
             #wma.mrml.write(atlas_clusters, colors, './test_'+str(vidx)+'.mrml', ratio=1.0)
             wma.mrml.write(significant_clusters, colors, fname, ratio=1.0)

@@ -7,7 +7,7 @@ import os
 import time
 
 import matplotlib.pyplot as plt
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -365,7 +365,7 @@ def main():
     for sidx in range(number_of_subjects):
         for fidx in range(number_of_fibers_per_subject):
             subject_fiber_list.append(sidx)
-    subject_fiber_list = numpy.array(subject_fiber_list)
+    subject_fiber_list = np.array(subject_fiber_list)
     
     #-----------------
     # Run clustering
@@ -383,7 +383,7 @@ def main():
     # Set up random seed
     if random_seed is not None:
         print(f"<{os.path.basename(__file__)}> Setting random seed to", random_seed)
-        numpy.random.seed(seed=random_seed)
+        np.random.seed(seed=random_seed)
     
     # Overall progress/outlier removal info file
     fname_progress = os.path.join(outdir, 'cluster_log.txt')
@@ -399,7 +399,7 @@ def main():
         outdir_current = os.path.join(outdir, dirname)
     
         # Calculate indices of random sample for Nystrom method
-        nystrom_mask = numpy.random.permutation(input_data.GetNumberOfLines()) < number_of_sampled_fibers
+        nystrom_mask = np.random.permutation(input_data.GetNumberOfLines()) < number_of_sampled_fibers
     
         print("BEFORE cluster: Polydata size:", input_data.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape)
     
@@ -417,7 +417,7 @@ def main():
                                      bilateral=bilateral)
     
         # If any fibers were rejected, delete the corresponding entry in this list
-        subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
+        subject_fiber_list = np.delete(subject_fiber_list, reject_idx)
         print("After cluster: Polydata size:", output_polydata_s.GetNumberOfLines(), "Subject list for fibers:", subject_fiber_list.shape)
     
         # Save the output in our atlas format for automatic labeling of full brain datasets.
@@ -442,8 +442,8 @@ def main():
     
         reject_idx = list() 
         cluster_indices = list(range(atlas.centroids.shape[0]))
-        fiber_mean_sim = numpy.zeros(cluster_numbers_s.shape)
-        fiber_hemisphere = numpy.zeros(cluster_numbers_s.shape)
+        fiber_mean_sim = np.zeros(cluster_numbers_s.shape)
+        fiber_hemisphere = np.zeros(cluster_numbers_s.shape)
         
         plt.figure(0)
         plt.title('Histogram of per-cluster fiber distances')
@@ -472,8 +472,8 @@ def main():
     
         for c in cluster_indices:
             mask = cluster_numbers_s == c
-            fiber_indices = numpy.nonzero(mask)[0]
-            number_fibers_in_cluster = numpy.sum(mask)
+            fiber_indices = np.nonzero(mask)[0]
+            number_fibers_in_cluster = np.sum(mask)
             cluster_size_before.append(number_fibers_in_cluster)
     
             # get the subject ID for each fiber in the cluster
@@ -507,26 +507,26 @@ def main():
             #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
             # by using sample we estimate expected value of the above
             # get total similarity for each fiber (-1 to neglect self comparison)
-            total_similarity_OLD = (numpy.sum(cluster_similarity, axis=1) - 1.0) / number_fibers_in_cluster
+            total_similarity_OLD = (np.sum(cluster_similarity, axis=1) - 1.0) / number_fibers_in_cluster
             # get leave-one-out total similarity (probability) where only fibers from other subjects are considered
             total_similarity = list()
             for (fidx, sidx) in zip(list(range(len(subject_ID_per_fiber))), subject_ID_per_fiber):
                 mask = subject_ID_per_fiber != sidx
                 #print sidx, "!=", set(subject_ID_per_fiber[mask])
-                number_fibers_in_LOO_cluster = numpy.sum(mask)
-                total_similarity.append(numpy.sum(cluster_similarity[fidx,mask]) / number_fibers_in_LOO_cluster)
+                number_fibers_in_LOO_cluster = np.sum(mask)
+                total_similarity.append(np.sum(cluster_similarity[fidx,mask]) / number_fibers_in_LOO_cluster)
                 mask2 = subject_ID_per_fiber == sidx
                 if verbose:
-                    tmp = numpy.sum(cluster_similarity[fidx, mask2]) / numpy.sum(mask2)
-                    print("LOO:", total_similarity[-1], "all:", total_similarity_OLD[fidx], "subj:", tmp, "f:", number_fibers_in_cluster, "LOO f:", number_fibers_in_LOO_cluster, "subj f:", numpy.sum(mask2))
-            total_similarity = numpy.array(total_similarity)
+                    tmp = np.sum(cluster_similarity[fidx, mask2]) / np.sum(mask2)
+                    print("LOO:", total_similarity[-1], "all:", total_similarity_OLD[fidx], "subj:", tmp, "f:", number_fibers_in_cluster, "LOO f:", number_fibers_in_LOO_cluster, "subj f:", np.sum(mask2))
+            total_similarity = np.array(total_similarity)
             
             if verbose:
-                print("cluster", c, "tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "num fibers:", numpy.sum(mask), "num subjects:", subjects_per_cluster)
+                print("cluster", c, "tsim:", np.min(total_similarity), np.mean(total_similarity), np.max(total_similarity), "num fibers:", np.sum(mask), "num subjects:", subjects_per_cluster)
     
             # remove outliers with low similarity to their cluster
-            mean_sim = numpy.mean(total_similarity)
-            cluster_std = numpy.std(total_similarity)
+            mean_sim = np.mean(total_similarity)
+            cluster_std = np.std(total_similarity)
             cluster_std_similarity.append(cluster_std)
             cluster_mean_similarity.append(mean_sim)
     
@@ -542,23 +542,23 @@ def main():
                     cluster_numbers_s[fidx] = -c -1
                     reject_idx.append(fidx)
     
-            dist_mm = numpy.sqrt(cluster_distances)
+            dist_mm = np.sqrt(cluster_distances)
     
-            cluster_mean_distances.append(numpy.mean(dist_mm))
-            cluster_mean_probabilities.append(numpy.mean(total_similarity))
+            cluster_mean_distances.append(np.mean(dist_mm))
+            cluster_mean_probabilities.append(np.mean(total_similarity))
             mask = cluster_numbers_s == -c -1
-            cluster_removed_local.append(numpy.sum(mask))
+            cluster_removed_local.append(np.sum(mask))
     
-            print("CLUSTER:", c, "/", numpy.max(cluster_indices), "| fibers:", number_fibers_in_cluster, "| subjects:", subjects_per_cluster, "| dist:", numpy.min(dist_mm), numpy.mean(dist_mm), numpy.max(dist_mm), "| sim :", numpy.min(cluster_similarity), numpy.mean(cluster_similarity), numpy.max(cluster_similarity),  "| tsim:", numpy.min(total_similarity), numpy.mean(total_similarity), numpy.max(total_similarity), "| local reject total:", cluster_removed_local[-1])
+            print("CLUSTER:", c, "/", np.max(cluster_indices), "| fibers:", number_fibers_in_cluster, "| subjects:", subjects_per_cluster, "| dist:", np.min(dist_mm), np.mean(dist_mm), np.max(dist_mm), "| sim :", np.min(cluster_similarity), np.mean(cluster_similarity), np.max(cluster_similarity),  "| tsim:", np.min(total_similarity), np.mean(total_similarity), np.max(total_similarity), "| local reject total:", cluster_removed_local[-1])
     
             plt.figure(0)
             # plot the mean per-fiber distance because plotting all distances allocated 20GB
-            plot_data = numpy.mean(dist_mm, axis=1)
+            plot_data = np.mean(dist_mm, axis=1)
             n, bins, patches = plt.hist(plot_data, histtype='barstacked', range=[0,60], bins=30, alpha=0.75)
             plt.setp(patches,'lw', 0.01)
             plt.figure(1)
             # this can become nan if there are no other subjects in cluster; those are rejected anyway
-            plot_data = total_similarity[~numpy.isnan(total_similarity)]
+            plot_data = total_similarity[~np.isnan(total_similarity)]
             if len(plot_data) > 0:
                 n, bins, patches = plt.hist(plot_data, histtype='barstacked', range=[0.0,1.0], bins=30, alpha=0.75)
                 plt.setp(patches,'lw', 0.1)
@@ -567,8 +567,8 @@ def main():
         # in a second pass, also remove outliers whose average fiber
         # similarity to their cluster is too low compared to the whole brain.
         # This can prune fibers from variable clusters that might be missed above
-        brain_mean_sim = numpy.mean(fiber_mean_sim)
-        brain_std_sim = numpy.std(fiber_mean_sim)
+        brain_mean_sim = np.mean(fiber_mean_sim)
+        brain_std_sim = np.std(fiber_mean_sim)
     
         for fidx in range(len(cluster_numbers_s)):
             if fiber_mean_sim[fidx] < brain_mean_sim - cluster_outlier_std_threshold*brain_std_sim:
@@ -577,13 +577,13 @@ def main():
                     cluster_numbers_s[fidx] = -cluster_numbers_s[fidx] - 1
                     reject_idx.append(fidx)
     
-        reject_idx = numpy.array(reject_idx)
+        reject_idx = np.array(reject_idx)
     
         print("Rejecting whole-brain cluster outlier fibers:", len(reject_idx))
     
         for cidx in cluster_indices:
             mask = cluster_numbers_s == -cidx -1
-            cluster_removed_total.append(numpy.sum(mask))
+            cluster_removed_total.append(np.sum(mask))
             cluster_subjects_outlier.append(len(set(subject_fiber_list[mask])))
             # record how many subjects after outlier removal
             mask = cluster_numbers_s == cidx
@@ -611,7 +611,7 @@ def main():
         clusters_qc_fname = os.path.join(outdir2, 'outlier_removal_information.txt')
         clusters_qc_file = open(clusters_qc_fname, 'w')
         print('cluster_idx','\t', 'mean_distance','\t', 'mean_probability','\t', 'fibers_before','\t', 'fibers_after', '\t', 'subjects_before','\t','subjects_after', '\t','subjects_with_outliers', '\t','local_outliers', '\t','global_outliers', '\t','total_outliers','\t','left_hem_fibers','\t','right_hem_fibers','\t','commissural_fibers', file=clusters_qc_file)
-        cluster_size_after = numpy.array(cluster_size_before) - numpy.array(cluster_removed_total)
+        cluster_size_after = np.array(cluster_size_before) - np.array(cluster_removed_total)
         for cidx in cluster_indices:
             print(cidx + 1,'\t', \
                 cluster_mean_distances[cidx], '\t', \
@@ -652,14 +652,14 @@ def main():
             os.makedirs(outdir3)
         print(f'<{os.path.basename(__file__)}> Saving outlier fiber files in directory:', outdir3)
         mask = cluster_numbers_s < 0
-        cluster_numbers_outliers = -numpy.multiply(cluster_numbers_s, mask) - 1
+        cluster_numbers_outliers = -np.multiply(cluster_numbers_s, mask) - 1
         wma.cluster.output_and_quality_control_cluster_atlas(atlas, output_polydata_s, subject_fiber_list, input_polydatas, number_of_subjects, outdir3, cluster_numbers_outliers, color, embed, number_of_fibers_to_display, testing=testing, verbose=False, render_images=False)
     
-        test = subject_fiber_list[numpy.nonzero(mask)]
+        test = subject_fiber_list[np.nonzero(mask)]
     
         # Remove outliers for the next iteration
         # If any fibers were rejected, delete the corresponding entry in this list
-        subject_fiber_list = numpy.delete(subject_fiber_list, reject_idx)
+        subject_fiber_list = np.delete(subject_fiber_list, reject_idx)
         # Also delete the fiber in the polydata
         mask = cluster_numbers_s >= 0
         input_number_of_fibers = input_data.GetNumberOfLines()
@@ -669,7 +669,7 @@ def main():
     
         print("End iteration Polydata size:", output_number_of_fibers, "Subject list for fibers:", subject_fiber_list.shape, "TEST:", test.shape)
         log_file = open(fname_progress, 'a')
-        print(iteration,'\t', input_number_of_fibers,'\t', output_number_of_fibers,'\t', removed_fibers, '\t', float(removed_fibers)/original_total_fibers, '\t', numpy.mean(cluster_mean_distances), '\t', numpy.mean(cluster_mean_probabilities), '\t', numpy.mean(cluster_subjects_before), '\t', numpy.mean(cluster_subjects_after), '\t', numpy.mean(cluster_size_before), '\t', numpy.mean(cluster_size_after), file=log_file)
+        print(iteration,'\t', input_number_of_fibers,'\t', output_number_of_fibers,'\t', removed_fibers, '\t', float(removed_fibers)/original_total_fibers, '\t', np.mean(cluster_mean_distances), '\t', np.mean(cluster_mean_probabilities), '\t', np.mean(cluster_subjects_before), '\t', np.mean(cluster_subjects_after), '\t', np.mean(cluster_size_before), '\t', np.mean(cluster_size_after), file=log_file)
         log_file.close()
     
     

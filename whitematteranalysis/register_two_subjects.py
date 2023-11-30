@@ -22,7 +22,7 @@ except ImportError:
 import sys
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 try:
@@ -43,23 +43,23 @@ class RegisterTractography:
         
         # The values should be a registration matrix.
         # Make sure the optimizer is searching in a reasonable region.
-        transform = numpy.divide(x_current,self.transform_scaling)
+        transform = np.divide(x_current,self.transform_scaling)
         
         # want translation reasonable, say -100 to 100 range
         max_trans = 100
-        if numpy.abs(transform[0]) > max_trans:
+        if np.abs(transform[0]) > max_trans:
             penalty -= 1
-        if numpy.abs(transform[1]) > max_trans:
+        if np.abs(transform[1]) > max_trans:
             penalty -= 1
-        if numpy.abs(transform[2]) > max_trans:
+        if np.abs(transform[2]) > max_trans:
             penalty -= 1
         # want rotation reasonable, say +/- 90 degrees is the max we could reasonably handle
         max_rot = 90
-        if numpy.abs(transform[3]) > max_rot:
+        if np.abs(transform[3]) > max_rot:
             penalty -= 1
-        if numpy.abs(transform[4]) > max_rot:
+        if np.abs(transform[4]) > max_rot:
             penalty -= 1
-        if numpy.abs(transform[5]) > max_rot:
+        if np.abs(transform[5]) > max_rot:
             penalty -= 1
         # want scaling between 0.9 and 1.2. In practice, only shrinking is an issue.
         # Don't let it shrink by more than 0.75
@@ -73,17 +73,17 @@ class RegisterTractography:
             penalty -= 1
         # want shear angles reasonable like rotation
         max_shear_angle = 90
-        if numpy.abs(transform[9]) > max_shear_angle:
+        if np.abs(transform[9]) > max_shear_angle:
             penalty -= 1
-        if numpy.abs(transform[10]) > max_shear_angle:
+        if np.abs(transform[10]) > max_shear_angle:
             penalty -= 1
-        if numpy.abs(transform[11]) > max_shear_angle:
+        if np.abs(transform[11]) > max_shear_angle:
             penalty -= 1
-        if numpy.abs(transform[12]) > max_shear_angle:
+        if np.abs(transform[12]) > max_shear_angle:
             penalty -= 1
-        if numpy.abs(transform[13]) > max_shear_angle:
+        if np.abs(transform[13]) > max_shear_angle:
             penalty -= 1
-        if numpy.abs(transform[14]) > max_shear_angle:
+        if np.abs(transform[14]) > max_shear_angle:
             penalty -= 1
             
         return penalty
@@ -113,11 +113,11 @@ class RegisterTractography:
 
         # Order the components as translate then rotate so optimizer will translate first.
         # trans, rot, scale, shear:
-        self.initial_transform = numpy.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
+        self.initial_transform = np.array([0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0])
 
         # the scaling components should have much smaller changes than the others, so scale them accordingly in optimizer search space
-        #self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
-        self.transform_scaling = numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200,  1, 1, 1, 1, 1, 1])
+        #self.transform_scaling = np.array([1, 1, 1, .5, .5, .5, 300, 300, 300,  1, 1, 1, 1, 1, 1])
+        self.transform_scaling = np.array([1, 1, 1, .5, .5, .5, 200, 200, 200,  1, 1, 1, 1, 1, 1])
 
         # the registration mode includes trans, rot, scale, shear.
         # so for rigid, use mode =  [1, 1, 0, 0]
@@ -150,8 +150,8 @@ class RegisterTractography:
         ## t2 = time.time()
         ##moving = transform_fiber_array_numpy(self.moving_points, self.number_of_fibers_moving, self.points_per_fiber, current_x)
         ## t3 = time.time()
-        ## diff = numpy.abs(movingOLD - moving)
-        ## print "DIFFERENCE IN TXFORMS:", numpy.max(diff), "TIME:", t2-t1, t3-t2
+        ## diff = np.abs(movingOLD - moving)
+        ## print "DIFFERENCE IN TXFORMS:", np.max(diff), "TIME:", t2-t1, t3-t2
 
         # compute objective
         obj = inner_loop_objective(self.fixed, moving, self.sigma * self.sigma)
@@ -231,7 +231,7 @@ class RegisterTractography:
             # we use the constraints to encourage that the transform stays a transform.
             # note disp 0 turns off all display
             self.final_transform = scipy.optimize.fmin_cobyla(self.objective_function,
-                                                      numpy.multiply(self.initial_transform,self.transform_scaling), self.constraint,
+                                                      np.multiply(self.initial_transform,self.transform_scaling), self.constraint,
                                                       maxfun=self.maxfun, rhobeg=self.initial_step,
                                                       rhoend=self.final_step, disp=0)
         elif self.optimizer == "BFGS":
@@ -246,7 +246,7 @@ class RegisterTractography:
             # Note If you do not specify the gradient to the L-BFGS
             # solver, you need to add approx_grad=1
             (self.final_transform, f, dict) = scipy.optimize.fmin_l_bfgs_b(self.objective_function,
-                                                                           numpy.multiply(self.initial_transform,self.transform_scaling),
+                                                                           np.multiply(self.initial_transform,self.transform_scaling),
                                                                            approx_grad = True,
                                                                            maxfun=self.maxfun,
                                                                            maxiter=self.maxfun,
@@ -260,7 +260,7 @@ class RegisterTractography:
             # Powell's method is a conjugate direction method.
             #(self.final_transform, fopt, direc, iters, funcalls, warnflag, allvecs)
             (self.final_transform, fopt, direc, iters, funcalls, warnflag) = scipy.optimize.fmin_powell(self.objective_function,
-                                                                            numpy.multiply(self.initial_transform,self.transform_scaling),
+                                                                            np.multiply(self.initial_transform,self.transform_scaling),
                                                                             xtol=self.initial_step,
                                                                             ftol=self.final_step,
                                                                             maxfun=self.maxfun,
@@ -272,7 +272,7 @@ class RegisterTractography:
         else:
             print("Unknown optimizer.")
 
-        self.final_transform = numpy.divide(self.final_transform, self.transform_scaling)
+        self.final_transform = np.divide(self.final_transform, self.transform_scaling)
 
         # modify the output according to the mode. Note: ideally for
         # rigid or translation only, should make the optimizer search
@@ -315,7 +315,7 @@ def inner_loop_objective(fixed, moving, sigmasq):
     # number of compared fibers (normalization factor)
     (dims, number_of_fibers_fixed, points_per_fiber) = fixed.shape
 
-    probability = numpy.zeros(number_of_fibers_moving) + 1e-20
+    probability = np.zeros(number_of_fibers_moving) + 1e-20
     
     # Loop over fibers in moving. Find total probability of
     # each fiber using all fibers from fixed.
@@ -327,9 +327,9 @@ def inner_loop_objective(fixed, moving, sigmasq):
     # brain").  This neglects Z, the normalization constant for the
     # pdf, which would not affect the optimization.
     probability /= number_of_fibers_fixed
-    #print numpy.min(probability), numpy.max(probability)
+    #print np.min(probability), np.max(probability)
     # add negative log probabilities of all fibers in this brain.
-    entropy = numpy.sum(- numpy.log(probability))
+    entropy = np.sum(- np.log(probability))
     return entropy
 
 def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
@@ -338,8 +338,8 @@ def total_probability_numpy(moving_fiber, fixed_fibers, sigmasq):
     fibers.
     """
     distance = fiber_distance_numpy(moving_fiber, fixed_fibers)
-    probability = numpy.exp(numpy.divide(-distance, sigmasq))
-    return numpy.sum(probability)
+    probability = np.exp(np.divide(-distance, sigmasq))
+    return np.sum(probability)
 
 def fiber_distance_numpy(moving_fiber, fixed_fibers):
     """
@@ -351,7 +351,7 @@ def fiber_distance_numpy(moving_fiber, fixed_fibers):
     
     # choose the lowest distance, corresponding to the optimal fiber
     # representation (either forward or reverse order)
-    return numpy.minimum(distance_1, distance_2)
+    return np.minimum(distance_1, distance_2)
 
 def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber_order=False):
     """Compute the total fiber distance from one fiber to an array of many
@@ -370,20 +370,20 @@ def _fiber_distance_internal_use_numpy(moving_fiber, fixed_fibers, reverse_fiber
         ddy = fixed_fibers[1,:,:] - moving_fiber[1,:]
         ddz = fixed_fibers[2,:,:] - moving_fiber[2,:]
 
-    #print "MAX abs ddx:", numpy.max(numpy.abs(ddx)), "MAX ddy:", numpy.max(numpy.abs(ddy)), "MAX ddz:", numpy.max(numpy.abs(ddz))
-    #print "MIN abs ddx:", numpy.min(numpy.abs(ddx)), "MIN ddy:", numpy.min(numpy.abs(ddy)), "MIN ddz:", numpy.min(numpy.abs(ddz))
+    #print "MAX abs ddx:", np.max(np.abs(ddx)), "MAX ddy:", np.max(np.abs(ddy)), "MAX ddz:", np.max(np.abs(ddz))
+    #print "MIN abs ddx:", np.min(np.abs(ddx)), "MIN ddy:", np.min(np.abs(ddy)), "MIN ddz:", np.min(np.abs(ddz))
     
-    distance = numpy.square(ddx)
-    distance += numpy.square(ddy)
-    distance += numpy.square(ddz)
+    distance = np.square(ddx)
+    distance += np.square(ddy)
+    distance += np.square(ddz)
 
     # Use the mean distance as it works better than Hausdorff-like distance
-    return numpy.mean(distance, 1)
+    return np.mean(distance, 1)
 
     # This is how to test Hausdorff-like distance. Left here for documentation.
     # Hausdorff
     # take max along fiber
-    #return numpy.max(distance, 1)
+    #return np.max(distance, 1)
 
     
 def transform_fiber_array_numpy(in_array, transform, mode=[1,1,1,1]):
@@ -393,7 +393,7 @@ def transform_fiber_array_numpy(in_array, transform, mode=[1,1,1,1]):
     are consistent).  Transformed fibers are returned.
     """
     (dims, number_of_fibers, points_per_fiber) = in_array.shape
-    out_array = numpy.zeros(in_array.shape)
+    out_array = np.zeros(in_array.shape)
 
     vtktrans = convert_transform_to_vtk(transform, scaled=True, mode=mode)
 
@@ -413,7 +413,7 @@ def transform_fiber_array_numpy(in_array, transform, mode=[1,1,1,1]):
     ## uncomment for testing only
     ## # convert it back to a fiber object and render it
     ## global __render_count
-    ## if (numpy.mod(__render_count, 500) == 0) & False:
+    ## if (np.mod(__render_count, 500) == 0) & False:
     ##     fiber_array = wma.fibers.FiberArray()
     ##     fiber_array.fiber_array_r = out_array[0,:,:]
     ##     fiber_array.fiber_array_a = out_array[1,:,:]
@@ -436,7 +436,7 @@ def transform_fiber_array_numpyNOTUSED(moving_points, number_of_fibers, points_p
 
     This overall slows down computations. So keep all data in numpy double arrays for now.
     """
-    out_array = numpy.zeros((3, number_of_fibers, points_per_fiber))
+    out_array = np.zeros((3, number_of_fibers, points_per_fiber))
 
     vtktrans = convert_transform_to_vtk(transform, scaled=True)
 
@@ -465,8 +465,8 @@ def convert_transform_to_vtk(transform, scaled=False, mode=[1,1,1,1]):
 
     if scaled:
         # transform_scaling (must be same as defined above in class)
-        #transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 300, 300, 300, 1, 1, 1, 1, 1, 1]))
-        transform = numpy.divide(transform, numpy.array([1, 1, 1, .5, .5, .5, 200, 200, 200, 1, 1, 1, 1, 1, 1]))
+        #transform = np.divide(transform, np.array([1, 1, 1, .5, .5, .5, 300, 300, 300, 1, 1, 1, 1, 1, 1]))
+        transform = np.divide(transform, np.array([1, 1, 1, .5, .5, .5, 200, 200, 200, 1, 1, 1, 1, 1, 1]))
                                  
     vtktrans = vtk.vtkTransform()
 
@@ -494,21 +494,21 @@ def convert_transform_to_vtk(transform, scaled=False, mode=[1,1,1,1]):
         #vtkMatrix4x4 *skewz= vtkMatrix4x4::New();   skewz->Identity();
         #skewz->SetElement(1, 0,tan(_sxy*(pi/180.0)));    skewz->SetElement(0, 1,tan(_syx*(pi/180.0))); 
         #tr->Concatenate(skewx);   tr->Concatenate(skewy);   tr->Concatenate(skewz);
-        sxy = transform[9] * numpy.pi/180.0
-        sxz = transform[10] * numpy.pi/180.0
-        syx = transform[11] * numpy.pi/180.0
-        syz = transform[12] * numpy.pi/180.0
-        szx = transform[13] * numpy.pi/180.0
-        szy = transform[14] * numpy.pi/180.0
+        sxy = transform[9] * np.pi/180.0
+        sxz = transform[10] * np.pi/180.0
+        syx = transform[11] * np.pi/180.0
+        syz = transform[12] * np.pi/180.0
+        szx = transform[13] * np.pi/180.0
+        szy = transform[14] * np.pi/180.0
         skewx = vtk.vtkMatrix4x4()
         skewy = vtk.vtkMatrix4x4()
         skewz = vtk.vtkMatrix4x4()
-        skewx.SetElement(2, 1, numpy.tan(szy))
-        skewx.SetElement(1, 2, numpy.tan(syz))
-        skewy.SetElement(2, 0, numpy.tan(szx))
-        skewy.SetElement(0, 2, numpy.tan(sxz))
-        skewz.SetElement(1, 0, numpy.tan(sxy))
-        skewz.SetElement(0, 1, numpy.tan(syx))
+        skewx.SetElement(2, 1, np.tan(szy))
+        skewx.SetElement(1, 2, np.tan(syz))
+        skewy.SetElement(2, 0, np.tan(szx))
+        skewy.SetElement(0, 2, np.tan(sxz))
+        skewz.SetElement(1, 0, np.tan(sxy))
+        skewz.SetElement(0, 1, np.tan(syx))
         vtktrans.Concatenate(skewx)
         vtktrans.Concatenate(skewy)
         vtktrans.Concatenate(skewz)

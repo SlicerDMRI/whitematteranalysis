@@ -6,7 +6,7 @@ import glob
 import os
 import shutil
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -221,18 +221,18 @@ def main():
         #p(f1) = sum over all f2 of p(f1|f2) * p(f2)
         # by using sample we estimate expected value of the above
         #  get total similarity (probability) based on the atlas, and normalize by the number of fibers used in the comparison for easier comparison across clusters
-        total_similarity_atlas = (numpy.sum(cluster_similarity_atlas, axis=1) - 1.0) / number_fibers_in_atlas_cluster
-        total_similarity_subject = numpy.sum(cluster_similarity_subject, axis=0)/ number_fibers_in_atlas_cluster
+        total_similarity_atlas = (np.sum(cluster_similarity_atlas, axis=1) - 1.0) / number_fibers_in_atlas_cluster
+        total_similarity_subject = np.sum(cluster_similarity_subject, axis=0)/ number_fibers_in_atlas_cluster
 
         #print "SHAPE total similarity:", total_similarity_atlas.shape, total_similarity_subject.shape
 
         if verbose:
-            print("cluster", c, "tsim_atlas:", numpy.min(total_similarity_atlas), numpy.mean(total_similarity_atlas), numpy.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster)
-            print("cluster", c, "tsim_subject:", numpy.min(total_similarity_subject), numpy.mean(total_similarity_subject), numpy.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster)
+            print("cluster", c, "tsim_atlas:", np.min(total_similarity_atlas), np.mean(total_similarity_atlas), np.max(total_similarity_atlas), "num fibers atlas:", number_fibers_in_atlas_cluster)
+            print("cluster", c, "tsim_subject:", np.min(total_similarity_subject), np.mean(total_similarity_subject), np.max(total_similarity_subject), "num fibers subject:", number_fibers_in_subject_cluster)
         
         # remove outliers with low similarity to their cluster
-        mean_sim_atlas = numpy.mean(total_similarity_atlas)
-        cluster_std_atlas = numpy.std(total_similarity_atlas)
+        mean_sim_atlas = np.mean(total_similarity_atlas)
+        cluster_std_atlas = np.std(total_similarity_atlas)
         cutoff = mean_sim_atlas - cluster_outlier_std_threshold*cluster_std_atlas
         fiber_indices = list(range(number_fibers_in_subject_cluster))
         #print "LEN INDICES:", len(fiber_indices)
@@ -247,17 +247,17 @@ def main():
         print("cluster", c, "rejecting cluster outlier fibers:", number_rejected, "/", number_fibers_in_subject_cluster, "=", float(number_rejected)/number_fibers_in_subject_cluster)
 
         # Output a new polydata with the outliers removed.
-        mask = numpy.ones([number_fibers_in_subject_cluster])
+        mask = np.ones([number_fibers_in_subject_cluster])
         mask[reject_idx] = 0
         #print mask, number_fibers_in_subject_cluster, mask.shape, pd_subject.GetNumberOfLines()
         pd_c = wma.filter.mask(pd_subject, mask, verbose=False, preserve_point_data=True, preserve_cell_data=True)
         wma.io.write_polydata(pd_c, pd_out_fname)
 
-        cluster_distances = numpy.sqrt(cluster_distances)
-        cluster_mean_distances = numpy.mean(cluster_distances, axis=0)
+        cluster_distances = np.sqrt(cluster_distances)
+        cluster_mean_distances = np.mean(cluster_distances, axis=0)
         mask = mask == 1
 
-        log_str = str(c) + '\t' + str(number_fibers_in_subject_cluster) + '\t' + str(number_fibers_in_subject_cluster-number_rejected) + '\t' + str(number_rejected) + '\t' + str(float(number_rejected)/number_fibers_in_subject_cluster) + '\t' + str(numpy.mean(cluster_mean_distances)) + '\t' + str(numpy.mean(cluster_mean_distances[mask])) + '\t' + str(numpy.mean(total_similarity_subject)) + '\t' + str(numpy.mean(total_similarity_subject[mask]))
+        log_str = str(c) + '\t' + str(number_fibers_in_subject_cluster) + '\t' + str(number_fibers_in_subject_cluster-number_rejected) + '\t' + str(number_rejected) + '\t' + str(float(number_rejected)/number_fibers_in_subject_cluster) + '\t' + str(np.mean(cluster_mean_distances)) + '\t' + str(np.mean(cluster_mean_distances[mask])) + '\t' + str(np.mean(total_similarity_subject)) + '\t' + str(np.mean(total_similarity_subject[mask]))
 
         return log_str
 

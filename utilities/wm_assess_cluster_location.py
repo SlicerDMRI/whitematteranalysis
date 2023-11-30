@@ -5,7 +5,7 @@ import argparse
 import glob
 import os
 
-import numpy
+import numpy as np
 
 import whitematteranalysis as wma
 
@@ -111,48 +111,48 @@ def main():
     # hemisphere
     number_of_files = len(hemi_list)
     step = int(100 * 255.0 / (number_of_files - 1))
-    R = numpy.array(list(range(0, 100 * 255 + 1, step))) / 100.0
-    G = numpy.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
-    B = numpy.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
+    R = np.array(list(range(0, 100 * 255 + 1, step))) / 100.0
+    G = np.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
+    B = np.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
 
     colors = list()
     idx = 0
     for pd in hemi_list:
         colors.append([R[idx], G[idx], B[idx]])
         idx += 1
-    colors = numpy.array(colors)
+    colors = np.array(colors)
     hemi_mrml_filename = os.path.join(args.inputAtlasDirectory, "clusters_location_hemispheric.mrml")
     wma.mrml.write(hemi_list, colors, hemi_mrml_filename, ratio=1.0)
 
     #commissural
     number_of_files = len(comm_list)
     step = int(100 * 255.0 / (number_of_files - 1))
-    R = numpy.array(list(range(0, 100 * 255 + 1, step))) / 100.0
-    G = numpy.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
-    B = numpy.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
+    R = np.array(list(range(0, 100 * 255 + 1, step))) / 100.0
+    G = np.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
+    B = np.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
 
     colors = list()
     idx = 0
     for pd in comm_list:
         colors.append([R[idx], G[idx], B[idx]])
         idx += 1
-    colors = numpy.array(colors)
+    colors = np.array(colors)
     comm_mrml_filename = os.path.join(args.inputAtlasDirectory, "clusters_location_commissural.mrml")
     wma.mrml.write(comm_list, colors, comm_mrml_filename, ratio=1.0)
 
     #Not Given
     number_of_files = len(ng_list)
     step = int(100 * 255.0 / (number_of_files - 1))
-    R = numpy.array(list(range(0, 100 * 255 + 1, step))) / 100.0
-    G = numpy.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
-    B = numpy.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
+    R = np.array(list(range(0, 100 * 255 + 1, step))) / 100.0
+    G = np.abs(list(range(100 * -127, 100 * 128 + 1, step))) * 2.0 / 100.0
+    B = np.array(list(range(100 * 255 + 1, 0, -step))) / 100.0
 
     colors = list()
     idx = 0
     for pd in ng_list:
         colors.append([R[idx], G[idx], B[idx]])
         idx += 1
-    colors = numpy.array(colors)
+    colors = np.array(colors)
     ng_mrml_filename = os.path.join(args.inputAtlasDirectory, "clusters_location_not_given.mrml")
     wma.mrml.write(ng_list, colors, ng_mrml_filename, ratio=1.0)
 

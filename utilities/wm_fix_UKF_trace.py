@@ -5,7 +5,7 @@ import argparse
 import glob
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -38,7 +38,7 @@ def fix_trace(inpd):
                 for pidx in range(0, ptids.GetNumberOfIds()):
                     trace_val = array.GetTuple(ptids.GetId(pidx))[0]
                     # inverse function of https://github.com/pnlbwh/ukftractography/blob/fcf83e290de9feb38e6592c2fcacc107cdc029fe/ukf/tractography.cc#L1902
-                    trace_correct = 1 / ( numpy.tan(trace_val / 2 * 3.14) ) / 1.0e6 
+                    trace_correct = 1 / ( np.tan(trace_val / 2 * 3.14) ) / 1.0e6
 
                     if array.GetName() == 'trace1':
                         array_trace_fixed.InsertNextTuple1(trace_correct)

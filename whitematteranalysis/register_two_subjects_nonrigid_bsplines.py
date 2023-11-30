@@ -23,7 +23,7 @@ import os
 import sys
 import time
 
-import numpy
+import numpy as np
 import vtk
 import vtk.util.numpy_support
 
@@ -46,8 +46,8 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
     def constraint(self, x_current):
         # Make sure the optimizer is searching in a reasonable region.
         # TEST: Don't let the translations grow too large
-        #penalty = 10.0 - numpy.mean(numpy.abs(x_current))
-        penalty = 30.0 - numpy.mean(numpy.abs(x_current * 0.01))
+        #penalty = 10.0 - np.mean(np.abs(x_current))
+        penalty = 30.0 - np.mean(np.abs(x_current * 0.01))
 
         # progress report sometimes
         
@@ -114,7 +114,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         #self.scaling = 0.05
         
         # keep track of the best objective we have seen so far to return that when computation stops.
-        self.minimum_objective = numpy.inf
+        self.minimum_objective = np.inf
 
         # choice of optimization method
         #self.optimizer = "Powell"
@@ -123,7 +123,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
 
     def initialize_nonrigid_grid(self):
         res = self.nonrigid_grid_resolution
-        self.displacement_field_numpy = numpy.zeros(res*res*res*3)
+        self.displacement_field_numpy = np.zeros(res*res*res*3)
         #self.displacement_field_vtk = numpy_support.numpy_to_vtk(num_array=NumPy_data.ravel(), deep=True, array_type=vtk.VTK_FLOAT)
         
     def objective_function(self, current_x):
@@ -170,7 +170,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         """Transform in_array of R,A,S by transform (a list of source points).  Transformed fibers are returned.
         """
         (dims, number_of_fibers, points_per_fiber) = in_array.shape
-        out_array = numpy.zeros(in_array.shape)
+        out_array = np.zeros(in_array.shape)
 
         vtktrans = convert_transform_to_vtk(transform)
         #print "2:", vtktrans
@@ -192,7 +192,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
         ## uncomment for testing only
         ## # convert it back to a fiber object and render it
         ## global __render_count
-        ## if (numpy.mod(__render_count, 500) == 0) & False:
+        ## if (np.mod(__render_count, 500) == 0) & False:
         ##     fiber_array = wma.fibers.FiberArray()
         ##     fiber_array.fiber_array_r = out_array[0,:,:]
         ##     fiber_array.fiber_array_a = out_array[1,:,:]
@@ -258,7 +258,7 @@ class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractograph
             del ren
                 
         self.iterations += 1
-        self.final_transform = numpy.zeros(self.initial_transform.shape)
+        self.final_transform = np.zeros(self.initial_transform.shape)
 
         if self.verbose:
             print(f"<{os.path.basename(__file__)}> Initial value for X:", self.initial_transform)
@@ -385,7 +385,7 @@ def convert_transform_to_vtk(transform):
     # This code uses a grid of 240mm x 240mm x 240mm
     #spacing origin extent
     num_vectors = len(transform) / 3
-    dims = round(numpy.power(num_vectors, 1.0/3.0))
+    dims = round(np.power(num_vectors, 1.0/3.0))
     # This MUST correspond to the size used in congeal_multisubject update_nonrigid_grid
     #size_mm = 240.0
     size_mm = 200.0

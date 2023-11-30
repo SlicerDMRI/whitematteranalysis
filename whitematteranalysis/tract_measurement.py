@@ -4,7 +4,7 @@ import csv
 import glob
 import os
 
-import numpy
+import numpy as np
 import xlrd
 
 
@@ -59,12 +59,12 @@ class TractMeasurement:
             print(f"<{os.path.basename(__file__)}> Error: Only support Column currently. ")
             raise AssertionError
 
-        tmp_matrix = numpy.array(txt_matrix)
+        tmp_matrix = np.array(txt_matrix)
 
         self.case_id = os.path.splitext(os.path.split(self.measurement_file)[1])[0]
         self.cluster_path = tmp_matrix[1:, 0]
         self.measurement_header = tmp_matrix[0, 1:]
-        self.measurement_matrix = tmp_matrix[1:, 1:].astype(numpy.float)
+        self.measurement_matrix = tmp_matrix[1:, 1:].astype(np.float)
         self.cluster_number = self.measurement_matrix.shape[0]
 
     def check(self):
@@ -75,11 +75,11 @@ class TractMeasurement:
             raise AssertionError
 
     def get_measurements_by_name(self, query_header_name):
-        if not numpy.sum(self.measurement_header == query_header_name) == 1:
+        if not np.sum(self.measurement_header == query_header_name) == 1:
             print(" Error: Header", query_header_name, "cannot be found. Select from:\n", self.measurement_header)
             return None
 
-        header_index = numpy.where(self.measurement_header == query_header_name)[0][0]
+        header_index = np.where(self.measurement_header == query_header_name)[0][0]
         return self.measurement_matrix[:, header_index]
 
     def get_measurements_by_index(self, query_index):

@@ -4,7 +4,7 @@
 
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 from . import filter
@@ -93,7 +93,7 @@ def argsort_by_jet_lookup_table(rgb_color):
     jet_b = jet_b + [0.6, 0.8, 0.6, 0.8, 0.4, 0.2]
 
     # map from 0..255 to 0..1
-    rgb_color = numpy.divide(rgb_color, 255)
+    rgb_color = np.divide(rgb_color, 255)
     
     # sort input rgb into this colormap order
     match_jet = list()
@@ -103,15 +103,15 @@ def argsort_by_jet_lookup_table(rgb_color):
         diff_g = rgb_color[col_idx,1]-jet_g
         diff_b = rgb_color[col_idx,2]-jet_b
 
-        mag = numpy.sqrt(numpy.multiply(diff_r,diff_r) + numpy.multiply(diff_g,diff_g) + numpy.multiply(diff_b,diff_b) )
-        match_jet.append(numpy.argmin(mag))
-        match_dist.append(numpy.min(mag))
+        mag = np.sqrt(np.multiply(diff_r,diff_r) + np.multiply(diff_g,diff_g) + np.multiply(diff_b,diff_b) )
+        match_jet.append(np.argmin(mag))
+        match_dist.append(np.min(mag))
         # uncomment for testing of worst color matches
-        #if numpy.min(mag) > 0.3:
-        #    print numpy.min(mag), "Color matched:", rgb_color[col_idx,:], "Idx:", match_jet[col_idx], ":", jet_r[match_jet[col_idx]], jet_g[match_jet[col_idx]], jet_b[match_jet[col_idx]], "\n"
+        #if np.min(mag) > 0.3:
+        #    print np.min(mag), "Color matched:", rgb_color[col_idx,:], "Idx:", match_jet[col_idx], ":", jet_r[match_jet[col_idx]], jet_g[match_jet[col_idx]], jet_b[match_jet[col_idx]], "\n"
     
     # Return indices that will sort these colors (centroids) in their match order
-    return(numpy.argsort(numpy.array(match_jet)))
+    return(np.argsort(np.array(match_jet)))
         
 class RenderPolyData:
 
@@ -449,11 +449,11 @@ class RenderPolyData:
 def histeq(values,nbr_bins=256):
 
    #get image histogram
-   imhist,bins = numpy.histogram(values,nbr_bins,normed=True)
+   imhist,bins = np.histogram(values,nbr_bins,normed=True)
    cdf = imhist.cumsum() #cumulative distribution function
    cdf = 255 * cdf / cdf[-1] #normalize
 
    #use linear interpolation of cdf to find new pixel values
-   new_values = numpy.interp(values,bins[:-1],cdf)
+   new_values = np.interp(values,bins[:-1],cdf)
 
    return new_values, cdf

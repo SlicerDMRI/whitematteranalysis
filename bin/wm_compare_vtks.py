@@ -5,7 +5,7 @@ import argparse
 import os
 import time
 
-import numpy
+import numpy as np
 import vtk
 
 import whitematteranalysis as wma
@@ -52,34 +52,34 @@ def main():
     ddy = farray1.fiber_array_a - farray2.fiber_array_a
     ddz = farray1.fiber_array_s - farray2.fiber_array_s
     
-    dx = numpy.square(ddx)
-    dy = numpy.square(ddy)
-    dz = numpy.square(ddz)
+    dx = np.square(ddx)
+    dy = np.square(ddy)
+    dz = np.square(ddz)
     
-    distance = numpy.sqrt(dx + dy + dz)
+    distance = np.sqrt(dx + dy + dz)
     
     # print information
     print("MIN\tMAX\tMEAN\tSTD\tMEDIAN")
-    print(numpy.min(distance), '\t', numpy.max(distance), '\t', numpy.mean(distance), '\t', numpy.std(distance), '\t', numpy.median(distance))
+    print(np.min(distance), '\t', np.max(distance), '\t', np.mean(distance), '\t', np.std(distance), '\t', np.median(distance))
      
             
     # figure out what percentage is less than 1mm, 2mm, 3mm, 4mm, 5mm etc.
     sz = farray1.fiber_array_r.shape
     number_of_points = float(sz[0]*sz[1])
     
-    print(100 * numpy.sum(distance < 0.001) / number_of_points, 'percent < 0.001 mm')
-    print(100 * numpy.sum(distance < 0.01) / number_of_points, 'percent < 0.01 mm')
-    print(100 * numpy.sum(distance < 0.1) / number_of_points, 'percent < 0.1 mm')
-    print(100 * numpy.sum(distance < 0.5) / number_of_points, 'percent < 0.5 mm')
-    print(100 * numpy.sum(distance < 1) / number_of_points, 'percent < 1 mm')
-    print(100 * numpy.sum(distance < 1.2) / number_of_points, 'percent < 1.2 mm')
-    print(100 * numpy.sum(distance < 1.3) / number_of_points, 'percent < 1.3 mm')
-    print(100 * numpy.sum(distance < 1.4) / number_of_points, 'percent < 1.4 mm')
-    print(100 * numpy.sum(distance < 1.5) / number_of_points, 'percent < 1.5 mm')
-    print(100 * numpy.sum(distance < 2) / number_of_points, 'percent < 2 mm')
-    print(100 * numpy.sum(distance < 3) / number_of_points, 'percent < 3 mm')
-    print(100 * numpy.sum(distance < 4) / number_of_points, 'percent < 4 mm')
-    print(100 * numpy.sum(distance < 5) / number_of_points, 'percent < 5 mm')
+    print(100 * np.sum(distance < 0.001) / number_of_points, 'percent < 0.001 mm')
+    print(100 * np.sum(distance < 0.01) / number_of_points, 'percent < 0.01 mm')
+    print(100 * np.sum(distance < 0.1) / number_of_points, 'percent < 0.1 mm')
+    print(100 * np.sum(distance < 0.5) / number_of_points, 'percent < 0.5 mm')
+    print(100 * np.sum(distance < 1) / number_of_points, 'percent < 1 mm')
+    print(100 * np.sum(distance < 1.2) / number_of_points, 'percent < 1.2 mm')
+    print(100 * np.sum(distance < 1.3) / number_of_points, 'percent < 1.3 mm')
+    print(100 * np.sum(distance < 1.4) / number_of_points, 'percent < 1.4 mm')
+    print(100 * np.sum(distance < 1.5) / number_of_points, 'percent < 1.5 mm')
+    print(100 * np.sum(distance < 2) / number_of_points, 'percent < 2 mm')
+    print(100 * np.sum(distance < 3) / number_of_points, 'percent < 3 mm')
+    print(100 * np.sum(distance < 4) / number_of_points, 'percent < 4 mm')
+    print(100 * np.sum(distance < 5) / number_of_points, 'percent < 5 mm')
     
     # output a new polydata showing what the distances are in case there is a pattern
 

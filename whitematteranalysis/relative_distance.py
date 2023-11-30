@@ -13,7 +13,7 @@ class RelativeDistanceModel
 
 import os
 
-import numpy
+import numpy as np
 import vtk
 
 try:
@@ -70,21 +70,21 @@ class RelativeDistanceModel:
         nfib = fibers.number_of_fibers 
         
         # like repmat. copy point to full matrix size of all lines
-        #point_r = numpy.tile(point.r, (nfib, 1))
-        #point_a = numpy.tile(point.a, (nfib, 1))
-        #point_s = numpy.tile(point.s, (nfib, 1))
+        #point_r = np.tile(point.r, (nfib, 1))
+        #point_a = np.tile(point.a, (nfib, 1))
+        #point_s = np.tile(point.s, (nfib, 1))
         
         # compute the distance from each point to the array of fibers
         dx = fibers.fiber_array_r - point[0]
         dy = fibers.fiber_array_a - point[1]
         dz = fibers.fiber_array_s - point[2]
 
-        dx = numpy.power(dx, 2)
-        dy = numpy.power(dy, 2)
-        dz = numpy.power(dz, 2)
+        dx = np.power(dx, 2)
+        dy = np.power(dy, 2)
+        dz = np.power(dz, 2)
         
         # sum dx dx dz at each point on the fiber and sqrt for threshold
-        distance = numpy.sqrt(dx + dy + dz)
+        distance = np.sqrt(dx + dy + dz)
     
         return distance
 
