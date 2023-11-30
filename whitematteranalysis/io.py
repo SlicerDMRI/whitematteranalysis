@@ -349,7 +349,7 @@ def transform_polydatas_from_diskUNSAFE(input_dir, transforms, output_dir, paral
             os.remove(fname)
 
     #for idx in range(0, len(input_pd_fnames)):
-        #print "<io.py>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
+        #print f"<{os.path.basename(__file__)}>  ", idx + 1, "/",  num_pd, subject_id, " Transforming ", in_filename, "->", out_filename, "..."
         #transform_polydata_from_disk(in_filename, transform, out_filename)
 
 def transform_polydatas_from_diskOLD(input_dir, transforms, output_dir):
@@ -707,7 +707,7 @@ class LateralityResults:
         ##         matplotlib.pyplot.close()
         ##         print "g"
         ##     except Exception:
-        ##         print "<io.py> matplotlib was unable to write histogram."
+        ##         print(f"<{os.path.basename(__file__)}> matplotlib was unable to write histogram.")
         ##         raise
         ## print "1"
         # generate fiber visualization
@@ -716,8 +716,8 @@ class LateralityResults:
             #ren = render.render(self.polydata)
             #ren.save_views(dirname)
         #except Exception:
-        #    print "<io.py> vtk or rendering issue. Failed to save views."
-        #    print "<io.py> polydata was saved to disk so you can re-render."
+        #    print(f"<{os.path.basename(__file__)}> vtk or rendering issue. Failed to save views.")
+        #    print(f"<{os.path.basename(__file__)}> polydata was saved to disk so you can re-render.")
         #    raise
 
         #print "IMPLEMENT SAVING OF PARAMETERS TOO"

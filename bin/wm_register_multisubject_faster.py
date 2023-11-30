@@ -106,7 +106,7 @@ def main():
     
     
     #points_per_fiber = args.pointsPerFiber
-    #print "<register> Number of points for fiber representation: ", points_per_fiber
+    #print f"<{os.path.basename(__file__)}> Number of points for fiber representation: ", points_per_fiber
     
     if args.flag_norender:
         print(f"<{os.path.basename(__file__)}> No rendering (for compute servers without X connection).")
