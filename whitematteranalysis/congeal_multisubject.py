@@ -11,23 +11,24 @@ class MultiSubjectRegistration
 
 import os
 import time
+import warnings
 
 import numpy as np
 import vtk
 from joblib import Parallel, delayed
 
-HAVE_PLT = 1
-try:
-    import matplotlib
-
-    # Force matplotlib to not use any Xwindows backend.
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-except:
-    print(f"<{os.path.basename(__file__)}> Error importing matplotlib.pyplot package, can't plot objectives.\n")
-    HAVE_PLT = 0
-
 import whitematteranalysis as wma
+from whitematteranalysis.utils.opt_pckg import optional_package
+
+matplotlib, have_mpl, _ = optional_package("matplotlib")
+plt, _, _ = optional_package("matplotlib.pyplot")
+
+if have_mpl:
+    # Force matplotlib to not use any Xwindows backend.
+    matplotlib.use("Agg")
+else:
+    warnings.warn(matplotlib._msg)
+    warnings.warn("Cannot plot objectives.")
 
 
 class MultiSubjectRegistration:
@@ -304,7 +305,7 @@ class MultiSubjectRegistration:
         functions_per_subject = list()
         objective_changes_per_subject = list()
         decreases = list()
-        if HAVE_PLT:
+        if have_mpl:
             plt.close('all')
             plt.figure(0)
             plt.title('Iteration '+str(self.total_iterations)+' Objective Values for All Subjects')
@@ -326,7 +327,7 @@ class MultiSubjectRegistration:
                 objective_total_after += objectives[0]
             objective_changes_per_subject.append(diff)
             sidx += 1
-            if HAVE_PLT:
+            if have_mpl:
                 plt.figure(0)
                 plt.plot(objectives, 'o-', label=sidx)
 
@@ -342,7 +343,7 @@ class MultiSubjectRegistration:
         print("Iteration:", self.total_iterations, "TOTAL objective change:",  total_change)
         print("Iteration:", self.total_iterations, "PERCENT objective change:",  percent_change)
 
-        if HAVE_PLT:
+        if have_mpl:
             plt.figure(0)
             if self.mode == "Nonrigid":
                 fname_fig_base = "iteration_%05d_sigma_%03d_grid_%03d" % (self.total_iterations, self.sigma, self.nonrigid_grid_resolution)

@@ -21,6 +21,7 @@ import numpy as np
 import vtk
 
 import whitematteranalysis as wma
+from whitematteranalysis.utils.utils import hemisphere_loc_name_typo_warn_msg
 
 
 def _build_arg_parser():
@@ -75,7 +76,7 @@ def main():
                 array = inpointdata.GetArray(idx)
                 if array.GetName() == 'HemisphereLocataion':
                     warnings.warn(
-                        wma.utils.hemisphere_loc_name_typo_warn_msg,
+                        hemisphere_loc_name_typo_warn_msg,
                         PendingDeprecationWarning)
                     print('  -- HemisphereLocataion is in the input data: skip updating the vtk file.')
                     return inpd
@@ -122,7 +123,7 @@ def main():
                 array = inpointdata.GetArray(idx)
                 if array.GetName() == 'HemisphereLocataion':
                     warnings.warn(
-                        wma.utils.hemisphere_loc_name_typo_warn_msg,
+                        hemisphere_loc_name_typo_warn_msg,
                         PendingDeprecationWarning)
                     flag_location = _read_location(inpd)
                     break

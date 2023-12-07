@@ -20,19 +20,23 @@ remove_outliers
 """
 
 import os
+import warnings
 
 import numpy as np
 import vtk
 
-try:
-    from joblib import Parallel, delayed
-    USE_PARALLEL = 1
-except ImportError:
-    USE_PARALLEL = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
-    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
+from whitematteranalysis.utils.opt_pckg import optional_package
 
 from . import fibers, similarity
+
+joblib, have_joblib, _ = optional_package("joblib")
+Parallel, _, _ = optional_package("joblib.Parallel")
+delayed, _, _ = optional_package("joblib.delayed")
+
+if not have_joblib:
+    warnings.warn(joblib._msg)
+    warnings.warn("Cannot multiprocess.")
+
 
 verbose = 0
 
@@ -604,7 +608,7 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
     min_fiber_distance = min_fiber_distance * min_fiber_distance
     
     # pairwise distance matrix
-    if USE_PARALLEL and n_jobs > 0:
+    if have_joblib and n_jobs > 0:
         distances = Parallel(n_jobs=n_jobs, verbose=1)(
             delayed(similarity.fiber_distance)(
                 fiber_array.get_fiber(lidx),
@@ -678,7 +682,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
     print(f"<{os.path.basename(__file__)}> Computing pairwise distances...")
     
     # pairwise distance matrix
-    if USE_PARALLEL:
+    if have_joblib:
         distances = Parallel(n_jobs=n_jobs, verbose=1)(
             delayed(similarity.fiber_distance)(
             current_fiber_array.get_fiber(lidx),
@@ -802,7 +806,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         done[np.nonzero(np.array(curr_count) >= cluster_max)] = 1
         
         # pairwise distance matrix
-        if USE_PARALLEL:
+        if have_joblib:
             distances = Parallel(n_jobs=n_jobs, verbose=1)(
                 delayed(similarity.fiber_distance)(
                 current_fiber_array.get_fiber(lidx),
@@ -967,7 +971,7 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
     fiber_indices = list(range(0, fiber_array.number_of_fibers))
 
     # pairwise distance matrix
-    if USE_PARALLEL:
+    if have_joblib:
         distances = Parallel(n_jobs=n_jobs, verbose=1)(
             delayed(similarity.fiber_distance)(
             fiber_array.get_fiber(lidx),
