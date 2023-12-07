@@ -40,7 +40,7 @@ def main():
 
     subject_IDs = [os.path.basename(folder) for folder in subject_folders]
     print()
-    print('Subject IDs: (n=%d): ' % len(subject_IDs))
+    print(f'Subject IDs: (n={len(subject_IDs)}): ')
     print(subject_IDs)
 
     # anatomical tracts
@@ -49,22 +49,22 @@ def main():
     fields = [col.strip() for col in stats.columns]
     fields = fields[1:]
     print()
-    print('Tract diffusion measures per subject: (n=%d): ' % len(fields))
+    print(f'Tract diffusion measures per subject: (n={len(fields)}): ')
     print(fields)
 
     tracts = stats.to_numpy()[:, 0]
     tracts = [os.path.basename(filepath).replace('.vtp', '').replace('.vtk', '').strip() for filepath in tracts]
     print()
-    print('White matter tracts per subject: (n=%d): ' % len(tracts))
+    print(f'White matter tracts per subject: (n={len(tracts)}): ')
     print(tracts)
 
     appended_fields = ['subjectkey']
     for tract in tracts:
         for field in fields:
-            appended_fields.append("%s.%s" % (tract, field))
+            appended_fields.append(f"{tract}.{field}")
 
     print()
-    print('Appended tract diffusion measure fields per subject: (n=%d): ' % len(appended_fields))
+    print(f'Appended tract diffusion measure fields per subject: (n={len(appended_fields)}): ')
     print(appended_fields[:10], ' ... ')
 
     data = []
@@ -101,13 +101,13 @@ def main():
     fields = [col.strip() for col in stats.columns]
     fields = fields[1:]
     print()
-    print('Fiber cluster diffusion measures per subject: (n=%d): ' % len(fields))
+    print(f'Fiber cluster diffusion measures per subject: (n={len(fields)}): ')
     print(fields)
 
     clusters = stats.to_numpy()[:, 0]
     clusters = [os.path.basename(filepath).replace('.vtp', '').replace('.vtk', '').strip() for filepath in clusters]
     print()
-    print('Fiber clusters per subject: (n=%d): ' % len(clusters))
+    print(f'Fiber clusters per subject: (n={len(clusters)}): ')
 
     if len(clusters) == 800 and len(tracts) == 73:
         comm_clusters = [3, 8, 33, 40, 46, 52, 56, 57, 62, 68, 69, 73, 86, 91, 109, 110, 114, 142, 144, 145, 146, 159, 163, 250, 251, 252, 257, 262, 263, 268, 271, 305, 311, 314, 322, 330, 334, 338, 342, 350, 363, 371, 375, 403, 410, 437, 440, 448, 456, 465, 468, 475, 484, 485, 488, 519, 522, 525, 543, 545, 549, 557, 576, 577, 582, 587, 591, 597, 601, 614, 620, 623, 627, 633, 645, 653, 658, 663, 670, 677, 683, 702, 770, 781]
@@ -132,10 +132,10 @@ def main():
 
         for cluster in clusters_loc:
             for field in fields:
-                appended_fields.append("%s.%s.%s" % (loc, cluster, field))
+                appended_fields.append(f"{loc}.{cluster}.{field}")
 
     print()
-    print('Appended cluster diffusion measure fields per subject: (n=%d): ' % len(appended_fields))
+    print(f'Appended cluster diffusion measure fields per subject: (n={len(appended_fields)}): ')
 
     data = []
     for s_idx, subject_folder in enumerate(subject_folders):

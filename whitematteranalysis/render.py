@@ -23,13 +23,13 @@ def render(input_polydata, number_of_fibers=None, opacity=1, depth_peeling=False
         
     if number_of_fibers is not None:
         if verbose:
-            print(f"<{os.path.basename(__file__)}> Downsampling vtkPolyData:", number_of_fibers)
+            print(f"<{os.path.basename(__file__)}> Downsampling vtkPolyData: {number_of_fibers}")
         # downsample if requested
         input_polydata = filter.downsample(input_polydata, number_of_fibers, preserve_point_data=True, preserve_cell_data=True, verbose=verbose)
 
     if data_name is not None:
         if verbose:
-            print(f"<{os.path.basename(__file__)}> Visualizing data:", data_name)
+            print(f"<{os.path.basename(__file__)}> Visualizing data: {data_name}")
         if data_mode == "Cell":
             input_polydata.GetCellData().SetActiveScalars(data_name)
         if data_mode == "Point":
@@ -213,7 +213,7 @@ class RenderPolyData:
                 self.render_RGB = True
                 self.renderer.RemoveActor2D(self.scalarbar)
         if verbose:
-            print(f"<{os.path.basename(__file__)}> RGB: ", self.render_RGB)
+            print(f"<{os.path.basename(__file__)}> RGB: f{self.render_RGB}")
 
         if data_mode == "Cell":
             mapper.SetScalarModeToUseCellData()
@@ -380,10 +380,10 @@ class RenderPolyData:
     def save_views(self, directory=".", subjectID=None,  verbose=True):
 
         if verbose:
-            print(f"<{os.path.basename(__file__)}> Saving rendered views to disk:", directory)
+            print(f"<{os.path.basename(__file__)}> Saving rendered views to disk: {directory}")
         
         if not os.path.isdir(directory):
-            print(f"<{os.path.basename(__file__)}> ERROR: directory does not exist.", directory)
+            print(f"<{os.path.basename(__file__)}> ERROR: directory does not exist. {directory}")
             return
 
         #ext = ".png"
@@ -392,19 +392,19 @@ class RenderPolyData:
         # Use subject ID as part of filename for easier visual 
         # identification of problem cases
         if subjectID is not None:
-            fname_sup = "view_sup_"+subjectID+ext
-            fname_inf = "view_inf_"+subjectID+ext
-            fname_left = "view_left_"+subjectID+ext
-            fname_right = "view_right_"+subjectID+ext
-            fname_ant = "view_ant_"+subjectID+ext
-            fname_post = "view_post_"+subjectID+ext
+            fname_sup = f"view_sup_{subjectID}{ext}"
+            fname_inf = f"view_inf_{subjectID}{ext}"
+            fname_left = f"view_left_{subjectID}{ext}"
+            fname_right = f"view_right_{subjectID}{ext}"
+            fname_ant = f"view_ant_{subjectID}{ext}"
+            fname_post = f"view_post_{subjectID}{ext}"
         else:
-            fname_sup = "view_sup"+ext
-            fname_inf = "view_inf"+ext
-            fname_left = "view_left"+ext
-            fname_right = "view_right"+ext
-            fname_ant = "view_ant"+ext
-            fname_post = "view_post"+ext
+            fname_sup = f"view_sup{ext}"
+            fname_inf = f"view_inf{ext}"
+            fname_left = f"view_left{ext}"
+            fname_right = f"view_right{ext}"
+            fname_ant = f"view_ant{ext}"
+            fname_post = f"view_post{ext}"
             
         # sometimes the model gets clipped, this mostly fixes it
         self.renderer.ResetCameraClippingRange()

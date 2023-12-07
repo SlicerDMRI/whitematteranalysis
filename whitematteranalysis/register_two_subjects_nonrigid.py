@@ -120,7 +120,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
             grid = self.nonrigid_grid_10
             grid_order = self.grid_order_10
         else:
-            print(f"<{os.path.basename(__file__)}> Error: Unknown nonrigid grid mode:", self.nonrigid_grid_resolution)
+            print(f"<{os.path.basename(__file__)}> Error: Unknown nonrigid grid mode: {self.nonrigid_grid_resolution}")
         tmp = list()
         for r in grid:
             for a in grid:
@@ -154,7 +154,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print("O:",  obj, "X:", current_x)
+            print(f"O: {obj} X: {current_x}")
         #print "X:", self._x_opt
         return obj
 
@@ -239,14 +239,14 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
             ren = wma.render.render(pd2, number_of_fibers_fixed, verbose=False)
             # save low-res images for speed
             ren.magnification = 3
-            ren.save_views(self.output_directory, 'fixed_brain_' + self.process_id_string)
+            ren.save_views(self.output_directory, f'fixed_brain_{self.process_id_string}')
             del ren
                 
         self.iterations += 1
         self.final_transform = np.zeros(self.initial_transform.shape)
 
         if self.verbose:
-            print(f"<{os.path.basename(__file__)}> Initial value for X:", self.initial_transform)
+            print(f"<{os.path.basename(__file__)}> Initial value for X: {self.initial_transform}")
 
         if self.optimizer == "Cobyla":
 
@@ -303,7 +303,7 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print("TRANS:", self.final_transform, "FLAG:", warnflag)
+            print(f"TRANS: {self.final_transform} FLAG: {warnflag}")
 
         else:
             raise NotImplementedError(

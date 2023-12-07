@@ -96,7 +96,7 @@ def main():
                 file_size_dl += len(buffer)
                 output.write(buffer)
                 p = float(file_size_dl) / file_size
-                status = fr"{file_size_dl} bytes [{p:.2%}]"
+                status = f"{file_size_dl} bytes [{p:.2%}]"
                 status = status + chr(8)*(len(status)+1)
                 sys.stdout.write(status)
     
@@ -123,13 +123,13 @@ def main():
     
     outdir = os.path.abspath(args.outputDirectory)
     if not os.path.exists(args.outputDirectory):
-        print(f"<{os.path.basename(__file__)}> Output directory", args.outputDirectory, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {args.outputDirectory} does not exist, creating it.")
         os.makedirs(outdir)
     
     requested_atlas = args.requested_atlas
 
     repo = build_download_url(ZENODO_RECORD_ROOT_URL, args.version)
-    repo = repo + "/"
+    repo = f"{repo}/"
     version = ORGAtlasVersion.get_version(ORGAtlasVersion.__getitem__(args.version))
 
     metadata_url = build_download_url(ZENODO_API_RECORD_ROOT_URL, args.version)
@@ -137,7 +137,7 @@ def main():
     metadata_local_file_basename = metadata_local_file_rootname + build_suffix(
         DataExchangeFormatFileExtension.JSON)
 
-    org_atlases_version_folder_name = 'ORG-Atlases-' + version[1:]
+    org_atlases_version_folder_name = f'ORG-Atlases-{version[1:]}'
     org_atlases_version_folder = os.path.join(outdir, org_atlases_version_folder_name)
     if not os.path.exists(org_atlases_version_folder):
         os.makedirs(org_atlases_version_folder)
@@ -148,38 +148,38 @@ def main():
     )
 
     if requested_atlas == 'ORG-800FC-100HCP' or requested_atlas == 'ORG-2000FC-100HCP':
-        FC_atlas_url = repo + 'files/' + requested_atlas + '.zip?download=1'
-        REG_atlas_url = repo + 'files/' + 'ORG-RegAtlas-100HCP.zip?download=1'
+        FC_atlas_url = f'{repo}files/{requested_atlas}.zip?download=1'
+        REG_atlas_url = f'{repo}files/ORG-RegAtlas-100HCP.zip?download=1'
     
-        population_T1_url = repo + 'files/' + '100HCP-population-mean-T1.nii.gz?download=1'
-        population_T2_url = repo + 'files/' + '100HCP-population-mean-T2.nii.gz?download=1'
-        population_b0_url = repo + 'files/' + '100HCP-population-mean-b0.nii.gz?download=1'
+        population_T1_url = f'{repo}files/100HCP-population-mean-T1.nii.gz?download=1'
+        population_T2_url = f'{repo}files/100HCP-population-mean-T2.nii.gz?download=1'
+        population_b0_url = f'{repo}files/100HCP-population-mean-b0.nii.gz?download=1'
         
-        downloaded_FC_atlas_file = os.path.join(org_atlases_version_folder, requested_atlas + '.zip')
+        downloaded_FC_atlas_file = os.path.join(org_atlases_version_folder, f'{requested_atlas}.zip')
         downloaded_Reg_atlas_file = os.path.join(org_atlases_version_folder, 'ORG-RegAtlas-100HCP.zip')
     
         downloaded_population_T1_file = os.path.join(org_atlases_version_folder, '100HCP-population-mean-T1.nii.gz')
         downloaded_population_T2_file = os.path.join(org_atlases_version_folder, '100HCP-population-mean-T2.nii.gz')
         downloaded_population_b0_file = os.path.join(org_atlases_version_folder, '100HCP-population-mean-b0.nii.gz')
     else:
-        print(f'<{os.path.basename(__file__)}> ' + requested_atlas + 'is not available. Please check input.')
+        print(f'<{os.path.basename(__file__)}> {requested_atlas} is not available. Please check input.')
         print('')
         exit()
     
     print("")
     print("===== <wm_download_org_atlas.py> ")
-    print("===== Release version   : ", version)
-    print("===== Download from     : ", repo)
-    print("===== Output directory  : ", outdir)
-    print("===== Requested atlas   : ", requested_atlas)
+    print(f"===== Release version   : {version}")
+    print(f"===== Download from     : {repo}")
+    print(f"===== Output directory  : {outdir}")
+    print(f"===== Requested atlas   : {requested_atlas}")
     print("")
     
     if requested_atlas == 'ORG-800FC-100HCP':
-        print(f'<{os.path.basename(__file__)}> The ' +requested_atlas+ ' atlas is an anatomically curated white matter atlas, with annotated anatomical label provided for each cluster. '\
+        print(f'<{os.path.basename(__file__)}> The {requested_atlas} atlas is an anatomically curated white matter atlas, with annotated anatomical label provided for each cluster. '\
                + 'MRML files that are used to organize fiber clusters that belong to the same anatomical fiber tract are provided in the atlas.') 
         print('')
     elif requested_atlas == 'ORG-2000FC-100HCP':
-        print(f'<{os.path.basename(__file__)}> The ' +requested_atlas+ ' atlas is provided for applications that can be benefit from a fine scale white matter parcellation. This an uncurated white matter atlas.')
+        print(f'<{os.path.basename(__file__)}> The {requested_atlas} atlas is provided for applications that can be benefit from a fine scale white matter parcellation. This an uncurated white matter atlas.')
         print('')
     
     if requested_atlas == 'ORG-800FC-100HCP' or requested_atlas == 'ORG-2000FC-100HCP':
@@ -197,7 +197,7 @@ def main():
             download_file(FC_atlas_url, downloaded_FC_atlas_file)
             extract_from_zip(downloaded_FC_atlas_file, org_atlases_version_folder, remove_after_extraction=True)
         else:
-            print(f'<{os.path.basename(__file__)}> Skip downloading: There is an existing fiber clustering atlas at \''+requested_atlas+'\' in the output folder.')
+            print(f'<{os.path.basename(__file__)}> Skip downloading: There is an existing fiber clustering atlas at \'{requested_atlas}\' in the output folder.')
             print('')
     
         print(f'<{os.path.basename(__file__)}> Population mean T1/T2/b0 images.')
@@ -223,7 +223,7 @@ def main():
             print("")
 
     print('')
-    print(f'<{os.path.basename(__file__)}> Successfully downloaded to', outdir)
+    print(f'<{os.path.basename(__file__)}> Successfully downloaded to {outdir}')
 
 if __name__ == '__main__':
     main()

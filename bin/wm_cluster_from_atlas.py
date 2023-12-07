@@ -66,24 +66,24 @@ def main():
         exit()
     
     if not os.path.isdir(args.atlasDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Atlas directory", args.atlasDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Atlas directory {args.atlasDirectory} does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
     
     fname = args.inputFile
     subject_id = os.path.splitext(os.path.basename(fname))[0]
     outdir = os.path.join(outdir, subject_id)
     if not os.path.exists(outdir):
-        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
     
     print("\n==========================")
     print("input file:", args.inputFile)
-    print("atlas directory:", args.atlasDirectory)
+    print(f"atlas directory {args.atlasDirectory}")
     print("output directory:", args.outputDirectory)
     
     if args.numberOfFibers is not None:
@@ -96,7 +96,7 @@ def main():
     print("minimum length of fibers to analyze (in mm): ", fiber_length)
     
     number_of_jobs = int(args.numberOfJobs)
-    print('Using N jobs:', number_of_jobs)
+    print(f'Using N jobs: {number_of_jobs}')
     
     if args.flag_verbose:
         print("Verbose ON.")
@@ -126,7 +126,7 @@ def main():
     print("==========================\n")
     
     # read atlas
-    print(f"<{os.path.basename(__file__)}> Loading input atlas:", args.atlasDirectory)
+    print(f"<{os.path.basename(__file__)}> Loading input atlas: {args.atlasDirectory}")
     atlas = wma.cluster.load_atlas(args.atlasDirectory, 'atlas')
     
     # read data

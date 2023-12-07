@@ -40,12 +40,12 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist or is not a directory.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist or is not a directory.")
         exit()
 
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
 
     # cluster filename we want
@@ -66,10 +66,10 @@ def main():
             print(dir)
             fname = os.path.join(dir, fname_c)
             if os.path.exists(fname):
-                fname1 = subject_id+'_'+fname_c
+                fname1 = f'{subject_id}_{fname_c}'
                 fname_list.append(fname1)
                 fname2 = os.path.join(outdir, fname1)
-                print(fname, "===>>>>", fname2)
+                print(f"{fname} ===>>>> {fname2}")
                 shutil.copy(fname, fname2)
 
     # also output a MRML file to load them all into Slicer

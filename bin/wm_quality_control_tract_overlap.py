@@ -52,16 +52,16 @@ def main():
     print(f"<{os.path.basename(__file__)}> Starting...")
     
     if not os.path.exists(args.inputTract1):
-        print(f"<{os.path.basename(__file__)}> Error: Input tract 1", args.inputTract1, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input tract 1 {args.inputTract1} does not exist.")
         exit()
     
     if not os.path.exists(args.inputTract2):
-        print(f"<{os.path.basename(__file__)}> Error: Input tract 2", args.inputTract2, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input tract 2 {args.inputTract2} does not exist.")
         exit()
     
     output_dir = args.outputDirectory
     if not os.path.exists(output_dir):
-        print(f"<{os.path.basename(__file__)}> Output directory", output_dir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {output_dir} does not exist, creating it.")
         os.makedirs(output_dir)
     
     input_polydatas = []
@@ -78,7 +78,7 @@ def main():
     appender = vtk.vtkAppendPolyData()
     for fname in input_polydatas:
         subject_id = os.path.splitext(os.path.basename(fname))[0]
-        print("Subject ", subject_idx, "/", number_of_subjects, "ID:", subject_id)
+        print(f"Subject {subject_idx} / {number_of_subjects} ID: {subject_id}")
     
         # Read data
         pd = wma.io.read_polydata(fname)

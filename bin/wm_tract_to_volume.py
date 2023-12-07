@@ -44,7 +44,7 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.exists(args.inputVTK):
-        print("Error: Input directory", args.inputVTK, "does not exist.")
+        print(f"Error: Input directory {args.inputVTK} does not exist.")
         exit()
 
     def convert_cluster_to_volume_with_sz(inpd, volume, sampling_size=0.5):
@@ -143,10 +143,10 @@ def main():
             new_voxel_data = new_voxel_measure
             
         return new_voxel_data
-    
+
     volume = nib.load(args.refvolume)
-    print(f'<{os.path.basename(__file__)}>', args.refvolume, ', input volume shape: ', volume.get_fdata().shape)
-    
+    print(f'<{os.path.basename(__file__)}> {args.refvolume} input volume shape: f{volume.get_fdata().shape}')
+
     inpd = wma.io.read_polydata(args.inputVTK)
     
     new_voxel_data = convert_cluster_to_volume(inpd, volume, measure=args.measure)
@@ -155,7 +155,7 @@ def main():
     
     nib.save(volume_new, args.outputVol)
     
-    print('Done: save tract map to', args.outputVol)
+    print(f'Done: save tract map to {args.outputVol}')
 
 if __name__ == '__main__':
     main()

@@ -78,8 +78,8 @@ def main():
 
     print(f"{os.path.basename(__file__)}. Starting.")
     print("")
-    print("=====input filename======\n", args.in_fname)
-    print("=====output filename=====\n", args.out_fname)
+    print(f"=====input filename======\n {args.in_fname}")
+    print(f"=====output filename=====\n {args.out_fname}")
     print("==========================")
 
     polydata = wma.io.read_polydata(args.in_fname)

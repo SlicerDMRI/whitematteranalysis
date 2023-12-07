@@ -19,16 +19,16 @@ def harden_transform(polydata, transform, inverse, outdir):
     
     check_load, polydata_node = slicer.util.loadFiberBundle(str(polydata), 1)
     if not check_load:
-        print('Could not load polydata file:', polydata)
+        print(f'Could not load polydata file: {polydata}')
         return
 
     check_load, transform_node = slicer.util.loadTransform(str(transform), 1)
     if not check_load:
-        print('Could not load transform file:', transform)
+        print(f'Could not load transform file: {transform}')
         return
 
     if polydata_node.GetPolyData().GetNumberOfCells() == 0:
-        print('Empty cluster:', polydata)
+        print(f'Empty cluster: {polydata}')
         shutil.copyfile(polydata, output_name)
         return
 

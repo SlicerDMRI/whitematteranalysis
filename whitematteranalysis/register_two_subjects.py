@@ -144,7 +144,7 @@ class RegisterTractography:
         self.objective_function_values.append(obj)
 
         if self.verbose:
-            print("O:",  obj, "X:", self._x_opt)
+            print(f"O: {obj} X: {self._x_opt}")
 
         return obj
 
@@ -199,13 +199,13 @@ class RegisterTractography:
             ren = wma.render.render(pd2, number_of_fibers_fixed, verbose=False)
             # save low-res images for speed
             ren.magnification = 3
-            ren.save_views(self.output_directory, 'fixed_brain_' + self.process_id_string)
+            ren.save_views(self.output_directory, f'fixed_brain_{self.process_id_string}')
             del ren
                 
         self.iterations += 1
 
         if self.verbose:
-            print(f"<{os.path.basename(__file__)}> Initial value for X:", self.initial_transform)
+            print(f"<{os.path.basename(__file__)}> Initial value for X: {self.initial_transform}")
 
 
         if self.optimizer == "Cobyla":
@@ -251,7 +251,7 @@ class RegisterTractography:
                                                                             maxiter=self.maxfun,
                                                                             disp=1, full_output=True)
 
-            print("FLAG:", warnflag)
+            print(f"FLAG: {warnflag}")
 
         else:
             raise NotImplementedError(
@@ -284,7 +284,7 @@ class RegisterTractography:
             self.final_transform[14] = 0.0
 
         tx = self.final_transform
-        print("TRANS:", tx[0], tx[1], tx[2], "ROT:", tx[3], tx[4], tx[5], "SCALE:", tx[6], tx[7], tx[8], "SHEAR:", tx[9], tx[10], tx[11], tx[12], tx[13], tx[14], "MODE:", self.mode, "MODE0:", self.mode[0])
+        print(f"TRANS: {tx[0]} {tx[1]} {tx[2]} ROT: {tx[3]} {tx[4]} {tx[5]} SCALE: {tx[6]} {tx[7]} {tx[8]} SHEAR: {tx[9]} {tx[10]} {tx[11]} {tx[12]} {tx[13]} tx[14] MODE: {self.mode} MODE0: {self.mode[0]}")
                                 
         # Return output transform from this iteration
         return self.final_transform

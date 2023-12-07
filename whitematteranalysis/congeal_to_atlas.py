@@ -81,7 +81,7 @@ class SubjectToAtlasRegistration:
         #print displacement_field_vtk.GetPointData().GetArray(0)
         newtrans = vtk.util.numpy_support.vtk_to_numpy(displacement_field_vtk.GetPointData().GetArray(0)).ravel()
         #print newtrans.shape
-        print("UPDATE NONRIGID GRID: ", self.nonrigid_grid_resolution, len(self.transform_as_array), "==>", len(newtrans), end=' ')        
+        print(f"UPDATE NONRIGID GRID: {self.nonrigid_grid_resolution} {len(self.transform_as_array)} ==> {len(newtrans)}", end=' ')
         self.transform_as_array = newtrans
         
     def set_subject(self, polydata, subject_id):
@@ -93,7 +93,7 @@ class SubjectToAtlasRegistration:
             vtktrans = wma.register_two_subjects_nonrigid_bsplines.convert_transform_to_vtk(trans)
             self.transform = vtktrans
             self.transform_as_array = trans
-            print("ADD PD:", trans)
+            print(f"ADD PD: {trans}")
         else:
             trans = vtk.vtkTransform()
             self.transform = trans
@@ -108,7 +108,7 @@ class SubjectToAtlasRegistration:
         self.total_iterations += 1
 
         # make a directory for the current iteration
-        dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+        dirname = f"iteration_{self.total_iterations:05d}_sigma_{ self.sigma:05d}"
         outdir = os.path.join(self.output_directory, dirname)
         if not os.path.exists(outdir):
             os.makedirs(outdir)
@@ -163,7 +163,7 @@ class SubjectToAtlasRegistration:
 
         if intermediate_save:
             # make a directory for the current iteration
-            dirname = "iteration_%05d_sigma_%05d" % (self.total_iterations, self.sigma)
+            dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:05d}"
             outdir = os.path.join(self.output_directory, dirname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
@@ -196,8 +196,8 @@ class SubjectToAtlasRegistration:
             wma.io.write_transforms_to_itk_format(tx_list, outdir, id_list)
  
     def save_transformed_polydata_to_disk(self, outdir):
-        out_fname = os.path.join(outdir, self.subject_id + '_reg.vtk')
-        print(self.subject_id, " Transforming ", self.input_polydata_filename, "->", out_fname, "...")
+        out_fname = os.path.join(outdir, f'{self.subject_id}_reg.vtk')
+        print(f"{self.subject_id} Transforming {self.input_polydata_filename} -> {out_fname}...")
 
         pd = wma.io.read_polydata(self.input_polydata_filename)
 

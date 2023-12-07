@@ -44,9 +44,9 @@ def main():
 
     print(f"<{os.path.basename(__file__)}>. Starting processing.")
     print("")
-    print("=====input atlas directory======\n", args.inputAtlasDirectory)
-    print("=====pthresh====\n", args.hemispherePercentThreshold)
-    print("=====advanced_times_threshold====\n", args.advanced_times_threshold)
+    print(f"=====input atlas directory======\n {args.inputAtlasDirectory}")
+    print(f"=====pthresh====\n {args.hemispherePercentThreshold}")
+    print(f"=====advanced_times_threshold====\n {args.advanced_times_threshold}")
 
     def list_cluster_files(input_dir):
         # Find input files
@@ -100,10 +100,9 @@ def main():
             location = 'Not Given'
             ng_list.append(fname_base)
 
-        print("%20s:  %10s  %10s  %10s  -  %10s" \
-                % (fname_base, num_left, num_right, num_comm, location))
+        print(f"{fname_base:20s}:  {num_left:10s}  {num_right:10s}  {num_comm:10s}  -  {location:10s}")
 
-        outstr = outstr + fname_base + '\t'+ str(num_left) + '\t'+ str(num_right) + '\t'+ str(num_comm) + '\t'+ location + '\n'
+        outstr = f'{outstr}{fname_base}\t{str(num_left)}\t{str(num_right)}\t{str(num_comm)}\t{location}\n'
 
     output_file.write(outstr)
     output_file.close()

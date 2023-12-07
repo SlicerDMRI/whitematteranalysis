@@ -51,13 +51,13 @@ def main():
 
     print('All available tracts:')
     all_tracts = [f_name.replace('.Num_Points', '') for f_name in fields if f_name.endswith('.Num_Points')]
-    print('N = ', str(len(all_tracts)), ':')
+    print(f'N = {len(all_tracts)} :')
     print(all_tracts)
 
     append_list = []
     print('Tracts and related measures to be appended.')
     for t_idx, tract in enumerate(args.tractList):
-        print('*', t_idx, '-', tract)
+        print(f'* {t_idx} - {tract}')
         indices = [index for index in range(len(fields)) if fields[index].startswith(tract+'.Num_') or re.search(tract+".*.Mean", fields[index])]
         if len(indices) == 0:
             print("Error: tract not founded in the input file.")
@@ -68,7 +68,7 @@ def main():
     append_list = np.array(append_list)
     append_measures = [field.replace(args.tractList[-1], '') for field in fields[indices]]
 
-    print("Output measures:", append_measures)
+    print(f"Output measures: {append_measures}")
 
     avg_stats = [stats.to_numpy()[:, 0]]
     for m_idx, m_name in enumerate(append_measures):
@@ -125,7 +125,7 @@ def main():
 
     df.to_csv(args.outoutmeasure, index=False)
     print()
-    print('Output file at:', os.path.abspath(args.outoutmeasure))
+    print(f'Output file at: {os.path.abspath(args.outoutmeasure)}')
 
     exit()
 

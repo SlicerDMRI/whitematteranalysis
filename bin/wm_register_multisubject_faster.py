@@ -70,33 +70,33 @@ def main():
 
     print("\n\n<register> =========GROUP REGISTRATION============")
     print(f"<{os.path.basename(__file__)}> Performing unbiased group registration.")
-    print(f"<{os.path.basename(__file__)}> Input  directory: ", args.inputDirectory)
-    print(f"<{os.path.basename(__file__)}> Output directory: ", args.outputDirectory)
+    print(f"<{os.path.basename(__file__)}> Input  directory: {args.inputDirectory}")
+    print(f"<{os.path.basename(__file__)}> Output directory: {args.outputDirectory}")
     print("\n<register> ============PARAMETERS=================")
     
     mode = args.mode
-    print(f"<{os.path.basename(__file__)}> Registration mode:", mode)
+    print(f"<{os.path.basename(__file__)}> Registration mode: {mode}")
     
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist.")
         exit()
     
     outdir = args.outputDirectory
     if not os.path.exists(outdir):
-        print(f"<{os.path.basename(__file__)}> Output directory", outdir, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
     
     number_of_fibers = args.numberOfFibers
-    print(f"<{os.path.basename(__file__)}> Number of fibers to analyze per subject: ", number_of_fibers)
+    print(f"<{os.path.basename(__file__)}> Number of fibers to analyze per subject: {number_of_fibers}")
     
     fiber_length = args.fiberLength
-    print(f"<{os.path.basename(__file__)}> Minimum length of fibers to analyze (in mm): ", fiber_length)
+    print(f"<{os.path.basename(__file__)}> Minimum length of fibers to analyze (in mm): {fiber_length}")
     
     fiber_length_max = args.fiberLengthMax
-    print(f"<{os.path.basename(__file__)}> Maximum  length of fibers to analyze (in mm): ", fiber_length_max)
+    print(f"<{os.path.basename(__file__)}> Maximum  length of fibers to analyze (in mm): {fiber_length_max}")
     
     parallel_jobs = args.numberOfJobs
-    print(f"<{os.path.basename(__file__)}> Number of jobs to use:", parallel_jobs)
+    print(f"<{os.path.basename(__file__)}> Number of jobs to use: {parallel_jobs}")
     
     if args.flag_verbose:
         print(f"<{os.path.basename(__file__)}> Verbose display and intermediate image saving ON.")
@@ -106,7 +106,7 @@ def main():
     
     
     #points_per_fiber = args.pointsPerFiber
-    #print f"<{os.path.basename(__file__)}> Number of points for fiber representation: ", points_per_fiber
+    #print(f"<{os.path.basename(__file__)}> Number of points for fiber representation: {points_per_fiber}")
     
     if args.flag_norender:
         print(f"<{os.path.basename(__file__)}> No rendering (for compute servers without X connection).")
@@ -121,7 +121,7 @@ def main():
     midsag_symmetric = args.flag_midsag_symmetric
     
     if args.randomSeed is not None:
-        print(f"<{os.path.basename(__file__)}> Setting random seed to: ", args.randomSeed)
+        print(f"<{os.path.basename(__file__)}> Setting random seed to: {args.randomSeed}")
     random_seed = args.randomSeed
     
     # -------------
@@ -287,7 +287,7 @@ def main():
         nonrigid = True
     
     else:
-        print("\n<register> Error: Unknown registration mode:", mode)
+        print(f"\n<register> Error: Unknown registration mode: {mode}")
         exit()
     
     # -------------
@@ -297,7 +297,7 @@ def main():
     # Test the input files exist
     input_polydatas = wma.io.list_vtk_files(args.inputDirectory)
     number_of_subjects = len(input_polydatas)
-    print(f"<{os.path.basename(__file__)}> Found ", number_of_subjects, "subjects in input directory:", args.inputDirectory)
+    print(f"<{os.path.basename(__file__)}> Found {number_of_subjects} subjects in input directory {args.inputDirectory}")
     if number_of_subjects < 1:
         print("\n<register> Error: No .vtk or .vtp files were found in the input directory.\n")
         exit()
@@ -342,7 +342,7 @@ def main():
     # We have to add polydatas after setting nonrigid in the register object
     for (pd, id) in zip(input_pds, subject_ids):
         register.add_polydata(pd, id)
-    print(f"<{os.path.basename(__file__)}> Number of points for fiber representation: ", points_per_fiber)
+    print(f"<{os.path.basename(__file__)}> Number of points for fiber representation: {points_per_fiber}")
     register.points_per_fiber = points_per_fiber
     
     # output summary file to save information about what was run
@@ -361,14 +361,14 @@ def main():
     outstr += str(number_of_subjects)
     outstr += '\n'
     outstr += '\n'
-    outstr +=  "Current date: "  + time.strftime("%x")
+    outstr +=  f"Current date: {time.strftime('%x')}"
     outstr += '\n'
-    outstr +=  "Current time: " + time.strftime("%X")
+    outstr +=  f"Current time: {time.strftime('%X')}"
     outstr += '\n'
     outstr += '\n'
-    outstr += "Path to Script: " + os.path.realpath(__file__)
+    outstr += f"Path to Script: {os.path.realpath(__file__)}"
     outstr += '\n'
-    outstr += "Working Directory: " + os.getcwd()
+    outstr += f"Working Directory: {os.getcwd()}"
     outstr += '\n'
     outstr += '\n'
     outstr += "Description of Outputs\n"
@@ -392,23 +392,23 @@ def main():
     outstr += '\n'
     outstr += "Parameters\n"
     outstr += '----------------------\n'
-    outstr += "Registration mode: " + mode
+    outstr += f"Registration mode: {mode}"
     outstr += '\n'
-    outstr += "Number of fibers to analyze per subject: " + str(number_of_fibers)
+    outstr += f"Number of fibers to analyze per subject: {str(number_of_fibers)}"
     outstr += '\n'
-    outstr += "Minimum length of fibers to analyze (in mm): " + str(fiber_length)
+    outstr += f"Minimum length of fibers to analyze (in mm): {str(fiber_length)}"
     outstr += '\n'
-    outstr += "Maximum  length of fibers to analyze (in mm): " + str(fiber_length_max)
+    outstr += f"Maximum  length of fibers to analyze (in mm): {str(fiber_length_max)}"
     outstr += '\n'
-    outstr += "Number of jobs to use: " + str(parallel_jobs)
+    outstr += f"Number of jobs to use: {str(parallel_jobs)}"
     outstr += '\n'
-    outstr += "verbose: " + str(verbose)
+    outstr += f"verbose: {str(verbose)}"
     outstr += '\n'
-    outstr += "render: " + str(not no_render)
+    outstr += f"render: {str(not no_render)}"
     outstr += '\n'
-    outstr += "midsag_symmetric: " + str(midsag_symmetric)
+    outstr += f"midsag_symmetric: {str(midsag_symmetric)}"
     outstr += '\n'
-    outstr += "random seed: " + str(random_seed)
+    outstr += f"random seed: {str(random_seed)}"
     outstr += '\n'
     outstr += '\n'
     outstr += "Input Fiber Files\n"
@@ -446,8 +446,8 @@ def main():
     progress_filename = os.path.join(args.outputDirectory, 'progress.txt')
     progress_file = open(progress_filename, 'w')
     print("Beginning registration. Total iterations will be:", total_iterations, file=progress_file)
-    print("Start date: "  + time.strftime("%x"), file=progress_file)
-    print("Start time: " + time.strftime("%X") + '\n', file=progress_file)
+    print(f"Start date: {time.strftime('%x')}", file=progress_file)
+    print(f"Start time: {time.strftime('%X')}\n", file=progress_file)
     progress_file.close()
     prev_time = time.time()
     do_scales = list(range(len(sigma_per_scale)))
@@ -468,10 +468,10 @@ def main():
             comparisons_this_scale = mean_brain_size_per_scale[scale]*subject_brain_size_per_scale[scale]
             comparisons_so_far += comparisons_this_scale
             percent = 100*(float(comparisons_so_far)/total_comparisons)
-            print("Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent)
+            print(f"Done iteration {iteration} / {total_iterations}. Percent finished approx: {percent:.2f}")
             progress_file = open(progress_filename, 'a')
             curr_time = time.time()
-            print("Done iteration", iteration, "/", total_iterations, ". Percent finished approx:", "%.2f" % percent, ". Time:", time.strftime("%X"), ". Minutes Elapsed:", (curr_time - prev_time)/60, file=progress_file)
+            print(f"Done iteration {iteration} / {total_iterations}. Percent finished approx: {percent:.2f}. Time: {time.strftime('%X')}. Minutes Elapsed: {(curr_time - prev_time)/60}", file=progress_file)
             progress_file.close()
             prev_time = curr_time
     
@@ -483,12 +483,12 @@ def main():
     # Final save when we are done
     register.save_transformed_polydatas(midsag_symmetric=midsag_symmetric)
     
-    print("\nDone registering. For more information on the output, please read:", readme_fname, "\n")
+    print(f"\nDone registering. For more information on the output, please read: {readme_fname}\n")
     
     progress_file = open(progress_filename, 'a')
     print("\nFinished registration.", file=progress_file)
-    print("End date: "  + time.strftime("%x"), file=progress_file)
-    print("End time: " + time.strftime("%X"), file=progress_file)
+    print(f"End date: {time.strftime('%x')}", file=progress_file)
+    print(f"End time: {time.strftime('%X')}", file=progress_file)
     progress_file.close()
     
     

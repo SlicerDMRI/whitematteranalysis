@@ -37,7 +37,7 @@ def main():
     args = _parse_args(parser)
 
     if not os.path.isdir(args.inputDirectory):
-        print("Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"Error: Input directory {args.inputDirectory} does not exist.")
         exit()
     
     cli= args.Slicer.split()[-1]
@@ -49,22 +49,20 @@ def main():
     
     outdir = os.path.split(args.outputCSV)[0]
     if not os.path.exists(outdir):
-        print("Output directory", outdir, "does not exist, creating it.")
+        print(f"Output directory {outdir} does not exist, creating it.")
         os.makedirs(outdir)
     
     print(f"<{os.path.basename(__file__)}>. Starting scalar measurement extraction.")
     print("")
-    print("=====input directory======\n", args.inputDirectory)
-    print("=====output directory=====\n", outdir)
-    print("=====3D Slicer====\n", args.Slicer)
+    print(f"=====input directory======\n {args.inputDirectory}")
+    print(f"=====output directory=====\n {outdir}")
+    print(f"=====3D Slicer====\n {args.Slicer}")
     print("==========================")
     
-    os.system(module_FTSM + \
-              ' --inputtype Fibers_File_Folder --format Column_Hierarchy --separator Comma ' + \
-              ' --inputdirectory ' + args.inputDirectory + \
-              ' --outputfile ' + args.outputCSV)
+    os.system(
+        f"{module_FTSM} --inputtype Fibers_File_Folder --format Column_Hierarchy --separator Comma  --inputdirectory {args.inputDirectory} --outputfile {args.outputCSV}")
     
-    print(f"<{os.path.basename(__file__)}> Measurements done at:", args.outputCSV)
+    print(f"<{os.path.basename(__file__)}> Measurements done at: {args.outputCSV}")
 
 if __name__ == '__main__':
     main()

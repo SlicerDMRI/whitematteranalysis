@@ -46,12 +46,12 @@ def main():
 
     inputdir = os.path.abspath(args.inputDirectory)
     if not os.path.isdir(args.inputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Input directory", args.inputDirectory, "does not exist.")
+        print(f"<{os.path.basename(__file__)}> Error: Input directory {args.inputDirectory} does not exist.")
         exit()
     
     outdir = os.path.abspath(args.outputDirectory)
     if not os.path.exists(args.outputDirectory):
-        print(f"<{os.path.basename(__file__)}> Error: Output directory", args.outputDirectory, "does not exist, creating it.")
+        print(f"<{os.path.basename(__file__)}> Error: Output directory {args.outputDirectory} does not exist, creating it.")
         os.makedirs(outdir)
     
     if (args.clusterList is not None) and (args.tractMRML is not None):
@@ -71,7 +71,7 @@ def main():
         for c_idx in args.clusterList:
             cluster_vtp_filename = 'cluster_' + str(c_idx).zfill(5) + '.vtp'
             if not os.path.exists(os.path.join(inputdir, cluster_vtp_filename)):
-                print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename, "does not exist.")
+                print(f"<{os.path.basename(__file__)}> Error: {cluster_vtp_filename} does not exist.")
                 exit()
             cluster_vtp_list.append(cluster_vtp_filename)
     
@@ -83,7 +83,7 @@ def main():
             if idx > 0:
                 cluster_vtp_filename = line[idx-13:idx+4]
                 if not os.path.exists(os.path.join(inputdir, cluster_vtp_filename)):
-                    print(f"<{os.path.basename(__file__)}> Error:", cluster_vtp_filename, "does not exist.")
+                    print(f"<{os.path.basename(__file__)}> Error: {cluster_vtp_filename} does not exist.")
                     exit()
                 cluster_vtp_list.append(cluster_vtp_filename)
     else:
@@ -92,9 +92,9 @@ def main():
     print("")
     print(f"<{os.path.basename(__file__)}> Start to append clusters.")
     print("")
-    print("=====input directory======\n", inputdir)
-    print("=====output directory=====\n", outdir)
-    print("=====clusters to be appended====\n", cluster_vtp_list)
+    print(f"=====input directory======\n {inputdir}")
+    print(f"=====output directory=====\n {outdir}")
+    print(f"=====clusters to be appended====\n {cluster_vtp_list}")
     print("")
     
     appender = vtk.vtkAppendPolyData()
@@ -122,9 +122,9 @@ def main():
     wma.io.write_polydata(pd_appended_cluster, outputfile)
     
     print('')
-    print(f'<{os.path.basename(__file__)}> Appended fiber tract: number of fibers', pd_appended_cluster.GetNumberOfLines())
+    print(f'<{os.path.basename(__file__)}> Appended fiber tract: number of fibers {pd_appended_cluster.GetNumberOfLines()}')
     print('')
-    print(f'<{os.path.basename(__file__)}> Save result to', outputfile, '\n')
+    print(f'<{os.path.basename(__file__)}> Save result to {outputfile}\n')
 
 if __name__ == '__main__':
     main()

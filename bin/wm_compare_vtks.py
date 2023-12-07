@@ -66,20 +66,20 @@ def main():
     # figure out what percentage is less than 1mm, 2mm, 3mm, 4mm, 5mm etc.
     sz = farray1.fiber_array_r.shape
     number_of_points = float(sz[0]*sz[1])
-    
-    print(100 * np.sum(distance < 0.001) / number_of_points, 'percent < 0.001 mm')
-    print(100 * np.sum(distance < 0.01) / number_of_points, 'percent < 0.01 mm')
-    print(100 * np.sum(distance < 0.1) / number_of_points, 'percent < 0.1 mm')
-    print(100 * np.sum(distance < 0.5) / number_of_points, 'percent < 0.5 mm')
-    print(100 * np.sum(distance < 1) / number_of_points, 'percent < 1 mm')
-    print(100 * np.sum(distance < 1.2) / number_of_points, 'percent < 1.2 mm')
-    print(100 * np.sum(distance < 1.3) / number_of_points, 'percent < 1.3 mm')
-    print(100 * np.sum(distance < 1.4) / number_of_points, 'percent < 1.4 mm')
-    print(100 * np.sum(distance < 1.5) / number_of_points, 'percent < 1.5 mm')
-    print(100 * np.sum(distance < 2) / number_of_points, 'percent < 2 mm')
-    print(100 * np.sum(distance < 3) / number_of_points, 'percent < 3 mm')
-    print(100 * np.sum(distance < 4) / number_of_points, 'percent < 4 mm')
-    print(100 * np.sum(distance < 5) / number_of_points, 'percent < 5 mm')
+
+    print(f'{100 * np.sum(distance < 0.001) / number_of_points} percent < 0.001 mm')
+    print(f'{100 * np.sum(distance < 0.01) / number_of_points} percent < 0.01 mm')
+    print(f'{100 * np.sum(distance < 0.1) / number_of_points} percent < 0.1 mm')
+    print(f'{100 * np.sum(distance < 0.5) / number_of_points} percent < 0.5 mm')
+    print(f'{100 * np.sum(distance < 1) / number_of_points} percent < 1 mm')
+    print(f'{100 * np.sum(distance < 1.2) / number_of_points} percent < 1.2 mm')
+    print(f'{100 * np.sum(distance < 1.3) / number_of_points} percent < 1.3 mm')
+    print(f'{100 * np.sum(distance < 1.4) / number_of_points} percent < 1.4 mm')
+    print(f'{100 * np.sum(distance < 1.5) / number_of_points} percent < 1.5 mm')
+    print(f'{100 * np.sum(distance < 2) / number_of_points} percent < 2 mm')
+    print(f'{100 * np.sum(distance < 3) / number_of_points} percent < 3 mm')
+    print(f'{100 * np.sum(distance < 4) / number_of_points} percent < 4 mm')
+    print(f'{100 * np.sum(distance < 5) / number_of_points} percent < 5 mm')
     
     # output a new polydata showing what the distances are in case there is a pattern
 

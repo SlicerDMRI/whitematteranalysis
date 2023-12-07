@@ -86,7 +86,7 @@ def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, nu
         bin_ends.append(max_l)
         max_l += increment
     if verbose:
-        print("Bins/length ranges:", bin_ends)
+        print(f"Bins/length ranges: {bin_ends}")
 
     print(bin_ends[0:-1], bin_ends[1:])
 
@@ -96,7 +96,7 @@ def flatten_length_distribution(inpd, min_length_mm=None, max_length_mm=None, nu
         pd = preprocess(inpd, bin_low, max_length_mm=bin_hi, verbose=False)
         pd2 = downsample(pd, fibers_per_bin,verbose=False)
         if verbose:
-            print(pd2.GetNumberOfLines(), "fibers in length range:", [bin_low, bin_hi])
+            print(f"{pd2.GetNumberOfLines()} fibers in length range [{bin_low}, {bin_hi}]")
         if (vtk.vtkVersion().GetVTKMajorVersion() >= 6.0):
             appender.AddInputData(pd2)
         else:
@@ -192,8 +192,7 @@ def preprocess(inpd, min_length_mm,
 
     min_length_pts = round(min_length_mm / float(step_size))
     if verbose:
-        print(f"<{os.path.basename(__file__)}> Minimum length", min_length_mm, \
-            "mm. Tractography step size * minimum number of points =", step_size, "*", min_length_pts, ")")
+        print(f"<{os.path.basename(__file__)}> Minimum length {min_length_mm} mm. Tractography step size * minimum number of points = {step_size} * {min_length_pts}")
 
     # set up processing and output objects
     ptids = vtk.vtkIdList()
@@ -272,7 +271,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     # use the input random seed every time for code testing experiments
     if random_seed is not None:
         if verbose:
-            print(f"<{os.path.basename(__file__)}> Setting random seed to", random_seed)
+            print(f"<{os.path.basename(__file__)}> Setting random seed to {random_seed}")
         np.random.seed(seed=random_seed)
 
     # randomly pick the lines that we will keep
@@ -291,7 +290,7 @@ def downsample(inpd, output_number_of_lines, return_indices=False, preserve_poin
     outpd = mask(inpd, fiber_mask, preserve_point_data=preserve_point_data, preserve_cell_data=preserve_cell_data, verbose=verbose)
 
     # final line count
-    #print f"<{os.path.basename(__file__)}> Number of lines selected:", outpd.GetNumberOfLines()
+    #print(f"<{os.path.basename(__file__)}> Number of lines selected: {outpd.GetNumberOfLines()}")
     if return_indices:
         # return sorted indices, this is the line ordering of output
         # polydata (because we mask rather than changing input line order)
@@ -359,7 +358,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
                 if verbose:
-                    print("Cell data array found:", array.GetName(), array.GetNumberOfComponents())
+                    print(f"Cell data array found: {array.GetName()} {array.GetNumberOfComponents()}")
                 outcelldata.AddArray(out_array)
                 # make sure some scalars are active so rendering works
                 #outpd.GetCellData().SetActiveScalars(array.GetName())
@@ -384,7 +383,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
                 out_array.SetNumberOfComponents(array.GetNumberOfComponents())
                 out_array.SetName(array.GetName())
                 if verbose:
-                    print("Point data array found:", array.GetName(), array.GetNumberOfComponents())
+                    print(f"Point data array found: {array.GetName()} {array.GetNumberOfComponents()}")
                 outpointdata.AddArray(out_array)
                 # make sure some scalars are active so rendering works
                 #outpd.GetPointData().SetActiveScalars(array.GetName())
@@ -418,7 +417,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
             tensors_labeled = True
     if not tensors_labeled:
         if len(tensor_names) > 0:
-            print("Data has unexpected tensor name(s). Unable to set active for visualization:", tensor_names)
+            print(f"Data has unexpected tensor name(s). Unable to set active for visualization: {tensor_names}")
     # now set cell data visualization inactive.
     outpd.GetCellData().SetActiveScalars(None)
                 
@@ -433,7 +432,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
 
             if verbose:
                 if lidx % 100 == 0:
-                    print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
+                    print(f"<{os.path.basename(__file__)}> Line: {lidx} / {inpd.GetNumberOfLines()}")
 
             # get points for each ptid and add to output polydata
             cellptids = vtk.vtkIdList()
@@ -472,7 +471,7 @@ def mask(inpd, fiber_mask, color=None, preserve_point_data=False, preserve_cell_
         outpd.GetCellData().SetScalars(outcolors)
 
     if verbose:
-        print(f"<{os.path.basename(__file__)}> Fibers sampled:", outpd.GetNumberOfLines(), "/", inpd.GetNumberOfLines())
+        print(f"<{os.path.basename(__file__)}> Fibers sampled: {outpd.GetNumberOfLines()} / {inpd.GetNumberOfLines()}")
 
     return outpd
 
@@ -501,14 +500,14 @@ def symmetrize(inpd):
 
     # index into end of point array
     lastidx = outpoints.GetNumberOfPoints()
-    print(f"<{os.path.basename(__file__)}> Input number of points: ", lastidx)
+    print(f"<{os.path.basename(__file__)}> Input number of points: {lastidx}")
 
     # loop over all lines, insert line and reflected copy into output pd
     for lidx in range(0, inpd.GetNumberOfLines()):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
+                print(f"<{os.path.basename(__file__)}> Line: {lidx} / {inpd.GetNumberOfLines()}")
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -559,7 +558,7 @@ def remove_hemisphere(inpd, hemisphere=-1):
         # progress
         if verbose:
             if lidx % 100 == 0:
-                print(f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines())
+                print(f"<{os.path.basename(__file__)}> Line: {lidx} / {inpd.GetNumberOfLines()}")
 
         inpd.GetLines().GetNextCell(ptids)
 
@@ -641,8 +640,8 @@ def remove_outliers(inpd, min_fiber_distance, n_jobs=0, distance_method ='Mean')
     fiber_mask = mindist < min_fiber_distance
 
     if True:
-        num_fibers = len(np.nonzero(fiber_mask)[0]), "/", len(fiber_mask)
-        print(f"<{os.path.basename(__file__)}> Number retained after outlier removal: ", num_fibers)
+        num_fibers = f"{len(np.nonzero(fiber_mask)[0])} / {len(fiber_mask)}"
+        print(f"<{os.path.basename(__file__)}> Number retained after outlier removal: {num_fibers}")
 
     outpd = mask(inpd, fiber_mask, mindist)
     outpd_reject = mask(inpd, ~fiber_mask, mindist)
@@ -704,7 +703,7 @@ def smooth(inpd, fiber_distance_sigma = 25, points_per_fiber=30, n_jobs=2, upper
     # gaussian smooth all fibers using local neighborhood
     for fidx in fiber_indices:
         if (fidx % 100) == 0:
-            print(fidx, '/', current_fiber_array.number_of_fibers)
+            print(f'{fidx} / {current_fiber_array.number_of_fibers}')
 
         # find indices of all nearby fibers
         indices = np.nonzero(distances[fidx] < upper_thresh)[0]
@@ -790,8 +789,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
     iteration_count = 0
     
     while not converged:
-        print(f"<{os.path.basename(__file__)}> ITERATION:", iteration_count, "SUM FIBER COUNTS:", np.sum(np.array(curr_count)))
-        print(f"<{os.path.basename(__file__)}> number indices", len(curr_indices))
+        print(f"<{os.path.basename(__file__)}> ITERATION: {iteration_count} SUM FIBER COUNTS: {np.sum(np.array(curr_count))}")
+        print(f"<{os.path.basename(__file__)}> number indices {len(curr_indices)}")
         
         # fiber data structures for output of this iteration
         next_fibers = list()
@@ -833,8 +832,7 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
         distances_flat = distances.flatten()
         pair_order = np.argsort(distances_flat)
 
-        print(f"<{os.path.basename(__file__)}> DISTANCE MIN:", distances_flat[pair_order[0]], \
-            "DISTANCE COUNT:", distances.shape)
+        print(f"<{os.path.basename(__file__)}> DISTANCE MIN: {distances_flat[pair_order[0]]} DISTANCE COUNT: {distances.shape}")
 
         # if the smallest distance is greater or equal to the
         # threshold, we have converged
@@ -908,8 +906,8 @@ def anisotropic_smooth(inpd, fiber_distance_threshold, points_per_fiber=30, n_jo
             current_fiber_array.fiber_array_s[curr_fidx] = curr_fib.s
             curr_fidx += 1
 
-        print(f"<{os.path.basename(__file__)}> SUM FIBER COUNTS:", np.sum(np.array(curr_count)), "SUM DONE FIBERS:", np.sum(done))
-        print(f"<{os.path.basename(__file__)}> MAX COUNT:" , np.max(np.array(curr_count)), "AVGS THIS ITER:", number_averages)
+        print(f"<{os.path.basename(__file__)}> SUM FIBER COUNTS: {np.sum(np.array(curr_count))} SUM DONE FIBERS: {np.sum(done)}")
+        print(f"<{os.path.basename(__file__)}> MAX COUNT: {np.max(np.array(curr_count))} AVGS THIS ITER:  {number_averages}")
 
     # when converged, convert output to polydata
     outpd = current_fiber_array.convert_to_polydata()
@@ -1002,7 +1000,7 @@ def laplacian_of_gaussian(inpd, fiber_distance_sigma = 25, points_per_fiber=30, 
     # gaussian smooth all fibers using local neighborhood
     for fidx in fiber_indices:
         if (fidx % 100) == 0:
-            print(fidx, '/', fiber_array.number_of_fibers)
+            print(f'{fidx} / {fiber_array.number_of_fibers}')
 
         current_fiber = fiber_list[fidx]
 
@@ -1130,15 +1128,13 @@ def pd_to_array(inpd, dims=225):
         data_vol = np.ndarray([dims,dims,dims])
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print(f"<{os.path.basename(__file__)}> Input number of points: ",\
-        points.GetNumberOfPoints(),\
-        "lines:", inpd.GetNumberOfLines()) 
+    print(f"<{os.path.basename(__file__)}> Input number of points: {points.GetNumberOfPoints()} lines: {inpd.GetNumberOfLines()}")
     # loop over all lines
     for lidx in range(0, inpd.GetNumberOfLines()):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print(f"<{os.path.basename(__file__)}> Line: {lidx} / {inpd.GetNumberOfLines()}")
         inpd.GetLines().GetNextCell(ptids)
         num_points = ptids.GetNumberOfIds()
         for pidx in range(0, num_points):
@@ -1172,15 +1168,13 @@ def measure_line_lengths(inpd):
     output_lengths = np.zeros(inpd.GetNumberOfLines())
     # loop over lines
     inpd.GetLines().InitTraversal()
-    print(f"<{os.path.basename(__file__)}> Input number of points: ",\
-        points.GetNumberOfPoints(),\
-        "lines:", inpd.GetNumberOfLines()) 
+    print(f"<{os.path.basename(__file__)}> Input number of points: {points.GetNumberOfPoints()} lines: {inpd.GetNumberOfLines()}")
     # loop over all lines
     for lidx in range(0, inpd.GetNumberOfLines()):
         # progress
         #if verbose:
         #    if lidx % 1 == 0:
-        #        print f"<{os.path.basename(__file__)}> Line:", lidx, "/", inpd.GetNumberOfLines()
+        #        print(f"<{os.path.basename(__file__)}> Line: {lidx} / {inpd.GetNumberOfLines()}")
         inpd.GetLines().GetNextCell(ptids)
         output_lengths[lidx] = ptids.GetNumberOfIds()
     return(output_lengths)
