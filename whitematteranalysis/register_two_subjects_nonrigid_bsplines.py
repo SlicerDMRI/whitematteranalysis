@@ -27,18 +27,10 @@ import numpy as np
 import vtk
 import vtk.util.numpy_support
 
+import whitematteranalysis as wma
+
 # debug only
 #import resource
-
-try:
-    from joblib import Parallel, delayed
-    USE_PARALLEL = 1
-except ImportError:
-    USE_PARALLEL = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
-    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
-
-import whitematteranalysis as wma
 
 
 class RegisterTractographyNonrigid(wma.register_two_subjects.RegisterTractography):
