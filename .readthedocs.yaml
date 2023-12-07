@@ -16,11 +16,11 @@ build:
   jobs:
     pre_build:
       - pip install --upgrade myst-parser furo
-      - sphinx-apidoc -f -o doc .
+      - sphinx-apidoc -f -o docs/source .
 
 # Build documentation in the doc/ directory with Sphinx
 sphinx:
-  configuration: doc/conf.py
+  configuration: docs/source/conf.py
 
 # We recommend specifying your dependencies to enable reproducible builds:
 # https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html

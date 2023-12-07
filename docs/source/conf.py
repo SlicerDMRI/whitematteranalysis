@@ -27,7 +27,7 @@ version_setup_str = "    version="
 # Load the release info into a dict by explicit execution
 info = {}
 with open(os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "..", "setup.py")), "r") as f:
+        os.path.dirname(__file__), "../..", "setup.py")), "r") as f:
     for line in f:
         if line.startswith(name_setup_str):
             project = (
@@ -93,8 +93,8 @@ master_doc = "index"
 #
 html_theme = "furo"
 
-html_favicon = "_static/icon/favicon.ico"
-html_logo = "_static/wma_small_alpha.png"
+html_favicon = "../_static/icon/favicon.ico"
+html_logo = "../_static/wma_small_alpha.png"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
