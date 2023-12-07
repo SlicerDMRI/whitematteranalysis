@@ -8,27 +8,13 @@ implementations of fiber clustering
 import colorsys
 import os
 import pickle
+from pprint import pprint
 
 import numpy as np
+import scipy.cluster.hierarchy
+import scipy.cluster.vq
 import vtk
-
-try:
-    import scipy.cluster.hierarchy
-    import scipy.cluster.vq
-    USE_SCIPY = 1
-except ImportError:
-    USE_SCIPY = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import scipy.cluster, cannot cluster.")
-    print(f"<{os.path.basename(__file__)}> Please install scipy for this functionality.")
-try:
-    from joblib import Parallel, delayed
-    USE_PARALLEL = 1
-except ImportError:
-    USE_PARALLEL = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import joblib, cannot multiprocess.")
-    print(f"<{os.path.basename(__file__)}> Please install joblib for this functionality.")
-
-from pprint import pprint
+from joblib import Parallel, delayed
 
 from . import fibers, filter, io, mrml, render, similarity
 
@@ -510,7 +496,8 @@ def spectral(input_polydata, number_of_clusters=200,
             print("Silhouette Coefficient: %0.3f" % cluster_metric)
  
     else:
-        print("ERROR: Unknown centroid finder", centroid_finder)
+        raise NotImplementedError(
+            f"Workflow not implemented for centroid finder: {centroid_finder}.")
         ## # This found fewer clusters than we need to represent the anatomy well
         ## # Leave code here in case wanted in future for more testing.
         ## print(f'<{os.path.basename(__file__)}> Affinity Propagation clustering in embedding space.')

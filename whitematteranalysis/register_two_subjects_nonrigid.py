@@ -10,19 +10,11 @@ class RegisterTractographyNonrigid
 """
 
 import os
-
-try:
-    import scipy.optimize
-    USE_SCIPY = 1
-except ImportError:
-    USE_SCIPY = 0
-    print(f"<{os.path.basename(__file__)}> Failed to import  scipy.optimize, cannot align or register.")
-    print(f"<{os.path.basename(__file__)}> Please install  scipy.optimize for this functionality.")
-
 import sys
 import time
 
 import numpy as np
+import scipy.optimize
 import vtk
 
 import whitematteranalysis as wma
@@ -314,7 +306,8 @@ class RegisterTractographyNonrigidThinPlateSplines(wma.register_two_subjects.Reg
             print("TRANS:", self.final_transform, "FLAG:", warnflag)
 
         else:
-            print("Unknown optimizer.")
+            raise NotImplementedError(
+                f"Workflow not implemented for optimizer: {self.optimizer}.")
 
         if self.verbose:
             print("O:", self.objective_function_values)
