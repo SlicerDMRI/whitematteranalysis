@@ -3,7 +3,8 @@
 
 
 def test_help_option(script_runner):
-    ret = script_runner.run(["wm_quality_control_tractography.py", "--help"])
+    ret = script_runner.run(
+        ["bin/wm_quality_control_tractography.py", "--help"])
     assert ret.success
 
 

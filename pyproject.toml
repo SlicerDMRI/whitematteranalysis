@@ -1,0 +1,129 @@
+[build-system]
+requires = [
+    "setuptools >= 66",
+    "wheel",
+    "setuptools_scm >= 6.4",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+  {name = "O'Donnell lab"}, {email = "odonnell@bwh.harvard.edu"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = [
+    "importlib-resources",
+    "joblib >= 1.1.0",
+    "matplotlib >= 3.6.0, < 3.8",
+    "nibabel > 3.0.0",
+    "numpy >= 1.20.0, <1.21.0; python_version == '3.8'",
+    "numpy >= 1.21.0; python_version == '3.9' and python_version > '3.9'",
+    "pandas < 2.1.0",
+    "scipy >= 1.4.0, < 1.11.0; python_version == '3.8'",
+    "scipy >= 1.7.0; python_version == '3.9'",
+    "scipy >= 1.9.0; python_version == '3.10' and python_version > '3.10'",
+    "statsmodels >= 0.14.0",
+    "vtk >= 9.1.0, < 9.2.0; python_version >= '3.8' and python_version < '3.9'",
+    "vtk >= 9.2.2; python_version == '3.9'",
+    "vtk >= 9.2.2; python_version == '3.10'",
+    "vtk >= 9.2.4; python_version >= '3.11'",
+    "xlrd",
+]
+description = "Diffusion MRI fiber clustering and tractography analysis."
+dynamic = ["version"]
+keywords = ["dMRI, neuroimaging, tractography"]
+maintainers = [
+  {name = "O'Donnell lab"}, {email = "odonnell@bwh.harvard.edu"}
+]
+name = "whitematteranalysis"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+test = [
+    "pytest >= 7.2",
+    "pytest-cov",
+    "pytest_console_scripts",
+    "pytest-xdist",
+]
+dev = [
+    "pre-commit",
+]
+doc = [
+    "sphinx",
+    "sphinx-argparse",
+    "sphinx-rtd-theme",
+    "tomli",
+]
+
+[project.scripts]
+harden_transform_with_slicer = "bin.harden_transform_with_slicer:main"
+wm_append_clusters = "bin.wm_append_clusters:main"
+wm_append_clusters_to_anatomical_tracts = "bin.wm_append_clusters_to_anatomical_tracts:main"
+wm_append_diffusion_measures_across_subjects = "bin.wm_append_diffusion_measures_across_subjects:main"
+wm_assess_cluster_location_by_hemisphere = "bin.wm_assess_cluster_location_by_hemisphere:main"
+wm_average_tract_measures = "bin.wm_average_tract_measures:main"
+wm_change_nrrd_dir = "bin.wm_change_nrrd_dir:main"
+wm_cluster_atlas = "bin.wm_cluster_atlas:main"
+wm_cluster_from_atlas = "bin.wm_cluster_from_atlas:main"
+wm_cluster_remove_outliers = "bin.wm_cluster_remove_outliers:main"
+wm_cluster_volumetric_measurements = "bin.wm_cluster_volumetric_measurements:main"
+wm_compare_vtks = "bin.wm_compare_vtks:main"
+wm_create_mrml_file = "bin.wm_create_mrml_file:main"
+wm_diffusion_measurements = "bin.wm_diffusion_measurements:main"
+wm_download_anatomically_curated_atlas = "bin.wm_download_anatomically_curated_atlas:main"
+wm_harden_transform = "bin.wm_harden_transform:main"
+wm_preprocess_all = "bin.wm_preprocess_all:main"
+wm_quality_control_after_clustering = "bin.wm_quality_control_after_clustering:main"
+wm_quality_control_cluster_measurements = "bin.wm_quality_control_cluster_measurements:main"
+wm_quality_control_tractography = "bin.wm_quality_control_tractography:main"
+wm_quality_control_tract_overlap = "bin.wm_quality_control_tract_overlap:main"
+wm_register_multisubject_faster = "bin.wm_register_multisubject_faster:main"
+wm_register_to_atlas_new = "bin.wm_register_to_atlas_new:main"
+wm_remove_data_along_tracts = "bin.wm_remove_data_along_tracts:main"
+wm_separate_clusters_by_hemisphere = "bin.wm_separate_clusters_by_hemisphere:main"
+wm_tract_to_volume = "bin.wm_tract_to_volume:main"
+wm_vtp2vtk = "bin.wm_vtp2vtk:main"
+wm_assess_cluster_location = "utilities.wm_assess_cluster_location:main"
+wm_compute_bundle_feature_population_math = "utilities.wm_compute_bundle_feature_population_math:main"
+wm_compute_FA_from_DWIs = "utilities.wm_compute_FA_from_DWIs:main"
+wm_compute_TAP = "utilities.wm_compute_TAP:main"
+wm_extract_cluster = "utilities.wm_extract_cluster:main"
+wm_extract_clusters_by_endpoints = "utilities.wm_extract_clusters_by_endpoints:main"
+wm_fix_hemisphere_loc_name_in_tractogram = "utilities.wm_fix_hemisphere_loc_name_in_tractogram:main"
+wm_fix_UKF_trace = "utilities.wm_fix_UKF_trace:main"
+wm_flatten_length_distribution = "utilities.wm_flatten_length_distribution:main"
+wm_laterality_all = "utilities.wm_laterality_all:main"
+wm_measure_all_clusters = "utilities.wm_measure_all_clusters:main"
+wm_measure_endpoint_overlap = "utilities.wm_measure_endpoint_overlap:main"
+wm_query_atlas_bundles_names = "utilities.wm_query_atlas_bundles_names:main"
+wm_statistics_export_data = "utilities.wm_statistics_export_data:main"
+wm_statistics = "utilities.wm_statistics:main"
+wm_transform_polydata = "utilities.wm_transform_polydata:main"
+
+[options.extras_require]
+all = [
+    "%(test)s",
+]
+
+[project.urls]
+homepage = "https://whitematteranalysis.readthedocs.io/en/latest/"
+documentation = "https://whitematteranalysis.readthedocs.io/en/latest/"
+repository = "https://github.com/SlicerDMRI/whitematteranalysis"
+
+[tool.setuptools.packages]
+find = {}  # Scanning implicit namespaces is active by default
+
+[tool.setuptools.package-data]
+mypkg = [
+    "whitematteranalysis/data/atlas/*.csv",
+    "whitematteranalysis/data/atlas/*.json"
+]
+
+[tool.setuptools_scm]
+write_to = "whitematteranalysis/_version.py"

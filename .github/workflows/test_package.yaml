@@ -28,9 +28,7 @@ jobs:
     - name: Set min. dependencies
       if: matrix.requires == 'minimal'
       run: |
-        python -c "req = open('requirements.txt').read().replace(' >= ', ' == ') ; open('requirements.txt', 'w').write(req)"
-        python -c "req = open('requirements_dev.txt').read().replace(' >= ', ' == ') ; open('requirements_dev.txt', 'w').write(req)"
-        python -c "req = open('setup.py').read().replace(' >= ', ' == ') ; open('setup.py', 'w').write(req)"
+        python -c "req = open('pyproject.toml').read().replace(' >= ', ' == ') ; open('pyproject.toml', 'w').write(req)"
 
     # - name: Cache pip
     #   uses: actions/cache@v2
@@ -45,18 +43,24 @@ jobs:
     - name: Install dependencies
       # if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        python -m pip install --upgrade --user pip setuptools pytest-cov
-        pip install -r requirements_dev.txt
+        # SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL required due to
+        # some dependency listing "scikit-learn" as "sklearn" in its dependencies
+        export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
+        python -m pip install --upgrade --user pip
+        pip install setuptools tox
+        pip install -e .[test]
         python --version
         pip --version
         pip list
 
     - name: Run tests
       run: |
-        # tox --sitepackages
-        pip install -e .
+        # Test with tox
+        tox --sitepackages
+        # Test with pytest
         python -c 'import whitematteranalysis'
-        coverage run --source whitematteranalysis -m pytest -o junit_family=xunit2 -v --doctest-modules --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        coverage run --source whitematteranalysis -m pytest -o junit_family=xunit2 -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        # coverage run --source whitematteranalysis -m pytest -o junit_family=xunit2 -v --doctest-modules --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
       uses: actions/upload-artifact@master
@@ -74,9 +78,9 @@ jobs:
     - name: Package Setup
     # - name: Run tests with tox
       run: |
-        # pip install build
+        pip install build
         # check-manifest
-        python setup.py install
+        python -m build
         # twine check dist/
         # tox --sitepackages
         # python -m tox

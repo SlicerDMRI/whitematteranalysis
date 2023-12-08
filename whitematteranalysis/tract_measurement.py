@@ -64,7 +64,7 @@ class TractMeasurement:
         self.case_id = os.path.splitext(os.path.split(self.measurement_file)[1])[0]
         self.cluster_path = tmp_matrix[1:, 0]
         self.measurement_header = tmp_matrix[0, 1:]
-        self.measurement_matrix = tmp_matrix[1:, 1:].astype(np.float)
+        self.measurement_matrix = tmp_matrix[1:, 1:].astype(float)
         self.cluster_number = self.measurement_matrix.shape[0]
 
     def check(self):
