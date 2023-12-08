@@ -47,9 +47,9 @@ $ wm_apply_ORG_atlas_to_subject.sh \
   -m /Applications/Slicer5.2.2.app/Contents/Extensions-31382/SlicerDMRI/lib/Slicer-5.2/cli-modules/FiberTractMeasurements
 ```
 
-* A step-by-step tutorial to explain the detailed computational process within the pipeline is provided [here](https://github.com/SlicerDMRI/whitematteranalysis/blob/master/doc/subject-specific-tractography-parcellation.md).
+* A step-by-step tutorial to explain the detailed computational process within the pipeline is provided [here](https://whitematteranalysis.readthedocs.io/en/latest/subject-specific-tractography-parcellation.html).
 
-* The names of the anatomical bundles WMA extracts can be found in the [bundles](doc/bundles.md) page.
+* The names of the anatomical bundles WMA extracts can be found in the [bundles](https://whitematteranalysis.readthedocs.io/en/latest/bundles.html) page.
 
 # References
 
