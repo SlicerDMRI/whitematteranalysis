@@ -45,5 +45,14 @@ setup(
     scripts=list(chain.from_iterable([
         glob.glob("bin/[a-zA-Z]*.py"),
         glob.glob("utilities/[a-zA-Z]*.py"),
-        ]))
+        ])),
+    package_data={'whitematteranalysis':
+         ["data/atlas/org_atlas_bundles_v1_1.csv",
+          "data/atlas/org_atlas_bundles_v1_1_1.csv",
+          "data/atlas/org_atlas_bundles_v1_2.csv",
+          "data/atlas/org_atlas_bundles_v1_3a.csv",
+          "data/atlas/org_atlas_bundles_v1_3b.csv",
+          "data/atlas/org_atlas_bundles_v1_4.csv",
+          "data/atlas/org_atlas_version.json"]},
+    include_package_data=True
 )
