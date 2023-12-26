@@ -115,7 +115,7 @@ def main():
             str_inverse = 0
     
         print(f"<{os.path.basename(__file__)}> Transforming: {polydata}")
-        cmd = f"{slicer_path} --no-main-window --python-script $(which harden_transform_with_slicer.py) {polydata} {transform} {str(str_inverse)} {outdir} --python-code 'slicer.app.quit()' >> f{os.path.join(outdir, 'log.txt 2>&1')}"
+        cmd = f"{slicer_path} --no-main-window --python-script $(which harden_transform_with_slicer.py) {polydata} {transform} {str(str_inverse)} {outdir} --python-code 'slicer.app.quit()' >> {os.path.join(outdir, 'log.txt 2>&1')}"
     
         os.system(cmd)
     
