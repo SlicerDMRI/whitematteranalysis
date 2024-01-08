@@ -59,9 +59,9 @@ jobs:
         coverage run --source whitematteranalysis -m pytest -o junit_family=xunit2 -v --doctest-modules --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Upload pytest test results
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v4
       with:
-        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}
+        name: pytest-results-${{ runner.os }}-${{ matrix.python-version }}-${{ matrix.requires }}
         path: junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
       # Use always() to always run this step to publish test results when there are test failures
       if: always()
