@@ -13,52 +13,29 @@
 import os
 import re
 from datetime import datetime
+from importlib.metadata import version as vers
+
+import tomli
 
 # import sys
 
 # sys.path.insert(0, os.path.abspath('.'))
 
-author_setup_str = "    author="
-author_email_setup_str = "    author_email="
-name_setup_str = "    name="
-version_setup_str = "    version="
-
-
 # Load the release info into a dict by explicit execution
-info = {}
-with open(os.path.abspath(os.path.join(
-        os.path.dirname(__file__), "../..", "setup.py")), "r") as f:
-    for line in f:
-        if line.startswith(name_setup_str):
-            project = (
-                re.search(name_setup_str + "(.*),", line).group(1).strip("\'"))
-        elif line.startswith(author_setup_str):
-            _author = (
-                re.search(
-                    author_setup_str + "(.*),",
-                    line).group(1).strip("\'").replace("\\", "")
-            )
-        elif line.startswith(author_email_setup_str):
-            _email = (
-                re.search(
-                    author_email_setup_str + "(.*),",
-                    line).group(1).strip("\'")
-            )
-        elif line.startswith(version_setup_str):
-            _version = (
-                re.search(
-                    version_setup_str + "(.*),",
-                    line).group(1).strip("\'")
-            )
+with open(os.path.join("../..", "pyproject.toml"), "rb") as f:
+    info = tomli.load(f)
 
 # -- Project information -----------------------------------------------------
 
+project = info["project"]["name"]
+_author = info["project"]["authors"][0]["name"]
+_email = info["project"]["authors"][1]["email"]
 copyright = f"2013-{datetime.now().year}, {_author} <{_email}>"
 author = f"{_author}s"
 
+_version = vers(project)
 # The full version, including alpha/beta/rc tags
 release = _version
-
 
 # -- General configuration ---------------------------------------------------
 

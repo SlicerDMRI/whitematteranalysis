@@ -2,5 +2,5 @@
 # -*- coding: utf-8 -*-
 
 def test_help_option(script_runner):
-    ret = script_runner.run(["wm_create_mrml_file.py", "--help"])
+    ret = script_runner.run(["bin/wm_create_mrml_file.py", "--help"])
     assert ret.success

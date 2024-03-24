@@ -1,3 +1,0 @@
-pre-commit
-pytest
-pytest_console_scripts

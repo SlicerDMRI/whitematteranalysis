@@ -3,5 +3,5 @@
 
 def test_help_option(script_runner):
     ret = script_runner.run(
-        ["wm_download_anatomically_curated_atlas.py", "--help"])
+        ["bin/wm_download_anatomically_curated_atlas.py", "--help"])
     assert ret.success
