@@ -193,9 +193,9 @@ class MultiSubjectRegistration:
             
         # make a directory for the current iteration
         if self.mode == "Nonrigid":
-            dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}_grid_{self.nonrigid_grid_resolution:03d}"
+            dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}_grid_{int(self.nonrigid_grid_resolution):03d}"
         else:
-            dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}"
+            dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}"
 
         outdir = os.path.join(self.output_directory, dirname)
         if not os.path.exists(outdir):
@@ -346,9 +346,9 @@ class MultiSubjectRegistration:
         if have_mpl:
             plt.figure(0)
             if self.mode == "Nonrigid":
-                fname_fig_base = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}_grid_{self.nonrigid_grid_resolution:03d}"
+                fname_fig_base = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}_grid_{int(self.nonrigid_grid_resolution):03d}"
             else:
-                fname_fig_base = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}_"
+                fname_fig_base = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}_"
             # Place the legend below the plot so it does not overlap it when there are many subjects
             #lgd = plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=False, shadow=False, ncol=1)
             fname_fig = f'objectives_per_subject_{fname_fig_base}.pdf'
@@ -405,9 +405,9 @@ class MultiSubjectRegistration:
             # Make a directory for the current iteration.
             # This directory name must match the one created above in the iteration.
             if self.mode == "Nonrigid":
-                dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}_grid_{self.nonrigid_grid_resolution:03d}"
+                dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}_grid_{int(self.nonrigid_grid_resolution):03d}"
             else:
-                dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:03d}"
+                dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):03d}"
             outdir = os.path.join(self.output_directory, dirname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)

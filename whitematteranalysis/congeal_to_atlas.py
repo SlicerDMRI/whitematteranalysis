@@ -108,7 +108,7 @@ class SubjectToAtlasRegistration:
         self.total_iterations += 1
 
         # make a directory for the current iteration
-        dirname = f"iteration_{self.total_iterations:05d}_sigma_{ self.sigma:05d}"
+        dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):05d}"
         outdir = os.path.join(self.output_directory, dirname)
         if not os.path.exists(outdir):
             os.makedirs(outdir)
@@ -163,7 +163,7 @@ class SubjectToAtlasRegistration:
 
         if intermediate_save:
             # make a directory for the current iteration
-            dirname = f"iteration_{self.total_iterations:05d}_sigma_{self.sigma:05d}"
+            dirname = f"iteration_{self.total_iterations:05d}_sigma_{int(self.sigma):05d}"
             outdir = os.path.join(self.output_directory, dirname)
             if not os.path.exists(outdir):
                 os.makedirs(outdir)
