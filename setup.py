@@ -32,7 +32,7 @@ with open("requirements.txt") as f:
 
 setup(
     name='whitematteranalysis',
-    version='0.4.0',
+    version='0.4.1',
     author='Fan Zhang and Lauren O\'Donnell',
     author_email='odonnell@bwh.harvard.edu',
     packages=find_packages(exclude=["docs"]),
