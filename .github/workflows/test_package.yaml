@@ -21,7 +21,7 @@ jobs:
         fetch-depth: 0
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -33,7 +33,7 @@ jobs:
         python -c "req = open('setup.py').read().replace(' >= ', ' == ') ; open('setup.py', 'w').write(req)"
 
     # - name: Cache pip
-    #   uses: actions/cache@v2
+    #   uses: actions/cache@v4
     #   id: cache
     #   with:
     #     path: ${{ env.pythonLocation }}
