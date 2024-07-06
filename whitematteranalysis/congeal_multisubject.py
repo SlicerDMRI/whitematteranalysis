@@ -476,7 +476,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
     # Set up registration objects and parameters that are specific to affine vs nonrigid
     if mode == "Affine" or mode == "Rigid":
         register = wma.register_two_subjects.RegisterTractography()
-        register.process_id_string = f"_subject_{subject_idx:05d}_iteration_{iteration_count:05d}_sigma_{sigma:03d}"
+        register.process_id_string = f"_subject_{subject_idx:05d}_iteration_{iteration_count:05d}_sigma_{int(sigma):03d}"
         if mode == "Rigid":
             register.mode = [1, 1, 0, 0] 
         # Make sure the initial iterations are performed with Cobyla.
@@ -488,7 +488,7 @@ def congeal_multisubject_inner_loop(mean, subject, initial_transform, mode, sigm
         register = wma.register_two_subjects_nonrigid_bsplines.RegisterTractographyNonrigid()
         register.nonrigid_grid_resolution = grid_resolution
         register.initialize_nonrigid_grid()
-        register.process_id_string = f"_subject_{subject_idx:05d}_iteration_{iteration_count:05d}_sigma_{sigma:03d}_grid_{grid_resolution:03d}"
+        register.process_id_string = f"_subject_{subject_idx:05d}_iteration_{iteration_count:05d}_sigma_{int(sigma):03d}_grid_{int(grid_resolution):03d}"
 
     else:
         print("ERROR: Unknown registration mode")
