@@ -44,6 +44,7 @@ setup(
     extras_require={'doc': ['sphinx', 'sphinx-argparse', 'sphinx_rtd_theme']},
     scripts=list(chain.from_iterable([
         glob.glob("bin/[a-zA-Z]*.py"),
+        glob.glob("bin/[a-zA-Z]*.sh"),
         glob.glob("utilities/[a-zA-Z]*.py"),
         ])),
     package_data={'whitematteranalysis':
